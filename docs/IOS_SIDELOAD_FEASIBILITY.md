@@ -27,7 +27,7 @@ Free-account apps expire after seven days unless refreshed. The acceptance gate 
 
 | Check | Required evidence | Current result |
 | --- | --- | --- |
-| Pinned unsigned macOS build | Workflow URL, commit, Xcode output, artifact digest | Pending first manual candidate run |
+| Pinned unsigned macOS build | Workflow URL, commit, Xcode output, artifact digest | Passed: [run 32327251183](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/32327251183), commit `780ab666fdb99fe364d14c705d5d4be00687cfaa`, Xcode 26.4.1 build 17E202, 7,156,518-byte unsigned IPA, SHA-256 `60248224715E6EE69C8C48335ACF44340D939624CDC7115EB3504F59AB4ABBCC` |
 | Physical iPhone launch | Device model, iOS version, bundle ID, timestamp | Pending physical device |
 | Exact provisioning expiry | Screenshot/transcription of AltStore expiry | Pending physical device |
 | Refresh before expiry | Old/new expiry and refresh timestamp | Pending physical device |
