@@ -12,7 +12,7 @@ try {
     pod install
     if ($LASTEXITCODE -ne 0) { throw 'CocoaPods install failed.' }
 
-    $workspaces = @(Get-ChildItem -File -Filter '*.xcworkspace')
+    $workspaces = @(Get-ChildItem -Directory -Filter '*.xcworkspace')
     if ($workspaces.Count -ne 1) {
         throw "Expected one generated Xcode workspace, found $($workspaces.Count)."
     }
