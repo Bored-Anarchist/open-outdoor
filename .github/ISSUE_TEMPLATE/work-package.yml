@@ -1,0 +1,87 @@
+name: Work-package implementation
+description: Propose an implementation task tied to the approved plan and safe evidence.
+title: "[WP-___]: "
+labels:
+  - work-package
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Public issues are durable. Use project handles or role aliases and synthetic/public-safe evidence only. Follow SECURITY.md for sensitive reports.
+  - type: input
+    id: package
+    attributes:
+      label: Work package
+      placeholder: WP-001
+    validations:
+      required: true
+  - type: dropdown
+    id: lifecycle
+    attributes:
+      label: Lifecycle status
+      options:
+        - proposed
+        - ready
+        - in-progress
+        - blocked
+        - acceptance-review
+    validations:
+      required: true
+  - type: input
+    id: milestone_priority
+    attributes:
+      label: Milestone and priority
+      placeholder: M1; P0
+    validations:
+      required: true
+  - type: textarea
+    id: assignment
+    attributes:
+      label: Public-safe assignment record
+      description: Use public project handles or established role aliases, never personal contact information.
+      placeholder: |
+        Accountable public handle/role alias:
+        Accountable RACI role:
+        Responsible implementer handle(s):
+        Required reviewer handle(s):
+        RACI exceptions/conflicts:
+        Availability window:
+        Required environments/data/device class:
+        Cost/storage estimate and approved source:
+    validations:
+      required: true
+  - type: textarea
+    id: traceability
+    attributes:
+      label: Requirements, tests, dependencies, and ADRs
+      placeholder: |
+        Requirement IDs:
+        Test/evidence IDs:
+        Dependencies and gate date:
+        Accepted ADRs:
+        Risk IDs/changes:
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Outcome, scope, and exclusions
+      description: State the intended outcome, in-scope work, and explicitly excluded behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: impacts
+    attributes:
+      label: Impact and acceptance plan
+      description: Cover privacy, rights, security, accessibility, migration, energy/performance, documentation, evidence, and completion criteria.
+    validations:
+      required: true
+  - type: checkboxes
+    id: public_boundary
+    attributes:
+      label: Public-boundary confirmation
+      options:
+        - label: This issue contains only synthetic, redistribution-compatible, or approved redacted material and no unnecessary identifying information.
+          required: true
+        - label: Any security, private-data, or source-rights incident will use the private SECURITY.md process.
+          required: true

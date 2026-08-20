@@ -1,0 +1,26 @@
+# Local secrets and private extensions must never enter the public checkout.
+.env
+.env.*
+!.env.example
+.private/
+private/
+secrets/
+credentials/
+*.key
+*.pem
+*.p12
+*.mobileprovision
+
+# Generated output and dependency caches.
+node_modules/
+build/
+dist/
+coverage/
+*.log
+.tmp-*
+
+# Local editor and operating-system metadata.
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

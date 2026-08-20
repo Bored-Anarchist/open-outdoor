@@ -1,0 +1,68 @@
+name: Public-safe bug report
+description: Report reproducible behavior using synthetic or redistribution-compatible evidence.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Do not include personal routes or locations, credentials, private source records, copyrighted payloads, device/account identifiers, or unredacted logs/screenshots. For a vulnerability or sensitive incident, stop and follow SECURITY.md instead of filing this issue.
+  - type: input
+    id: work_package
+    attributes:
+      label: Work-package ID
+      description: Use the accepted package ID, or state "triage needed."
+      placeholder: WP-001
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Requirement and test IDs
+      description: List applicable requirement/test IDs, or state "triage needed."
+      placeholder: REQ-OSS-003; T-REL-004
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Observed and expected behavior
+      description: Describe the public-safe behavior without sensitive evidence.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Public-safe reproduction
+      description: Use generated synthetic values and remove identifying metadata. A renamed or coarsened real route is not synthetic.
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment class
+      description: Select only a non-identifying environment class; do not post device or account identifiers.
+      options:
+        - Windows public development environment
+        - Browser fixture harness
+        - iOS simulator
+        - Physical iPhone (no identifying details)
+        - Documentation only
+        - Other public-safe environment
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy_confirm
+    attributes:
+      label: Privacy check
+      options:
+        - label: I used only synthetic, redistribution-compatible, or approved redacted evidence and included no unnecessary identifying information.
+          required: true
+  - type: checkboxes
+    id: rights_confirm
+    attributes:
+      label: Rights and security check
+      options:
+        - label: I have the right to publish everything in this issue, and this is not a vulnerability or sensitive incident.
+          required: true

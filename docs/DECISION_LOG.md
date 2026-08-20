@@ -1,0 +1,93 @@
+# Architecture and Product Decision Log
+
+**Status:** Proposed baseline
+
+## 1. Accepted scope decisions
+
+These decisions are established by the consolidated scope. Implementation ADRs may refine but not contradict them.
+
+| ID | Decision | Status | Consequence |
+| --- | --- | --- | --- |
+| `ADR-001` | Public project-owned code/docs use Apache-2.0 | Accepted | Commercial code use allowed; third-party data/assets remain separately licensed |
+| `ADR-002` | No required hosted runtime backend/account/cloud sync | Accepted | Offline catalogs and local user storage are primary architecture |
+| `ADR-003` | Separate writable user DB from read-only public/private catalogs | Accepted | Catalog activation cannot overwrite private records |
+| `ADR-004` | Support external Windows private root and private downstream repository | Accepted | Public build has no private dependency; native public GitHub forks are not confidential |
+| `ADR-005` | React Native/TypeScript/Expo prebuild plus native Swift tracker | Accepted | Shared Windows QA plus explicit native boundary |
+| `ADR-006` | MapLibre Native on iOS and MapLibre GL JS browser adapter | Accepted | Shared map contract with platform capability differences |
+| `ADR-007` | Laptop-local spatial ingestion and rights-aware regional pack generation | Accepted | Build-time processing, no runtime catalog API |
+| `ADR-008` | New York and iPhone 14 are the initial reference targets | Accepted | Coverage/device claims remain bounded and expand deliberately |
+| `ADR-009` | Free Apple provisioning is supported as a hobby constraint | Accepted | Seven-day availability risk, exact expiry, physical refresh/retention gate |
+| `ADR-010` | Source authorization, acquisition, retention, and distribution fail closed | Accepted | Public availability or personal intent never substitutes for permission |
+| `ADR-011` | iOverlander has no scraper; lawful user-selected export import remains private | Accepted | Public repository contains taxonomy/deep links/synthetic fixtures only |
+| `ADR-029` | Initial product is iOS-only; browser is a QA harness; Android and turn-by-turn/rerouting/off-route guidance are excluded | Accepted | Platform and navigation expansion require scope/change control |
+| `ADR-030` | Private user state and regenerable catalogs are excluded from implicit iOS system backup; active and sealed data use declared protection classes | Accepted | Supported recovery uses explicit encrypted backup; physical inspection is a gate |
+| `ADR-031` | Production catalogs/artifacts require signed provenance, channel-bound trust, and rollback/replay checks | Accepted | Unsigned development artifacts are labelled and cannot enter a production channel |
+| `ADR-032` | Production supports the current and one previous compatible major app/catalog/backup schema; unsafe application downgrade fails before mutation | Accepted | Older backups require an intermediate migrator or read-only failure |
+| `ADR-033` | EPSG:4326, `[longitude, latitude]`, UTC instants, stable IDs, unit rules, and explicit unknown semantics form the canonical data contract | Accepted | Every connector, catalog, import/export, and runtime boundary uses one normative specification |
+| `ADR-034` | WCAG 2.2 AA where applicable plus native iOS accessibility acceptance is the baseline | Accepted | Map content also has non-map access and critical defects block release |
+| `ADR-035` | The native tracker is the sole writer to the protected active spool; sealed private database mutation occurs through the application storage coordinator | Accepted | Concurrent writes are bounded and recovery ownership is testable |
+| `ADR-038` | Public contributions use a chosen project handle, privacy-protected commit address, and account-bound rights attestation instead of a public DCO identity line | Accepted | The project does not require legal names or personal contact details in durable public history |
+| `ADR-039` | Hosted CI is local-first, path-filtered, superseded-run-cancelling, timeout-bounded, minimally matrixed, unscheduled by default, and candidate-gated for expensive work | Accepted | GitHub Actions minutes are treated as a constrained resource and reviewed by milestone |
+
+## 2. Phase 0 implementation decisions
+
+Only ADR-012 through ADR-015 and ADR-036 block `WP-002`. Other decisions are made by the package that has the evidence needed to choose safely; this removes the earlier circular dependency between bootstrap and storage/catalog decisions.
+
+| ID | Decision needed | Options to evaluate | Acceptance factors | Target package |
+| --- | --- | --- | --- | --- |
+| `ADR-012` | JavaScript package manager/workspace | pnpm, npm, Yarn | Windows reliability, lock determinism, monorepo support, CI cache | Before WP-002 |
+| `ADR-013` | Exact React Native/Expo baseline | Supported pinned releases | MapLibre/native module compatibility, iOS target, Windows tooling | Before WP-002 |
+| `ADR-014` | JS test/quality stack | Candidate unit, E2E, lint/format tools | Determinism, RN/browser support, maintenance | Before WP-002 |
+| `ADR-015` | Python environment/lock strategy | uv, Poetry, pip-tools, other | Windows/GDAL compatibility, reproducibility, security inventory | Before WP-002 |
+| `ADR-036` | Release configuration format and schema validator | JSON, YAML, TOML | Deterministic parsing, schema validation, Windows tooling, provenance | Before WP-002 |
+| `ADR-016` | Spatial staging implementation | PostgreSQL/PostGIS or proven equivalent | Geometry operations, reproducibility, Windows setup, scale | WP-201 |
+| `ADR-017` | SQLite/native storage library | Supported RN/native options | WAL, transactions, read-only attach/query, migrations, performance | First decision task in WP-008 |
+| `ADR-018` | Catalog/tile archive format | SQLite/MBTiles/PMTiles-compatible options | MapLibre support, random access, integrity, size, atomic activation | First decision task in WP-008; reconfirm at WP-301 |
+| `ADR-037` | CI and pinned macOS runner strategy | GitHub Actions and documented alternatives | Xcode pinning, public cost, reproducibility, isolation, provenance | First decision task in WP-006 |
+| `ADR-020` | Public/private/local app identifiers and names | Proposed stable identifiers | Upgrade retention, collision avoidance, user clarity, signing | WP-006 |
+| `ADR-021` | Native tracker bridge/event protocol | TurboModule/native module alternatives | Background durability, batching, versioning, testability | WP-007/WP-103 |
+| `ADR-022` | Backup crypto/container libraries | Platform/vetted library choices | Authenticated encryption, memory-hard KDF, streaming, migration | WP-107 |
+
+## 3. Later decisions
+
+| ID | Decision needed | Trigger |
+| --- | --- | --- |
+| `ADR-023` | Exact entity-resolution thresholds/models by entity/source pair | Labelled fixture corpus exists |
+| `ADR-024` | Basemap compiler/profile and detailed-area policy | New York source/size prototype exists |
+| `ADR-025` | Search/index implementation | Canonical catalog prototype and query benchmarks exist |
+| `ADR-026` | Production design tokens/brand direction | Phase 3 functional flows stabilize |
+| `ADR-028` | Maintainer quorum and LTS policy | Sustained multi-maintainer/community activity |
+
+## 4. Superseded compound decisions
+
+| ID | Original subject | Status | Replacement |
+| --- | --- | --- | --- |
+| `ADR-019` | CI/macOS runner and release-configuration format | Superseded before implementation | ADR-036 isolates the bootstrap prerequisite; ADR-037 is decided with the iOS build evidence |
+| `ADR-027` | Defer release signing/provenance until the first release candidate | Superseded before implementation | ADR-031 and WP-010 establish catalog trust in Phase 0 |
+
+## 5. ADR record template
+
+```text
+# ADR-NNN — Title
+Status: proposed | accepted | superseded | rejected
+Date:
+Owners:
+Related scope / requirements / work packages / risks:
+
+## Context
+## Decision drivers
+## Options considered
+## Decision
+## Consequences
+## Security/privacy/rights/accessibility impact
+## Validation evidence
+## Migration or rollback
+## Supersedes / superseded by
+```
+
+## 6. Decision rules
+
+- Decisions are made with evidence proportional to reversibility and risk.
+- Accepted ADRs are immutable history; changes create a superseding ADR.
+- A decision cannot silently weaken scope, privacy, rights, or phase gates.
+- Tool selections remain open until their ADR is accepted; planning documents describe contracts rather than claiming commands/libraries already exist.

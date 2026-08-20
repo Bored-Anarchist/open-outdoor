@@ -1,0 +1,38 @@
+name: Scope or feature proposal
+description: Propose a public-safe change for triage before implementation.
+title: "[Proposal]: "
+labels:
+  - proposal
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A proposal does not authorize implementation. Scope additions need approved requirements, work packages, tests, risks, ownership, and milestone changes first. Do not post sensitive or identifying evidence.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: User outcome and problem
+      description: Describe the need without private locations, private source samples, personal data, or copyrighted payloads.
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Proposed scope and exclusions
+      description: Explain what changes and what remains out of scope.
+    validations:
+      required: true
+  - type: textarea
+    id: impacts
+    attributes:
+      label: Expected impacts
+      description: Address privacy, security, source rights, safety, accessibility, platforms, cost, storage, energy, and migration.
+    validations:
+      required: true
+  - type: checkboxes
+    id: privacy_confirm
+    attributes:
+      label: Public-boundary confirmation
+      options:
+        - label: This proposal contains only information I have the right to publish and no unnecessary identifying information.
+          required: true
