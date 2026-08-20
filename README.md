@@ -2,7 +2,20 @@
 
 Open Outdoor is a planned open-source, offline-first iOS application for trail discovery, camping information, and GPS hike recording. The initial reference implementation targets New York, an iPhone 14, and a Windows-first contributor workflow. The browser is a QA harness; Android and turn-by-turn navigation are not in the initial scope.
 
-The repository is currently in the planning/bootstrap stage. No production application has been implemented yet.
+The repository is in Phase 0 bootstrap. It contains executable shared/data/privacy shells and feasibility tooling, but no production application or catalog.
+
+## Phase 0 developer bootstrap
+
+The workspace pins Node.js 24.19.0, pnpm 11.20.0, Python 3.13.14, and uv 0.12.1. After installing those exact public tools on Windows, run:
+
+```powershell
+pnpm install --frozen-lockfile
+pnpm quality
+pnpm build:web
+uv run --frozen python -m unittest discover -s python/tests
+```
+
+Private composition is optional and must point outside this checkout. The iOS feasibility build is a manual candidate job; physical-device acceptance remains separate.
 
 ## Authoritative documents
 

@@ -1,0 +1,37 @@
+{
+  "name": "open-outdoor",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": "24.19.0",
+    "pnpm": "11.20.0"
+  },
+  "scripts": {
+    "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Bootstrap.ps1",
+    "quality": "pnpm quality:types && pnpm quality:format && pnpm release:verify && pnpm test",
+    "quality:types": "tsc -b packages/shared packages/data packages/privacy packages/config packages/tracking packages/storage packages/map apps/browser-fixture apps/mobile",
+    "quality:format": "prettier --check .",
+    "test": "vitest run",
+    "test:fixtures": "vitest run packages/data",
+    "test:privacy": "vitest run packages/privacy && node tools/public-boundary.mjs --scan .",
+    "test:private-root": "vitest run packages/privacy/test/private-root.test.ts",
+    "test:private-downstream": "node tools/private-ci-policy.mjs && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-PrivateDownstream.ps1",
+    "build:web": "pnpm --filter @open-outdoor/browser-fixture build",
+    "build:ios:bundle": "pnpm --filter @open-outdoor/mobile exec expo export --platform ios --output-dir ../../dist/ios-export --clear",
+    "build:ios:unsigned": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Build-IosUnsigned.ps1",
+    "catalog:public": "node tools/public-catalog.mjs",
+    "catalog:private": "node tools/private-catalog.mjs",
+    "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs",
+    "python:test": "uv run --frozen python -m unittest discover -s python/tests"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "ajv": "8.18.0",
+    "prettier": "3.9.0",
+    "typescript": "6.0.3",
+    "vite": "8.0.0",
+    "vitest": "4.1.0",
+    "yaml": "2.9.0"
+  }
+}

@@ -1,0 +1,4 @@
+python-preference = "only-managed"
+python-downloads = "manual"
+resolution = "highest"
+required-version = "==0.12.1"

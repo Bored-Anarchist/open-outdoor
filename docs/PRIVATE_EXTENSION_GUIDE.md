@@ -1,6 +1,8 @@
 # Private Extension Guide
 
-**Status:** Proposed contract; implementation begins in Phase 0
+**Status:** Phase 0 composition and isolation spike implemented
+
+Set `OUTDOOR_PRIVATE_ROOT` to an absolute directory outside the public checkout containing `open-outdoor.private.json`; run `pnpm catalog:private`. Validate the composition boundary with `pnpm test:private-root` and the isolated downstream template with `pnpm test:private-downstream`. The repository-local example is inert and deliberately rejected as an active private root.
 
 ## 1. Purpose
 
