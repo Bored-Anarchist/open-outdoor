@@ -17,7 +17,7 @@ try {
         throw "Expected one generated Xcode workspace, found $($workspaces.Count)."
     }
     $workspace = $workspaces[0]
-    $scheme = $workspace.BaseName
+    $scheme = [System.IO.Path]::GetFileNameWithoutExtension($workspace.Name)
     Write-Host "Building workspace '$($workspace.Name)' with scheme '$scheme'."
     xcodebuild -workspace $workspace.Name -scheme $scheme -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath ../../../dist/ios-derived CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
     if ($LASTEXITCODE -ne 0) { throw 'Unsigned Xcode build failed.' }
