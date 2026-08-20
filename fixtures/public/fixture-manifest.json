@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "classification": "public",
+  "retention": "indefinite",
+  "synthetic": true,
+  "approvedBy": "project-maintainer",
+  "approvedAt": "2026-08-19T00:00:00Z",
+  "files": ["catalog.json", "replay.gpx"]
+}

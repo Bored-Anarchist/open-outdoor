@@ -1,6 +1,6 @@
 # Bootstrap and Environment Specification
 
-**Status:** Proposed; exact versions require Phase 0 ADRs
+**Status:** WP-002 implementation baseline
 
 ## 1. Objective
 
@@ -106,7 +106,7 @@ Exact commands depend on the selected package manager, but the repository must e
 | `catalog:private` | Explicit private-root catalog build; unavailable without private configuration |
 | `release:verify` | Reproduce/check artifacts, manifests, checksums, provenance |
 
-Scripts must have equivalent documented PowerShell entry points on Windows. A command name in this document describes a contract and must not be presented as implemented until WP-002 completes.
+Scripts have documented PowerShell entry points on Windows. The commands above are implemented by the root workspace; later packages may extend their checks without changing their meanings.
 
 ## 9. Bootstrap acceptance
 

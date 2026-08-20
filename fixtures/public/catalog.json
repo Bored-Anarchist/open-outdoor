@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "classification": "public",
+  "places": [
+    { "id": "syn-1", "name": "Synthetic Trail", "coordinate": [-74, 41], "synthetic": true }
+  ]
+}

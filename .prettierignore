@@ -1,0 +1,15 @@
+.git
+.pnpm-store
+node_modules
+.venv
+.tmp-*
+dist
+coverage
+apps/mobile/ios
+apps/mobile/android
+*.lock
+pnpm-lock.yaml
+uv.lock
+*.md
+.github/ISSUE_TEMPLATE
+.github/rulesets

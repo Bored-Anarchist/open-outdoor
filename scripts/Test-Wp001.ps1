@@ -183,7 +183,7 @@ if (Test-Path -LiteralPath $rulesetPath -PathType Leaf) {
 }
 
 $markdownFiles = Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File -Filter '*.md' |
-    Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' }
+    Where-Object { $_.FullName -notmatch '[\\/](?:\.git|\.pnpm-store|\.tmp-[^\\/]+|\.venv|node_modules|dist|coverage)[\\/]' }
 foreach ($markdownFile in $markdownFiles) {
     $markdown = Get-Content -Raw -LiteralPath $markdownFile.FullName
     foreach ($match in [regex]::Matches($markdown, '\[[^\]]+\]\((?<target>[^)\s]+)')) {

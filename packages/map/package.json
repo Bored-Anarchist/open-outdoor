@@ -1,0 +1,10 @@
+{
+  "name": "@open-outdoor/map",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@open-outdoor/shared": "workspace:*"
+  },
+  "exports": "./src/index.ts"
+}

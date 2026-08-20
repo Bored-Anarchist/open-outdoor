@@ -1,0 +1,51 @@
+name: private-compatibility
+
+on:
+  workflow_dispatch:
+    inputs:
+      public_ref:
+        description: Public commit to test
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: private-compatibility-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-compatibility:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      OPEN_OUTDOOR_EPHEMERAL: 1
+      PNPM_HOME: ${{ runner.temp }}/pnpm
+      OUTDOOR_PRIVATE_ROOT: ${{ runner.temp }}/private-root
+    steps:
+      - name: Check out private downstream
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch selected public commit without publishing private content
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$OPEN_OUTDOOR_EPHEMERAL" = 1
+          git remote add public https://github.com/Bored-Anarchist/open-outdoor.git
+          git fetch --no-tags --depth=1 public "${{ inputs.public_ref }}"
+          git merge-base --is-ancestor FETCH_HEAD HEAD || git diff --check FETCH_HEAD...HEAD
+      - name: Run private compatibility in runner-temporary storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${OUTDOOR_PRIVATE_ROOT#${RUNNER_TEMP}/}" != "$OUTDOOR_PRIVATE_ROOT"
+          test ! -e .open-outdoor-private-output
+          echo "Private build command belongs here; never upload outputs from this job."
+      - name: Destroy temporary private material
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf -- "$OUTDOOR_PRIVATE_ROOT" "$PNPM_HOME"

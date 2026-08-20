@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/classification.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "classification", "retention", "synthetic", "files"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "classification": { "enum": ["public", "private", "restricted", "secret"] },
+    "retention": { "enum": ["indefinite", "bounded", "ephemeral"] },
+    "synthetic": { "type": "boolean" },
+    "approvedBy": { "type": "string", "minLength": 1 },
+    "approvedAt": { "type": "string", "format": "date-time" },
+    "files": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+  }
+}

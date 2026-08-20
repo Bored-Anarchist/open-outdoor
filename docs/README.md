@@ -32,7 +32,9 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Accessibility standard](ACCESSIBILITY_STANDARD.md) | WCAG 2.2 AA applicability and physical native acceptance | Accessibility owner |
 | [Data, privacy, and rights plan](DATA_PRIVACY_RIGHTS_PLAN.md) | Classification, source authorization, private storage, and publication gates | Privacy/rights owner |
 | [iOS data protection and backup](IOS_DATA_PROTECTION_AND_BACKUP.md) | File-protection classes, lock behavior, system-backup exclusions, and explicit recovery | iOS/privacy owner |
+| [iOS build and Windows sideload feasibility](IOS_SIDELOAD_FEASIBILITY.md) | Pinned unsigned build, Windows signing/install path, and pending physical-device evidence | iOS/build owner |
 | [Diagnostics plan](DIAGNOSTICS_PLAN.md) | Local-only schema, redaction, retention, preview, export, and deletion | Privacy/quality owner |
+| [Public-boundary incident response](INCIDENT_RESPONSE.md) | Credential revocation, containment, private reporting, corrective action, and safe resumption | Security/privacy owner |
 | [Private extension guide](PRIVATE_EXTENSION_GUIDE.md) | Local Windows and private downstream composition workflows | Platform owner |
 | [Development workflow](DEVELOPMENT_WORKFLOW.md) | Issues, branches, reviews, checks, fixtures, and definition of done | Maintainer |
 | [Public repository controls](REPOSITORY_CONTROLS.md) | Protected-branch ruleset, host settings, activation, and WP-001 verification | Project/release owner |

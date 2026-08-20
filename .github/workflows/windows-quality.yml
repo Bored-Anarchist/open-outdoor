@@ -1,0 +1,59 @@
+name: windows-quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  route:
+    name: windows-quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      run_expensive: ${{ steps.route.outputs.run_expensive }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { fetch-depth: 2, persist-credentials: false }
+      - id: route
+        shell: bash
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only HEAD^ HEAD 2>/dev/null || git ls-files)"
+          if grep -Eq '^(apps|packages|tools|scripts|config|fixtures|python)/|^(package.json|pnpm-lock.yaml|pnpm-workspace.yaml|pyproject.toml|uv.lock|tsconfig)' <<<"$changed"; then
+            echo 'run_expensive=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run_expensive=false' >> "$GITHUB_OUTPUT"
+          fi
+  windows-shared:
+    needs: route
+    if: needs.route.outputs.run_expensive == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with: { node-version: 24.19.0 }
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with: { python-version: 3.13.14 }
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: 0.12.1
+          enable-cache: false
+      - shell: pwsh
+        run: npm install --global pnpm@11.20.0
+      - shell: pwsh
+        run: pnpm install --frozen-lockfile
+      - shell: pwsh
+        run: pnpm quality
+      - shell: pwsh
+        run: uv run --frozen python -m unittest discover -s python/tests

@@ -1,0 +1,45 @@
+{
+  "$schema": "./release.schema.json",
+  "schemaVersion": 1,
+  "tools": {
+    "node": "24.19.0",
+    "pnpm": "11.20.0",
+    "python": "3.13.14",
+    "uv": "0.12.1",
+    "expo": "56.0.20"
+  },
+  "gis": {
+    "gdal": "3.13.0",
+    "postgis": "3.6.4",
+    "sqlite": "3.53.4"
+  },
+  "ios": {
+    "deploymentTarget": "16.4",
+    "runner": "macos-26",
+    "xcode": "26.4.1"
+  },
+  "channels": {
+    "public": {
+      "appName": "Open Outdoor",
+      "bundleIdentifier": "org.openoutdoor.public",
+      "trustRoot": "public-v1"
+    },
+    "local": {
+      "appName": "Open Outdoor Local",
+      "bundleIdentifier": "org.openoutdoor.local",
+      "trustRoot": "local-development"
+    },
+    "private": {
+      "appName": "Open Outdoor Private",
+      "bundleIdentifier": "org.openoutdoor.private",
+      "trustRoot": "private-external"
+    }
+  },
+  "regions": ["US-NY"],
+  "schemas": { "catalog": 1, "backup": 1 },
+  "budgets": {
+    "diagnosticRetentionHours": 24,
+    "publicArtifactRetentionDays": 1,
+    "ciMaximumMinutes": 30
+  }
+}

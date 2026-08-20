@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Open Outdoor Local",
+    "slug": "open-outdoor",
+    "version": "0.1.0",
+    "platforms": ["ios"],
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "org.openoutdoor.local",
+      "deploymentTarget": "16.4",
+      "supportsTablet": false
+    }
+  }
+}

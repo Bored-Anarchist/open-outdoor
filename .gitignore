@@ -13,10 +13,16 @@ credentials/
 
 # Generated output and dependency caches.
 node_modules/
+.pnpm-store/
+.venv/
+.expo/
 build/
 dist/
 coverage/
 *.log
+*.tsbuildinfo
+__pycache__/
+*.py[cod]
 .tmp-*
 
 # Local editor and operating-system metadata.

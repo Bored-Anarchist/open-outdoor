@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "classification": "private",
+  "retention": "indefinite",
+  "synthetic": true,
+  "connectors": ["connectors/synthetic"]
+}
