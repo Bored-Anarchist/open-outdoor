@@ -1,6 +1,6 @@
 import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   composeSyntheticPrivateCatalog,
@@ -33,7 +33,8 @@ describe('external private-root composition', () => {
   it('discovers a synthetic manifest and writes only under the external root', async () => {
     const root = await privateRoot();
     const output = await composeSyntheticPrivateCatalog(root, process.cwd());
-    expect(output.startsWith(root)).toBe(true);
+    const outputRelation = relative(root, output);
+    expect(outputRelation.startsWith('..') || isAbsolute(outputRelation)).toBe(false);
     expect(JSON.parse(await readFile(output, 'utf8'))).toMatchObject({
       classification: 'private',
       synthetic: true,
