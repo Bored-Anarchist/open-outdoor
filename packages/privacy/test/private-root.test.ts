@@ -32,8 +32,9 @@ describe('external private-root composition', () => {
 
   it('discovers a synthetic manifest and writes only under the external root', async () => {
     const root = await privateRoot();
+    const validated = await validatePrivateRoot(root, process.cwd());
     const output = await composeSyntheticPrivateCatalog(root, process.cwd());
-    const outputRelation = relative(root, output);
+    const outputRelation = relative(validated.root, output);
     expect(outputRelation.startsWith('..') || isAbsolute(outputRelation)).toBe(false);
     expect(JSON.parse(await readFile(output, 'utf8'))).toMatchObject({
       classification: 'private',
