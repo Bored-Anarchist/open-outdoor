@@ -57,7 +57,7 @@ foreach ($relativePath in $requiredFiles) {
 
 $gitignore = $contents['.gitignore']
 foreach ($requiredPattern in @('.env', '.private/', 'private/', 'secrets/', 'credentials/', '*.key', '*.p12', '*.mobileprovision')) {
-    if ($gitignore -notmatch ('(?m)^' + [regex]::Escape($requiredPattern) + '$')) {
+    if ($gitignore -notmatch ('(?m)^' + [regex]::Escape($requiredPattern) + '\r?$')) {
         Add-Failure ".gitignore is missing the public-boundary pattern: $requiredPattern"
     }
 }
