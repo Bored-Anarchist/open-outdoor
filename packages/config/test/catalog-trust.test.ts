@@ -138,6 +138,11 @@ describe('T-REL-003 catalog trust and channel', () => {
       () => verifyCandidate({ manifestBytes: manifest }, policy(), 1),
       'SIGNATURE_MISSING',
     );
+    const malformed = { ...signedEnvelope(primary.privateKey), unexpected: true };
+    expectTrustError(
+      () => verifyCandidate({ manifestBytes: manifest, envelope: malformed }, policy(), 1),
+      'ENVELOPE_INVALID',
+    );
   });
 
   it('T-REL-003-C03 rejects altered content and an invalid signature', () => {
@@ -174,6 +179,10 @@ describe('T-REL-003 catalog trust and channel', () => {
     const envelope = signedEnvelope(primary.privateKey, {
       antiReplayVersion: fixture.antiReplayVersion,
     });
+    expectTrustError(
+      () => verifyCandidate({ manifestBytes: manifest, envelope }, policy(), -1),
+      'ANTI_REPLAY_STATE_INVALID',
+    );
     expectTrustError(
       () =>
         verifyCandidate(
