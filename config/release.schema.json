@@ -3,7 +3,7 @@
   "$id": "https://open-outdoor.invalid/schemas/release.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "tools", "gis", "ios", "channels", "regions", "schemas", "budgets"],
+  "required": ["schemaVersion", "tools", "gis", "ios", "channels", "regions", "schemas", "phase0", "budgets"],
   "properties": {
     "$schema": { "type": "string" },
     "schemaVersion": { "const": 1 },
@@ -57,6 +57,76 @@
       "properties": {
         "catalog": { "type": "integer", "minimum": 1 },
         "backup": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "phase0": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profileId", "referenceDevice", "tracker", "catalog"],
+      "properties": {
+        "profileId": { "const": "iphone14-ios26.2-phase0-v1" },
+        "referenceDevice": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model", "os"],
+          "properties": {
+            "model": { "const": "iPhone 14" },
+            "os": { "const": "iOS 26.2" }
+          }
+        },
+        "tracker": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "batchMaximumSeconds",
+            "recordingControlP95Ms",
+            "maximumCommittedDataGapSeconds",
+            "maximumCommittedDataGapBatches",
+            "screenOffResidentMemoryP95MiB",
+            "energy"
+          ],
+          "properties": {
+            "batchMaximumSeconds": { "const": 30 },
+            "recordingControlP95Ms": { "const": 500 },
+            "maximumCommittedDataGapSeconds": { "const": 30 },
+            "maximumCommittedDataGapBatches": { "const": 1 },
+            "screenOffResidentMemoryP95MiB": { "const": 150 },
+            "energy": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimumMeasuredRuns",
+                "minimumRunHours",
+                "balancedMaximumBatteryPercentPerHour",
+                "enduranceMaximumBatteryPercentPerHour",
+                "highAccuracyMaximumBatteryPercentPerHour",
+                "maximumUnapprovedRegressionPercent"
+              ],
+              "properties": {
+                "minimumMeasuredRuns": { "const": 3 },
+                "minimumRunHours": { "const": 4 },
+                "balancedMaximumBatteryPercentPerHour": { "const": 4 },
+                "enduranceMaximumBatteryPercentPerHour": { "const": 3 },
+                "highAccuracyMaximumBatteryPercentPerHour": { "type": "null" },
+                "maximumUnapprovedRegressionPercent": { "const": 10 }
+              }
+            }
+          }
+        },
+        "catalog": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "combinedInstalledMaximumBytes",
+            "minimumWorkspaceBytes",
+            "postActivationReserveBytes"
+          ],
+          "properties": {
+            "combinedInstalledMaximumBytes": { "const": 3221225472 },
+            "minimumWorkspaceBytes": { "const": 1073741824 },
+            "postActivationReserveBytes": { "const": 2147483648 }
+          }
+        }
       }
     },
     "budgets": {
