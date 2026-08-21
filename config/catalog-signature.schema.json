@@ -22,7 +22,10 @@
     "keyId": { "type": "string", "minLength": 1 },
     "antiReplayVersion": { "type": "integer", "minimum": 1 },
     "manifestSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "signedAt": { "type": "string", "format": "date-time" },
+    "signedAt": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+    },
     "signature": { "type": "string", "minLength": 1, "contentEncoding": "base64" }
   }
 }
