@@ -91,7 +91,7 @@ function fail(code: CatalogTrustErrorCode, message: string): never {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
- envelopeFieldNames = new Set([
+const envelopeFieldNames = new Set([
   'schemaVersion',
   'algorithm',
   'channel',
@@ -130,9 +130,7 @@ function parseEnvelope(value: unknown): CatalogSignatureEnvelope {
     typeof value.manifestSha256 !== 'string' ||
     !/^[a-f0-9]{64}$/.test(value.manifestSha256) ||
     typeof value.signedAt !== 'string' ||
-    !/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z$/.test(
-      value.signedAt,
-    ) ||
+    !/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z$/.test(value.signedAt) ||
     Number.isNaN(Date.parse(value.signedAt)) ||
     typeof value.signature !== 'string' ||
     value.signature.length === 0
