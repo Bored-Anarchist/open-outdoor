@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/catalog-trust.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "unsignedDevelopmentLabel", "channels"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "unsignedDevelopmentLabel": {
+      "const": "UNSIGNED DEVELOPMENT CATALOG — NOT FOR PRODUCTION"
+    },
+    "channels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["public", "local", "private"],
+      "properties": {
+        "public": { "$ref": "#/$defs/productionChannel" },
+        "local": { "$ref": "#/$defs/localChannel" },
+        "private": { "$ref": "#/$defs/productionChannel" }
+      }
+    }
+  },
+  "$defs": {
+    "baseChannel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trustRoot", "keySource", "allowUnsignedDevelopment"],
+      "properties": {
+        "trustRoot": { "type": "string", "minLength": 1 },
+        "keySource": { "type": "string", "minLength": 1 },
+        "allowUnsignedDevelopment": { "type": "boolean" }
+      }
+    },
+    "productionChannel": {
+      "allOf": [
+        { "$ref": "#/$defs/baseChannel" },
+        { "properties": { "allowUnsignedDevelopment": { "const": false } } }
+      ]
+    },
+    "localChannel": {
+      "allOf": [
+        { "$ref": "#/$defs/baseChannel" },
+        { "properties": { "allowUnsignedDevelopment": { "const": true } } }
+      ]
+    }
+  }
+}
