@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/phase0-gate.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "asOf", "profileId", "gateStatus", "packages", "budgets", "hostedCi"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "profileId": { "type": "string", "minLength": 1 },
+    "gateStatus": { "enum": ["passed", "blocked"] },
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["WP-001", "WP-002", "WP-003", "WP-004", "WP-005", "WP-006", "WP-007", "WP-008", "WP-009", "WP-010"],
+      "patternProperties": {
+        "^WP-00[1-9]$|^WP-010$": { "$ref": "#/$defs/evidenceItem" }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["BUD-REC-001", "BUD-REC-002", "BUD-REC-003", "BUD-MEM-001", "BUD-ENE-BALANCED", "BUD-ENE-ENDURANCE", "BUD-ENE-HIGH-ACCURACY"],
+      "patternProperties": {
+        "^BUD-[A-Z0-9-]+$": { "$ref": "#/$defs/evidenceItem" }
+      }
+    },
+    "hostedCi": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period", "avoidableJobsDetected", "report"],
+      "properties": {
+        "period": { "type": "string", "minLength": 1 },
+        "avoidableJobsDetected": { "type": "boolean" },
+        "report": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "evidenceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["accepted", "passed", "in-progress", "physical-pending", "blocked"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
