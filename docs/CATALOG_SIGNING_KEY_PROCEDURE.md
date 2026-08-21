@@ -1,6 +1,6 @@
 # Catalog signing key, rotation, and revocation procedure
 
-**Package:** WP-010  
+**Package:** WP-010
 **Status:** Accepted foundation; production key provisioning remains a release-owner operation
 
 ## Security boundary
