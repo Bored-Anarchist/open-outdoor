@@ -1,5 +1,3 @@
-import { createHash, createPublicKey, verify } from 'node:crypto';
-
 export const UNSIGNED_DEVELOPMENT_LABEL = 'UNSIGNED DEVELOPMENT CATALOG — NOT FOR PRODUCTION';
 
 export type CatalogChannel = 'public' | 'local' | 'private';
@@ -37,9 +35,19 @@ export interface CatalogCandidate {
   readonly developmentLabel?: string;
 }
 
+export interface CatalogCryptoProvider {
+  readonly sha256Hex: (input: Uint8Array) => string;
+  readonly verifyEd25519: (input: {
+    readonly payload: string;
+    readonly publicKeyPem: string;
+    readonly signatureBase64: string;
+  }) => boolean;
+}
+
 export type CatalogTrustErrorCode =
   | 'ALGORITHM_UNSUPPORTED'
   | 'CHANNEL_MISMATCH'
+  | 'CRYPTO_PROVIDER_FAILURE'
   | 'ENVELOPE_INVALID'
   | 'KEY_REVOKED'
   | 'KEY_UNTRUSTED'
@@ -123,43 +131,43 @@ function parseEnvelope(value: unknown): CatalogSignatureEnvelope {
   };
 }
 
-export function catalogManifestSha256(manifestBytes: Uint8Array): string {
-  return createHash('sha256').update(manifestBytes).digest('hex');
-}
-
 export function catalogSignaturePayload(
   envelope: Omit<CatalogSignatureEnvelope, 'signature'>,
-): Uint8Array {
-  return Buffer.from(
-    JSON.stringify([
-      'open-outdoor-catalog-signature-v1',
-      envelope.schemaVersion,
-      envelope.algorithm,
-      envelope.channel,
-      envelope.trustRoot,
-      envelope.keyId,
-      envelope.antiReplayVersion,
-      envelope.manifestSha256,
-      envelope.signedAt,
-    ]),
-    'utf8',
-  );
+): string {
+  return JSON.stringify([
+    'open-outdoor-catalog-signature-v1',
+    envelope.schemaVersion,
+    envelope.algorithm,
+    envelope.channel,
+    envelope.trustRoot,
+    envelope.keyId,
+    envelope.antiReplayVersion,
+    envelope.manifestSha256,
+    envelope.signedAt,
+  ]);
 }
 
-function decodeBase64(value: string): Buffer | undefined {
-  if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value)) {
-    return undefined;
+function isBase64(value: string): boolean {
+  return /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value);
+}
+
+function manifestDigest(manifestBytes: Uint8Array, crypto: CatalogCryptoProvider): string {
+  try {
+    const digest = crypto.sha256Hex(manifestBytes);
+    if (!/^[a-f0-9]{64}$/.test(digest)) throw new Error('invalid SHA-256 result');
+    return digest;
+  } catch {
+    fail('CRYPTO_PROVIDER_FAILURE', 'catalog SHA-256 provider failed closed');
   }
-  const decoded = Buffer.from(value, 'base64');
-  return decoded.toString('base64') === value ? decoded : undefined;
 }
 
 export function verifyCatalogCandidate(
   candidate: CatalogCandidate,
   policy: CatalogTrustPolicy,
   lastAcceptedVersion: number,
+  crypto: CatalogCryptoProvider,
 ): CatalogVerification {
-  const manifestSha256 = catalogManifestSha256(candidate.manifestBytes);
+  const manifestSha256 = manifestDigest(candidate.manifestBytes, crypto);
 
   if (candidate.envelope === undefined) {
     if (policy.channel !== 'local' || !policy.allowUnsignedDevelopment) {
@@ -203,20 +211,19 @@ export function verifyCatalogCandidate(
   if (key.status === 'revoked') {
     fail('KEY_REVOKED', 'catalog signing key has been revoked');
   }
-
-  const signature = decodeBase64(envelope.signature);
-  if (signature === undefined) fail('SIGNATURE_INVALID', 'catalog signature encoding is invalid');
+  if (!isBase64(envelope.signature)) {
+    fail('SIGNATURE_INVALID', 'catalog signature encoding is invalid');
+  }
 
   let valid = false;
   try {
-    valid = verify(
-      null,
-      catalogSignaturePayload(envelope),
-      createPublicKey(key.publicKeyPem),
-      signature,
-    );
+    valid = crypto.verifyEd25519({
+      payload: catalogSignaturePayload(envelope),
+      publicKeyPem: key.publicKeyPem,
+      signatureBase64: envelope.signature,
+    });
   } catch {
-    fail('SIGNATURE_INVALID', 'catalog signing key or signature is invalid');
+    fail('CRYPTO_PROVIDER_FAILURE', 'catalog signature provider failed closed');
   }
   if (!valid) fail('SIGNATURE_INVALID', 'catalog signature verification failed');
 
