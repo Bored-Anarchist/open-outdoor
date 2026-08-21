@@ -33,6 +33,9 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Data, privacy, and rights plan](DATA_PRIVACY_RIGHTS_PLAN.md) | Classification, source authorization, private storage, and publication gates | Privacy/rights owner |
 | [iOS data protection and backup](IOS_DATA_PROTECTION_AND_BACKUP.md) | File-protection classes, lock behavior, system-backup exclusions, and explicit recovery | iOS/privacy owner |
 | [iOS build and Windows sideload feasibility](IOS_SIDELOAD_FEASIBILITY.md) | Pinned unsigned build, Windows signing/install path, and pending physical-device evidence | iOS/build owner |
+| [iOS native spike procedure](IOS_NATIVE_SPIKE_PROCEDURE.md) | Windows candidate preparation and exact physical tracker/storage workoff | iOS/tracking owner |
+| [Phase 0 gate report](PHASE_0_GATE_REPORT.md) | WP-009 budget, risk, CI-usage, and phase-entry disposition | Project/release owner |
+| [Evidence index](evidence/README.md) | Work-package implementation and acceptance records | Quality lead |
 | [Diagnostics plan](DIAGNOSTICS_PLAN.md) | Local-only schema, redaction, retention, preview, export, and deletion | Privacy/quality owner |
 | [Public-boundary incident response](INCIDENT_RESPONSE.md) | Credential revocation, containment, private reporting, corrective action, and safe resumption | Security/privacy owner |
 | [Private extension guide](PRIVATE_EXTENSION_GUIDE.md) | Local Windows and private downstream composition workflows | Platform owner |

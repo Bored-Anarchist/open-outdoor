@@ -1,6 +1,6 @@
 # Risk Register
 
-**Status:** Initial proposed register  
+**Status:** Active register; Phase 0 gate reviewed 2026-08-21  
 **Scoring:** Probability (`P`) and impact (`I`) from 1–5; score = `P × I`
 
 ## 1. Active risks
@@ -38,7 +38,17 @@
 | `R-029` | Hosted CI minutes are exhausted by redundant pushes, broad matrices, schedules, or irrelevant expensive jobs | 4 | 3 | 12 | Local-first checks, path filters, concurrency cancellation, timeouts, fail-fast minimal matrices, candidate gates, usage review | Rising cancelled/duplicate minutes or macOS job on documentation-only change | Release/build owner |
 | `R-030` | Contributor names, personal email, locations, device IDs, or other identifying details become permanent public history | 3 | 5 | 15 | Public handles, privacy-protected commit addresses, account-bound attestation, content/metadata gates, incident removal process | Personal detail appears in commit metadata, issue, PR, fixture, log, or artifact | Privacy/rights owner |
 
-## 2. Risk response rules
+## 2. Phase 0 review — 2026-08-21
+
+WP-007 and WP-008 reduced implementation uncertainty but did not provide the required physical evidence, so no probability or impact score is lowered:
+
+- `R-001` remains open pending the full same-identity A→B refresh, data-retention, expiry, and restore workoff.
+- `R-002`, `R-003`, and `R-021` remain open pending iPhone 14/iOS 26.2 screen-lock, process-death, energy/thermal, protection-class, and backup-inventory evidence.
+- `R-009` and `R-024` now have deterministic activation, rollback, private-digest, and compatibility prechecks, but remain open pending native/device integration.
+- `R-029` is realized as a gate blocker: the reviewed interval contained 57 workflow runs, 8 failures, and 53.32 wall-clock minutes. Candidate-only macOS execution, local-first checks, and avoidable-job workoff are required before Phase 1.
+- WP-009 completed the review and published a `BLOCKED` Phase 0 result; acceptance cannot be inferred from implementation or contract tests alone.
+
+## 3. Risk response rules
 
 - Scores 15–25 require an explicit mitigation work package/test and phase-gate review.
 - Scores 8–14 require an owner and monitored trigger.
@@ -46,13 +56,13 @@
 - A realized privacy, rights, data-loss, safety, signing, or critical accessibility risk blocks the affected phase/release until disposition.
 - Risk score changes cite evidence, not optimism.
 
-## 3. Review cadence
+## 4. Review cadence
 
 - At planning baseline approval.
 - At work-package start and completion.
 - At each phase gate and release candidate.
 - On source terms/schema changes, security/privacy incidents, toolchain upgrades, or device/OS changes.
 
-## 4. Risk closure record
+## 5. Risk closure record
 
 A risk is closed only when the underlying condition is eliminated or accepted by an authorized owner with evidence, residual impact, and any monitoring transferred to another risk/operational control. Closed risks are retained for history.

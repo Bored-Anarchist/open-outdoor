@@ -2,6 +2,12 @@ import { assertCoordinate, type TrackPoint } from '@open-outdoor/shared';
 
 export type TrackingMode = 'balanced' | 'endurance' | 'high-accuracy';
 
+const trackingModes = new Set<TrackingMode>(['balanced', 'endurance', 'high-accuracy']);
+
+function isTrackingMode(value: unknown): value is TrackingMode {
+  return typeof value === 'string' && trackingModes.has(value as TrackingMode);
+}
+
 export interface TrackingAdapter {
   readonly start: () => Promise<void>;
   readonly stop: () => Promise<readonly TrackPoint[]>;
@@ -58,7 +64,11 @@ function replayFailure(code: TrackingReplayError['code'], message: string): neve
 }
 
 function validInstant(value: string): boolean {
-  return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(value) && !Number.isNaN(Date.parse(value));
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value)) return false;
+  const parsed = Date.parse(value);
+  if (Number.isNaN(parsed)) return false;
+  const canonical = value.includes('.') ? value : value.replace('Z', '.000Z');
+  return new Date(parsed).toISOString() === canonical;
 }
 
 function validateObservation(observation: TrackObservation, expectedSequence: number): void {
@@ -73,7 +83,10 @@ function validateObservation(observation: TrackObservation, expectedSequence: nu
     (observation.pressureKPa !== undefined &&
       (!Number.isFinite(observation.pressureKPa) || observation.pressureKPa <= 0))
   ) {
-    replayFailure('OBSERVATION_INVALID', `invalid tracking observation at sequence ${expectedSequence}`);
+    replayFailure(
+      'OBSERVATION_INVALID',
+      `invalid tracking observation at sequence ${expectedSequence}`,
+    );
   }
   assertCoordinate(observation.coordinate);
 }
@@ -95,7 +108,10 @@ export function replayTrackingBatches(
   lastCommittedSequence = 0,
 ): TrackingReplayResult {
   if (!Number.isSafeInteger(lastCommittedSequence) || lastCommittedSequence < 0) {
-    replayFailure('COMMITTED_STATE_INVALID', 'last committed tracking sequence must be a non-negative integer');
+    replayFailure(
+      'COMMITTED_STATE_INVALID',
+      'last committed tracking sequence must be a non-negative integer',
+    );
   }
 
   let sessionId: string | undefined;
@@ -105,11 +121,13 @@ export function replayTrackingBatches(
 
   for (const batch of batches) {
     if (
-      batch.sessionId.length === 0 ||
+      batch.sessionId.trim().length === 0 ||
+      !isTrackingMode(batch.mode) ||
       !validInstant(batch.createdAt) ||
       !Number.isSafeInteger(batch.firstSequence) ||
       batch.firstSequence < 1 ||
-      batch.observations.length === 0
+      batch.observations.length === 0 ||
+      !Number.isSafeInteger(batch.firstSequence + batch.observations.length - 1)
     ) {
       replayFailure('BATCH_INVALID', 'tracking batch metadata is invalid');
     }
@@ -199,6 +217,20 @@ export function evaluateEnergyEvidence(
   budget: EnergyBudget,
 ): EnergyEvaluation {
   const reasons: string[] = [];
+  if (
+    !isTrackingMode(budget.mode) ||
+    !Number.isSafeInteger(budget.minimumRuns) ||
+    budget.minimumRuns < 1 ||
+    !Number.isFinite(budget.minimumDurationHours) ||
+    budget.minimumDurationHours <= 0 ||
+    (budget.maximumBatteryPercentPerHour !== null &&
+      (!Number.isFinite(budget.maximumBatteryPercentPerHour) ||
+        budget.maximumBatteryPercentPerHour <= 0)) ||
+    !Number.isFinite(budget.maximumResidentMemoryP95MiB) ||
+    budget.maximumResidentMemoryP95MiB <= 0
+  ) {
+    reasons.push('energy budget is invalid');
+  }
   const runs = evidence.filter((run) => !run.isWarmup && run.mode === budget.mode);
   if (runs.length < budget.minimumRuns) {
     reasons.push(`requires at least ${budget.minimumRuns} measured runs`);
@@ -212,9 +244,15 @@ export function evaluateEnergyEvidence(
       run.runId.length === 0 ||
       !Number.isFinite(run.durationHours) ||
       run.durationHours < budget.minimumDurationHours ||
+      !Number.isFinite(run.batteryStartPercent) ||
+      !Number.isFinite(run.batteryEndPercent) ||
       run.batteryStartPercent < run.batteryEndPercent ||
       run.batteryStartPercent > 100 ||
-      run.batteryEndPercent < 0
+      run.batteryStartPercent < 0 ||
+      run.batteryEndPercent > 100 ||
+      run.batteryEndPercent < 0 ||
+      !Number.isFinite(run.residentMemoryP95MiB) ||
+      run.residentMemoryP95MiB < 0
     ) {
       reasons.push(`run ${run.runId || '<missing>'} has an invalid duration or battery sample`);
       return Number.NaN;
@@ -231,7 +269,10 @@ export function evaluateEnergyEvidence(
       reasons.push(`run ${run.runId} contains a release-blocking runtime condition`);
     }
     const rate = (run.batteryStartPercent - run.batteryEndPercent) / run.durationHours;
-    if (budget.maximumBatteryPercentPerHour !== null && rate > budget.maximumBatteryPercentPerHour) {
+    if (
+      budget.maximumBatteryPercentPerHour !== null &&
+      rate > budget.maximumBatteryPercentPerHour
+    ) {
       reasons.push(`run ${run.runId} exceeds the battery budget`);
     }
     return rate;

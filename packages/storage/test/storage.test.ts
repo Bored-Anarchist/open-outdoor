@@ -80,13 +80,16 @@ describe('T-INT-002 catalog lifecycle interruption matrix', () => {
     ['T-INT-002-C06', 'before-pointer-switch'],
   ];
 
-  it.each(checkpoints)('%s retains the old catalog before pointer activation', (_caseId, checkpoint) => {
-    expect(simulateCatalogActivation(initial, plan(), checkpoint)).toMatchObject({
-      activeCatalogId: 'catalog-a',
-      pointerSwitched: false,
-      userRecordDigests: initial.userRecordDigests,
-    });
-  });
+  it.each(checkpoints)(
+    '%s retains the old catalog before pointer activation',
+    (_caseId, checkpoint) => {
+      expect(simulateCatalogActivation(initial, plan(), checkpoint)).toMatchObject({
+        activeCatalogId: 'catalog-a',
+        pointerSwitched: false,
+        userRecordDigests: initial.userRecordDigests,
+      });
+    },
+  );
 
   it('T-INT-002-C07 rolls back a switched pointer when first launch is interrupted', () => {
     expect(simulateCatalogActivation(initial, plan(), 'after-pointer-switch')).toMatchObject({
@@ -104,16 +107,21 @@ describe('T-INT-002 catalog lifecycle interruption matrix', () => {
       userRecordDigests: initial.userRecordDigests,
     });
     expect(requiredCatalogFreeBytes(3 * GIB, 3 * GIB)).toBe(9 * GIB);
+    expect(() => requiredCatalogFreeBytes(Number.MAX_SAFE_INTEGER, 1)).toThrow(RangeError);
   });
 });
 
 describe('T-INT-006 current-plus-previous compatibility', () => {
   it('T-INT-006-C01 accepts current app, catalog, and backup versions', () => {
-    expect(() => preflightVersionCompatibility({ app: 2, catalog: 2, backup: 2 }, supported)).not.toThrow();
+    expect(() =>
+      preflightVersionCompatibility({ app: 2, catalog: 2, backup: 2 }, supported),
+    ).not.toThrow();
   });
 
   it('T-INT-006-C02 accepts the previous compatible versions', () => {
-    expect(() => preflightVersionCompatibility({ app: 1, catalog: 1, backup: 1 }, supported)).not.toThrow();
+    expect(() =>
+      preflightVersionCompatibility({ app: 1, catalog: 1, backup: 1 }, supported),
+    ).not.toThrow();
   });
 
   it.each([

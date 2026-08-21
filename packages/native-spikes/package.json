@@ -4,5 +4,10 @@
   "private": true,
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["ios", "expo-module.config.json", "index.js", "index.d.ts"]
+  "files": [
+    "ios",
+    "expo-module.config.json",
+    "index.js",
+    "index.d.ts"
+  ]
 }

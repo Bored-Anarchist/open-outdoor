@@ -78,7 +78,7 @@ internal final class OpenOutdoorStorageCoordinatorSpike {
       catalogRoot,
       protection: .completeUntilFirstUserAuthentication
     )
-    let resolved = catalogURL.standardizedFileURL
+    let resolved = catalogURL.resolvingSymlinksInPath().standardizedFileURL
     let rootPrefix = catalogRoot.path.hasSuffix("/") ? catalogRoot.path : catalogRoot.path + "/"
     guard resolved.path.hasPrefix(rootPrefix) else {
       throw OpenOutdoorStorageError.pathEscapesRoot

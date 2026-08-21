@@ -7,7 +7,9 @@ const result = evaluatePhase0Gate(record);
 console.log(`Phase 0 gate: ${result.status}`);
 for (const blocker of result.blockers) console.log(`- ${blocker}`);
 if (result.status !== record.gateStatus) {
-  console.error(`declared gate status ${record.gateStatus} does not match computed ${result.status}`);
+  console.error(
+    `declared gate status ${record.gateStatus} does not match computed ${result.status}`,
+  );
   process.exitCode = 2;
 } else if (result.status !== 'passed') {
   process.exitCode = 1;

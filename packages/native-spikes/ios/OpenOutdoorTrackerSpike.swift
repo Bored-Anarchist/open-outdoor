@@ -8,6 +8,11 @@ internal enum OpenOutdoorTrackingMode: String, Codable {
   case highAccuracy = "high-accuracy"
 }
 
+internal enum OpenOutdoorTrackerError: Error {
+  case alreadyTracking
+  case notTracking
+}
+
 private struct OpenOutdoorSpoolObservation: Codable {
   let sequence: Int64
   let recordedAt: Date
@@ -68,13 +73,18 @@ private final class OpenOutdoorActiveSpool {
   }
 }
 
-@MainActor
 internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegate {
   private let locationManager = CLLocationManager()
   private let altimeter = CMAltimeter()
   private var spool: OpenOutdoorActiveSpool?
   private var sequence: Int64 = 0
   private var currentPressureKPa: Double?
+  private(set) var currentSessionID: UUID?
+  private(set) var lastError: String?
+
+  var isTracking: Bool {
+    spool != nil
+  }
 
   override init() {
     super.init()
@@ -85,8 +95,12 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     locationManager.showsBackgroundLocationIndicator = true
   }
 
-  func start(mode: OpenOutdoorTrackingMode, sessionID: UUID = UUID()) throws {
-    guard spool == nil else { return }
+  func requestAlwaysAuthorization() {
+    locationManager.requestAlwaysAuthorization()
+  }
+
+  func start(mode: OpenOutdoorTrackingMode, sessionID: UUID = UUID()) throws -> String {
+    guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
     guard locationManager.authorizationStatus == .authorizedAlways else {
       throw NSError(
         domain: "OpenOutdoorTracker",
@@ -108,21 +122,34 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     }
 
     sequence = 0
+    lastError = nil
     spool = try OpenOutdoorActiveSpool(sessionID: sessionID)
+    currentSessionID = sessionID
     locationManager.startUpdatingLocation()
     if CMAltimeter.isRelativeAltitudeAvailable() {
       altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, _ in
         self?.currentPressureKPa = data?.pressure.doubleValue
       }
     }
+    return sessionID.uuidString
   }
 
-  func stop() throws {
+  func stop() throws -> Int64 {
+    guard spool != nil else { throw OpenOutdoorTrackerError.notTracking }
     locationManager.stopUpdatingLocation()
     altimeter.stopRelativeAltitudeUpdates()
-    try spool?.close()
-    spool = nil
-    currentPressureKPa = nil
+    defer {
+      spool = nil
+      currentPressureKPa = nil
+      currentSessionID = nil
+    }
+    do {
+      try spool?.close()
+    } catch {
+      lastError = error.localizedDescription
+      throw error
+    }
+    return sequence
   }
 
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -140,7 +167,13 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
       do {
         try spool?.append(observation)
       } catch {
+        lastError = error.localizedDescription
         manager.stopUpdatingLocation()
+        altimeter.stopRelativeAltitudeUpdates()
+        try? spool?.close()
+        spool = nil
+        currentPressureKPa = nil
+        currentSessionID = nil
       }
     }
   }

@@ -3,7 +3,17 @@
   "$id": "https://open-outdoor.invalid/schemas/release.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "tools", "gis", "ios", "channels", "regions", "schemas", "phase0", "budgets"],
+  "required": [
+    "schemaVersion",
+    "tools",
+    "gis",
+    "ios",
+    "channels",
+    "regions",
+    "schemas",
+    "phase0",
+    "budgets"
+  ],
   "properties": {
     "$schema": { "type": "string" },
     "schemaVersion": { "const": 1 },

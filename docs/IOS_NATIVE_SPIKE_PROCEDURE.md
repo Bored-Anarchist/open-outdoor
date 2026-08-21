@@ -11,7 +11,7 @@
 
 ## Tracker protocol
 
-1. Warm up once, then record at least three independent four-hour screen-off runs for Balanced and three for Endurance.
+1. Open **Open Outdoor native feasibility**, request Always Location, choose the mode, and use the native Start/Stop controls. Warm up once, then record at least three independent four-hour screen-off runs for Balanced and three for Endurance.
 2. Record start/stop acknowledgement, battery start/end, battery health, p95 resident memory, temperature, radio/GPS conditions, travelled distance, screen time, wakeups/retries, and thermal state.
 3. During dedicated shorter cases, lock the screen, suspend/foreground, enter poor GPS, enable airplane/weak-cell conditions, terminate the process after a known checkpoint, relaunch, and verify sequence/gap state.
 4. Stop recording and prove no later location/barometer observations are appended.

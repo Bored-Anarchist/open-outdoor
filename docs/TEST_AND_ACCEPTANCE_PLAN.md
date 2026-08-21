@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** Proposed  
+**Status:** In progress; WP-007/WP-008 prechecks implemented, physical evidence pending  
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
@@ -90,9 +90,39 @@ Cases `T-INT-002-C01` through `C08` cover activation boundaries; `T-INT-006-C01`
 
 Exercise permission changes, pause/resume, OS suspension, screen lock, process termination, duplicate/out-of-order batches, poor GPS, low battery, and relaunch. The saved activity must have an explainable gap/quality state and must not invent distance/elevation.
 
+WP-007 assigns these exact cases:
+
+- `T-PHY-001-C01`: replay contiguous sequenced batches without loss or reordering.
+- `T-PHY-001-C02`: produce the same committed order from out-of-order delivery.
+- `T-PHY-001-C03`: accept byte-equivalent duplicate sequences idempotently.
+- `T-PHY-001-C04`: reject a conflicting duplicate sequence.
+- `T-PHY-001-C05`: report missing sequence ranges instead of inventing samples.
+- `T-PHY-001-C06`: reject invalid state, timestamp, coordinate, accuracy, or observation sequencing.
+- `T-PHY-001-C07`: on the reference iPhone, preserve the declared screen-off batch/durability bound through lock, suspension, weak/absent GPS, and radio changes.
+- `T-PHY-001-C08`: on the reference iPhone, terminate and relaunch during an active session with no silent loss or duplicate acceptance.
+- `T-PHY-001-C09`: on the reference iPhone, permission loss/recovery and explicit stop leave an explainable state and no unintended sensor session.
+
+Cases C01–C06 are deterministic Windows contract prechecks. They cannot pass C07–C09 or the physical suite by substitution.
+
+The energy evaluator uses `T-PHY-002-C01` through `C04`: accept three non-warm-up four-hour Balanced runs within the binding budget; reject any thermal/retry/background/stop/memory/battery failure; keep High Accuracy blocked without an approved measured budget; and exclude warm-up runs from repetition counts. These Windows evaluator prechecks establish the fail-closed calculation only; each result still requires the physical run evidence named by the suite.
+
 ### 4.3 Catalog interruption matrix
 
 Interrupt before/after copy, checksum, compatibility, remap validation, transaction commit, active pointer switch, and first-launch confirmation. Each point must retain either the old known-good catalog or the fully validated new catalog.
+
+WP-008 assigns these exact integration cases:
+
+- `T-INT-001-C01`: every store has an explicit protection class and backup-exclusion policy.
+- `T-INT-001-C02`: catalog handles expose no writable capability; user storage remains independently writable with WAL.
+- `T-INT-002-C01`–`C06`: interrupt before copy, after copy, after checksum, after compatibility, after remap validation, and before pointer switch; retain the old known-good catalog and private digest.
+- `T-INT-002-C07`: roll back a switched pointer when first launch is interrupted or fails.
+- `T-INT-002-C08`: activate the fully validated catalog without changing private records.
+- `T-INT-006-C01`: accept current app/catalog/backup versions.
+- `T-INT-006-C02`: accept the previous compatible versions.
+- `T-INT-006-C03`–`C05`: reject unsupported app, catalog, and backup versions before mutation.
+- `T-INT-006-C06`: reject malformed support state before mutation.
+
+The same preflight enforces the exact combined-catalog ceiling and free-space formula from the non-functional budgets.
 
 ### 4.4 Privacy/publication failure
 
@@ -105,6 +135,15 @@ Change an active source to expired/revoked, remove offline/public permission, sh
 ### 4.6 iOS protection and system-backup inspection
 
 On the physical reference device, create an active recording, sealed activity, attachment, public/private catalog, diagnostic buffer, and explicit encrypted backup. Verify each filesystem protection class and backup-exclusion attribute, lock the device before first unlock and after unlock where reproducible, confirm active spool continuity and sealed private-data denial, inspect the system backup inventory for absence, and restore only from the explicit backup. These are `T-PHY-005-C01` through `C08`; a browser or simulator cannot substitute.
+
+- `T-PHY-005-C01`: active spool and checkpoint use `completeUntilFirstUserAuthentication` and are excluded from system backup.
+- `T-PHY-005-C02`: sealed private SQLite main/WAL/SHM use `complete` and are excluded.
+- `T-PHY-005-C03`: attachments, diagnostics, staging, and explicit-backup temporary files use their declared classes and are excluded.
+- `T-PHY-005-C04`: public/private catalogs retain declared protection and exclusion after copy, rename, and activation.
+- `T-PHY-005-C05`: after first unlock, screen-lock recording continues through the active spool while sealed private data remains unavailable.
+- `T-PHY-005-C06`: pre-first-unlock behavior after reboot fails safely and is explicitly disclosed.
+- `T-PHY-005-C07`: inspected system-backup inventory contains none of the excluded artifacts and uninstall behavior matches the warning.
+- `T-PHY-005-C08`: supported recovery succeeds only through the explicit encrypted backup; wrong key, tamper, interruption, or unsupported version does not mutate existing data.
 
 ### 4.7 Private CI and catalog trust
 

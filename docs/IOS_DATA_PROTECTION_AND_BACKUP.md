@@ -1,7 +1,8 @@
 # iOS Data Protection and Backup Policy
 
-**Status:** Accepted planning baseline; library/API details require ADR implementation  
+**Status:** Implementation foundation complete; physical inspection and restore evidence pending  
 **Goal:** Preserve locked-screen recording while keeping sensitive location data out of implicit system backups
+**Implementation:** WP-007/WP-008 add the protected native active spool, explicit file-policy helper, split SQLite capability boundary, and post-activation attribute reapplication. `T-PHY-005-C01`–`C08` still require the pinned iPhone; the Swift/Windows checks are not physical acceptance.
 
 ## 1. Policy decisions
 

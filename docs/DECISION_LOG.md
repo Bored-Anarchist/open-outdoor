@@ -1,6 +1,6 @@
 # Architecture and Product Decision Log
 
-**Status:** Proposed baseline
+**Status:** Active baseline; Phase 0 implementation decisions updated 2026-08-21
 
 ## 1. Accepted scope decisions
 
@@ -40,13 +40,13 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 
 Only ADR-012 through ADR-015 and ADR-036 block `WP-002`. Other decisions are made by the package that has the evidence needed to choose safely; this removes the earlier circular dependency between bootstrap and storage/catalog decisions.
 
-| ID | Decision needed | Options to evaluate | Acceptance factors | Target package |
-| --- | --- | --- | --- | --- |
-| `ADR-016` | Spatial staging implementation | PostgreSQL/PostGIS or proven equivalent | Geometry operations, reproducibility, Windows setup, scale | WP-201 |
-| `ADR-017` | SQLite/native storage library | Supported RN/native options | WAL, transactions, read-only attach/query, migrations, performance | First decision task in WP-008 |
-| `ADR-018` | Catalog/tile archive format | SQLite/MBTiles/PMTiles-compatible options | MapLibre support, random access, integrity, size, atomic activation | First decision task in WP-008; reconfirm at WP-301 |
-| `ADR-021` | Native tracker bridge/event protocol | TurboModule/native module alternatives | Background durability, batching, versioning, testability | WP-007/WP-103 |
-| `ADR-022` | Backup crypto/container libraries | Platform/vetted library choices | Authenticated encryption, memory-hard KDF, streaming, migration | WP-107 |
+| ID | Decision | Status | Evidence and follow-up |
+| --- | --- | --- | --- |
+| `ADR-016` | Spatial staging implementation remains open between PostgreSQL/PostGIS and a proven equivalent | Proposed | Decide in WP-201 using geometry, reproducibility, Windows setup, and scale evidence |
+| `ADR-017` | Use native system SQLite3 behind the Swift storage coordinator; writable user storage uses WAL while catalog handles open with `SQLITE_OPEN_READONLY` | Accepted | WP-008 contract tests enforce capability separation; physical performance and production migrations continue in WP-102/WP-303 |
+| `ADR-018` | Use a versioned SQLite catalog with an MBTiles-compatible initial tile archive and atomic pointer activation | Accepted | WP-008 proves compatibility, integrity, space, activation, and rollback rules; reconsider PMTiles with WP-301 evidence |
+| `ADR-021` | Use an autolinked Expo Swift module with versioned, sequenced, idempotent native batches | Accepted for the spike | WP-007 proves replay/durability rules; WP-103 defines the production JS event surface and lifecycle integration |
+| `ADR-022` | Backup crypto/container libraries remain open among vetted platform/library choices | Proposed | Decide in WP-107 using authenticated encryption, memory-hard KDF, streaming, and migration evidence |
 
 ## 3. Later decisions
 

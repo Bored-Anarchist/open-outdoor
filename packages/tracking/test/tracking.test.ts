@@ -78,6 +78,20 @@ describe('T-PHY-001 deterministic native tracking replay', () => {
   it('T-PHY-001-C06 rejects invalid committed state and observation sequencing', () => {
     expectReplayError(() => replayTrackingBatches([], -1), 'COMMITTED_STATE_INVALID');
     expectReplayError(() => replayTrackingBatches([batch(1, [2])]), 'OBSERVATION_INVALID');
+    expectReplayError(
+      () => replayTrackingBatches([{ ...batch(1, [1]), mode: 'unknown' as TrackingBatch['mode'] }]),
+      'BATCH_INVALID',
+    );
+    expectReplayError(
+      () =>
+        replayTrackingBatches([
+          {
+            ...batch(1, [1]),
+            observations: [{ ...observation(1), recordedAt: '2026-02-31T12:00:01.000Z' }],
+          },
+        ]),
+      'OBSERVATION_INVALID',
+    );
   });
 });
 
@@ -121,23 +135,30 @@ describe('T-PHY-002 energy and thermal protocol evaluation', () => {
     );
     expect(result.status).toBe('blocked');
     expect(result.reasons.join(' ')).toMatch(/release-blocking/);
+
+    const malformed = evaluateEnergyEvidence(
+      [run('invalid', { batteryStartPercent: Number.NaN, residentMemoryP95MiB: Number.NaN })],
+      { ...balancedBudget, minimumRuns: 1 },
+    );
+    expect(malformed.status).toBe('blocked');
+    expect(malformed.reasons.join(' ')).toMatch(/invalid duration or battery sample/);
   });
 
   it('T-PHY-002-C03 keeps High Accuracy blocked until its budget is approved', () => {
     expect(
-      evaluateEnergyEvidence(
-        [run('ha', { mode: 'high-accuracy' })],
-        { ...balancedBudget, mode: 'high-accuracy', minimumRuns: 1, maximumBatteryPercentPerHour: null },
-      ).status,
+      evaluateEnergyEvidence([run('ha', { mode: 'high-accuracy' })], {
+        ...balancedBudget,
+        mode: 'high-accuracy',
+        minimumRuns: 1,
+        maximumBatteryPercentPerHour: null,
+      }).status,
     ).toBe('blocked');
   });
 
   it('T-PHY-002-C04 excludes warm-up runs from the repetition count', () => {
     expect(
-      evaluateEnergyEvidence(
-        [run('warm', { isWarmup: true }), run('a'), run('b')],
-        balancedBudget,
-      ).status,
+      evaluateEnergyEvidence([run('warm', { isWarmup: true }), run('a'), run('b')], balancedBudget)
+        .status,
     ).toBe('blocked');
   });
 });

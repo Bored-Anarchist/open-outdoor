@@ -92,7 +92,10 @@ export interface VersionCandidate {
   readonly backup: number;
 }
 
-function acceptsVersion(version: number, range: { readonly current: number; readonly previous: number }): boolean {
+function acceptsVersion(
+  version: number,
+  range: { readonly current: number; readonly previous: number },
+): boolean {
   return Number.isSafeInteger(version) && (version === range.current || version === range.previous);
 }
 
@@ -139,12 +142,15 @@ export function requiredCatalogFreeBytes(
   ) {
     throw new RangeError('catalog byte counts must be non-negative safe integers');
   }
-  return (
+  const required =
     currentActiveCombinedBytes +
     incomingCombinedBytes +
     Math.max(GIB, Math.ceil(incomingCombinedBytes * 0.25)) +
-    2 * GIB
-  );
+    2 * GIB;
+  if (!Number.isSafeInteger(required)) {
+    throw new RangeError('catalog free-space result exceeds the safe integer range');
+  }
+  return required;
 }
 
 export type ActivationCheckpoint =
@@ -202,7 +208,10 @@ export function simulateCatalogActivation(
     plan.availableFreeBytes <
     requiredCatalogFreeBytes(plan.currentActiveCombinedBytes, plan.incomingCombinedBytes)
   ) {
-    throw new StorageBoundaryError('FREE_SPACE_INSUFFICIENT', 'catalog activation free-space preflight failed');
+    throw new StorageBoundaryError(
+      'FREE_SPACE_INSUFFICIENT',
+      'catalog activation free-space preflight failed',
+    );
   }
   if (!plan.remapValid) {
     throw new StorageBoundaryError('COMPATIBILITY_REJECTED', 'catalog remap validation failed');

@@ -1,11 +1,11 @@
 # Non-Functional Budgets and Objective Acceptance
 
-**Status:** Provisional numeric baseline; Phase 0 measurements must confirm or supersede values before Phase 1
+**Status:** Binding Phase 0 thresholds; required physical measurements remain pending
 
 ## 1. Rules
 
 - A budget is binding when recorded in the machine-readable release configuration with an environment/profile ID.
-- Phase 0 may replace a provisional number only through an ADR with measurement evidence and updated RTM/tests/risks.
+- A binding value may change only through an ADR with measurement evidence and updated RTM/tests/risks.
 - Phase 1 cannot start until every `Phase 1 prerequisite` budget below is binding.
 - Release evidence reports median, p95 where meaningful, worst observed, repetitions, and raw private evidence location.
 - A result measured on browser/simulator cannot satisfy a physical iPhone budget.
@@ -54,7 +54,7 @@ Defaults are configurable downward by source; raising them requires a security/p
 
 - Each mode uses at least three valid four-hour screen-off runs under the pinned representative profile after one warm-up run.
 - Record median, worst, temperature range, battery health, radio/GPS conditions, travelled distance, screen time, and native-baseline delta.
-- Provisional targets remain ≤ 4% battery/hour Balanced and ≤ 3% Endurance.
+- Binding Phase 0 targets are ≤ 4% battery/hour Balanced and ≤ 3% Endurance.
 - High Accuracy receives a measured published budget before release; it is not accepted as “unbounded.”
 - A release regression greater than 10% relative to the binding mode budget or native-overhead baseline requires explanation and explicit budget approval.
 - Any thermal warning, continuous retry, unintended background session, or missed stop fails regardless of battery percentage.
@@ -84,4 +84,4 @@ Named suites are containers. Executable cases use `T-<LEVEL>-NNN-C<two digits>`,
 
 ## 9. Phase 0 closure
 
-WP-009 must publish the binding release-config values, device/profile IDs, measurement procedure, deviations from these provisional values, and risk disposition. Until then the project remains at technical-prototype status.
+WP-009 published the binding release-config values, iPhone 14/iOS 26.2 profile, measurement procedure, and risk disposition in the Phase 0 gate record and report. The review result is `BLOCKED`: WP-007/WP-008 physical runs and protection/backup inspection remain incomplete, High Accuracy has no approved measured budget, and avoidable hosted-CI work was detected. Phase 1 must not be scheduled until a later gate record passes every blocking item.
