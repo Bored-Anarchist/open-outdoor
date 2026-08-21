@@ -581,7 +581,7 @@ Sharing is always explicit and offers sensitive-endpoint/metadata removal. Expor
 
 ## 14. Battery and field endurance
 
-Phase 0 establishes numeric energy baselines on the pinned reference device and OS for idle, screen-off recording modes, periodic map checks, continuous map use at recorded brightness, good/poor GPS, airplane mode, and weak-cellular conditions. Results record OS/build, app commit, battery health, start/end charge, temperature, radio state, screen time/brightness, mode, GPS conditions, duration, and distance.
+Phase 0 and Phase 1 implement energy-conscious behavior but do not establish, test, or claim numeric battery-life or thermal acceptance. Physical energy characterization is deferred to WP-307 and WP-503, after representative maps, UI, and field workflows exist. Deferral does not permit continuous polling, sensors outside an active recording, or silent selection of High Accuracy.
 
 Tracking modes are:
 
@@ -589,7 +589,7 @@ Tracking modes are:
 - **Endurance:** reduced GPS/UI frequency while retaining low-frequency barometric quality; and
 - **High Accuracy:** explicit temporary dense tracking, never the silent default.
 
-Starting aspirations are at most 4% battery per hour in Balanced and 3% in Endurance during representative offline screen-off tracking, but they become release thresholds only after a minimal native tracker proves them realistic.
+No numeric battery-per-hour threshold is binding in Phase 0 or Phase 1. WP-307/WP-503 must define and approve representative protocols and thresholds before any endurance claim or production release.
 
 Location sampling prefers movement-driven updates, suitable fitness activity type, distance filters, and stationarity over fixed high-frequency polling. Lightweight native filtering rejects low-value duplicates and delivers bounded batches. When conserving energy, the app reduces GPS density, UI/stat refresh, map rendering, animation, and nonessential motion work before dropping low-frequency barometric sampling. It starts sensors only for active recording and stops them immediately afterward.
 
@@ -597,7 +597,7 @@ SQLite WAL batches amortize writes without risking substantial loss. Spatial ind
 
 The app shows estimated endurance, selected mode, GPS quality, Low Power Mode, and provisioning validity; supports a one-tap lower-power switch; warns when battery or signing validity is insufficient for a planned duration; and creates a durable checkpoint before critical battery. Low Power Mode or poor GPS does not automatically stop a recording.
 
-Physical validation includes repeated four-hour screen-off tests, poor sky view, stationarity, cold conditions, Low Power Mode, offline maps, airplane mode, and foreground/background transitions. Unexplained wakeups, continuous retries, thermal warnings, or missed stop events block release.
+Phase 0 physical tracker validation covers recording correctness, screen-lock/background behavior, process recovery, stop behavior, and a 30-minute screen-off memory smoke. Battery percentage, thermal endurance, and multi-hour energy runs are not current acceptance criteria. WP-307/WP-503 restore representative long-duration energy and thermal validation before production.
 
 ## 15. Cross-platform QA boundary
 
@@ -714,7 +714,7 @@ The machine-readable release configuration pins Node.js, package manager, React 
 
 Every release records the exact iOS version and physical/simulator matrix tested. “Latest” versions are evaluated in an upgrade branch rather than inherited from a hosted-runner change. Lockfiles/native resolutions are committed, and CI fails when the selected runner/Xcode or generated native project drifts from declared configuration.
 
-Toolchain changes rerun signing, refresh/upgrade retention, background tracking, private database migration, offline bundle, rights/privacy gates, energy baseline, and physical smoke tests before becoming the new pin. Security/device-support needs may require an upgrade, but the decision and recalibrated budgets are recorded in release notes.
+Toolchain changes rerun signing, refresh/upgrade retention, background tracking, private database migration, offline bundle, rights/privacy gates, energy-conscious implementation checks, and physical smoke tests before becoming the new pin. After WP-307/WP-503 establishes measured energy acceptance, toolchain changes also rerun the applicable energy characterization. Security/device-support needs may require an upgrade, but the decision and recalibrated budgets are recorded in release notes.
 
 ## 20. User experience and accessibility
 
@@ -760,18 +760,18 @@ Package accountability, required roles, capacity, hardware profiles, and cost ca
 - Prove a clean public clone builds and tests on Windows with synthetic fixtures and no private inputs.
 - Prove a private Windows root can add a synthetic “private” connector and pack without writing any private artifact into the public checkout.
 - Prove the private downstream-repository workflow can incorporate a public upstream update without exposing private content.
-- Produce and install an iOS feasibility build; prove background location/altimeter collection, refresh/upgrade data retention, exact provisioning expiration, catalog remap/promotion behavior, rollback, and initial energy baselines on the physical reference device.
+- Produce and install an iOS feasibility build; prove background location/altimeter collection, refresh/upgrade data retention, exact provisioning expiration, catalog remap/promotion behavior, and rollback on the physical reference device.
 - Install version A and seed a private activity, `UserTrail`, reference association, and overlay. Build version B with the same channel identity, a changed catalog, canonical-ID remap, and promotion link; refresh/re-sign/upgrade; then verify private records survive, links update transactionally or enter review, composed queries suppress promoted duplicates without deleting originals, and catalog activation never cross-writes the private database.
 - Validate the compressed-artifact ceiling through the selected Windows sign/install/refresh path and record install, copy, activation, rollback, and first-launch times.
-- Build the minimal native tracker needed for repeatable idle, screen-off, periodic-map, map-on, poor-GPS, airplane, and weak-cellular energy baselines and use measurements to establish numeric release budgets.
+- Build the minimal native tracker with active-recording-only sensors, explicit High Accuracy, lower-frequency Balanced/Endurance behavior, and no continuous polling; defer measured energy acceptance to WP-307/WP-503.
 
 **Exit gate:** Phase 1 does not begin until public reproducibility, both private composition paths, repository leak controls, signing/refresh retention, physical background tracking, iOS protection/backup inspection, catalog trust, compatibility/downgrade behavior, and every Phase 1 prerequisite budget are demonstrated and committed.
 
 ### Phase 1 — recorder and private data vertical slice
 
-- Application shell, private SQLite activity/`UserTrail` schema, crash recovery, native event batching, adaptive modes, calibrated energy telemetry, versioned distance/elevation calculations, pause/resume/finish, local library, association/overlay model, and activity-to-user-trail flow.
+- Application shell, private SQLite activity/`UserTrail` schema, crash recovery, native event batching, energy-conscious adaptive modes without battery-life claims, versioned distance/elevation calculations, pause/resume/finish, local library, association/overlay model, and activity-to-user-trail flow.
 - Secure import/export, sensitive endpoint trimming, encrypted backup/restore skeleton, and a fixture-backed offline map.
-- Synthetic, recorded-replay, and physical elevation fixtures; four-hour tracking tests; and the MVP safety/accessibility states on the physical device.
+- Synthetic, recorded-replay, and physical elevation fixtures; a 30-minute screen-off memory smoke; and the MVP safety/accessibility states on the physical device.
 - Tests proving private activity data never enters reference catalogs, public logs, or test artifacts.
 
 ### Phase 2 — connector framework and first authoritative public data

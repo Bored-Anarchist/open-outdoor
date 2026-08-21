@@ -46,13 +46,14 @@
       "maximumCommittedDataGapSeconds": 30,
       "maximumCommittedDataGapBatches": 1,
       "screenOffResidentMemoryP95MiB": 150,
-      "energy": {
-        "minimumMeasuredRuns": 3,
-        "minimumRunHours": 4,
-        "balancedMaximumBatteryPercentPerHour": 4,
-        "enduranceMaximumBatteryPercentPerHour": 3,
-        "highAccuracyMaximumBatteryPercentPerHour": null,
-        "maximumUnapprovedRegressionPercent": 10
+      "energyPolicy": {
+        "acceptancePhase": "deferred-field-hardening",
+        "deferredWorkPackages": ["WP-307", "WP-503"],
+        "sensorsOnlyDuringActiveRecording": true,
+        "continuousPollingAllowed": false,
+        "highAccuracyRequiresExplicitSelection": true,
+        "balancedDistanceFilterMeters": 10,
+        "enduranceDistanceFilterMeters": 25
       }
     },
     "catalog": {

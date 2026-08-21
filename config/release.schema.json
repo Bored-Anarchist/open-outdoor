@@ -93,7 +93,7 @@
             "maximumCommittedDataGapSeconds",
             "maximumCommittedDataGapBatches",
             "screenOffResidentMemoryP95MiB",
-            "energy"
+            "energyPolicy"
           ],
           "properties": {
             "batchMaximumSeconds": { "const": 30 },
@@ -101,24 +101,32 @@
             "maximumCommittedDataGapSeconds": { "const": 30 },
             "maximumCommittedDataGapBatches": { "const": 1 },
             "screenOffResidentMemoryP95MiB": { "const": 150 },
-            "energy": {
+            "energyPolicy": {
               "type": "object",
               "additionalProperties": false,
               "required": [
-                "minimumMeasuredRuns",
-                "minimumRunHours",
-                "balancedMaximumBatteryPercentPerHour",
-                "enduranceMaximumBatteryPercentPerHour",
-                "highAccuracyMaximumBatteryPercentPerHour",
-                "maximumUnapprovedRegressionPercent"
+                "acceptancePhase",
+                "deferredWorkPackages",
+                "sensorsOnlyDuringActiveRecording",
+                "continuousPollingAllowed",
+                "highAccuracyRequiresExplicitSelection",
+                "balancedDistanceFilterMeters",
+                "enduranceDistanceFilterMeters"
               ],
               "properties": {
-                "minimumMeasuredRuns": { "const": 3 },
-                "minimumRunHours": { "const": 4 },
-                "balancedMaximumBatteryPercentPerHour": { "const": 4 },
-                "enduranceMaximumBatteryPercentPerHour": { "const": 3 },
-                "highAccuracyMaximumBatteryPercentPerHour": { "type": "null" },
-                "maximumUnapprovedRegressionPercent": { "const": 10 }
+                "acceptancePhase": { "const": "deferred-field-hardening" },
+                "deferredWorkPackages": {
+                  "type": "array",
+                  "prefixItems": [{ "const": "WP-307" }, { "const": "WP-503" }],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "sensorsOnlyDuringActiveRecording": { "const": true },
+                "continuousPollingAllowed": { "const": false },
+                "highAccuracyRequiresExplicitSelection": { "const": true },
+                "balancedDistanceFilterMeters": { "const": 10 },
+                "enduranceDistanceFilterMeters": { "const": 25 }
               }
             }
           }

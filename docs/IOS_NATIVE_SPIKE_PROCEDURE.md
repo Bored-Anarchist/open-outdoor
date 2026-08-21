@@ -11,11 +11,13 @@
 
 ## Tracker protocol
 
-1. Open **Open Outdoor native feasibility**, request Always Location, choose the mode, and use the native Start/Stop controls. Warm up once, then record at least three independent four-hour screen-off runs for Balanced and three for Endurance.
-2. Record start/stop acknowledgement, battery start/end, battery health, p95 resident memory, temperature, radio/GPS conditions, travelled distance, screen time, wakeups/retries, and thermal state.
-3. During dedicated shorter cases, lock the screen, suspend/foreground, enter poor GPS, enable airplane/weak-cell conditions, terminate the process after a known checkpoint, relaunch, and verify sequence/gap state.
+1. Open **Open Outdoor native feasibility**, request Always Location, choose Balanced or Endurance, and use the native Start/Stop controls.
+2. Record start/stop acknowledgement and p95 resident memory during one 30-minute screen-off smoke. Battery percentage and thermal endurance are not acceptance evidence in Phase 0/Phase 1.
+3. During dedicated functional cases, lock the screen, suspend/foreground, enter poor GPS, enable airplane/weak-cell conditions, terminate the process after a known checkpoint, relaunch, and verify sequence/gap state.
 4. Stop recording and prove no later location/barometer observations are appended.
-5. Measure High Accuracy separately; keep the mode blocked until a limit is approved.
+5. Confirm mode behavior by source/config inspection: High Accuracy is explicit, Balanced uses a 10 m distance filter, Endurance uses 25 m, sensors run only during active recording, and no continuous polling is introduced.
+
+Full battery/thermal characterization is deferred to WP-307/WP-503 and must not be inferred from this workoff.
 
 ## Protection and backup inspection
 

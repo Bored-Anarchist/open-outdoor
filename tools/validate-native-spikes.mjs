@@ -21,6 +21,7 @@ const mobileApp = await text('apps/mobile/App.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
 const policy = await text('packages/native-spikes/ios/OpenOutdoorFilePolicy.swift');
 const lockfile = await text('pnpm-lock.yaml');
+const release = JSON.parse(await text('config/release.json'));
 
 if (mobilePackage.dependencies['@open-outdoor/native-spikes'] !== 'workspace:*') {
   throw new Error('mobile must depend on the autolinked native spike workspace package');
@@ -35,6 +36,28 @@ requireText(tracker, 'allowsBackgroundLocationUpdates = true', 'tracker');
 requireText(tracker, 'CMAltimeter', 'tracker');
 requireText(tracker, 'completeUntilFirstUserAuthentication', 'tracker');
 requireText(tracker, 'try fileHandle.synchronize()', 'tracker');
+for (const token of [
+  '.balanced',
+  '.endurance',
+  '.highAccuracy',
+  'distanceFilter = 10',
+  'distanceFilter = 25',
+  'startUpdatingLocation()',
+  'stopUpdatingLocation()',
+  'startRelativeAltitudeUpdates',
+  'stopRelativeAltitudeUpdates()',
+]) {
+  requireText(tracker, token, 'energy-conscious tracker');
+}
+const energyPolicy = release.phase0.tracker.energyPolicy;
+if (
+  energyPolicy.acceptancePhase !== 'deferred-field-hardening' ||
+  energyPolicy.continuousPollingAllowed !== false ||
+  energyPolicy.sensorsOnlyDuringActiveRecording !== true ||
+  energyPolicy.highAccuracyRequiresExplicitSelection !== true
+) {
+  throw new Error('release configuration must retain the deferred energy-conscious tracker policy');
+}
 for (const functionName of [
   'requestAlwaysAuthorization',
   'startTracking',

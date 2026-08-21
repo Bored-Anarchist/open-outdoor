@@ -8,7 +8,7 @@
 | WP-004 | [External private root](WP-004.md) | Accepted |
 | WP-005 | [Private downstream workflow](WP-005.md) | Accepted |
 | WP-006 | [Windows sideload feasibility](WP-006.md) | Accepted |
-| WP-007 | [Native tracker and energy baseline](WP-007.md) | Implementation complete; physical acceptance pending |
+| WP-007 | [Native tracker and durability spike](WP-007.md) | Implementation complete; physical acceptance pending |
 | WP-008 | [Storage and compatibility spike](WP-008.md) | Implementation complete; physical acceptance pending |
 | WP-009 | [Phase 0 gate review](WP-009.md) | Review complete; Phase 1 blocked |
 | WP-010 | [Catalog trust](WP-010.md) | Accepted |

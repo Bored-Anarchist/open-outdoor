@@ -11,15 +11,7 @@ export const requiredPhase0Packages = [
   'WP-010',
 ];
 
-export const requiredPhase1Budgets = [
-  'BUD-REC-001',
-  'BUD-REC-002',
-  'BUD-REC-003',
-  'BUD-MEM-001',
-  'BUD-ENE-BALANCED',
-  'BUD-ENE-ENDURANCE',
-  'BUD-ENE-HIGH-ACCURACY',
-];
+export const requiredPhase1Budgets = ['BUD-REC-001', 'BUD-REC-002', 'BUD-REC-003', 'BUD-MEM-001'];
 
 export function evaluatePhase0Gate(record) {
   const blockers = [];

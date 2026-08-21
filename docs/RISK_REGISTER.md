@@ -9,7 +9,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `R-001` | Free Apple provisioning/Windows refresh path is unreliable or loses the app container | 4 | 5 | 20 | Phase 0 physical A→B refresh/retention gate; encrypted backup; stable identity | Refresh failure, changed application ID, missing records | iOS/build owner |
 | `R-002` | Background GPS/barometer recording is suspended, loses batches, or cannot recover | 4 | 5 | 20 | Minimal native spike; sequence/checkpoint protocol; screen-lock/crash matrix | Gaps without quality state, unrecoverable active session | Tracking owner |
-| `R-003` | Energy/thermal use is unacceptable for long field sessions | 4 | 5 | 20 | Native baseline, adaptive modes, four-hour tests, no runtime polling | Budget regression, thermal warning, unexplained wakeups | Tracking/performance owner |
+| `R-003` | Energy/thermal use is unacceptable for long field sessions | 4 | 5 | 20 | Active-only sensors, adaptive modes, explicit High Accuracy, no runtime polling; measurement deferred to WP-307/WP-503 | Endurance claim requested without evidence, thermal warning, unexplained wakeups | Tracking/performance owner |
 | `R-004` | Private or restricted data reaches public GitHub/CI/releases | 3 | 5 | 15 | External roots, classification, pre-push/CI/artifact scans, incident exercise | Private path/coordinate/secret detected in public system | Privacy owner |
 | `R-005` | Source terms/license change invalidates acquisition or public bundle | 4 | 5 | 20 | Independent rights fields, review dates, fail-closed release, replacement sources | Expiry/revocation/new terms/attribution | Rights owner |
 | `R-006` | Safety-sensitive rules/closures become stale or conflict | 4 | 5 | 20 | `stale_after`, mandatory freshness, conflict-to-unknown, visible dates | Missed refresh, equal-authority conflict, expired alert | Data/safety owner |
@@ -43,7 +43,8 @@
 WP-007 and WP-008 reduced implementation uncertainty but did not provide the required physical evidence, so no probability or impact score is lowered:
 
 - `R-001` remains open pending the full same-identity A→B refresh, data-retention, expiry, and restore workoff.
-- `R-002`, `R-003`, and `R-021` remain open pending iPhone 14/iOS 26.2 screen-lock, process-death, energy/thermal, protection-class, and backup-inventory evidence.
+- `R-002` and `R-021` remain open pending iPhone 14/iOS 26.2 screen-lock, process-death, protection-class, and backup-inventory evidence.
+- `R-003` remains score 20 and open. Its measurement is accepted as deferred for Phase 0/Phase 1, but it blocks battery/endurance claims and production until WP-307/WP-503 evidence exists.
 - `R-009` and `R-024` now have deterministic activation, rollback, private-digest, and compatibility prechecks, but remain open pending native/device integration.
 - `R-029` is realized as a gate blocker: the reviewed interval contained 57 workflow runs, 8 failures, and 53.32 wall-clock minutes. Candidate-only macOS execution, local-first checks, and avoidable-job workoff are required before Phase 1.
 - WP-009 completed the review and published a `BLOCKED` Phase 0 result; acceptance cannot be inferred from implementation or contract tests alone.

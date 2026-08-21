@@ -10,7 +10,6 @@ describe('WP-009 Phase 0 gate evaluation', () => {
     expect(result.status).toBe('blocked');
     expect(result.blockers).toContain('WP-007: physical-pending');
     expect(result.blockers).toContain('BUD-MEM-001: physical-pending');
-    expect(result.blockers).toContain('BUD-ENE-HIGH-ACCURACY: blocked');
     expect(result.blockers).toContain('hosted CI: avoidable jobs detected');
   });
 

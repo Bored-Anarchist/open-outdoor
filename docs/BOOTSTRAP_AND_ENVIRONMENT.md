@@ -32,7 +32,7 @@ The repository will contain a machine-readable configuration pinning:
 - entitlements, keychain groups, signing method;
 - selected regions and catalog compatibility range;
 - compressed/installed size and activation-reserve ceilings; and
-- energy/performance budgets after Phase 0 measurement.
+- performance budgets after Phase 0 measurement; energy/thermal measurement after WP-307/WP-503 protocol approval.
 
 The machine classes, device profiles, accountable roles, and cost categories needed to approve these pins are listed in the [resource and RACI plan](RESOURCE_AND_RACI_PLAN.md). Numeric defaults and measurement protocols come from the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md).
 

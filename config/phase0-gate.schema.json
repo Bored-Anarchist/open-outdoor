@@ -49,23 +49,12 @@
     "budgets": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "BUD-REC-001",
-        "BUD-REC-002",
-        "BUD-REC-003",
-        "BUD-MEM-001",
-        "BUD-ENE-BALANCED",
-        "BUD-ENE-ENDURANCE",
-        "BUD-ENE-HIGH-ACCURACY"
-      ],
+      "required": ["BUD-REC-001", "BUD-REC-002", "BUD-REC-003", "BUD-MEM-001"],
       "properties": {
         "BUD-REC-001": { "$ref": "#/$defs/evidenceItem" },
         "BUD-REC-002": { "$ref": "#/$defs/evidenceItem" },
         "BUD-REC-003": { "$ref": "#/$defs/evidenceItem" },
-        "BUD-MEM-001": { "$ref": "#/$defs/evidenceItem" },
-        "BUD-ENE-BALANCED": { "$ref": "#/$defs/evidenceItem" },
-        "BUD-ENE-ENDURANCE": { "$ref": "#/$defs/evidenceItem" },
-        "BUD-ENE-HIGH-ACCURACY": { "$ref": "#/$defs/evidenceItem" }
+        "BUD-MEM-001": { "$ref": "#/$defs/evidenceItem" }
       }
     },
     "hostedCi": {

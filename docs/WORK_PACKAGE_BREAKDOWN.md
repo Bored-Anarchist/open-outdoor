@@ -36,7 +36,7 @@ Accountability, consulted roles, hardware profiles, and cost ownership are defin
 | `WP-004` | External private-root composition spike | M | WP-002, WP-003 | Root validation, private manifest discovery, synthetic private connector/pack | Private output stays outside public checkout; removing private root leaves a passing public build |
 | `WP-005` | Private downstream workflow spike | M | WP-001, WP-003 | Upstream remote guide, ephemeral isolated private CI boundary, compatibility check | Public update can be incorporated without sending private content to public systems or shared caches/runners |
 | `WP-006` | iOS build and Windows sideload feasibility | L | WP-002 | Accepted ADR-037, pinned macOS build, unsigned artifact, Windows sign/install/refresh instructions, channel identity | Physical iPhone launch, exact provisioning expiry, refresh, and relaunch pass |
-| `WP-007` | Minimal native tracker and energy baseline | L | WP-006 | Swift tracker spike, protected active spool, location/altimeter batches, deterministic replay, repeated energy protocol | Background screen-lock collection works; protection class and provisional budgets pass |
+| `WP-007` | Minimal native tracker and durability spike | L | WP-006 | Swift tracker spike, protected active spool, location/altimeter batches, deterministic replay, energy-conscious modes | Background screen-lock collection, recovery, stop behavior, protection class, and 30-minute memory smoke pass |
 | `WP-008` | Private/reference database, backup, and compatibility spike | L | WP-002, WP-006 | Accepted ADR-017/ADR-018, separate protected SQLite stores, backup-exclusion inspection, A→B app/schema/catalog/backup matrix, remap/promotion/rollback | Private records survive refresh/upgrade; incompatible downgrade fails before mutation; catalogs never cross-write user DB |
 | `WP-009` | Phase 0 evidence and budget review | S | WP-001–WP-008, WP-010 | Evidence index, risk updates, decision closures, measured budget and hosted-minute usage report, gate report | Every Phase 0 criterion and Phase 1 prerequisite budget passes; avoidable hosted jobs are removed or Phase 1 remains blocked |
 | `WP-010` | Catalog trust and production-signing foundation | M | WP-001, WP-002 | Manifest signature envelope, channel trust roots, key/revocation procedure, replay/wrong-channel fixtures, unsigned-development labeling | Production catalog rejects missing/invalid/untrusted/wrong-channel signatures; private trust roots remain private |
@@ -49,7 +49,7 @@ Accountability, consulted roles, hardware profiles, and cost ownership are defin
 - Physical iPhone signing, background tracking, refresh, and data retention pass.
 - iOS file-protection classes and system-backup exclusions pass inspection and restore tests.
 - Catalog activation/remap/rollback preserves private data; trust, replay, channel, and downgrade cases fail closed.
-- Initial artifact size, activation time, launch, query, memory, accuracy, and repeated energy budgets pass the declared Phase 1 prerequisites.
+- Initial artifact size, activation time, launch, query, memory, and accuracy budgets pass the declared Phase 1 prerequisites; measured energy acceptance is deferred to WP-307/WP-503.
 
 ## 4. Phase 1 — recorder and private-data vertical slice
 
@@ -63,7 +63,7 @@ Accountability, consulted roles, hardware profiles, and cost ownership are defin
 | `WP-106` | Import/export and privacy trimming | L | WP-102, WP-105 | GPX/GeoJSON import/export baseline, endpoint trimming, EXIF option | Hostile input, round-trip, and privacy-default tests pass |
 | `WP-107` | Encrypted backup/restore foundation | L | WP-102 | Versioned encrypted container, staging restore, key flow, corruption fixtures | Wrong-key/tamper/truncation never partially mutates private data |
 | `WP-108` | Fixture-backed offline map shell | M | WP-101 | Local style/assets, synthetic trail/POI/catalog, active route overlay | Explore and active recording work without network |
-| `WP-109` | Phase 1 physical/accessibility/energy gate | L | WP-103–WP-108 | Four-hour mode tests, VoiceOver/Dynamic Type evidence, elevation evidence | Phase 1 acceptance matrix passes on reference device |
+| `WP-109` | Phase 1 physical/accessibility gate | L | WP-103–WP-108 | Tracker correctness and 30-minute memory smoke, VoiceOver/Dynamic Type evidence, elevation evidence | Current Phase 1 acceptance matrix passes on reference device; measured energy remains deferred |
 
 ## 5. Phase 2 — connector framework and New York authoritative data
 

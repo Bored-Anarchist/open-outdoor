@@ -12,9 +12,8 @@ WP-001 through WP-006 and WP-010 are accepted. WP-007 and WP-008 now have execut
 
 - WP-007: physical screen-lock/suspension/process-death/stop behavior is unmeasured.
 - BUD-REC-001 and BUD-REC-002: acknowledgement and committed-gap thresholds lack physical measurements.
-- BUD-MEM-001: the four-hour screen-off p95 memory profile is absent.
-- Balanced and Endurance energy: three four-hour measured runs per mode are absent.
-- High Accuracy: no measured battery limit is approved, so it remains explicitly blocked.
+- BUD-MEM-001: the 30-minute screen-off p95 memory smoke is absent.
+- Battery/thermal scope: measured acceptance is deferred to WP-307/WP-503 and is not a current blocker; no endurance claim is permitted.
 - WP-008: protection classes, backup exclusion, same-identity A→B retention, and downgrade/rollback require device inspection.
 - CI efficiency: avoidable failed/repeated hosted runs occurred during Phase 0 and require process workoff.
 
@@ -36,13 +35,12 @@ Avoidable work is present: repeated failing Windows iterations, three failed man
 
 ## Risk disposition
 
-R-001 is reduced by accepted WP-006 launch/refresh feasibility but remains open for A→B retention. R-002, R-003, R-009, R-021, and R-024 remain open because their physical/native acceptance is pending. No probability or impact score is reduced without measurement evidence.
+R-001 is reduced by accepted WP-006 launch/refresh feasibility but remains open for A→B retention. R-002, R-009, R-021, and R-024 remain open because their physical/native acceptance is pending. R-003 remains open and is explicitly accepted as deferred risk for Phase 0/Phase 1; it still blocks endurance claims and production until WP-307/WP-503. No probability or impact score is reduced without measurement evidence.
 
 ## Exit workoff
 
 1. Build the native-spike candidate once in the pinned macOS workflow and install it with the stable local identity.
-2. Execute the WP-007 physical tracking, memory, and repeated energy protocol.
+2. Execute the WP-007 physical tracking protocol and 30-minute memory smoke.
 3. Execute WP-008 protection, backup inventory, A→B retention, downgrade, and rollback inspection.
-4. Approve a measured High Accuracy energy limit or keep that mode unavailable.
-5. Review hosted usage after a batched, locally validated candidate and remove the CI-efficiency blocker only with evidence.
-6. Change `config/phase0-gate.json` to passed only when every machine-readable item is accepted/passed and protected checks pass on the exact candidate.
+4. Review hosted usage after a batched, locally validated candidate and remove the CI-efficiency blocker only with evidence.
+5. Change `config/phase0-gate.json` to passed only when every machine-readable item is accepted/passed and protected checks pass on the exact candidate.

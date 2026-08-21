@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   TrackingReplayError,
-  evaluateEnergyEvidence,
   replayTrackingBatches,
-  type EnergyBudget,
-  type EnergyRunEvidence,
   type TrackObservation,
   type TrackingBatch,
 } from '../src/index.js';
@@ -92,73 +89,5 @@ describe('T-PHY-001 deterministic native tracking replay', () => {
         ]),
       'OBSERVATION_INVALID',
     );
-  });
-});
-
-describe('T-PHY-002 energy and thermal protocol evaluation', () => {
-  const balancedBudget: EnergyBudget = {
-    mode: 'balanced',
-    minimumRuns: 3,
-    minimumDurationHours: 4,
-    maximumBatteryPercentPerHour: 4,
-    maximumResidentMemoryP95MiB: 150,
-  };
-
-  function run(runId: string, overrides: Partial<EnergyRunEvidence> = {}): EnergyRunEvidence {
-    return {
-      runId,
-      mode: 'balanced',
-      isWarmup: false,
-      durationHours: 4,
-      batteryStartPercent: 90,
-      batteryEndPercent: 78,
-      residentMemoryP95MiB: 120,
-      thermalWarning: false,
-      continuousRetry: false,
-      unintendedBackgroundSession: false,
-      missedStop: false,
-      ...overrides,
-    };
-  }
-
-  it('T-PHY-002-C01 accepts three valid four-hour balanced runs', () => {
-    expect(evaluateEnergyEvidence([run('a'), run('b'), run('c')], balancedBudget)).toMatchObject({
-      status: 'passed',
-      measuredRuns: 3,
-    });
-  });
-
-  it('T-PHY-002-C02 blocks thermal, retry, background, stop, memory, or battery failures', () => {
-    const result = evaluateEnergyEvidence(
-      [run('a', { thermalWarning: true }), run('b'), run('c')],
-      balancedBudget,
-    );
-    expect(result.status).toBe('blocked');
-    expect(result.reasons.join(' ')).toMatch(/release-blocking/);
-
-    const malformed = evaluateEnergyEvidence(
-      [run('invalid', { batteryStartPercent: Number.NaN, residentMemoryP95MiB: Number.NaN })],
-      { ...balancedBudget, minimumRuns: 1 },
-    );
-    expect(malformed.status).toBe('blocked');
-    expect(malformed.reasons.join(' ')).toMatch(/invalid duration or battery sample/);
-  });
-
-  it('T-PHY-002-C03 keeps High Accuracy blocked until its budget is approved', () => {
-    expect(
-      evaluateEnergyEvidence([run('ha', { mode: 'high-accuracy' })], {
-        ...balancedBudget,
-        mode: 'high-accuracy',
-        minimumRuns: 1,
-        maximumBatteryPercentPerHour: null,
-      }).status,
-    ).toBe('blocked');
-  });
-
-  it('T-PHY-002-C04 excludes warm-up runs from the repetition count', () => {
-    expect(
-      evaluateEnergyEvidence([run('warm', { isWarmup: true }), run('a'), run('b')], balancedBudget)
-        .status,
-    ).toBe('blocked');
   });
 });

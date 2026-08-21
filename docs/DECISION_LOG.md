@@ -35,6 +35,7 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-020` | Public, local, and private channels use distinct names, bundle identifiers, and trust-root labels from release configuration | Accepted | Free-provisioned feasibility uses the local identity; production identity changes require a superseding ADR |
 | `ADR-038` | Public contributions use a chosen project handle, privacy-protected commit address, and account-bound rights attestation instead of a public DCO identity line | Accepted | The project does not require legal names or personal contact details in durable public history |
 | `ADR-039` | Hosted CI is local-first, path-filtered, superseded-run-cancelling, timeout-bounded, minimally matrixed, unscheduled by default, and candidate-gated for expensive work | Accepted | GitHub Actions minutes are treated as a constrained resource and reviewed by milestone |
+| `ADR-040` | Phase 0 and Phase 1 defer measured battery/thermal acceptance to WP-307/WP-503 while retaining energy-conscious implementation constraints | Accepted | No current endurance claim or numeric energy gate; sensors run only during recording, High Accuracy is explicit, continuous polling is prohibited, and the adjacent memory smoke is 30 minutes |
 
 ## 2. Phase 0 implementation decisions
 

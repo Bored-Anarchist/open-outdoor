@@ -21,7 +21,7 @@ Public/private foundation
   → production design and release audit
 ```
 
-The highest-risk work is deliberately early: public/private leakage prevention, free provisioning, physical background tracking, energy, catalog/private-data isolation, and source-rights enforcement.
+The highest-risk work is deliberately early: public/private leakage prevention, free provisioning, physical background tracking, catalog/private-data isolation, and source-rights enforcement. Measured energy acceptance is deliberately deferred to field/performance hardening.
 
 ## 3. Milestones
 
@@ -29,7 +29,7 @@ The highest-risk work is deliberately early: public/private leakage prevention, 
 | --- | --- | --- | --- |
 | `M0 Planning baseline` | Build work can begin from one traceable document set | Documentation package | Scope, WBS, RTM, risks, decisions approved |
 | `M1 Feasibility build` | A minimal app installs from Windows and records background points | WP-001–WP-010 | Phase 0 gate report |
-| `M2 Recorder alpha` | Record, recover, review, and export a private hike on an offline fixture map | WP-101–WP-109 | Recorder/elevation/accessibility/energy report |
+| `M2 Recorder alpha` | Record, recover, review, and export a private hike on an offline fixture map | WP-101–WP-109 | Recorder/elevation/accessibility report |
 | `M3 New York data alpha` | Generate an explainable public New York land/trail/POI catalog | WP-201–WP-210 | Rights, coverage, evaluator, dedup reports |
 | `M4 Product MVP / offline field beta` | Explore/search bundled New York trails and camping evidence and record hikes with GPS, all without a network | WP-301–WP-307 | Offline matrix and field-test report; all MVP must-haves pass |
 | `M5 Extensible beta` | Add authorized sources/imports/private extensions through stable contracts | WP-401–WP-406 | Compatibility and connector-operations report |
@@ -67,7 +67,7 @@ Stop conditions: private content can enter public artifacts, signing/refresh los
 
 Outcome: private offline activity recording from start through recovery, statistics, reusable user trail, export, and encrypted backup foundation.
 
-Stop conditions: elevation/energy thresholds are not viable, critical controls fail native accessibility, or raw observations cannot be recovered after crash/suspension.
+Stop conditions: elevation thresholds are not viable, critical controls fail native accessibility, or raw observations cannot be recovered after crash/suspension. Energy-conscious implementation remains required, but measured energy acceptance is deferred.
 
 ### Phase 2 — authoritative data path
 

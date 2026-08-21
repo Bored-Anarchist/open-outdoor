@@ -14,7 +14,7 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | Integration | SQLite migrations, staging, pack build, imports, catalog activation | Windows/macOS/device as appropriate |
 | End-to-end | User flows across UI, storage, map, catalog, export | Browser fixture harness and physical iPhone |
 | Security/privacy | Malicious input, secret detection, root isolation, publication gates | Isolated public/private CI |
-| Physical acceptance | Background tracking, sensors, MapLibre, permissions, accessibility, energy, provisioning | Pinned physical iPhone |
+| Physical acceptance | Background tracking, sensors, MapLibre, permissions, accessibility, provisioning | Pinned physical iPhone |
 | Release audit | Clean build, rights inventory, SBOM/DBOM, checksums, provenance, artifact reproduction | Clean controlled environment |
 
 ## 2. Named test suites
@@ -38,7 +38,7 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | `T-SEC-002` | Public-boundary gate | Secrets, private paths/coordinates, database/media files, undeclared license, logs/caches/artifacts |
 | `T-SEC-003` | Private extension and CI boundary | Ephemeral single-job runner, untrusted PR denial, cache/artifact isolation, allowlisted/pinned extensions, least-privilege secrets |
 | `T-PHY-001` | Native tracking | Screen lock, suspension, GPS loss, poor sky, airplane/weak cell, checkpoint/relaunch, stop behavior |
-| `T-PHY-002` | Energy/thermal | Idle, three modes, periodic map, continuous map, poor GPS, Low Power Mode, four-hour runs |
+| `T-PHY-002` | Energy/thermal (reserved) | Deferred to WP-307/WP-503; no Phase 0/Phase 1 battery acceptance or endurance claim |
 | `T-PHY-003` | Native accessibility/field UX | VoiceOver, Dynamic Type, contrast, bold text, motion, touch, dark mode, sunlight/one-handed review |
 | `T-PHY-004` | Provisioning/retention | Exact expiry, warnings, sign/install, refresh, same-ID upgrade, container retention, backup/reinstall/restore |
 | `T-PHY-005` | iOS protection and system backup | Protection class by artifact, lock-state active recording, sealed-data denial while locked, backup-exclusion inspection, deletion |
@@ -88,7 +88,7 @@ Cases `T-INT-002-C01` through `C08` cover activation boundaries; `T-INT-006-C01`
 
 ### 4.2 Interrupted recording
 
-Exercise permission changes, pause/resume, OS suspension, screen lock, process termination, duplicate/out-of-order batches, poor GPS, low battery, and relaunch. The saved activity must have an explainable gap/quality state and must not invent distance/elevation.
+Exercise permission changes, pause/resume, OS suspension, screen lock, process termination, duplicate/out-of-order batches, poor GPS, and relaunch. The saved activity must have an explainable gap/quality state and must not invent distance/elevation.
 
 WP-007 assigns these exact cases:
 
@@ -104,7 +104,7 @@ WP-007 assigns these exact cases:
 
 Cases C01–C06 are deterministic Windows contract prechecks. They cannot pass C07–C09 or the physical suite by substitution.
 
-The energy evaluator uses `T-PHY-002-C01` through `C04`: accept three non-warm-up four-hour Balanced runs within the binding budget; reject any thermal/retry/background/stop/memory/battery failure; keep High Accuracy blocked without an approved measured budget; and exclude warm-up runs from repetition counts. These Windows evaluator prechecks establish the fail-closed calculation only; each result still requires the physical run evidence named by the suite.
+T-PHY-002 has no required Phase 0 or Phase 1 cases. It is reserved for WP-307/WP-503, where a representative protocol, repetitions, and numeric limits must be approved before endurance claims or production release. Current tests validate tracker correctness and the 30-minute memory smoke, not battery draw.
 
 ### 4.3 Catalog interruption matrix
 
@@ -176,11 +176,9 @@ Use synthetic public contribution metadata to verify that legal names, personal 
 
 Any threshold change creates a new algorithm/version decision with before/after error and energy evidence.
 
-## 6. Energy acceptance
+## 6. Deferred energy acceptance
 
-Each mode uses at least three independent four-hour physical runs under the pinned protocol. Provisional release limits are no more than 4 percentage points of battery per hour in Balanced and 3 in Endurance, calculated from normalized start/end state of charge. A candidate also fails for an unexplained regression greater than 10% relative to the accepted native baseline. High Accuracy is characterized and disclosed until a release limit is approved. Every result records the environment and raw samples required by the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md).
-
-Release-blocking findings include unexplained background wakeups, continuous retries, thermal warning, missed stop, data loss, or a statistically meaningful unapproved regression against the pinned baseline.
+Measured battery draw, thermal endurance, and multi-hour mode characterization are deferred to WP-307/WP-503. Phase 0 and Phase 1 make no battery-life claim and T-PHY-002 does not block their entrance gates. Energy-conscious implementation constraints remain subject to configuration and source validation; tracker correctness, unintended sessions, stop behavior, and memory remain separate acceptance concerns.
 
 ## 7. Accessibility acceptance
 
