@@ -198,7 +198,10 @@ export function verifyCatalogCandidate(
     fail('TRUST_ROOT_MISMATCH', 'catalog signature is bound to a different trust root');
   }
   if (envelope.manifestSha256 !== manifestSha256) {
-    fail('MANIFEST_DIGEST_MISMATCH', 'catalog manifest digest does not match its signature envelope');
+    fail(
+      'MANIFEST_DIGEST_MISMATCH',
+      'catalog manifest digest does not match its signature envelope',
+    );
   }
   if (envelope.antiReplayVersion <= lastAcceptedVersion) {
     fail('REPLAYED_VERSION', 'catalog anti-replay version must increase monotonically');

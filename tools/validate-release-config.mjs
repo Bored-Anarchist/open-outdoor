@@ -40,12 +40,17 @@ for (const channel of ['public', 'local', 'private']) {
   }
 }
 
-if (trust.channels.public.allowUnsignedDevelopment || trust.channels.private.allowUnsignedDevelopment) {
+if (
+  trust.channels.public.allowUnsignedDevelopment ||
+  trust.channels.private.allowUnsignedDevelopment
+) {
   console.error('production catalog channels must reject unsigned development catalogs');
   failed = true;
 }
 if (!trust.channels.local.allowUnsignedDevelopment) {
-  console.error('the local channel must explicitly permit visibly labelled unsigned development catalogs');
+  console.error(
+    'the local channel must explicitly permit visibly labelled unsigned development catalogs',
+  );
   failed = true;
 }
 if (trust.channels.private.keySource !== 'external-private-root') {

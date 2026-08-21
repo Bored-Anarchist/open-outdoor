@@ -1,4 +1,11 @@
-import { createHash, createPublicKey, generateKeyPairSync, sign, verify, type KeyObject } from 'node:crypto';
+import {
+  createHash,
+  createPublicKey,
+  generateKeyPairSync,
+  sign,
+  verify,
+  type KeyObject,
+} from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -83,9 +90,11 @@ function signedEnvelope(
   };
   return {
     ...fields,
-    signature: sign(null, Buffer.from(catalogSignaturePayload(fields), 'utf8'), privateKey).toString(
-      'base64',
-    ),
+    signature: sign(
+      null,
+      Buffer.from(catalogSignaturePayload(fields), 'utf8'),
+      privateKey,
+    ).toString('base64'),
   };
 }
 
@@ -111,12 +120,24 @@ function expectTrustError(operation: () => unknown, code: CatalogTrustErrorCode)
 describe('T-REL-003 catalog trust and channel', () => {
   it('T-REL-003-C01 accepts a valid channel-bound signature from a trusted key', () => {
     expect(
-      verifyCandidate({ manifestBytes: manifest, envelope: signedEnvelope(primary.privateKey) }, policy(), 1),
-    ).toMatchObject({ mode: 'signed', channel: 'public', keyId: 'public-test-primary', antiReplayVersion: 2 });
+      verifyCandidate(
+        { manifestBytes: manifest, envelope: signedEnvelope(primary.privateKey) },
+        policy(),
+        1,
+      ),
+    ).toMatchObject({
+      mode: 'signed',
+      channel: 'public',
+      keyId: 'public-test-primary',
+      antiReplayVersion: 2,
+    });
   });
 
   it('T-REL-003-C02 rejects a production catalog with no signature envelope', () => {
-    expectTrustError(() => verifyCandidate({ manifestBytes: manifest }, policy(), 1), 'SIGNATURE_MISSING');
+    expectTrustError(
+      () => verifyCandidate({ manifestBytes: manifest }, policy(), 1),
+      'SIGNATURE_MISSING',
+    );
   });
 
   it('T-REL-003-C03 rejects altered content and an invalid signature', () => {
@@ -126,50 +147,98 @@ describe('T-REL-003 catalog trust and channel', () => {
       'MANIFEST_DIGEST_MISMATCH',
     );
     expectTrustError(
-      () => verifyCandidate({ manifestBytes: manifest, envelope: { ...envelope, signature: 'AAAA' } }, policy(), 1),
+      () =>
+        verifyCandidate(
+          { manifestBytes: manifest, envelope: { ...envelope, signature: 'AAAA' } },
+          policy(),
+          1,
+        ),
       'SIGNATURE_INVALID',
     );
   });
 
   it('T-REL-003-C04 rejects the committed wrong-channel fixture', () => {
     const fixture = fixtureCases.cases.wrongChannel;
-    const envelope = signedEnvelope(primary.privateKey, { channel: fixture.channel, trustRoot: fixture.trustRoot });
-    expectTrustError(() => verifyCandidate({ manifestBytes: manifest, envelope }, policy(), 1), fixture.expectedError);
+    const envelope = signedEnvelope(primary.privateKey, {
+      channel: fixture.channel,
+      trustRoot: fixture.trustRoot,
+    });
+    expectTrustError(
+      () => verifyCandidate({ manifestBytes: manifest, envelope }, policy(), 1),
+      fixture.expectedError,
+    );
   });
 
   it('T-REL-003-C05 rejects the committed replay fixture', () => {
     const fixture = fixtureCases.cases.replay;
-    const envelope = signedEnvelope(primary.privateKey, { antiReplayVersion: fixture.antiReplayVersion });
+    const envelope = signedEnvelope(primary.privateKey, {
+      antiReplayVersion: fixture.antiReplayVersion,
+    });
     expectTrustError(
-      () => verifyCandidate({ manifestBytes: manifest, envelope }, policy(), fixture.lastAcceptedVersion),
+      () =>
+        verifyCandidate(
+          { manifestBytes: manifest, envelope },
+          policy(),
+          fixture.lastAcceptedVersion,
+        ),
       fixture.expectedError,
     );
   });
 
   it('T-REL-003-C06 rejects untrusted and revoked signing keys', () => {
     const untrusted = signedEnvelope(primary.privateKey, { keyId: 'unknown-key' });
-    expectTrustError(() => verifyCandidate({ manifestBytes: manifest, envelope: untrusted }, policy(), 1), 'KEY_UNTRUSTED');
+    expectTrustError(
+      () => verifyCandidate({ manifestBytes: manifest, envelope: untrusted }, policy(), 1),
+      'KEY_UNTRUSTED',
+    );
     const revokedPolicy = policy([
-      { keyId: 'public-test-primary', algorithm: 'Ed25519', publicKeyPem: publicKeyPem(primary.publicKey), status: 'revoked' },
+      {
+        keyId: 'public-test-primary',
+        algorithm: 'Ed25519',
+        publicKeyPem: publicKeyPem(primary.publicKey),
+        status: 'revoked',
+      },
     ]);
     expectTrustError(
-      () => verifyCandidate({ manifestBytes: manifest, envelope: signedEnvelope(primary.privateKey) }, revokedPolicy, 1),
+      () =>
+        verifyCandidate(
+          { manifestBytes: manifest, envelope: signedEnvelope(primary.privateKey) },
+          revokedPolicy,
+          1,
+        ),
       'KEY_REVOKED',
     );
   });
 
   it('T-REL-003-C07 accepts a rotated key and rejects the revoked predecessor', () => {
     const rotationPolicy = policy([
-      { keyId: 'public-test-primary', algorithm: 'Ed25519', publicKeyPem: publicKeyPem(primary.publicKey), status: 'revoked' },
-      { keyId: 'public-test-rotated', algorithm: 'Ed25519', publicKeyPem: publicKeyPem(rotated.publicKey), status: 'active' },
+      {
+        keyId: 'public-test-primary',
+        algorithm: 'Ed25519',
+        publicKeyPem: publicKeyPem(primary.publicKey),
+        status: 'revoked',
+      },
+      {
+        keyId: 'public-test-rotated',
+        algorithm: 'Ed25519',
+        publicKeyPem: publicKeyPem(rotated.publicKey),
+        status: 'active',
+      },
     ]);
     const rotatedEnvelope = signedEnvelope(rotated.privateKey, { keyId: 'public-test-rotated' });
-    expect(verifyCandidate({ manifestBytes: manifest, envelope: rotatedEnvelope }, rotationPolicy, 1)).toMatchObject({
+    expect(
+      verifyCandidate({ manifestBytes: manifest, envelope: rotatedEnvelope }, rotationPolicy, 1),
+    ).toMatchObject({
       mode: 'signed',
       keyId: 'public-test-rotated',
     });
     expectTrustError(
-      () => verifyCandidate({ manifestBytes: manifest, envelope: signedEnvelope(primary.privateKey) }, rotationPolicy, 1),
+      () =>
+        verifyCandidate(
+          { manifestBytes: manifest, envelope: signedEnvelope(primary.privateKey) },
+          rotationPolicy,
+          1,
+        ),
       'KEY_REVOKED',
     );
   });
