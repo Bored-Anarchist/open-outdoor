@@ -16,6 +16,8 @@
     "test:fixtures": "vitest run packages/data",
     "test:privacy": "vitest run packages/privacy && node tools/public-boundary.mjs --scan .",
     "test:catalog-trust": "vitest run packages/config/test/catalog-trust.test.ts",
+    "test:tracking": "vitest run packages/tracking",
+    "test:storage": "vitest run packages/storage",
     "test:private-root": "vitest run packages/privacy/test/private-root.test.ts",
     "test:private-downstream": "node tools/private-ci-policy.mjs && powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Test-PrivateDownstream.ps1",
     "build:web": "pnpm --filter @open-outdoor/browser-fixture build",
@@ -23,6 +25,7 @@
     "build:ios:unsigned": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Build-IosUnsigned.ps1",
     "catalog:public": "node tools/public-catalog.mjs",
     "catalog:private": "node tools/private-catalog.mjs",
+    "phase0:gate": "node tools/phase0-gate.mjs",
     "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs",
     "python:test": "uv run --frozen python -m unittest discover -s python/tests"
   },
