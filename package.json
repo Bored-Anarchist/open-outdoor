@@ -26,7 +26,7 @@
     "catalog:public": "node tools/public-catalog.mjs",
     "catalog:private": "node tools/private-catalog.mjs",
     "phase0:gate": "node tools/phase0-gate.mjs",
-    "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs",
+    "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs && node tools/validate-native-spikes.mjs",
     "python:test": "uv run --frozen python -m unittest discover -s python/tests"
   },
   "devDependencies": {
