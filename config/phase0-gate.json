@@ -13,7 +13,7 @@
     "WP-006": { "status": "accepted", "evidence": "docs/evidence/WP-006.md" },
     "WP-007": { "status": "physical-pending", "evidence": "docs/evidence/WP-007.md" },
     "WP-008": { "status": "physical-pending", "evidence": "docs/evidence/WP-008.md" },
-    "WP-009": { "status": "in-progress", "evidence": "docs/evidence/WP-009.md" },
+    "WP-009": { "status": "accepted", "evidence": "docs/evidence/WP-009.md" },
     "WP-010": { "status": "accepted", "evidence": "docs/evidence/WP-010.md" }
   },
   "budgets": {
@@ -27,7 +27,7 @@
   },
   "hostedCi": {
     "period": "2026-08-19 through 2026-08-21",
-    "avoidableJobsDetected": false,
+    "avoidableJobsDetected": true,
     "report": "docs/PHASE_0_GATE_REPORT.md#hosted-ci-usage"
   }
 }
