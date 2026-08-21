@@ -35,13 +35,13 @@
     "productionChannel": {
       "allOf": [
         { "$ref": "#/$defs/baseChannel" },
-        { "properties": { "allowUnsignedDevelopment": { "const": false } } }
+        { "type": "object", "properties": { "allowUnsignedDevelopment": { "const": false } } }
       ]
     },
     "localChannel": {
       "allOf": [
         { "$ref": "#/$defs/baseChannel" },
-        { "properties": { "allowUnsignedDevelopment": { "const": true } } }
+        { "type": "object", "properties": { "allowUnsignedDevelopment": { "const": true } } }
       ]
     }
   }
