@@ -1,7 +1,7 @@
 # iOS build and Windows sideload feasibility
 
 **Package:** WP-006
-**Status:** implementation complete; physical-device acceptance pending
+**Status:** accepted and closed by the project owner on 2026-08-21
 
 ## Build boundary
 
@@ -21,16 +21,18 @@ The Windows workstation can validate the JavaScript/Hermes payload with `pnpm bu
 6. Launch Open Outdoor Local and record the installed bundle identifier, provisioning start time, exact expiry shown by AltStore, device/iOS version, artifact SHA-256, and whether relaunch succeeds.
 7. Before expiry, keep AltServer available on the same network (or connect USB), refresh the app, record the new exact expiry, force-quit, and relaunch without deleting the app.
 
-Free-account apps expire after seven days unless refreshed. The acceptance gate requires the exact observed expiry and refresh result; “about a week” is not evidence.
+Free-account apps expire after seven days unless refreshed. The acceptance gate normally records the exact observed expiry and refresh result. For this feasibility spike, the project owner accepted the operator refresh evidence while recording the missing absolute timestamps as an evidence-granularity deviation.
 
 ## Acceptance record
 
 | Check | Required evidence | Current result |
 | --- | --- | --- |
 | Pinned unsigned macOS build | Workflow URL, commit, Xcode output, artifact digest | Passed: [run 32327251183](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/32327251183), commit `780ab666fdb99fe364d14c705d5d4be00687cfaa`, Xcode 26.4.1 build 17E202, 7,156,518-byte unsigned IPA, SHA-256 `60248224715E6EE69C8C48335ACF44340D939624CDC7115EB3504F59AB4ABBCC` |
-| Physical iPhone launch | Device model, iOS version, bundle ID, timestamp | Pending physical device |
-| Exact provisioning expiry | Screenshot/transcription of AltStore expiry | Pending physical device |
-| Refresh before expiry | Old/new expiry and refresh timestamp | Pending physical device |
-| Relaunch and retention | Force-quit/relaunch result; later packages add state retention | Pending physical device |
+| Physical iPhone launch | Device model, iOS version, bundle ID, timestamp | Observed pass (operator report, 2026-08-21): iPhone 14, iOS 26.2, local identity `org.openoutdoor.local`, shell text “Open Outdoor feasibility shell”; exact time not recorded |
+| Exact provisioning expiry | Screenshot/transcription of AltStore expiry | Owner-accepted operator evidence: AltStore View App IDs displayed “Expires in 7 days”; exact absolute expiry was not retained in the public record |
+| Refresh before expiry | Old/new expiry and refresh timestamp | Passed by owner acceptance on 2026-08-21 based on operator refresh evidence; exact old/new absolute expiry and refresh timestamp were not retained in the public record |
+| Relaunch and retention | Force-quit/relaunch result; later packages add state retention | Passed by owner acceptance: initial and post-refresh launch evidence was accepted; initial force-quit/relaunch returned to the feasibility shell |
+
+WP-006 is accepted and closed for its feasibility scope. The missing absolute expiry and refresh timestamps remain a recorded evidence-granularity deviation, not fabricated measurements. This closeout does not satisfy WP-008 state-retention, backup, or compatibility acceptance and does not by itself close the Phase 0 gate.
 
 The documented Windows path follows the official [AltStore Windows installation guide](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows), [direct IPA sideload behavior](https://github.com/altstoreio/FAQ/blob/main/release-notes/altserver.md), and [seven-day refresh behavior](https://faq.altstore.io/altstore-classic/your-altstore). The selected Xcode path is present in GitHub's [macOS 26 runner inventory](https://github.com/actions/runner-images/blob/main/images/macos/macos-26-arm64-Readme.md).

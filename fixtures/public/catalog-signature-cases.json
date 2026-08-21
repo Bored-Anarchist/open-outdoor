@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "classification": "public-synthetic",
+  "description": "Mutation inputs for T-REL-003; contains no signing material or real catalog data.",
+  "cases": {
+    "wrongChannel": {
+      "channel": "private",
+      "trustRoot": "private-external",
+      "expectedError": "CHANNEL_MISMATCH"
+    },
+    "replay": {
+      "antiReplayVersion": 7,
+      "lastAcceptedVersion": 7,
+      "expectedError": "REPLAYED_VERSION"
+    }
+  }
+}

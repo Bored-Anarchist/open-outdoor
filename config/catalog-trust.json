@@ -1,0 +1,22 @@
+{
+  "$schema": "./catalog-trust.schema.json",
+  "schemaVersion": 1,
+  "unsignedDevelopmentLabel": "UNSIGNED DEVELOPMENT CATALOG — NOT FOR PRODUCTION",
+  "channels": {
+    "public": {
+      "trustRoot": "public-v1",
+      "keySource": "external-release-keyring",
+      "allowUnsignedDevelopment": false
+    },
+    "local": {
+      "trustRoot": "local-development",
+      "keySource": "local-operator",
+      "allowUnsignedDevelopment": true
+    },
+    "private": {
+      "trustRoot": "private-external",
+      "keySource": "external-private-root",
+      "allowUnsignedDevelopment": false
+    }
+  }
+}

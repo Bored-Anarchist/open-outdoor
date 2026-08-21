@@ -108,7 +108,16 @@ On the physical reference device, create an active recording, sealed activity, a
 
 ### 4.7 Private CI and catalog trust
 
-Run synthetic private jobs from a clean ephemeral image, attempt access from an untrusted pull request, and verify separate caches/artifacts/credentials and post-job destruction (`T-SEC-003-C01` through `C06`). Attempt catalog activation with missing, altered, wrong-channel, replayed, revoked-key, and rotated-key signatures and prove the last known-good catalog remains active (`T-REL-003-C01` through `C08`).
+Run synthetic private jobs from a clean ephemeral image, attempt access from an untrusted pull request, and verify separate caches/artifacts/credentials and post-job destruction (`T-SEC-003-C01` through `C06`). Catalog trust uses these exact cases:
+
+- `T-REL-003-C01`: accept a valid channel-bound Ed25519 signature from an independently trusted active key.
+- `T-REL-003-C02`: reject a production catalog with a missing signature envelope.
+- `T-REL-003-C03`: reject altered manifest bytes and an invalid signature.
+- `T-REL-003-C04`: reject the committed wrong-channel fixture.
+- `T-REL-003-C05`: reject the committed equal-or-lower anti-replay version fixture.
+- `T-REL-003-C06`: reject untrusted and revoked keys.
+- `T-REL-003-C07`: accept a provisioned rotation key and reject its revoked predecessor.
+- `T-REL-003-C08`: require the exact unsigned-development label locally, reject it in production, and leave the caller's last-known-good version unchanged.
 
 ### 4.8 Product boundary and MVP
 
