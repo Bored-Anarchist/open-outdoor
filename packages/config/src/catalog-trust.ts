@@ -46,6 +46,7 @@ export interface CatalogCryptoProvider {
 
 export type CatalogTrustErrorCode =
   | 'ALGORITHM_UNSUPPORTED'
+  | 'ANTI_REPLAY_STATE_INVALID'
   | 'CHANNEL_MISMATCH'
   | 'CRYPTO_PROVIDER_FAILURE'
   | 'ENVELOPE_INVALID'
@@ -90,9 +91,27 @@ function fail(code: CatalogTrustErrorCode, message: string): never {
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+ envelopeFieldNames = new Set([
+  'schemaVersion',
+  'algorithm',
+  'channel',
+  'trustRoot',
+  'keyId',
+  'antiReplayVersion',
+  'manifestSha256',
+  'signedAt',
+  'signature',
+]);
 
 function parseEnvelope(value: unknown): CatalogSignatureEnvelope {
   if (!isRecord(value)) fail('ENVELOPE_INVALID', 'catalog signature envelope must be an object');
+  const fieldNames = Object.keys(value);
+  if (
+    fieldNames.length !== envelopeFieldNames.size ||
+    fieldNames.some((fieldName) => !envelopeFieldNames.has(fieldName))
+  ) {
+    fail('ENVELOPE_INVALID', 'catalog signature envelope contains unexpected fields');
+  }
 
   const channel = value.channel;
   if (channel !== 'public' && channel !== 'local' && channel !== 'private') {
@@ -111,6 +130,9 @@ function parseEnvelope(value: unknown): CatalogSignatureEnvelope {
     typeof value.manifestSha256 !== 'string' ||
     !/^[a-f0-9]{64}$/.test(value.manifestSha256) ||
     typeof value.signedAt !== 'string' ||
+    !/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\.[0-9]+)?Z$/.test(
+      value.signedAt,
+    ) ||
     Number.isNaN(Date.parse(value.signedAt)) ||
     typeof value.signature !== 'string' ||
     value.signature.length === 0
@@ -167,6 +189,9 @@ export function verifyCatalogCandidate(
   lastAcceptedVersion: number,
   crypto: CatalogCryptoProvider,
 ): CatalogVerification {
+  if (!Number.isSafeInteger(lastAcceptedVersion) || lastAcceptedVersion < 0) {
+    fail('ANTI_REPLAY_STATE_INVALID', 'catalog anti-replay state is invalid');
+  }
   const manifestSha256 = manifestDigest(candidate.manifestBytes, crypto);
 
   if (candidate.envelope === undefined) {
@@ -213,6 +238,9 @@ export function verifyCatalogCandidate(
   }
   if (key.status === 'revoked') {
     fail('KEY_REVOKED', 'catalog signing key has been revoked');
+  }
+  if (key.status !== 'active') {
+    fail('KEY_UNTRUSTED', 'catalog signing key status is not trusted');
   }
   if (!isBase64(envelope.signature)) {
     fail('SIGNATURE_INVALID', 'catalog signature encoding is invalid');
