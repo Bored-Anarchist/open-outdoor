@@ -1,0 +1,33 @@
+{
+  "$schema": "./phase0-gate.schema.json",
+  "schemaVersion": 1,
+  "asOf": "2026-08-21",
+  "profileId": "iphone14-ios26.2-phase0-v1",
+  "gateStatus": "blocked",
+  "packages": {
+    "WP-001": { "status": "accepted", "evidence": "docs/evidence/WP-001.md" },
+    "WP-002": { "status": "accepted", "evidence": "docs/evidence/WP-002.md" },
+    "WP-003": { "status": "accepted", "evidence": "docs/evidence/WP-003.md" },
+    "WP-004": { "status": "accepted", "evidence": "docs/evidence/WP-004.md" },
+    "WP-005": { "status": "accepted", "evidence": "docs/evidence/WP-005.md" },
+    "WP-006": { "status": "accepted", "evidence": "docs/evidence/WP-006.md" },
+    "WP-007": { "status": "physical-pending", "evidence": "docs/evidence/WP-007.md" },
+    "WP-008": { "status": "physical-pending", "evidence": "docs/evidence/WP-008.md" },
+    "WP-009": { "status": "in-progress", "evidence": "docs/evidence/WP-009.md" },
+    "WP-010": { "status": "accepted", "evidence": "docs/evidence/WP-010.md" }
+  },
+  "budgets": {
+    "BUD-REC-001": { "status": "physical-pending", "evidence": "physical iPhone acknowledgement timing" },
+    "BUD-REC-002": { "status": "physical-pending", "evidence": "screen-off process-death durability" },
+    "BUD-REC-003": { "status": "passed", "evidence": "T-PHY-001-C01 through C06 deterministic replay" },
+    "BUD-MEM-001": { "status": "physical-pending", "evidence": "four-hour screen-off memory profile" },
+    "BUD-ENE-BALANCED": { "status": "physical-pending", "evidence": "three four-hour Balanced runs" },
+    "BUD-ENE-ENDURANCE": { "status": "physical-pending", "evidence": "three four-hour Endurance runs" },
+    "BUD-ENE-HIGH-ACCURACY": { "status": "blocked", "evidence": "measured budget not yet approved" }
+  },
+  "hostedCi": {
+    "period": "2026-08-19 through 2026-08-21",
+    "avoidableJobsDetected": false,
+    "report": "docs/PHASE_0_GATE_REPORT.md#hosted-ci-usage"
+  }
+}
