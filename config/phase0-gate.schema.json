@@ -14,16 +14,31 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["WP-001", "WP-002", "WP-003", "WP-004", "WP-005", "WP-006", "WP-007", "WP-008", "WP-009", "WP-010"],
-      "patternProperties": {
-        "^WP-00[1-9]$|^WP-010$": { "$ref": "#/$defs/evidenceItem" }
+      "properties": {
+        "WP-001": { "$ref": "#/$defs/evidenceItem" },
+        "WP-002": { "$ref": "#/$defs/evidenceItem" },
+        "WP-003": { "$ref": "#/$defs/evidenceItem" },
+        "WP-004": { "$ref": "#/$defs/evidenceItem" },
+        "WP-005": { "$ref": "#/$defs/evidenceItem" },
+        "WP-006": { "$ref": "#/$defs/evidenceItem" },
+        "WP-007": { "$ref": "#/$defs/evidenceItem" },
+        "WP-008": { "$ref": "#/$defs/evidenceItem" },
+        "WP-009": { "$ref": "#/$defs/evidenceItem" },
+        "WP-010": { "$ref": "#/$defs/evidenceItem" }
       }
     },
     "budgets": {
       "type": "object",
       "additionalProperties": false,
       "required": ["BUD-REC-001", "BUD-REC-002", "BUD-REC-003", "BUD-MEM-001", "BUD-ENE-BALANCED", "BUD-ENE-ENDURANCE", "BUD-ENE-HIGH-ACCURACY"],
-      "patternProperties": {
-        "^BUD-[A-Z0-9-]+$": { "$ref": "#/$defs/evidenceItem" }
+      "properties": {
+        "BUD-REC-001": { "$ref": "#/$defs/evidenceItem" },
+        "BUD-REC-002": { "$ref": "#/$defs/evidenceItem" },
+        "BUD-REC-003": { "$ref": "#/$defs/evidenceItem" },
+        "BUD-MEM-001": { "$ref": "#/$defs/evidenceItem" },
+        "BUD-ENE-BALANCED": { "$ref": "#/$defs/evidenceItem" },
+        "BUD-ENE-ENDURANCE": { "$ref": "#/$defs/evidenceItem" },
+        "BUD-ENE-HIGH-ACCURACY": { "$ref": "#/$defs/evidenceItem" }
       }
     },
     "hostedCi": {
