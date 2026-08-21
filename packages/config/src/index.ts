@@ -5,3 +5,5 @@ export interface ChannelIdentity {
   readonly bundleIdentifier: string;
   readonly trustRoot: string;
 }
+
+export * from './catalog-trust.js';
