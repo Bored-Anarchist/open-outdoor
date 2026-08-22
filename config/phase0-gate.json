@@ -1,6 +1,6 @@
 {
   "$schema": "./phase0-gate.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "asOf": "2026-08-21",
   "profileId": "iphone14-ios26.2-phase0-v1",
   "gateStatus": "blocked",
@@ -35,8 +35,13 @@
     }
   },
   "hostedCi": {
-    "period": "2026-08-19 through 2026-08-21",
-    "avoidableJobsDetected": true,
-    "report": "docs/PHASE_0_GATE_REPORT.md#hosted-ci-usage"
+    "report": "docs/PHASE_0_GATE_REPORT.md#hosted-ci-usage",
+    "cleanWindow": {
+      "startsAfter": "2026-08-21T23:40:00Z",
+      "requiredApplicableRuns": 20,
+      "evaluatedApplicableRuns": 0,
+      "avoidableFailureCount": 0,
+      "status": "collecting"
+    }
   }
 }

@@ -83,13 +83,11 @@ export function assertCatalogMutationDenied(descriptor: StoreDescriptor): void {
 export interface SupportedVersions {
   readonly app: { readonly current: number; readonly previous: number };
   readonly catalog: { readonly current: number; readonly previous: number };
-  readonly backup: { readonly current: number; readonly previous: number };
 }
 
 export interface VersionCandidate {
   readonly app: number;
   readonly catalog: number;
-  readonly backup: number;
 }
 
 function acceptsVersion(
@@ -103,7 +101,7 @@ export function preflightVersionCompatibility(
   candidate: VersionCandidate,
   supported: SupportedVersions,
 ): void {
-  const ranges = [supported.app, supported.catalog, supported.backup];
+  const ranges = [supported.app, supported.catalog];
   if (
     ranges.some(
       ({ current, previous }) =>
@@ -118,12 +116,11 @@ export function preflightVersionCompatibility(
   }
   if (
     !acceptsVersion(candidate.app, supported.app) ||
-    !acceptsVersion(candidate.catalog, supported.catalog) ||
-    !acceptsVersion(candidate.backup, supported.backup)
+    !acceptsVersion(candidate.catalog, supported.catalog)
   ) {
     throw new StorageBoundaryError(
       'COMPATIBILITY_REJECTED',
-      'app, catalog, or backup version is outside the current-plus-previous window',
+      'app or catalog version is outside the current-plus-previous window',
     );
   }
 }
@@ -229,5 +226,125 @@ export function simulateCatalogActivation(
     interruptedAt: interruptAt,
     rolledBack: false,
     pointerSwitched: true,
+  };
+}
+
+export interface Phase0ActivityFixture {
+  readonly id: string;
+  readonly name: string;
+}
+
+export interface Phase0AssociationFixture {
+  readonly id: string;
+  readonly trailId: string;
+  readonly referenceId: string | null;
+  readonly state: 'resolved' | 'review';
+}
+
+export interface Phase0Fixture {
+  readonly stage: 'A' | 'B';
+  readonly activities: readonly Phase0ActivityFixture[];
+  readonly userTrails: readonly Phase0ActivityFixture[];
+  readonly associations: readonly Phase0AssociationFixture[];
+  readonly overlays: readonly {
+    readonly id: string;
+    readonly trailId: string;
+    readonly catalogFeatureId: string;
+  }[];
+  readonly notes: readonly { readonly id: string; readonly body: string }[];
+  readonly favorites: readonly { readonly id: string; readonly targetId: string }[];
+  readonly promotions: readonly {
+    readonly id: string;
+    readonly privateTrailId: string;
+    readonly canonicalReferenceId: string;
+  }[];
+  readonly attachments: readonly {
+    readonly id: string;
+    readonly ownerId: string;
+    readonly fileName: string;
+    readonly synthetic: true;
+  }[];
+}
+
+export function generatePhase0Fixture(stage: 'A' | 'B'): Phase0Fixture {
+  const catalogFeatureId = stage === 'A' ? 'catalog-a-feature' : 'catalog-b-feature';
+  return {
+    stage,
+    activities: [{ id: 'activity-a', name: 'Synthetic activity' }],
+    userTrails: [{ id: 'user-trail-a', name: 'Synthetic user trail' }],
+    associations: [
+      {
+        id: 'association-a',
+        trailId: 'user-trail-a',
+        referenceId: catalogFeatureId,
+        state: 'resolved',
+      },
+      ...(stage === 'B'
+        ? [
+            {
+              id: 'association-unresolved',
+              trailId: 'user-trail-a',
+              referenceId: null,
+              state: 'review' as const,
+            },
+          ]
+        : []),
+    ],
+    overlays: [{ id: 'overlay-a', trailId: 'user-trail-a', catalogFeatureId }],
+    notes: [{ id: 'note-a', body: 'Synthetic note' }],
+    favorites: [{ id: 'favorite-a', targetId: 'user-trail-a' }],
+    promotions:
+      stage === 'B'
+        ? [
+            {
+              id: 'promotion-a',
+              privateTrailId: 'user-trail-a',
+              canonicalReferenceId: 'catalog-b-feature',
+            },
+          ]
+        : [],
+    attachments: [
+      {
+        id: 'attachment-a',
+        ownerId: 'activity-a',
+        fileName: 'phase0-synthetic.txt',
+        synthetic: true,
+      },
+    ],
+  };
+}
+
+function fnv1a64(value: string): string {
+  let hash = 0xcbf29ce484222325n;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= BigInt(value.charCodeAt(index));
+    hash = BigInt.asUintN(64, hash * 0x100000001b3n);
+  }
+  return hash.toString(16).padStart(16, '0');
+}
+
+export function phase0FixtureCounts(fixture: Phase0Fixture): Readonly<Record<string, number>> {
+  return {
+    activities: fixture.activities.length,
+    userTrails: fixture.userTrails.length,
+    associations: fixture.associations.length,
+    overlays: fixture.overlays.length,
+    notes: fixture.notes.length,
+    favorites: fixture.favorites.length,
+    promotions: fixture.promotions.length,
+    attachments: fixture.attachments.length,
+  };
+}
+
+export function phase0FixtureHashes(fixture: Phase0Fixture): Readonly<Record<string, string>> {
+  return {
+    activities: fnv1a64(JSON.stringify(fixture.activities)),
+    userTrails: fnv1a64(JSON.stringify(fixture.userTrails)),
+    associations: fnv1a64(JSON.stringify(fixture.associations)),
+    overlays: fnv1a64(JSON.stringify(fixture.overlays)),
+    notes: fnv1a64(JSON.stringify(fixture.notes)),
+    favorites: fnv1a64(JSON.stringify(fixture.favorites)),
+    promotions: fnv1a64(JSON.stringify(fixture.promotions)),
+    attachments: fnv1a64(JSON.stringify(fixture.attachments)),
   };
 }

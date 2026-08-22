@@ -2,7 +2,7 @@
 
 **Status:** Implementation foundation complete; physical inspection and restore evidence pending  
 **Goal:** Preserve locked-screen recording while keeping sensitive location data out of implicit system backups
-**Implementation:** WP-007/WP-008 add the protected native active spool, explicit file-policy helper, split SQLite capability boundary, and post-activation attribute reapplication. `T-PHY-005-C01`–`C08` still require the pinned iPhone; the Swift/Windows checks are not physical acceptance.
+**Implementation:** WP-007/WP-008 add the recoverable protected active spool, explicit file-policy inspection, split SQLite capability boundary, synthetic A/B diagnostic harness, post-activation attribute reapplication, narrow report sharing, and read-only Windows iTunes backup inspection. `T-PHY-005-C01`–`C07` still require the pinned iPhone; Swift/Windows checks are not physical acceptance. ADR-041 moves encrypted restore and former C08 to WP-107/WP-306 and `T-BAK-001`.
 
 ## 1. Policy decisions
 

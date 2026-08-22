@@ -15,6 +15,7 @@ const mobilePackage = JSON.parse(await text('apps/mobile/package.json'));
 const moduleConfig = JSON.parse(await text('packages/native-spikes/expo-module.config.json'));
 const podspec = await text('packages/native-spikes/OpenOutdoorNativeSpikes.podspec');
 const tracker = await text('packages/native-spikes/ios/OpenOutdoorTrackerSpike.swift');
+const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diagnostics.swift');
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
@@ -36,6 +37,15 @@ requireText(tracker, 'allowsBackgroundLocationUpdates = true', 'tracker');
 requireText(tracker, 'CMAltimeter', 'tracker');
 requireText(tracker, 'completeUntilFirstUserAuthentication', 'tracker');
 requireText(tracker, 'try fileHandle.synchronize()', 'tracker');
+for (const token of [
+  'active-session.json',
+  'tornFinalLineIgnored',
+  'static func recover()',
+  'discardRecovery()',
+  'clearManifest: false',
+]) {
+  requireText(tracker, token, 'recoverable tracker');
+}
 for (const token of [
   '.balanced',
   '.endurance',
@@ -65,6 +75,9 @@ for (const functionName of [
   'isTracking',
   'currentSessionId',
   'lastTrackingError',
+  'inspectTrackingSession',
+  'recoverTrackingSession',
+  'discardRecoverableTrackingSession',
 ]) {
   requireText(nativeModule, `AsyncFunction("${functionName}")`, 'native module');
   requireText(mobileBinding, `readonly ${functionName}`, 'mobile native binding');
@@ -72,6 +85,27 @@ for (const functionName of [
 requireText(nativeModule, '.runOnQueue(.main)', 'native module');
 requireText(mobileApp, 'Start native tracking', 'mobile feasibility UI');
 requireText(mobileApp, 'Stop native tracking', 'mobile feasibility UI');
+requireText(mobileApp, 'Recover interrupted session', 'mobile feasibility UI');
+requireText(mobileApp, 'Seed fixture version A', 'mobile feasibility UI');
+requireText(mobileApp, 'Share diagnostic JSON', 'mobile feasibility UI');
+for (const token of [
+  '#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS',
+  'phase0_activity',
+  'phase0_association',
+  'phase0_attachment',
+  'phase0_promotion',
+  'Bundle.main.bundleIdentifier == "org.openoutdoor.local"',
+  'SHA256.hash',
+  'UIActivityViewController',
+  'after-remap-validation',
+  'recordHashes',
+]) {
+  requireText(diagnostics, token, 'Phase 0 diagnostics');
+}
+requireText(podspec, 'OPEN_OUTDOOR_PHASE0_DIAGNOSTICS', 'podspec');
+if (app.expo.ios.infoPlist.UIFileSharingEnabled === true) {
+  throw new Error('Phase 0 reporting must not expose the entire Documents directory');
+}
 requireText(storage, 'SQLITE_OPEN_READONLY', 'storage');
 requireText(storage, 'SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE', 'storage');
 requireText(storage, 'PRAGMA journal_mode=WAL', 'storage');

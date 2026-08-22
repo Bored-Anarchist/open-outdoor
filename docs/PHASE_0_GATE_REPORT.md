@@ -6,7 +6,7 @@
 
 ## Completed foundations
 
-WP-001 through WP-006 and WP-010 are accepted. WP-007 and WP-008 now have executable shared contracts and autolinked Swift feasibility implementations. WP-009 supplies the machine-readable release budgets and fail-closed gate evaluator.
+WP-001 through WP-006 and WP-010 are accepted. WP-007 now includes a durable active-session manifest, torn-line-tolerant spool readback, explicit process recovery, and UI controls. WP-008 now includes a Phase-0-only synthetic SQLite/catalog diagnostic harness, deterministic A-to-B records/counts/hashes, activation checkpoint simulation, narrow JSON sharing, and a read-only Windows iTunes backup inspector. WP-009 supplies the machine-readable release budgets, bounded CI ledger, and fail-closed gate evaluator.
 
 ## Blocking evidence
 
@@ -31,7 +31,7 @@ GitHub run history from 2026-08-19 through 2026-08-21 contains 57 requested/comp
 | security-rights-privacy | 12 | 12 | 0 | 0 | 3.78 |
 | windows-quality | 12 | 8 | 4 | 0 | 24.62 |
 
-Avoidable work is present: repeated failing Windows iterations, three failed manual macOS builds, and multiple PR evidence-only updates each requested the full PR check set. Workoff is to batch evidence changes, require local focused/full gates before push, keep macOS manual-only, and avoid dispatching another macOS build until the exact native candidate is ready. This historical usage cannot be erased, so the gate retains the CI-efficiency blocker until the next review demonstrates the corrected workflow.
+The historical interval remains the baseline but no longer creates a permanent blocker. Gate schema v2 starts a bounded clean window after 2026-08-21T23:40:00Z. The first 20 applicable runs must contain zero avoidable failures; excluded runs require an explicit reason in config/hosted-ci-window.json. The machine evaluator currently reports 0/20, so CI efficiency remains blocked until the ledger reaches a clean pass.
 
 ## Risk disposition
 
@@ -42,5 +42,5 @@ R-001 is reduced by accepted WP-006 launch/refresh feasibility but remains open 
 1. Build the native-spike candidate once in the pinned macOS workflow and install it with the stable local identity.
 2. Execute the WP-007 physical tracking protocol and 30-minute memory smoke.
 3. Execute WP-008 protection, backup inventory, A→B retention, downgrade, and rollback inspection.
-4. Review hosted usage after a batched, locally validated candidate and remove the CI-efficiency blocker only with evidence.
+4. Classify the first 20 applicable post-baseline workflow runs in the bounded ledger; zero may be avoidable failures.
 5. Change `config/phase0-gate.json` to passed only when every machine-readable item is accepted/passed and protected checks pass on the exact candidate.

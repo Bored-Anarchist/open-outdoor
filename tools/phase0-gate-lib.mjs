@@ -23,6 +23,15 @@ export function evaluatePhase0Gate(record) {
     const item = record.budgets[budgetId];
     if (item?.status !== 'passed') blockers.push(`${budgetId}: ${item?.status ?? 'missing'}`);
   }
-  if (record.hostedCi.avoidableJobsDetected) blockers.push('hosted CI: avoidable jobs detected');
+  const cleanWindow = record.hostedCi.cleanWindow;
+  if (cleanWindow.avoidableFailureCount > 0) {
+    blockers.push(
+      `hosted CI: clean window failed (${cleanWindow.avoidableFailureCount} avoidable)`,
+    );
+  } else if (cleanWindow.evaluatedApplicableRuns < cleanWindow.requiredApplicableRuns) {
+    blockers.push(
+      `hosted CI: clean window incomplete (${cleanWindow.evaluatedApplicableRuns}/${cleanWindow.requiredApplicableRuns})`,
+    );
+  }
   return { status: blockers.length === 0 ? 'passed' : 'blocked', blockers };
 }

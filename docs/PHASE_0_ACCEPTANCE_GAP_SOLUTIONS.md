@@ -1,8 +1,8 @@
 # Phase 0 acceptance-gap solutions
 
-**Status:** Recommended workoff plan updated 2026-08-21
+**Status:** Recommended implementations complete; physical workoff pending
 
-This document records the recommended solutions for the blockers identified by WP-009. It does not claim that unexecuted physical checks have passed.
+This document records the implemented solutions for the blockers identified by WP-009. The native recovery, synthetic diagnostic harness, backup inspector, deterministic A-to-B fixtures, restore-scope correction, and bounded CI ledger are implemented; unexecuted physical checks remain pending.
 
 ## Accepted scope reduction: battery and thermal tests
 
@@ -10,36 +10,36 @@ Measured battery draw, thermal endurance, and multi-hour energy runs are removed
 
 The implementation still must conserve energy by construction: start location and altimeter sensors only for an active recording, stop them immediately afterward, prohibit continuous polling, require explicit High Accuracy selection, and use the configured 10 m Balanced and 25 m Endurance distance filters. The former four-hour memory run is a separate concern and is reduced to a 30-minute screen-off smoke.
 
-## Recommended blocker solutions
+## Implemented blocker solutions
 
 ### 1. Process-death recovery and readback
 
-Add a durable active-session manifest beside the protected spool. At launch, discover the latest session, tolerate a torn final line, recover the highest valid sequence/mode/session identifier, and expose native `recoverTrackingSession` plus readback/inspection controls in the feasibility UI. Execute T-PHY-001-C08 only after this exists; relaunching a shell without recovery is not acceptance.
+Implemented a durable `active-session.json` beside the protected spool. Launch inspection validates the manifest, tolerates only a torn final JSONL line, recovers the highest contiguous sequence/mode/session identifier, and exposes native inspect/recover/discard controls in the feasibility UI. T-PHY-001-C08 is now executable but remains physically pending.
 
 ### 2. WP-008 physical diagnostic harness
 
-Add Phase-0-only native diagnostics that create synthetic user SQLite/WAL/SHM files, catalogs, attachments, and diagnostic artifacts. Report effective file-protection and backup-exclusion resource values, simulate catalog activation checkpoints, and compute record counts and hashes. Exclude this harness from production builds and never seed real or private data.
+Implemented a compile-flagged Phase-0-only native harness that creates synthetic user SQLite/WAL/SHM files, public/private catalogs, attachments, and diagnostics. It reports effective file-protection and backup-exclusion values, simulates every activation checkpoint, and computes deterministic record counts/hashes. The native-spikes package and compile condition are excluded from the future production bridge.
 
 ### 3. Protection and backup inspection from Windows
 
-Export the native diagnostic report for direct review, then inspect the iTunes backup `Manifest.db` to confirm which synthetic artifacts are absent or present. This gives auditable evidence for protection classes and system-backup exclusions without relying on UI appearance alone.
+Implemented a share-sheet export for exactly one generated diagnostic JSON file; broad iTunes File Sharing remains disabled. The read-only Python `Manifest.db` inspector reports only redacted relative paths and fails if a declared excluded synthetic artifact appears in the app backup domain.
 
 ### 4. Deterministic version A to B fixture
 
-Provide a fixture generator that seeds the exact synthetic activity, user trail, catalog associations, overlay, and hashes used by both builds. Install A and seed it, install B with the same bundle identity and a changed catalog/remap, force activation checkpoints, and compare counts/hashes after upgrade and relaunch.
+Implemented matching cross-platform and native fixture generators for the exact synthetic activity, user trail, association, overlay, note, favorite, attachment, catalog remap, unresolved link, counts, and hashes used by builds A and B. The device UI can seed A, inspect after upgrade, force every checkpoint, apply B, and share the result.
 
 ### 5. Restore-scope correction
 
-Recommended scope change: remove encrypted backup restore from WP-008 and the Phase 0 physical matrix. Phase 0 should inspect system-backup exclusion and the uninstall warning; authenticated encrypted restore belongs to WP-107/WP-306 after its crypto/container ADR is decided. This recommendation is not adopted by the battery-scope decision and needs separate owner approval.
+Adopted in ADR-041: encrypted backup restore is removed from WP-008 and the Phase 0 physical matrix. Phase 0 inspects system-backup exclusion and the uninstall warning; authenticated encrypted restore belongs to WP-107/WP-306 after its crypto/container ADR is decided.
 
 ### 6. Hosted-CI history criterion
 
-Replace the sticky subjective history flag with a defined clean window, such as the next 20 applicable runs or one milestone with zero avoidable failures. Keep macOS manual-only, avoid docs-only native jobs, batch related changes, and recompute `avoidableJobsDetected` from the bounded window. Until the agreed window passes, hosted-CI efficiency remains a blocker.
+Implemented gate schema v2 and `config/hosted-ci-window.json`: the first 20 applicable runs after the recorded start must contain zero avoidable failures. Exclusions require a reason, duplicate or pre-window run IDs fail validation, and only the bounded first 20 count. The current 0/20 collecting state remains a blocker.
 
-## Recommended order
+## Physical workoff order
 
-1. Implement recovery/readback and the synthetic WP-008 physical diagnostic harness.
-2. Add the deterministic A-to-B fixture and diagnostic export.
-3. Execute the shortened physical tracker/storage workoff on the iPhone.
-4. Review the bounded hosted-CI window.
+1. Compile the exact native candidate and install it with the stable local identity.
+2. Execute tracker recovery/readback and the 30-minute memory smoke on the iPhone.
+3. Execute the synthetic WP-008 protection/system-backup/A-to-B checkpoint matrix and retain the shared private reports.
+4. Complete the bounded 20-run hosted-CI window with zero avoidable failures.
 5. Schedule full battery/thermal characterization only in WP-307/WP-503.

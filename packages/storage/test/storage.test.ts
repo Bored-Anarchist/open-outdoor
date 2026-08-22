@@ -3,7 +3,10 @@ import {
   StorageBoundaryError,
   assertCatalogMutationDenied,
   capabilityForStore,
+  generatePhase0Fixture,
   preflightVersionCompatibility,
+  phase0FixtureCounts,
+  phase0FixtureHashes,
   requiredCatalogFreeBytes,
   simulateCatalogActivation,
   storageLayout,
@@ -16,14 +19,13 @@ const GIB = 1024 ** 3;
 const supported: SupportedVersions = {
   app: { current: 2, previous: 1 },
   catalog: { current: 2, previous: 1 },
-  backup: { current: 2, previous: 1 },
 };
 
 function plan(overrides: Partial<CatalogActivationPlan> = {}): CatalogActivationPlan {
   return {
     incomingCatalogId: 'catalog-b',
     checksumValid: true,
-    versions: { app: 2, catalog: 2, backup: 2 },
+    versions: { app: 2, catalog: 2 },
     supportedVersions: supported,
     currentActiveCombinedBytes: GIB,
     incomingCombinedBytes: GIB,
@@ -112,22 +114,17 @@ describe('T-INT-002 catalog lifecycle interruption matrix', () => {
 });
 
 describe('T-INT-006 current-plus-previous compatibility', () => {
-  it('T-INT-006-C01 accepts current app, catalog, and backup versions', () => {
-    expect(() =>
-      preflightVersionCompatibility({ app: 2, catalog: 2, backup: 2 }, supported),
-    ).not.toThrow();
+  it('T-INT-006-C01 accepts current app and catalog versions', () => {
+    expect(() => preflightVersionCompatibility({ app: 2, catalog: 2 }, supported)).not.toThrow();
   });
 
   it('T-INT-006-C02 accepts the previous compatible versions', () => {
-    expect(() =>
-      preflightVersionCompatibility({ app: 1, catalog: 1, backup: 1 }, supported),
-    ).not.toThrow();
+    expect(() => preflightVersionCompatibility({ app: 1, catalog: 1 }, supported)).not.toThrow();
   });
 
   it.each([
-    ['T-INT-006-C03', { app: 0, catalog: 2, backup: 2 }],
-    ['T-INT-006-C04', { app: 2, catalog: 0, backup: 2 }],
-    ['T-INT-006-C05', { app: 2, catalog: 2, backup: 0 }],
+    ['T-INT-006-C03', { app: 0, catalog: 2 }],
+    ['T-INT-006-C04', { app: 2, catalog: 0 }],
   ])('%s rejects an unsupported version before mutation', (_caseId, versions) => {
     expectStorageError(
       () => preflightVersionCompatibility(versions, supported),
@@ -139,10 +136,39 @@ describe('T-INT-006 current-plus-previous compatibility', () => {
     expectStorageError(
       () =>
         preflightVersionCompatibility(
-          { app: 2, catalog: 2, backup: 2 },
+          { app: 2, catalog: 2 },
           { ...supported, app: { current: 2, previous: 2 } },
         ),
       'VERSION_STATE_INVALID',
     );
+  });
+});
+describe('Phase 0 deterministic A-to-B fixture', () => {
+  it('T-INT-002-C09 generates stable synthetic A and B records', () => {
+    const versionA = generatePhase0Fixture('A');
+    const versionB = generatePhase0Fixture('B');
+    expect(generatePhase0Fixture('A')).toEqual(versionA);
+    expect(phase0FixtureCounts(versionA)).toEqual({
+      activities: 1,
+      userTrails: 1,
+      associations: 1,
+      overlays: 1,
+      notes: 1,
+      favorites: 1,
+      promotions: 0,
+      attachments: 1,
+    });
+    expect(phase0FixtureCounts(versionB).associations).toBe(2);
+    expect(phase0FixtureCounts(versionB).promotions).toBe(1);
+  });
+
+  it('T-INT-002-C10 preserves private record hashes while remapping catalog links', () => {
+    const versionA = phase0FixtureHashes(generatePhase0Fixture('A'));
+    const versionB = phase0FixtureHashes(generatePhase0Fixture('B'));
+    for (const key of ['activities', 'userTrails', 'notes', 'favorites', 'attachments']) {
+      expect(versionB[key]).toBe(versionA[key]);
+    }
+    expect(versionB.associations).not.toBe(versionA.associations);
+    expect(versionB.overlays).not.toBe(versionA.overlays);
   });
 });

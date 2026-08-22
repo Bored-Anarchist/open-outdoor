@@ -37,8 +37,8 @@ Accountability, consulted roles, hardware profiles, and cost ownership are defin
 | `WP-005` | Private downstream workflow spike | M | WP-001, WP-003 | Upstream remote guide, ephemeral isolated private CI boundary, compatibility check | Public update can be incorporated without sending private content to public systems or shared caches/runners |
 | `WP-006` | iOS build and Windows sideload feasibility | L | WP-002 | Accepted ADR-037, pinned macOS build, unsigned artifact, Windows sign/install/refresh instructions, channel identity | Physical iPhone launch, exact provisioning expiry, refresh, and relaunch pass |
 | `WP-007` | Minimal native tracker and durability spike | L | WP-006 | Swift tracker spike, protected active spool, location/altimeter batches, deterministic replay, energy-conscious modes | Background screen-lock collection, recovery, stop behavior, protection class, and 30-minute memory smoke pass |
-| `WP-008` | Private/reference database, backup, and compatibility spike | L | WP-002, WP-006 | Accepted ADR-017/ADR-018, separate protected SQLite stores, backup-exclusion inspection, A→B app/schema/catalog/backup matrix, remap/promotion/rollback | Private records survive refresh/upgrade; incompatible downgrade fails before mutation; catalogs never cross-write user DB |
-| `WP-009` | Phase 0 evidence and budget review | S | WP-001–WP-008, WP-010 | Evidence index, risk updates, decision closures, measured budget and hosted-minute usage report, gate report | Every Phase 0 criterion and Phase 1 prerequisite budget passes; avoidable hosted jobs are removed or Phase 1 remains blocked |
+| `WP-008` | Private/reference database, protection, and compatibility spike | L | WP-002, WP-006 | Accepted ADR-017/ADR-018/ADR-041, separate protected SQLite stores, system-backup exclusion inspection, synthetic A→B app/schema/catalog fixture, remap/promotion/rollback diagnostics | Private records survive refresh/upgrade; app/catalog downgrade fails before mutation; catalogs never cross-write user DB; encrypted restore remains WP-107/WP-306 |
+| `WP-009` | Phase 0 evidence and budget review | S | WP-001–WP-008, WP-010 | Evidence index, risk updates, decision closures, measured budget and hosted-minute usage report, bounded CI clean-window ledger, gate report | Every Phase 0 criterion and Phase 1 prerequisite budget passes; the 20-run CI window is clean or Phase 1 remains blocked |
 | `WP-010` | Catalog trust and production-signing foundation | M | WP-001, WP-002 | Manifest signature envelope, channel trust roots, key/revocation procedure, replay/wrong-channel fixtures, unsigned-development labeling | Production catalog rejects missing/invalid/untrusted/wrong-channel signatures; private trust roots remain private |
 
 ### Phase 0 exit gate
@@ -47,7 +47,7 @@ Accountability, consulted roles, hardware profiles, and cost ownership are defin
 - Both private composition modes pass using synthetic data.
 - Leak and source-rights gates fail closed.
 - Physical iPhone signing, background tracking, refresh, and data retention pass.
-- iOS file-protection classes and system-backup exclusions pass inspection and restore tests.
+- iOS file-protection classes and system-backup exclusions pass inspection, and the uninstall warning is verified; encrypted restore remains a later gate.
 - Catalog activation/remap/rollback preserves private data; trust, replay, channel, and downgrade cases fail closed.
 - Initial artifact size, activation time, launch, query, memory, and accuracy budgets pass the declared Phase 1 prerequisites; measured energy acceptance is deferred to WP-307/WP-503.
 

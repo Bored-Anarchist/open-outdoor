@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { evaluatePhase0Gate } from './phase0-gate-lib.mjs';
+import { summarizeHostedCiWindow } from './hosted-ci-window-lib.mjs';
 
 const root = new URL('../', import.meta.url);
 
@@ -15,11 +16,14 @@ const trust = await readJson('config/catalog-trust.json');
 const signatureSchema = await readJson('config/catalog-signature.schema.json');
 const phase0Schema = await readJson('config/phase0-gate.schema.json');
 const phase0 = await readJson('config/phase0-gate.json');
+const hostedCiSchema = await readJson('config/hosted-ci-window.schema.json');
+const hostedCi = await readJson('config/hosted-ci-window.json');
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 const checks = [
   ['release configuration', releaseSchema, release],
   ['catalog trust configuration', trustSchema, trust],
   ['Phase 0 gate record', phase0Schema, phase0],
+  ['hosted CI clean-window ledger', hostedCiSchema, hostedCi],
 ];
 let failed = false;
 
@@ -62,6 +66,11 @@ if (trust.channels.private.keySource !== 'external-private-root') {
   failed = true;
 }
 
+const hostedCiSummary = summarizeHostedCiWindow(hostedCi);
+if (JSON.stringify(hostedCiSummary) !== JSON.stringify(phase0.hostedCi.cleanWindow)) {
+  console.error('hosted CI ledger summary disagrees with the Phase 0 gate record');
+  failed = true;
+}
 if (release.phase0.profileId !== phase0.profileId) {
   console.error('release and Phase 0 gate profile IDs disagree');
   failed = true;

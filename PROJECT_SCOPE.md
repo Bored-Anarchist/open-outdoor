@@ -660,6 +660,7 @@ Contributors retain copyright and license accepted contributions under Apache-2.
 - Pull-request workflows from forks receive no release secrets and cannot publish artifacts to trusted release channels.
 - Public CI uses only public, synthetic, or approved redacted inputs.
 - Hosted CI minutes are minimized through path filters, concurrency cancellation, strict timeouts, fail-fast jobs, narrow matrices, local-first validation, and reuse of safe immutable dependency caches. Scheduled builds are disabled unless a measured operational need is approved.
+- Phase 0 CI-efficiency closeout uses a recorded 20-applicable-run window with zero avoidable failures. Excluded runs require reasons; a failed finite window is closed in the gate report before an owner-approved replacement window begins.
 - Documentation-only changes do not run macOS/native/device jobs. Expensive macOS, full-catalog, physical-device, and release workflows run only for relevant protected-branch candidates, an explicit maintainer-approved gate, or a release—not for every draft commit.
 - Production builds emit software and data bills of materials, source/rights manifests, checksums, signed artifacts/catalogs, and signed provenance. Development artifacts may remain unsigned only when visibly labelled and barred from production channels.
 - Release artifacts are signed, checksum-published, and traceable to a protected commit and pinned build environment.
@@ -689,6 +690,8 @@ Restore decrypts into staging and validates authentication, manifest counts, att
 Application downgrade after a forward private-database migration is unsupported unless the older app explicitly declares read compatibility. Catalog rollback is independent and cannot downgrade the private schema. The supported production policy is current app/catalog/backup schema plus one previous compatible major version; older explicit backups require an intermediate supported migrator or fail read-only before mutation.
 
 Backup tests cover same-version restore, supported migrations, wrong keys, tampering, truncation, corrupt attachments, insufficient space, and backup-before-uninstall. Exports offer sensitive start/end trimming and optional EXIF location/time removal.
+
+ADR-041 bounds Phase 0 to effective protection-class inspection, implicit system-backup exclusion, backup-inventory inspection, and the uninstall warning. Phase 0/WP-008 does not implement or execute encrypted restore; container/KDF selection, backup-schema compatibility, and all-or-nothing restore begin in WP-107 and complete in WP-306/T-BAK-001.
 
 An explicit promotion workflow may export a selected private trail or correction to a review area. The default package excludes unrelated activities, favorites, notes, photos, and identifiers. Nothing becomes public automatically: publication requires user intent, rights review, privacy review, deduplication, and an ordinary public pull-request/release process using a safe transformed artifact.
 

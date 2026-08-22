@@ -35,7 +35,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [iOS build and Windows sideload feasibility](IOS_SIDELOAD_FEASIBILITY.md) | Pinned unsigned build, Windows signing/install path, and pending physical-device evidence | iOS/build owner |
 | [iOS native spike procedure](IOS_NATIVE_SPIKE_PROCEDURE.md) | Windows candidate preparation and exact physical tracker/storage workoff | iOS/tracking owner |
 | [Phase 0 gate report](PHASE_0_GATE_REPORT.md) | WP-009 budget, risk, CI-usage, and phase-entry disposition | Project/release owner |
-| [Phase 0 acceptance-gap solutions](PHASE_0_ACCEPTANCE_GAP_SOLUTIONS.md) | Recommended implementation paths for the remaining physical and hosted-CI blockers | Technical lead |
+| [Phase 0 acceptance-gap solutions](PHASE_0_ACCEPTANCE_GAP_SOLUTIONS.md) | Implemented workoff tooling and the remaining physical/CI completion steps | Technical lead |
 | [Evidence index](evidence/README.md) | Work-package implementation and acceptance records | Quality lead |
 | [Diagnostics plan](DIAGNOSTICS_PLAN.md) | Local-only schema, redaction, retention, preview, export, and deletion | Privacy/quality owner |
 | [Public-boundary incident response](INCIDENT_RESPONSE.md) | Credential revocation, containment, private reporting, corrective action, and safe resumption | Security/privacy owner |

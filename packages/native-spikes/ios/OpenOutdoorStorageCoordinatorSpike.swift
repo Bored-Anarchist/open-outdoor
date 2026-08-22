@@ -1,9 +1,18 @@
 import Foundation
 import SQLite3
 
-internal enum OpenOutdoorStorageError: Error {
+internal enum OpenOutdoorStorageError: LocalizedError {
   case pathEscapesRoot
   case sqlite(code: Int32, message: String)
+
+  var errorDescription: String? {
+    switch self {
+    case .pathEscapesRoot:
+      return "The requested catalog path escapes its declared root"
+    case .sqlite(_, let message):
+      return message
+    }
+  }
 }
 
 internal final class OpenOutdoorSQLiteConnection {
@@ -35,10 +44,54 @@ internal final class OpenOutdoorSQLiteConnection {
       throw OpenOutdoorStorageError.sqlite(code: result, message: message)
     }
   }
+
+  func scalarInt(_ sql: String) throws -> Int {
+    let rows = try queryRows(sql, columns: 1)
+    guard let value = rows.first?.first, let result = Int(value) else {
+      throw OpenOutdoorStorageError.sqlite(code: SQLITE_MISMATCH, message: "Expected integer result")
+    }
+    return result
+  }
+
+  func queryRows(_ sql: String, columns: Int) throws -> [[String]] {
+    guard let database else { return [] }
+    var statement: OpaquePointer?
+    let prepareResult = sqlite3_prepare_v2(database, sql, -1, &statement, nil)
+    guard prepareResult == SQLITE_OK, let statement else {
+      throw OpenOutdoorStorageError.sqlite(
+        code: prepareResult,
+        message: String(cString: sqlite3_errmsg(database))
+      )
+    }
+    defer { sqlite3_finalize(statement) }
+
+    var rows: [[String]] = []
+    while true {
+      let step = sqlite3_step(statement)
+      if step == SQLITE_DONE { return rows }
+      guard step == SQLITE_ROW else {
+        throw OpenOutdoorStorageError.sqlite(
+          code: step,
+          message: String(cString: sqlite3_errmsg(database))
+        )
+      }
+      var row: [String] = []
+      for index in 0..<columns {
+        if sqlite3_column_type(statement, Int32(index)) == SQLITE_NULL {
+          row.append("<null>")
+        } else if let text = sqlite3_column_text(statement, Int32(index)) {
+          row.append(String(cString: text))
+        } else {
+          row.append("")
+        }
+      }
+      rows.append(row)
+    }
+  }
 }
 
 internal final class OpenOutdoorStorageCoordinatorSpike {
-  private let applicationSupport: URL
+  let applicationSupport: URL
 
   init() throws {
     applicationSupport = try FileManager.default.url(
@@ -49,15 +102,21 @@ internal final class OpenOutdoorStorageCoordinatorSpike {
     ).standardizedFileURL
   }
 
-  func openWritableUserDatabase() throws -> OpenOutdoorSQLiteConnection {
-    let directory = applicationSupport.appendingPathComponent("UserData", isDirectory: true)
-    try OpenOutdoorFilePolicy.prepareDirectory(directory, protection: .complete)
-    let databaseURL = directory.appendingPathComponent("user.sqlite")
-    let connection = try OpenOutdoorSQLiteConnection(
-      url: databaseURL,
-      flags: SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
-    )
-    try connection.execute("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
+  var userDatabaseURL: URL {
+    applicationSupport
+      .appendingPathComponent("UserData", isDirectory: true)
+      .appendingPathComponent("user.sqlite")
+  }
+
+  func catalogRoot(privateCatalog: Bool) -> URL {
+    applicationSupport
+      .appendingPathComponent("Catalogs", isDirectory: true)
+      .appendingPathComponent(privateCatalog ? "Private" : "Public", isDirectory: true)
+      .standardizedFileURL
+  }
+
+  func applyUserDatabasePolicy() throws {
+    let databaseURL = userDatabaseURL
     try OpenOutdoorFilePolicy.apply(databaseURL, protection: .complete)
     for suffix in ["-wal", "-shm"] {
       let sidecar = URL(fileURLWithPath: databaseURL.path + suffix)
@@ -65,15 +124,27 @@ internal final class OpenOutdoorStorageCoordinatorSpike {
         try OpenOutdoorFilePolicy.apply(sidecar, protection: .complete)
       }
     }
+  }
+
+  func openWritableUserDatabase() throws -> OpenOutdoorSQLiteConnection {
+    let directory = userDatabaseURL.deletingLastPathComponent()
+    try OpenOutdoorFilePolicy.prepareDirectory(directory, protection: .complete)
+    let connection = try OpenOutdoorSQLiteConnection(
+      url: userDatabaseURL,
+      flags: SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX
+    )
+    try connection.execute(
+      "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA wal_autocheckpoint=0;"
+    )
+    try applyUserDatabasePolicy()
     return connection
   }
 
-  func openReadOnlyCatalog(at catalogURL: URL, privateCatalog: Bool) throws -> OpenOutdoorSQLiteConnection {
-    let rootName = privateCatalog ? "Private" : "Public"
-    let catalogRoot = applicationSupport
-      .appendingPathComponent("Catalogs", isDirectory: true)
-      .appendingPathComponent(rootName, isDirectory: true)
-      .standardizedFileURL
+  func openReadOnlyCatalog(
+    at catalogURL: URL,
+    privateCatalog: Bool
+  ) throws -> OpenOutdoorSQLiteConnection {
+    let catalogRoot = catalogRoot(privateCatalog: privateCatalog)
     try OpenOutdoorFilePolicy.prepareDirectory(
       catalogRoot,
       protection: .completeUntilFirstUserAuthentication

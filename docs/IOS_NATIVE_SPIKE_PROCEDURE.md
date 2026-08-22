@@ -13,25 +13,26 @@
 
 1. Open **Open Outdoor native feasibility**, request Always Location, choose Balanced or Endurance, and use the native Start/Stop controls.
 2. Record start/stop acknowledgement and p95 resident memory during one 30-minute screen-off smoke. Battery percentage and thermal endurance are not acceptance evidence in Phase 0/Phase 1.
-3. During dedicated functional cases, lock the screen, suspend/foreground, enter poor GPS, enable airplane/weak-cell conditions, terminate the process after a known checkpoint, relaunch, and verify sequence/gap state.
+3. During dedicated functional cases, lock the screen, suspend/foreground, enter poor GPS, and enable airplane/weak-cell conditions. For process death, terminate after a known checkpoint, relaunch, tap **Inspect tracking spool**, confirm the recovered sequence/mode/session and any torn-line flag, then tap **Recover interrupted session** and continue.
 4. Stop recording and prove no later location/barometer observations are appended.
 5. Confirm mode behavior by source/config inspection: High Accuracy is explicit, Balanced uses a 10 m distance filter, Endurance uses 25 m, sensors run only during active recording, and no continuous polling is introduced.
 
 Full battery/thermal characterization is deferred to WP-307/WP-503 and must not be inferred from this workoff.
 
-## Protection and backup inspection
+## Protection and system-backup inspection
 
-1. After first unlock, create an active spool, sealed user database with WAL/SHM, attachment, public/private catalog, diagnostic, and explicit-backup temporary file.
-2. Inspect each file/directory for the declared protection class and `isExcludedFromBackupKey`, including after copy, replacement, migration, and pointer activation.
+1. Tap **Seed fixture version A**. This creates only synthetic user SQLite/WAL/SHM records, an attachment, diagnostic, and public/private catalogs.
+2. Tap **Inspect current fixture** and **Share diagnostic JSON**. Review every reported effective protection class, backup-exclusion value, record count, and record hash.
 3. Lock the device: the active spool must remain available; the sealed private database must be denied. Reboot and verify safe pre-first-unlock behavior.
-4. Inspect the system backup inventory and prove excluded private/regenerable content is absent.
+4. Create an encrypted iTunes backup on Windows. Run `uv run --frozen python -m open_outdoor_data.ios_backup_inspector --backup-root <backup-directory> --report <private-report.json>` and require `passed: true`.
+5. Verify the uninstall warning. Do not uninstall for Phase 0: ADR-041 moves encrypted restore to WP-107/WP-306.
 
 ## Same-identity A→B and downgrade matrix
 
-1. In A create an activity, user trail, association, overlay, note, favorite, and attachment; record private counts/hashes.
-2. Install/refresh B with schema migration, catalog replacement, ID remap, promotion link, and one unresolved link.
-3. Verify exact counts/hashes, composed queries, duplicate suppression, unresolved review, and catalog integrity.
-4. Force failure at copy/checksum/compatibility/remap/pointer/first-launch boundaries; retain either old known-good or fully confirmed new catalog and never roll back private data.
-5. Attempt unsupported older app/catalog/backup combinations and prove read-only failure before mutation.
+1. In version A tap **Seed fixture version A**, share the report, and retain its synthetic record counts/hashes privately.
+2. Install/refresh version B with the same bundle identity. Tap **Inspect current fixture** before mutation to prove A survived.
+3. Re-seed A before each independent checkpoint case, select the checkpoint, and tap **Apply version B**. Before-pointer checkpoints retain catalog A; after-pointer interruption rolls back; `after-first-launch` activates B.
+4. On the successful B path, verify unchanged activity/user-trail/note/favorite/attachment hashes, changed association/overlay hashes, the remapped link, and one unresolved-review link.
+5. Attempt unsupported older app/catalog combinations and prove read-only failure before mutation. Backup-schema compatibility and restore are WP-107/T-BAK-001.
 
 Record every exact case ID, environment, timestamps, artifact/config hashes, result, redaction class, reviewer, and residual risk in WP-007/WP-008 evidence before changing the Phase 0 gate.
