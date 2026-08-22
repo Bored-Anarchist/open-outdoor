@@ -45,6 +45,9 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@open-outdoor/native-spikes':
+        specifier: workspace:*
+        version: link:../../packages/native-spikes
       expo:
         specifier: 56.0.20
         version: 56.0.20(@babel/core@7.29.7(supports-color@8.1.1))(@expo/dom-webview@56.0.6)(react-native@0.85.3(@babel/core@7.29.7(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.3)(supports-color@8.1.1))(react@19.2.3)(supports-color@8.1.1)(typescript@6.0.3)
@@ -72,6 +75,8 @@ importers:
       '@open-outdoor/shared':
         specifier: workspace:*
         version: link:../shared
+
+  packages/native-spikes: {}
 
   packages/map:
     dependencies:

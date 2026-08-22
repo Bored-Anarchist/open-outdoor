@@ -37,6 +37,31 @@
   },
   "regions": ["US-NY"],
   "schemas": { "catalog": 1, "backup": 1 },
+  "phase0": {
+    "profileId": "iphone14-ios26.2-phase0-v1",
+    "referenceDevice": { "model": "iPhone 14", "os": "iOS 26.2" },
+    "tracker": {
+      "batchMaximumSeconds": 30,
+      "recordingControlP95Ms": 500,
+      "maximumCommittedDataGapSeconds": 30,
+      "maximumCommittedDataGapBatches": 1,
+      "screenOffResidentMemoryP95MiB": 150,
+      "energyPolicy": {
+        "acceptancePhase": "deferred-field-hardening",
+        "deferredWorkPackages": ["WP-307", "WP-503"],
+        "sensorsOnlyDuringActiveRecording": true,
+        "continuousPollingAllowed": false,
+        "highAccuracyRequiresExplicitSelection": true,
+        "balancedDistanceFilterMeters": 10,
+        "enduranceDistanceFilterMeters": 25
+      }
+    },
+    "catalog": {
+      "combinedInstalledMaximumBytes": 3221225472,
+      "minimumWorkspaceBytes": 1073741824,
+      "postActivationReserveBytes": 2147483648
+    }
+  },
   "budgets": {
     "diagnosticRetentionHours": 24,
     "publicArtifactRetentionDays": 1,

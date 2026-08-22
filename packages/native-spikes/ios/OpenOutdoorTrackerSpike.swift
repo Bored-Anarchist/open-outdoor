@@ -1,0 +1,435 @@
+import CoreLocation
+import CoreMotion
+import Foundation
+
+internal enum OpenOutdoorTrackingMode: String, Codable {
+  case balanced
+  case endurance
+  case highAccuracy = "high-accuracy"
+}
+
+internal enum OpenOutdoorTrackerError: LocalizedError {
+  case alreadyTracking
+  case notTracking
+  case recoverableSessionExists
+  case noRecoverableSession
+  case invalidSpool(String)
+
+  var errorDescription: String? {
+    switch self {
+    case .alreadyTracking:
+      return "A tracking session is already active"
+    case .notTracking:
+      return "No tracking session is active"
+    case .recoverableSessionExists:
+      return "Recover or discard the existing interrupted session before starting another"
+    case .noRecoverableSession:
+      return "No interrupted tracking session is available"
+    case .invalidSpool(let reason):
+      return "The interrupted tracking spool is invalid: \(reason)"
+    }
+  }
+}
+
+private struct OpenOutdoorSpoolObservation: Codable {
+  let sequence: Int64
+  let recordedAt: Date
+  let longitude: Double
+  let latitude: Double
+  let horizontalAccuracyM: Double
+  let altitudeM: Double
+  let pressureKPa: Double?
+}
+
+private struct OpenOutdoorActiveSessionManifest: Codable {
+  let version: Int
+  let sessionID: UUID
+  let mode: OpenOutdoorTrackingMode
+  let spoolFileName: String
+  let startedAt: Date
+}
+
+internal struct OpenOutdoorTrackingInspection: Codable {
+  let sessionId: String
+  let mode: String
+  let highestSequence: Int64
+  let validObservationCount: Int
+  let tornFinalLineIgnored: Bool
+  let spoolFileName: String
+  let recording: Bool
+
+  func json() throws -> String {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    return String(decoding: try encoder.encode(self), as: UTF8.self)
+  }
+}
+
+private final class OpenOutdoorActiveSpool {
+  private static let manifestFileName = "active-session.json"
+
+  private let directory: URL
+  private let fileURL: URL
+  private let manifest: OpenOutdoorActiveSessionManifest
+  private var fileHandle: FileHandle
+
+  private static func activeDirectory() throws -> URL {
+    let applicationSupport = try FileManager.default.url(
+      for: .applicationSupportDirectory,
+      in: .userDomainMask,
+      appropriateFor: nil,
+      create: true
+    )
+    let directory = applicationSupport
+      .appendingPathComponent("Tracking", isDirectory: true)
+      .appendingPathComponent("Active", isDirectory: true)
+    try OpenOutdoorFilePolicy.prepareDirectory(
+      directory,
+      protection: .completeUntilFirstUserAuthentication
+    )
+    return directory
+  }
+
+  private static func manifestURL(in directory: URL) -> URL {
+    directory.appendingPathComponent(manifestFileName)
+  }
+
+  private static func writeManifest(
+    _ manifest: OpenOutdoorActiveSessionManifest,
+    in directory: URL
+  ) throws {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    let url = manifestURL(in: directory)
+    try encoder.encode(manifest).write(to: url, options: .atomic)
+    try OpenOutdoorFilePolicy.apply(
+      url,
+      protection: .completeUntilFirstUserAuthentication
+    )
+  }
+
+  private static func readManifest(in directory: URL) throws -> OpenOutdoorActiveSessionManifest? {
+    let url = manifestURL(in: directory)
+    guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+    let manifest = try JSONDecoder().decode(
+      OpenOutdoorActiveSessionManifest.self,
+      from: Data(contentsOf: url)
+    )
+    guard manifest.version == 1 else {
+      throw OpenOutdoorTrackerError.invalidSpool("unsupported manifest version")
+    }
+    guard
+      URL(fileURLWithPath: manifest.spoolFileName).lastPathComponent == manifest.spoolFileName,
+      manifest.spoolFileName == "\(manifest.sessionID.uuidString).jsonl"
+    else {
+      throw OpenOutdoorTrackerError.invalidSpool("manifest spool path is unsafe")
+    }
+    return manifest
+  }
+
+  private static func inspect(
+    manifest: OpenOutdoorActiveSessionManifest,
+    directory: URL,
+    recording: Bool
+  ) throws -> OpenOutdoorTrackingInspection {
+    let spoolURL = directory.appendingPathComponent(manifest.spoolFileName)
+    guard FileManager.default.fileExists(atPath: spoolURL.path) else {
+      throw OpenOutdoorTrackerError.invalidSpool("manifest spool is missing")
+    }
+
+    let data = try Data(contentsOf: spoolURL)
+    let endsInNewline = data.isEmpty || data.last == 0x0A
+    let lines = data.split(separator: 0x0A, omittingEmptySubsequences: true)
+    var expectedSequence: Int64 = 1
+    var validCount = 0
+    var tornFinalLineIgnored = false
+
+    for (index, line) in lines.enumerated() {
+      do {
+        let observation = try JSONDecoder().decode(
+          OpenOutdoorSpoolObservation.self,
+          from: Data(line)
+        )
+        guard observation.sequence == expectedSequence else {
+          throw OpenOutdoorTrackerError.invalidSpool(
+            "expected sequence \(expectedSequence), found \(observation.sequence)"
+          )
+        }
+        expectedSequence += 1
+        validCount += 1
+      } catch {
+        if index == lines.count - 1 && !endsInNewline {
+          tornFinalLineIgnored = true
+          break
+        }
+        if let trackerError = error as? OpenOutdoorTrackerError {
+          throw trackerError
+        }
+        throw OpenOutdoorTrackerError.invalidSpool(
+          "observation \(index + 1) cannot be decoded"
+        )
+      }
+    }
+
+    return OpenOutdoorTrackingInspection(
+      sessionId: manifest.sessionID.uuidString,
+      mode: manifest.mode.rawValue,
+      highestSequence: Int64(validCount),
+      validObservationCount: validCount,
+      tornFinalLineIgnored: tornFinalLineIgnored,
+      spoolFileName: manifest.spoolFileName,
+      recording: recording
+    )
+  }
+
+  init(sessionID: UUID, mode: OpenOutdoorTrackingMode) throws {
+    directory = try Self.activeDirectory()
+    guard try Self.readManifest(in: directory) == nil else {
+      throw OpenOutdoorTrackerError.recoverableSessionExists
+    }
+
+    fileURL = directory.appendingPathComponent("\(sessionID.uuidString).jsonl")
+    if !FileManager.default.fileExists(atPath: fileURL.path) {
+      guard FileManager.default.createFile(atPath: fileURL.path, contents: nil) else {
+        throw CocoaError(.fileWriteUnknown)
+      }
+    }
+    try OpenOutdoorFilePolicy.apply(
+      fileURL,
+      protection: .completeUntilFirstUserAuthentication
+    )
+
+    manifest = OpenOutdoorActiveSessionManifest(
+      version: 1,
+      sessionID: sessionID,
+      mode: mode,
+      spoolFileName: fileURL.lastPathComponent,
+      startedAt: Date()
+    )
+    try Self.writeManifest(manifest, in: directory)
+    fileHandle = try FileHandle(forWritingTo: fileURL)
+    try fileHandle.seekToEnd()
+  }
+
+  private init(
+    directory: URL,
+    manifest: OpenOutdoorActiveSessionManifest
+  ) throws {
+    self.directory = directory
+    self.manifest = manifest
+    fileURL = directory.appendingPathComponent(manifest.spoolFileName)
+    try OpenOutdoorFilePolicy.apply(
+      fileURL,
+      protection: .completeUntilFirstUserAuthentication
+    )
+    fileHandle = try FileHandle(forWritingTo: fileURL)
+    try fileHandle.seekToEnd()
+  }
+
+  static func latestInspection(recording: Bool = false) throws -> OpenOutdoorTrackingInspection? {
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else { return nil }
+    return try inspect(manifest: manifest, directory: directory, recording: recording)
+  }
+
+  static func recover() throws -> (OpenOutdoorActiveSpool, OpenOutdoorTrackingInspection, OpenOutdoorTrackingMode) {
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else {
+      throw OpenOutdoorTrackerError.noRecoverableSession
+    }
+    let inspection = try inspect(manifest: manifest, directory: directory, recording: true)
+    return (
+      try OpenOutdoorActiveSpool(directory: directory, manifest: manifest),
+      inspection,
+      manifest.mode
+    )
+  }
+
+  static func discardRecovery() throws -> OpenOutdoorTrackingInspection {
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else {
+      throw OpenOutdoorTrackerError.noRecoverableSession
+    }
+    let inspection = try inspect(manifest: manifest, directory: directory, recording: false)
+    try FileManager.default.removeItem(at: manifestURL(in: directory))
+    return inspection
+  }
+
+  func append(_ observation: OpenOutdoorSpoolObservation) throws {
+    var encoded = try JSONEncoder().encode(observation)
+    encoded.append(0x0A)
+    try fileHandle.write(contentsOf: encoded)
+    try fileHandle.synchronize()
+    try OpenOutdoorFilePolicy.apply(
+      fileURL,
+      protection: .completeUntilFirstUserAuthentication
+    )
+  }
+
+  func close(clearManifest: Bool) throws {
+    try fileHandle.synchronize()
+    try fileHandle.close()
+    if clearManifest {
+      let url = Self.manifestURL(in: directory)
+      if FileManager.default.fileExists(atPath: url.path) {
+        try FileManager.default.removeItem(at: url)
+      }
+    }
+  }
+}
+
+internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegate {
+  private let locationManager = CLLocationManager()
+  private let altimeter = CMAltimeter()
+  private var spool: OpenOutdoorActiveSpool?
+  private var sequence: Int64 = 0
+  private var currentPressureKPa: Double?
+  private(set) var currentSessionID: UUID?
+  private(set) var currentMode: OpenOutdoorTrackingMode?
+  private(set) var lastError: String?
+
+  var isTracking: Bool {
+    spool != nil
+  }
+
+  override init() {
+    super.init()
+    locationManager.delegate = self
+    locationManager.activityType = .fitness
+    locationManager.allowsBackgroundLocationUpdates = true
+    locationManager.pausesLocationUpdatesAutomatically = false
+    locationManager.showsBackgroundLocationIndicator = true
+    do {
+      _ = try OpenOutdoorActiveSpool.latestInspection()
+    } catch {
+      lastError = error.localizedDescription
+    }
+  }
+
+  private func requireAlwaysAuthorization() throws {
+    guard locationManager.authorizationStatus == .authorizedAlways else {
+      throw NSError(
+        domain: "OpenOutdoorTracker",
+        code: 1,
+        userInfo: [NSLocalizedDescriptionKey: "Always location authorization is required"]
+      )
+    }
+  }
+
+  private func startSensors(mode: OpenOutdoorTrackingMode) {
+    switch mode {
+    case .endurance:
+      locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+      locationManager.distanceFilter = 25
+    case .balanced:
+      locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+      locationManager.distanceFilter = 10
+    case .highAccuracy:
+      locationManager.desiredAccuracy = kCLLocationAccuracyBest
+      locationManager.distanceFilter = kCLDistanceFilterNone
+    }
+
+    locationManager.startUpdatingLocation()
+    if CMAltimeter.isRelativeAltitudeAvailable() {
+      altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, _ in
+        self?.currentPressureKPa = data?.pressure.doubleValue
+      }
+    }
+  }
+
+  func requestAlwaysAuthorization() {
+    locationManager.requestAlwaysAuthorization()
+  }
+
+  func start(mode: OpenOutdoorTrackingMode, sessionID: UUID = UUID()) throws -> String {
+    guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
+    try requireAlwaysAuthorization()
+
+    sequence = 0
+    lastError = nil
+    spool = try OpenOutdoorActiveSpool(sessionID: sessionID, mode: mode)
+    currentSessionID = sessionID
+    currentMode = mode
+    startSensors(mode: mode)
+    return sessionID.uuidString
+  }
+
+  func inspectLatestSession() throws -> String? {
+    if let currentSessionID, let currentMode {
+      let inspection = try OpenOutdoorActiveSpool.latestInspection(recording: true)
+      guard
+        inspection?.sessionId == currentSessionID.uuidString,
+        inspection?.mode == currentMode.rawValue
+      else {
+        throw OpenOutdoorTrackerError.invalidSpool("active state does not match its manifest")
+      }
+      return try inspection?.json()
+    }
+    return try OpenOutdoorActiveSpool.latestInspection()?.json()
+  }
+
+  func recover() throws -> String {
+    guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
+    try requireAlwaysAuthorization()
+
+    let recovered = try OpenOutdoorActiveSpool.recover()
+    spool = recovered.0
+    sequence = recovered.1.highestSequence
+    currentSessionID = UUID(uuidString: recovered.1.sessionId)
+    currentMode = recovered.2
+    lastError = nil
+    startSensors(mode: recovered.2)
+    return try recovered.1.json()
+  }
+
+  func discardRecovery() throws -> String {
+    guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
+    return try OpenOutdoorActiveSpool.discardRecovery().json()
+  }
+
+  func stop() throws -> Int64 {
+    guard spool != nil else { throw OpenOutdoorTrackerError.notTracking }
+    locationManager.stopUpdatingLocation()
+    altimeter.stopRelativeAltitudeUpdates()
+    defer {
+      spool = nil
+      currentPressureKPa = nil
+      currentSessionID = nil
+      currentMode = nil
+    }
+    do {
+      try spool?.close(clearManifest: true)
+    } catch {
+      lastError = error.localizedDescription
+      throw error
+    }
+    return sequence
+  }
+
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    for location in locations where location.horizontalAccuracy >= 0 {
+      sequence += 1
+      let observation = OpenOutdoorSpoolObservation(
+        sequence: sequence,
+        recordedAt: location.timestamp,
+        longitude: location.coordinate.longitude,
+        latitude: location.coordinate.latitude,
+        horizontalAccuracyM: location.horizontalAccuracy,
+        altitudeM: location.altitude,
+        pressureKPa: currentPressureKPa
+      )
+      do {
+        try spool?.append(observation)
+      } catch {
+        lastError = error.localizedDescription
+        manager.stopUpdatingLocation()
+        altimeter.stopRelativeAltitudeUpdates()
+        try? spool?.close(clearManifest: false)
+        spool = nil
+        currentPressureKPa = nil
+        currentSessionID = nil
+        currentMode = nil
+      }
+    }
+  }
+}

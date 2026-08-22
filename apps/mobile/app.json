@@ -10,7 +10,13 @@
     "ios": {
       "bundleIdentifier": "org.openoutdoor.local",
       "deploymentTarget": "16.4",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Open Outdoor uses your location only while you explicitly record an outdoor activity.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor continues an activity you explicitly started while the screen is locked.",
+        "NSMotionUsageDescription": "Open Outdoor uses barometer data during an active recording to improve elevation estimates.",
+        "UIBackgroundModes": ["location"]
+      }
     }
   }
 }

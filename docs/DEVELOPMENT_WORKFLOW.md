@@ -42,6 +42,8 @@ Private downstream work follows equivalent controls inside the private repositor
 
 Hosted minutes are a constrained resource. Contributors run applicable checks locally before push. Workflows use path filters, one concurrency group per pull request with cancellation of superseded runs, fail-fast behavior, narrow matrices, explicit timeouts, and safe immutable caches. No routine schedule/cron is enabled without measured need. Documentation-only changes run only lightweight documentation integrity checks. macOS/native, full-catalog, physical-device, and release jobs run only when relevant paths change and a protected-branch, milestone, or release gate requests them.
 
+During Phase 0 closeout, `config/hosted-ci-window.json` classifies the first 20 applicable runs after its UTC start as `applicable-clean`, `avoidable-failure`, or `excluded`; exclusions require a reason. Zero avoidable failures are permitted. A failed bounded window is closed in the gate report and may be followed by a new owner-approved window, so historical mistakes remain visible without becoming a permanent blocker.
+
 - `windows-quality`: formatting, lint, typecheck, unit/integration tests, deterministic fixtures.
 - `security-rights-privacy`: dependency/secret/input gates, source classifications, licenses, public artifact inspection.
 - `design-accessibility-traceability`: semantic tests, docs/RTM links, UI states where applicable.

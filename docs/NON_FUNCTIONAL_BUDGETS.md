@@ -1,11 +1,11 @@
 # Non-Functional Budgets and Objective Acceptance
 
-**Status:** Provisional numeric baseline; Phase 0 measurements must confirm or supersede values before Phase 1
+**Status:** Binding non-energy Phase 0 thresholds; physical acceptance remains pending and measured energy acceptance is deferred
 
 ## 1. Rules
 
 - A budget is binding when recorded in the machine-readable release configuration with an environment/profile ID.
-- Phase 0 may replace a provisional number only through an ADR with measurement evidence and updated RTM/tests/risks.
+- A binding value may change only through an ADR with measurement evidence and updated RTM/tests/risks.
 - Phase 1 cannot start until every `Phase 1 prerequisite` budget below is binding.
 - Release evidence reports median, p95 where meaningful, worst observed, repetitions, and raw private evidence location.
 - A result measured on browser/simulator cannot satisfy a physical iPhone budget.
@@ -22,7 +22,7 @@
 | `BUD-REC-003` | Missed/duplicate accepted sample count after replay | 0 silent loss; duplicate sequence is idempotent | Deterministic replay | Phase 1 prerequisite |
 | `BUD-CAT-001` | Activation of maximum supported catalog | ≤ 5 min; resumable progress every ≤ 30 s | Physical iPhone with declared reserve | Phase 3 |
 | `BUD-CAT-002` | First launch after successful catalog switch | ≤ 10 s before usable status or explicit recovery UI | Physical iPhone | Phase 3 |
-| `BUD-MEM-001` | Screen-off tracker resident memory | p95 ≤ 150 MiB | Physical iPhone, four-hour profile | Phase 1 prerequisite |
+| `BUD-MEM-001` | Screen-off tracker resident memory | p95 ≤ 150 MiB | Physical iPhone, 30-minute screen-off smoke | Phase 1 prerequisite |
 | `BUD-MEM-002` | Dense interactive map resident memory | p95 ≤ 500 MiB without OS memory termination | Physical iPhone | Phase 3 |
 
 ## 3. Entity-resolution budgets
@@ -50,14 +50,9 @@ Defaults are configurable downward by source; raising them requires a security/p
 | `BUD-ING-006` | Image decode | 50 megapixels and 200 MiB decoded buffer |
 | `BUD-ING-007` | Single connector partition | 15 min wall time before checkpoint/timeout unless manifest-approved |
 
-## 5. Energy and thermal method
+## 5. Deferred energy and thermal acceptance
 
-- Each mode uses at least three valid four-hour screen-off runs under the pinned representative profile after one warm-up run.
-- Record median, worst, temperature range, battery health, radio/GPS conditions, travelled distance, screen time, and native-baseline delta.
-- Provisional targets remain ≤ 4% battery/hour Balanced and ≤ 3% Endurance.
-- High Accuracy receives a measured published budget before release; it is not accepted as “unbounded.”
-- A release regression greater than 10% relative to the binding mode budget or native-overhead baseline requires explanation and explicit budget approval.
-- Any thermal warning, continuous retry, unintended background session, or missed stop fails regardless of battery percentage.
+Phase 0 and Phase 1 make no numeric battery-life or thermal claim and require no physical energy runs. T-PHY-002 is reserved for WP-307/WP-503, which must approve a representative protocol and numeric thresholds before production. Current implementation constraints remain binding: sensors only during active recording, no continuous polling, explicit High Accuracy, 10 m Balanced and 25 m Endurance distance filters. Recording correctness, unintended sessions, stop behavior, and the 30-minute memory smoke remain independently testable.
 
 ## 6. Elevation and camping correctness
 
@@ -84,4 +79,4 @@ Named suites are containers. Executable cases use `T-<LEVEL>-NNN-C<two digits>`,
 
 ## 9. Phase 0 closure
 
-WP-009 must publish the binding release-config values, device/profile IDs, measurement procedure, deviations from these provisional values, and risk disposition. Until then the project remains at technical-prototype status.
+WP-009 published the binding non-energy release-config values, iPhone 14/iOS 26.2 profile, measurement procedure, and risk disposition in the Phase 0 gate record and report. The review result is `BLOCKED`: WP-007/WP-008 physical runs and protection/system-backup inspection remain incomplete, and the bounded hosted-CI window is incomplete. Measured energy acceptance is deferred and is not a Phase 0/Phase 1 blocker. Phase 1 must not be scheduled until a later gate record passes every current blocking item.

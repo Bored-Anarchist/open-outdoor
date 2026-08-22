@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** Proposed  
+**Status:** In progress; WP-007/WP-008 prechecks implemented, physical evidence pending  
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
@@ -14,7 +14,7 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | Integration | SQLite migrations, staging, pack build, imports, catalog activation | Windows/macOS/device as appropriate |
 | End-to-end | User flows across UI, storage, map, catalog, export | Browser fixture harness and physical iPhone |
 | Security/privacy | Malicious input, secret detection, root isolation, publication gates | Isolated public/private CI |
-| Physical acceptance | Background tracking, sensors, MapLibre, permissions, accessibility, energy, provisioning | Pinned physical iPhone |
+| Physical acceptance | Background tracking, sensors, MapLibre, permissions, accessibility, provisioning | Pinned physical iPhone |
 | Release audit | Clean build, rights inventory, SBOM/DBOM, checksums, provenance, artifact reproduction | Clean controlled environment |
 
 ## 2. Named test suites
@@ -38,9 +38,9 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | `T-SEC-002` | Public-boundary gate | Secrets, private paths/coordinates, database/media files, undeclared license, logs/caches/artifacts |
 | `T-SEC-003` | Private extension and CI boundary | Ephemeral single-job runner, untrusted PR denial, cache/artifact isolation, allowlisted/pinned extensions, least-privilege secrets |
 | `T-PHY-001` | Native tracking | Screen lock, suspension, GPS loss, poor sky, airplane/weak cell, checkpoint/relaunch, stop behavior |
-| `T-PHY-002` | Energy/thermal | Idle, three modes, periodic map, continuous map, poor GPS, Low Power Mode, four-hour runs |
+| `T-PHY-002` | Energy/thermal (reserved) | Deferred to WP-307/WP-503; no Phase 0/Phase 1 battery acceptance or endurance claim |
 | `T-PHY-003` | Native accessibility/field UX | VoiceOver, Dynamic Type, contrast, bold text, motion, touch, dark mode, sunlight/one-handed review |
-| `T-PHY-004` | Provisioning/retention | Exact expiry, warnings, sign/install, refresh, same-ID upgrade, container retention, backup/reinstall/restore |
+| `T-PHY-004` | Provisioning/retention | Exact expiry, warnings, sign/install, refresh, same-ID upgrade, container retention |
 | `T-PHY-005` | iOS protection and system backup | Protection class by artifact, lock-state active recording, sealed-data denial while locked, backup-exclusion inspection, deletion |
 | `T-BAK-001` | Backup/restore | Same/older version, wrong/missing key, tamper, truncate, corrupt attachment, low space, all-or-nothing swap |
 | `T-DIA-001` | Local diagnostics | Allow/deny fields, retention cap, coordinate/note/media/secret redaction, explicit export preview, deletion |
@@ -88,11 +88,42 @@ Cases `T-INT-002-C01` through `C08` cover activation boundaries; `T-INT-006-C01`
 
 ### 4.2 Interrupted recording
 
-Exercise permission changes, pause/resume, OS suspension, screen lock, process termination, duplicate/out-of-order batches, poor GPS, low battery, and relaunch. The saved activity must have an explainable gap/quality state and must not invent distance/elevation.
+Exercise permission changes, pause/resume, OS suspension, screen lock, process termination, duplicate/out-of-order batches, poor GPS, and relaunch. The saved activity must have an explainable gap/quality state and must not invent distance/elevation.
+
+WP-007 assigns these exact cases:
+
+- `T-PHY-001-C01`: replay contiguous sequenced batches without loss or reordering.
+- `T-PHY-001-C02`: produce the same committed order from out-of-order delivery.
+- `T-PHY-001-C03`: accept byte-equivalent duplicate sequences idempotently.
+- `T-PHY-001-C04`: reject a conflicting duplicate sequence.
+- `T-PHY-001-C05`: report missing sequence ranges instead of inventing samples.
+- `T-PHY-001-C06`: reject invalid state, timestamp, coordinate, accuracy, or observation sequencing.
+- `T-PHY-001-C07`: on the reference iPhone, preserve the declared screen-off batch/durability bound through lock, suspension, weak/absent GPS, and radio changes.
+- `T-PHY-001-C08`: on the reference iPhone, terminate and relaunch during an active session with no silent loss or duplicate acceptance.
+- `T-PHY-001-C09`: on the reference iPhone, permission loss/recovery and explicit stop leave an explainable state and no unintended sensor session.
+
+Cases C01–C06 are deterministic Windows contract prechecks. They cannot pass C07–C09 or the physical suite by substitution.
+
+T-PHY-002 has no required Phase 0 or Phase 1 cases. It is reserved for WP-307/WP-503, where a representative protocol, repetitions, and numeric limits must be approved before endurance claims or production release. Current tests validate tracker correctness and the 30-minute memory smoke, not battery draw.
 
 ### 4.3 Catalog interruption matrix
 
 Interrupt before/after copy, checksum, compatibility, remap validation, transaction commit, active pointer switch, and first-launch confirmation. Each point must retain either the old known-good catalog or the fully validated new catalog.
+
+WP-008 assigns these exact integration cases:
+
+- `T-INT-001-C01`: every store has an explicit protection class and backup-exclusion policy.
+- `T-INT-001-C02`: catalog handles expose no writable capability; user storage remains independently writable with WAL.
+- `T-INT-002-C01`–`C06`: interrupt before copy, after copy, after checksum, after compatibility, after remap validation, and before pointer switch; retain the old known-good catalog and private digest.
+- `T-INT-002-C07`: roll back a switched pointer when first launch is interrupted or fails.
+- `T-INT-002-C08`: activate the fully validated catalog without changing private records.
+- `T-INT-006-C01`: accept current app/catalog versions.
+- `T-INT-006-C02`: accept the previous compatible versions.
+- `T-INT-006-C03`–`C04`: reject unsupported app and catalog versions before mutation.
+- `T-INT-006-C05`: reserved for WP-107 backup-schema compatibility and not part of WP-008 acceptance.
+- `T-INT-006-C06`: reject malformed support state before mutation.
+
+The same preflight enforces the exact combined-catalog ceiling and free-space formula from the non-functional budgets.
 
 ### 4.4 Privacy/publication failure
 
@@ -104,7 +135,16 @@ Change an active source to expired/revoked, remove offline/public permission, sh
 
 ### 4.6 iOS protection and system-backup inspection
 
-On the physical reference device, create an active recording, sealed activity, attachment, public/private catalog, diagnostic buffer, and explicit encrypted backup. Verify each filesystem protection class and backup-exclusion attribute, lock the device before first unlock and after unlock where reproducible, confirm active spool continuity and sealed private-data denial, inspect the system backup inventory for absence, and restore only from the explicit backup. These are `T-PHY-005-C01` through `C08`; a browser or simulator cannot substitute.
+On the physical reference device, use the Phase-0-only synthetic harness to create an active recording, sealed activity database/WAL/SHM, attachment, public/private catalog, and diagnostic buffer. Verify each filesystem protection class and backup-exclusion attribute, lock the device before first unlock and after unlock where reproducible, confirm active spool continuity and sealed private-data denial, inspect the system backup inventory for absence, and verify the uninstall warning. These are `T-PHY-005-C01` through `C07`; a browser or simulator cannot substitute.
+
+- `T-PHY-005-C01`: active spool and checkpoint use `completeUntilFirstUserAuthentication` and are excluded from system backup.
+- `T-PHY-005-C02`: sealed private SQLite main/WAL/SHM use `complete` and are excluded.
+- `T-PHY-005-C03`: synthetic attachments, diagnostics, and staging files use their declared classes and are excluded.
+- `T-PHY-005-C04`: public/private catalogs retain declared protection and exclusion after copy, rename, and activation.
+- `T-PHY-005-C05`: after first unlock, screen-lock recording continues through the active spool while sealed private data remains unavailable.
+- `T-PHY-005-C06`: pre-first-unlock behavior after reboot fails safely and is explicitly disclosed.
+- `T-PHY-005-C07`: inspected system-backup inventory contains none of the excluded artifacts and uninstall behavior matches the warning.
+- `T-PHY-005-C08`: retired from Phase 0 by ADR-041; encrypted restore verification is `T-BAK-001` under WP-107/WP-306.
 
 ### 4.7 Private CI and catalog trust
 
@@ -125,7 +165,7 @@ Inspect the candidate and its user-facing claims to confirm that only iOS is shi
 
 ### 4.9 Contribution privacy and hosted-minute control
 
-Use synthetic public contribution metadata to verify that legal names, personal email/address/location/phone, device/account identifiers, and unredacted evidence are rejected while a public handle plus privacy-protected commit address and pull-request attestation are accepted. Exercise documentation-only, shared-code, native-iOS, catalog, superseded, and release-candidate changes to prove path filters, concurrency cancellation, timeouts, narrow matrices, and candidate-only expensive jobs. Record requested, executed, skipped, cancelled, and billable minutes by job in `T-REL-004-C01` through `C10`.
+Use synthetic public contribution metadata to verify that legal names, personal email/address/location/phone, device/account identifiers, and unredacted evidence are rejected while a public handle plus privacy-protected commit address and pull-request attestation are accepted. Exercise documentation-only, shared-code, native-iOS, catalog, superseded, and release-candidate changes to prove path filters, concurrency cancellation, timeouts, narrow matrices, and candidate-only expensive jobs. Record requested, executed, skipped, cancelled, and billable minutes by job in `T-REL-004-C01` through `C10`. `T-REL-004-C11` proves that only the first 20 applicable post-start runs count; `C12` proves that an avoidable failure fails that bounded window.
 
 ## 5. Elevation acceptance
 
@@ -137,11 +177,9 @@ Use synthetic public contribution metadata to verify that legal names, personal 
 
 Any threshold change creates a new algorithm/version decision with before/after error and energy evidence.
 
-## 6. Energy acceptance
+## 6. Deferred energy acceptance
 
-Each mode uses at least three independent four-hour physical runs under the pinned protocol. Provisional release limits are no more than 4 percentage points of battery per hour in Balanced and 3 in Endurance, calculated from normalized start/end state of charge. A candidate also fails for an unexplained regression greater than 10% relative to the accepted native baseline. High Accuracy is characterized and disclosed until a release limit is approved. Every result records the environment and raw samples required by the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md).
-
-Release-blocking findings include unexplained background wakeups, continuous retries, thermal warning, missed stop, data loss, or a statistically meaningful unapproved regression against the pinned baseline.
+Measured battery draw, thermal endurance, and multi-hour mode characterization are deferred to WP-307/WP-503. Phase 0 and Phase 1 make no battery-life claim and T-PHY-002 does not block their entrance gates. Energy-conscious implementation constraints remain subject to configuration and source validation; tracker correctness, unintended sessions, stop behavior, and memory remain separate acceptance concerns.
 
 ## 7. Accessibility acceptance
 
