@@ -48,7 +48,7 @@ function trackingSummary(inspection: NativeTrackingInspection): string {
 function diagnosticSummary(report: Phase0DiagnosticReport): string {
   const records = Object.values(report.recordCounts).reduce((sum, count) => sum + count, 0);
   const interruption =
-    report.interruptedAt === null
+    report.interruptedAt === null || report.interruptedAt === undefined
       ? ''
       : ' Interrupted at ' +
         report.interruptedAt +
