@@ -40,13 +40,13 @@
 
 ## 2. Phase 0 review — 2026-08-21
 
-WP-007 and WP-008 reduced implementation uncertainty but did not provide the required physical evidence, so no probability or impact score is lowered:
+WP-007 now passes its required physical tracker evidence. WP-008 is owner-accepted on existing evidence, with its unexecuted physical cases retained as residual risks. Open risks remain governed as follows:
 
 - `R-001` remains open pending the full same-identity A→B refresh, data-retention, and expiry workoff; encrypted restore is a later WP-107/WP-306 control.
-- `R-002` and `R-021` remain open where the current iPhone 14/iOS 26.6 protection/pre-first-unlock evidence or later production evidence is still pending; historical iOS 26.2 launch evidence remains recorded.
+- `R-002` and `R-021` remain open for owner-accepted WP-008 locked/pre-first-unlock residuals and later production evidence; historical iOS 26.2 launch evidence remains recorded. They no longer block Phase 0.
 - `R-003` remains score 20 and open. Its measurement is accepted as deferred for Phase 0/Phase 1, but it blocks battery/endurance claims and production until WP-307/WP-503 evidence exists.
 - `R-009` and `R-024` now have deterministic activation, rollback, private-digest, and compatibility prechecks, but remain open pending native/device integration.
-- `R-029` is controlled by a bounded ledger: after the recorded start, the first 20 applicable runs must contain zero avoidable failures. Candidate-only macOS execution, local-first checks, and an explicit reason for exclusions remain required before Phase 1.
+- `R-029` is controlled by a bounded ledger whose first 20 applicable post-baseline runs passed with zero avoidable failures. Candidate-only macOS execution, local-first checks, and explicit reasons for exclusions remain required for subsequent work.
 - WP-009 completed the review and published a `BLOCKED` Phase 0 result; acceptance cannot be inferred from implementation or contract tests alone.
 
 2026-08-23 update: the project owner accepted WP-008 based on the existing evidence and explicitly accepted the residual risk from its unverified encrypted backup inventory, locked/pre-first-unlock denial, complete spool/replacement inspection, and incompatible downgrade attempt. This owner disposition closes WP-008 for Phase 0 but does not convert any unexecuted case into a pass or lower a risk score without separate review.

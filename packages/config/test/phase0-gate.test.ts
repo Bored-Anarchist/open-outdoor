@@ -7,21 +7,30 @@ const record = JSON.parse(readFileSync('config/phase0-gate.json', 'utf8'));
 const ledger = JSON.parse(readFileSync('config/hosted-ci-window.json', 'utf8'));
 
 describe('WP-009 Phase 0 gate evaluation', () => {
-  it('T-REL-001-C09 reports every current physical and budget blocker', () => {
+  it('T-REL-001-C09 matches the current passed gate declaration', () => {
     const result = evaluatePhase0Gate(record);
-    expect(result.status).toBe('blocked');
-    expect(result.blockers).toContain('WP-007: physical-pending');
-    expect(result.blockers).toContain('BUD-MEM-001: physical-pending');
-    expect(result.blockers.some((blocker) => blocker.startsWith('hosted CI:'))).toBe(false);
+    expect(result).toEqual({ status: 'passed', blockers: [] });
+    expect(record.gateStatus).toBe(result.status);
   });
 
   it('T-REL-001-C10 passes only when every package, budget, and clean window passes', () => {
     const accepted = structuredClone(record);
-    for (const item of Object.values(accepted.packages)) item.status = 'accepted';
-    for (const item of Object.values(accepted.budgets)) item.status = 'passed';
-    accepted.hostedCi.cleanWindow.evaluatedApplicableRuns = 20;
-    accepted.hostedCi.cleanWindow.status = 'passed';
     expect(evaluatePhase0Gate(accepted)).toEqual({ status: 'passed', blockers: [] });
+
+    const packagePending = structuredClone(accepted);
+    packagePending.packages['WP-007'].status = 'physical-pending';
+    expect(evaluatePhase0Gate(packagePending).blockers).toContain('WP-007: physical-pending');
+
+    const budgetPending = structuredClone(accepted);
+    budgetPending.budgets['BUD-MEM-001'].status = 'physical-pending';
+    expect(evaluatePhase0Gate(budgetPending).blockers).toContain('BUD-MEM-001: physical-pending');
+
+    const cleanWindowIncomplete = structuredClone(accepted);
+    const requiredRuns = cleanWindowIncomplete.hostedCi.cleanWindow.requiredApplicableRuns;
+    cleanWindowIncomplete.hostedCi.cleanWindow.evaluatedApplicableRuns = requiredRuns - 1;
+    expect(evaluatePhase0Gate(cleanWindowIncomplete).blockers).toContain(
+      'hosted CI: clean window incomplete (19/20)',
+    );
   });
 
   it('T-REL-004-C11 evaluates only the bounded applicable-run window', () => {

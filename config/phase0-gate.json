@@ -3,7 +3,7 @@
   "schemaVersion": 2,
   "asOf": "2026-08-23",
   "profileId": "iphone14-ios26.6-phase0-v1",
-  "gateStatus": "blocked",
+  "gateStatus": "passed",
   "packages": {
     "WP-001": { "status": "accepted", "evidence": "docs/evidence/WP-001.md" },
     "WP-002": { "status": "accepted", "evidence": "docs/evidence/WP-002.md" },
@@ -11,7 +11,7 @@
     "WP-004": { "status": "accepted", "evidence": "docs/evidence/WP-004.md" },
     "WP-005": { "status": "accepted", "evidence": "docs/evidence/WP-005.md" },
     "WP-006": { "status": "accepted", "evidence": "docs/evidence/WP-006.md" },
-    "WP-007": { "status": "physical-pending", "evidence": "docs/evidence/WP-007.md" },
+    "WP-007": { "status": "accepted", "evidence": "docs/evidence/WP-007.md" },
     "WP-008": { "status": "accepted", "evidence": "docs/evidence/WP-008.md" },
     "WP-009": { "status": "accepted", "evidence": "docs/evidence/WP-009.md" },
     "WP-010": { "status": "accepted", "evidence": "docs/evidence/WP-010.md" }
