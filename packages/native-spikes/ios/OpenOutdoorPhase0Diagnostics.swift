@@ -34,7 +34,7 @@ internal final class OpenOutdoorPhase0Diagnostics {
   private var lastReportJSON: String?
 
   init() throws {
-    guard Bundle.main.bundleIdentifier == "org.openoutdoor.local" else {
+    guard Bundle.main.object(forInfoDictionaryKey: "OpenOutdoorPhase0DiagnosticsEnabled") as? Bool == true else {
       throw NSError(
         domain: "OpenOutdoorPhase0Diagnostics",
         code: 8,

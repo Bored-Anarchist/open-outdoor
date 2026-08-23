@@ -46,6 +46,11 @@ requireText(
 requireText(iosBuildScript, 'OpenOutdoorNativeSpikesModule.self', 'iOS build registration gate');
 requireText(podspec, "File.join(__dir__, 'package.json')", 'podspec');
 requireText(podspec, "s.dependency 'ExpoModulesCore'", 'podspec');
+requireText(
+  iosBuildScript,
+  'Print :OpenOutdoorPhase0DiagnosticsEnabled',
+  'iOS build diagnostics gate',
+);
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
 requireText(podspec, "'CoreLocation', 'CoreMotion'", 'podspec');
 requireText(tracker, 'allowsBackgroundLocationUpdates = true', 'tracker');
@@ -111,13 +116,15 @@ requireText(mobileApp, 'Stop native tracking', 'mobile feasibility UI');
 requireText(mobileApp, 'Recover interrupted session', 'mobile feasibility UI');
 requireText(mobileApp, 'Seed fixture version A', 'mobile feasibility UI');
 requireText(mobileApp, 'Share diagnostic JSON', 'mobile feasibility UI');
+requireText(mobileApp, 'Synthetic storage diagnostics unavailable', 'mobile feasibility UI');
+requireText(nativeModule, 'OpenOutdoorPhase0DiagnosticsEnabled', 'native diagnostics gate');
 for (const token of [
   '#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS',
   'phase0_activity',
   'phase0_association',
   'phase0_attachment',
   'phase0_promotion',
-  'Bundle.main.bundleIdentifier == "org.openoutdoor.local"',
+  'OpenOutdoorPhase0DiagnosticsEnabled',
   'SHA256.hash',
   'UIActivityViewController',
   'after-remap-validation',
@@ -139,6 +146,9 @@ requireText(policy, '.protectionKey', 'file policy');
 requireText(lockfile, 'link:../../packages/native-spikes', 'lockfile');
 
 const info = app.expo.ios.infoPlist;
+if (info.OpenOutdoorPhase0DiagnosticsEnabled !== true) {
+  throw new Error('local Phase 0 app must explicitly opt in to native storage diagnostics');
+}
 for (const key of [
   'NSLocationWhenInUseUsageDescription',
   'NSLocationAlwaysAndWhenInUseUsageDescription',

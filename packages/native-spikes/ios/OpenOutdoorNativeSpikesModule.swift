@@ -23,7 +23,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
     Constant("phase0DiagnosticsEnabled") {
-      Bundle.main.bundleIdentifier == "org.openoutdoor.local"
+      Bundle.main.object(forInfoDictionaryKey: "OpenOutdoorPhase0DiagnosticsEnabled") as? Bool == true
     }
 #else
     Constant("phase0DiagnosticsEnabled") {

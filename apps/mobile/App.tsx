@@ -285,6 +285,15 @@ export default function App() {
             />
           </View>
         </>
+      ) : nativeSpikes.available ? (
+        <View style={styles.startupDiagnostic}>
+          <Text style={styles.startupDiagnosticHeading}>
+            Synthetic storage diagnostics unavailable
+          </Text>
+          <Text selectable style={styles.startupDiagnosticCopy}>
+            This build did not opt in to the Phase 0 storage harness.
+          </Text>
+        </View>
       ) : null}
       <StatusBar style="auto" />
     </ScrollView>
