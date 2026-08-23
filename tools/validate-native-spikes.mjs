@@ -19,6 +19,8 @@ const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diag
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
+const mobileIndex = await text('apps/mobile/index.ts');
+const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
 const policy = await text('packages/native-spikes/ios/OpenOutdoorFilePolicy.swift');
 const lockfile = await text('pnpm-lock.yaml');
@@ -83,6 +85,14 @@ for (const functionName of [
   requireText(mobileBinding, `readonly ${functionName}`, 'mobile native binding');
 }
 requireText(nativeModule, '.runOnQueue(.main)', 'native module');
+requireText(mobileBinding, 'requireOptionalNativeModule', 'startup-safe mobile native binding');
+requireText(mobileBinding, 'module !== null', 'startup-safe mobile native binding');
+requireText(mobileBinding, 'requiredModule()', 'startup-safe mobile native binding');
+requireText(mobileApp, 'Native startup check failed', 'mobile startup diagnostic UI');
+requireText(mobileApp, 'disabled={!nativeSpikes.available}', 'mobile startup diagnostic UI');
+requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
+requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
+requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
 requireText(mobileApp, 'Start native tracking', 'mobile feasibility UI');
 requireText(mobileApp, 'Stop native tracking', 'mobile feasibility UI');
 requireText(mobileApp, 'Recover interrupted session', 'mobile feasibility UI');

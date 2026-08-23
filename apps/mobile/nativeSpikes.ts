@@ -1,4 +1,4 @@
-import { requireNativeModule } from 'expo';
+import { requireOptionalNativeModule } from 'expo';
 
 export type NativeTrackingMode = 'balanced' | 'endurance' | 'high-accuracy';
 
@@ -52,30 +52,43 @@ function parseJson<T>(value: string): T {
   return JSON.parse(value) as T;
 }
 
-const module = requireNativeModule<OpenOutdoorNativeSpikesModule>('OpenOutdoorNativeSpikes');
+const module =
+  requireOptionalNativeModule<OpenOutdoorNativeSpikesModule>('OpenOutdoorNativeSpikes');
+
+const unavailableMessage =
+  'OpenOutdoorNativeSpikes is not registered in this build. Reinstall the Phase 0 IPA and share this message.';
+
+function requiredModule(): OpenOutdoorNativeSpikesModule {
+  if (module === null) throw new Error(unavailableMessage);
+  return module;
+}
 
 export const nativeSpikes = {
-  policyVersion: module.policyVersion,
-  phase0DiagnosticsEnabled: module.phase0DiagnosticsEnabled,
-  requestAlwaysAuthorization: (): Promise<void> => module.requestAlwaysAuthorization(),
-  startTracking: (mode: NativeTrackingMode): Promise<string> => module.startTracking(mode),
-  stopTracking: (): Promise<number> => module.stopTracking(),
-  isTracking: (): Promise<boolean> => module.isTracking(),
-  currentSessionId: (): Promise<string | null> => module.currentSessionId(),
-  lastTrackingError: (): Promise<string | null> => module.lastTrackingError(),
+  available: module !== null,
+  loadError: module === null ? unavailableMessage : null,
+  policyVersion: module?.policyVersion ?? null,
+  phase0DiagnosticsEnabled: module?.phase0DiagnosticsEnabled ?? false,
+  requestAlwaysAuthorization: (): Promise<void> => requiredModule().requestAlwaysAuthorization(),
+  startTracking: (mode: NativeTrackingMode): Promise<string> =>
+    requiredModule().startTracking(mode),
+  stopTracking: (): Promise<number> => requiredModule().stopTracking(),
+  isTracking: (): Promise<boolean> => requiredModule().isTracking(),
+  currentSessionId: (): Promise<string | null> => requiredModule().currentSessionId(),
+  lastTrackingError: (): Promise<string | null> => requiredModule().lastTrackingError(),
   inspectTrackingSession: async (): Promise<NativeTrackingInspection | null> => {
-    const value = await module.inspectTrackingSession();
+    const value = await requiredModule().inspectTrackingSession();
     return value === null ? null : parseJson<NativeTrackingInspection>(value);
   },
   recoverTrackingSession: async (): Promise<NativeTrackingInspection> =>
-    parseJson<NativeTrackingInspection>(await module.recoverTrackingSession()),
+    parseJson<NativeTrackingInspection>(await requiredModule().recoverTrackingSession()),
   discardRecoverableTrackingSession: async (): Promise<NativeTrackingInspection> =>
-    parseJson<NativeTrackingInspection>(await module.discardRecoverableTrackingSession()),
+    parseJson<NativeTrackingInspection>(await requiredModule().discardRecoverableTrackingSession()),
   seedPhase0FixtureA: async (): Promise<Phase0DiagnosticReport> =>
-    parseJson<Phase0DiagnosticReport>(await module.seedPhase0FixtureA()),
+    parseJson<Phase0DiagnosticReport>(await requiredModule().seedPhase0FixtureA()),
   applyPhase0FixtureB: async (checkpoint: string | null): Promise<Phase0DiagnosticReport> =>
-    parseJson<Phase0DiagnosticReport>(await module.applyPhase0FixtureB(checkpoint)),
+    parseJson<Phase0DiagnosticReport>(await requiredModule().applyPhase0FixtureB(checkpoint)),
   inspectPhase0Fixture: async (): Promise<Phase0DiagnosticReport> =>
-    parseJson<Phase0DiagnosticReport>(await module.inspectPhase0Fixture()),
-  sharePhase0DiagnosticReport: (): Promise<string> => module.sharePhase0DiagnosticReport(),
+    parseJson<Phase0DiagnosticReport>(await requiredModule().inspectPhase0Fixture()),
+  sharePhase0DiagnosticReport: (): Promise<string> =>
+    requiredModule().sharePhase0DiagnosticReport(),
 };

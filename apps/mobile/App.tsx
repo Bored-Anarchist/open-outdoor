@@ -75,10 +75,14 @@ export default function App() {
   const [checkpoint, setCheckpoint] =
     useState<(typeof activationCheckpoints)[number]>('after-first-launch');
   const [diagnostic, setDiagnostic] = useState<Phase0DiagnosticReport | null>(null);
-  const [status, setStatus] = useState('Native tracker ready for Phase 0 workoff.');
+  const [status, setStatus] = useState(
+    nativeSpikes.available
+      ? 'Native tracker ready for Phase 0 workoff.'
+      : 'Startup diagnostic: ' + nativeSpikes.loadError,
+  );
 
   useEffect(() => {
-    void inspectTracking(false);
+    if (nativeSpikes.available) void inspectTracking(false);
   }, []);
 
   async function inspectTracking(announce = true): Promise<void> {
@@ -202,38 +206,55 @@ export default function App() {
         {status}
       </Text>
 
+      {!nativeSpikes.available ? (
+        <View accessibilityRole="alert" style={styles.startupDiagnostic}>
+          <Text style={styles.startupDiagnosticHeading}>Native startup check failed</Text>
+          <Text selectable style={styles.startupDiagnosticCopy}>
+            {nativeSpikes.loadError}
+          </Text>
+        </View>
+      ) : null}
+
       <Text accessibilityRole="header" style={styles.sectionHeading}>
         Tracker recovery
       </Text>
       <View style={styles.controls}>
-        <Button title="Request Always Location" onPress={() => void requestPermission()} />
+        <Button
+          title="Request Always Location"
+          disabled={!nativeSpikes.available}
+          onPress={() => void requestPermission()}
+        />
         {(Object.keys(modeLabels) as NativeTrackingMode[]).map((candidate) => (
           <Button
             key={candidate}
             title={(candidate === mode ? 'Selected: ' : '') + modeLabels[candidate]}
-            disabled={recording || recoverable !== null}
+            disabled={!nativeSpikes.available || recording || recoverable !== null}
             onPress={() => setMode(candidate)}
           />
         ))}
         <Button
           title="Start native tracking"
-          disabled={recording || recoverable !== null}
+          disabled={!nativeSpikes.available || recording || recoverable !== null}
           onPress={() => void startTracking()}
         />
         <Button
           title="Stop native tracking"
-          disabled={!recording}
+          disabled={!nativeSpikes.available || !recording}
           onPress={() => void stopTracking()}
         />
-        <Button title="Inspect tracking spool" onPress={() => void inspectTracking()} />
+        <Button
+          title="Inspect tracking spool"
+          disabled={!nativeSpikes.available}
+          onPress={() => void inspectTracking()}
+        />
         <Button
           title="Recover interrupted session"
-          disabled={recording || recoverable === null}
+          disabled={!nativeSpikes.available || recording || recoverable === null}
           onPress={() => void recoverTracking()}
         />
         <Button
           title="Discard recovery marker"
-          disabled={recording || recoverable === null}
+          disabled={!nativeSpikes.available || recording || recoverable === null}
           onPress={() => void discardRecovery()}
         />
       </View>
@@ -304,5 +325,24 @@ const styles = StyleSheet.create({
     color: '#17251c',
     marginBottom: 8,
     padding: 12,
+  },
+  startupDiagnostic: {
+    backgroundColor: '#fff0ee',
+    borderColor: '#a5251b',
+    borderRadius: 8,
+    borderWidth: 2,
+    marginBottom: 8,
+    padding: 12,
+  },
+  startupDiagnosticCopy: {
+    color: '#5f1711',
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  startupDiagnosticHeading: {
+    color: '#7b1d15',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 6,
   },
 });
