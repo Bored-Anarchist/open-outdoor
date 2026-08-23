@@ -31,7 +31,7 @@ GitHub run history from 2026-08-19 through 2026-08-21 contains 57 requested/comp
 | security-rights-privacy | 12 | 12 | 0 | 0 | 3.78 |
 | windows-quality | 12 | 8 | 4 | 0 | 24.62 |
 
-The historical interval remains the baseline but no longer creates a permanent blocker. Gate schema v2 starts a bounded clean window after 2026-08-21T23:40:00Z. The first 20 applicable runs must contain zero avoidable failures; excluded runs require an explicit reason in config/hosted-ci-window.json. The machine evaluator currently reports 0/20, so CI efficiency remains blocked until the ledger reaches a clean pass.
+The historical interval remains the baseline but no longer creates a permanent blocker. Gate schema v2 starts a bounded clean window after 2026-08-21T23:40:00Z. The first 20 applicable runs must contain zero avoidable failures; excluded runs require an explicit reason in config/hosted-ci-window.json. As of 2026-08-23, the machine evaluator reports 14/20 applicable runs with zero avoidable failures, so CI efficiency remains blocked until six more applicable runs complete cleanly and the ledger reaches a pass.
 
 ## Risk disposition
 

@@ -1,7 +1,7 @@
 {
   "$schema": "./phase0-gate.schema.json",
   "schemaVersion": 2,
-  "asOf": "2026-08-21",
+  "asOf": "2026-08-23",
   "profileId": "iphone14-ios26.2-phase0-v1",
   "gateStatus": "blocked",
   "packages": {
@@ -39,7 +39,7 @@
     "cleanWindow": {
       "startsAfter": "2026-08-21T23:40:00Z",
       "requiredApplicableRuns": 20,
-      "evaluatedApplicableRuns": 0,
+      "evaluatedApplicableRuns": 14,
       "avoidableFailureCount": 0,
       "status": "collecting"
     }
