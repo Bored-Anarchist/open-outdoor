@@ -49,6 +49,8 @@ WP-007 and WP-008 reduced implementation uncertainty but did not provide the req
 - `R-029` is controlled by a bounded ledger: after the recorded start, the first 20 applicable runs must contain zero avoidable failures. Candidate-only macOS execution, local-first checks, and an explicit reason for exclusions remain required before Phase 1.
 - WP-009 completed the review and published a `BLOCKED` Phase 0 result; acceptance cannot be inferred from implementation or contract tests alone.
 
+2026-08-23 update: the project owner accepted WP-008 based on the existing evidence and explicitly accepted the residual risk from its unverified encrypted backup inventory, locked/pre-first-unlock denial, complete spool/replacement inspection, and incompatible downgrade attempt. This owner disposition closes WP-008 for Phase 0 but does not convert any unexecuted case into a pass or lower a risk score without separate review.
+
 ## 3. Risk response rules
 
 - Scores 15–25 require an explicit mitigation work package/test and phase-gate review.

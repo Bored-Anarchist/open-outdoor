@@ -6,15 +6,14 @@
 
 ## Completed foundations
 
-WP-001 through WP-006 and WP-010 are accepted. WP-007 now includes a durable active-session manifest, torn-line-tolerant spool readback, explicit process recovery, and UI controls. WP-008 now includes a Phase-0-only synthetic SQLite/catalog diagnostic harness, deterministic A-to-B records/counts/hashes, activation checkpoint simulation, narrow JSON sharing, and a read-only Windows iTunes backup inspector. WP-009 supplies the machine-readable release budgets, bounded CI ledger, and fail-closed gate evaluator.
+WP-001 through WP-006, WP-008, and WP-010 are accepted. WP-008 owner acceptance is based on the recorded evidence and explicitly retains unexecuted physical cases as residual risks rather than test passes. WP-007 now includes a durable active-session manifest, torn-line-tolerant spool readback, explicit process recovery, and UI controls. WP-009 supplies the machine-readable release budgets, bounded CI ledger, and fail-closed gate evaluator.
 
 ## Blocking evidence
 
-- WP-007: physical screen-lock/suspension/process-death/stop behavior is unmeasured.
+- WP-007: acknowledgement timing, exact recovery sequencing, dedicated adversity cases, protection/pre-first-unlock behavior, and the 30-minute memory profile remain incomplete.
 - BUD-REC-001 and BUD-REC-002: acknowledgement and committed-gap thresholds lack physical measurements.
 - BUD-MEM-001: the 30-minute screen-off p95 memory smoke is absent.
 - Battery/thermal scope: measured acceptance is deferred to WP-307/WP-503 and is not a current blocker; no endurance claim is permitted.
-- WP-008: protection classes, backup exclusion, same-identity A→B retention, and downgrade/rollback require device inspection.
 - CI efficiency: avoidable failed/repeated hosted runs occurred during Phase 0 and require process workoff.
 
 BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit. It does not substitute for BUD-REC-002 physical durability.
@@ -35,12 +34,12 @@ The historical interval remains the baseline but no longer creates a permanent b
 
 ## Risk disposition
 
-R-001 is reduced by accepted WP-006 launch/refresh feasibility but remains open for A→B retention. R-002, R-009, R-021, and R-024 remain open because their physical/native acceptance is pending. R-003 remains open and is explicitly accepted as deferred risk for Phase 0/Phase 1; it still blocks endurance claims and production until WP-307/WP-503. No probability or impact score is reduced without measurement evidence.
+R-001 is reduced by accepted WP-006 launch/refresh feasibility and the owner-accepted WP-008 same-identity/A-to-B evidence; unexecuted WP-008 cases remain explicit residual risks. R-002, R-009, R-021, and R-024 remain open where WP-007 or later production evidence is still pending. R-003 remains open and is explicitly accepted as deferred risk for Phase 0/Phase 1; it still blocks endurance claims and production until WP-307/WP-503. No probability or impact score is reduced without measurement evidence or explicit owner disposition.
 
 ## Exit workoff
 
 1. Build the native-spike candidate once in the pinned macOS workflow and install it with the stable local identity.
 2. Execute the WP-007 physical tracking protocol and 30-minute memory smoke.
-3. Execute WP-008 protection, backup inventory, A→B retention, downgrade, and rollback inspection.
+3. Completed 2026-08-23 by owner disposition: accept WP-008 on the existing evidence while retaining its unexecuted physical cases as explicit residual risks.
 4. Completed 2026-08-23: the bounded first 20 applicable post-baseline workflow runs passed with zero avoidable failures.
 5. Change `config/phase0-gate.json` to passed only when every machine-readable item is accepted/passed and protected checks pass on the exact candidate.

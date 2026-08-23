@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** In progress; WP-007/WP-008 prechecks implemented, physical evidence pending  
+**Status:** In progress; WP-007 physical evidence pending, WP-008 owner-accepted with residual risks
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.

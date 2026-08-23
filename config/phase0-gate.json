@@ -12,7 +12,7 @@
     "WP-005": { "status": "accepted", "evidence": "docs/evidence/WP-005.md" },
     "WP-006": { "status": "accepted", "evidence": "docs/evidence/WP-006.md" },
     "WP-007": { "status": "physical-pending", "evidence": "docs/evidence/WP-007.md" },
-    "WP-008": { "status": "physical-pending", "evidence": "docs/evidence/WP-008.md" },
+    "WP-008": { "status": "accepted", "evidence": "docs/evidence/WP-008.md" },
     "WP-009": { "status": "accepted", "evidence": "docs/evidence/WP-009.md" },
     "WP-010": { "status": "accepted", "evidence": "docs/evidence/WP-010.md" }
   },
