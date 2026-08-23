@@ -101,6 +101,34 @@
       "createdAt": "2026-08-23T16:01:40Z",
       "classification": "applicable-clean",
       "reason": "Candidate-gated Xcode 26.4.1 native build completed successfully for exact commit 8f46b4f6397cc547eae9f4c45dc48deb57ad5a38."
+    },
+    {
+      "runId": "32651013571",
+      "workflow": "documentation-integrity",
+      "createdAt": "2026-08-23T16:13:41Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for acceptance-evidence commit 1d10fc67e673321a9ac7f33f68eea8b834554ba3."
+    },
+    {
+      "runId": "32651013597",
+      "workflow": "windows-quality",
+      "createdAt": "2026-08-23T16:13:41Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for acceptance-evidence commit 1d10fc67e673321a9ac7f33f68eea8b834554ba3."
+    },
+    {
+      "runId": "32651013608",
+      "workflow": "security-rights-privacy",
+      "createdAt": "2026-08-23T16:13:41Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for acceptance-evidence commit 1d10fc67e673321a9ac7f33f68eea8b834554ba3."
+    },
+    {
+      "runId": "32651013651",
+      "workflow": "design-accessibility-traceability",
+      "createdAt": "2026-08-23T16:13:41Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for acceptance-evidence commit 1d10fc67e673321a9ac7f33f68eea8b834554ba3."
     }
   ]
 }
