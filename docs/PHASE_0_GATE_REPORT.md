@@ -1,7 +1,7 @@
 # Phase 0 gate report
 
 **Decision date:** 2026-08-21
-**Reference profile:** `iphone14-ios26.2-phase0-v1`
+**Reference profile:** `iphone14-ios26.6-phase0-v1` (advanced on 2026-08-23 after the phone and instrumented report confirmed iOS 26.6; historical iOS 26.2 launch records are retained)
 **Gate result:** BLOCKED — Phase 1 may not start
 
 ## Completed foundations
@@ -10,13 +10,12 @@ WP-001 through WP-006, WP-008, and WP-010 are accepted. WP-008 owner acceptance 
 
 ## Blocking evidence
 
-- WP-007: acknowledgement timing, protection/pre-first-unlock behavior, and the 30-minute memory profile remain incomplete. Exact process-death sequencing, Endurance radio/GPS adversity, and permission-loss/recovery with explicit Stop have passed on the physical iPhone.
-- BUD-REC-001: the acknowledgement threshold lacks a physical measurement.
+- WP-007: protection/pre-first-unlock behavior and the 30-minute memory profile remain incomplete. Exact process-death sequencing, Endurance radio/GPS adversity, permission-loss/recovery with explicit Stop, and acknowledgement timing have passed on the physical iPhone.
 - BUD-MEM-001: the 30-minute screen-off p95 memory smoke is absent.
 - Battery/thermal scope: measured acceptance is deferred to WP-307/WP-503 and is not a current blocker; no endurance claim is permitted.
 - CI efficiency: avoidable failed/repeated hosted runs occurred during Phase 0 and require process workoff.
 
-BUD-REC-002 passes on the physical iPhone with an observed zero committed-data gap across forced termination and relaunch. BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit.
+BUD-REC-001 passes on the physical iPhone running iOS 26.6 with Start p95 13 ms and Stop p95 2 ms against the 500 ms threshold. BUD-REC-002 passes with an observed zero committed-data gap across forced termination and relaunch. BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit.
 
 ## Hosted CI usage
 

@@ -2,7 +2,7 @@
   "$schema": "./phase0-gate.schema.json",
   "schemaVersion": 2,
   "asOf": "2026-08-23",
-  "profileId": "iphone14-ios26.2-phase0-v1",
+  "profileId": "iphone14-ios26.6-phase0-v1",
   "gateStatus": "blocked",
   "packages": {
     "WP-001": { "status": "accepted", "evidence": "docs/evidence/WP-001.md" },
@@ -18,8 +18,8 @@
   },
   "budgets": {
     "BUD-REC-001": {
-      "status": "physical-pending",
-      "evidence": "physical iPhone acknowledgement timing"
+      "status": "passed",
+      "evidence": "docs/evidence/artifacts/WP-007-ack-ios26.6-source.json"
     },
     "BUD-REC-002": {
       "status": "passed",

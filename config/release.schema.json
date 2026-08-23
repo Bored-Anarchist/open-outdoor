@@ -74,14 +74,14 @@
       "additionalProperties": false,
       "required": ["profileId", "referenceDevice", "tracker", "catalog"],
       "properties": {
-        "profileId": { "const": "iphone14-ios26.2-phase0-v1" },
+        "profileId": { "const": "iphone14-ios26.6-phase0-v1" },
         "referenceDevice": {
           "type": "object",
           "additionalProperties": false,
           "required": ["model", "os"],
           "properties": {
             "model": { "const": "iPhone 14" },
-            "os": { "const": "iOS 26.2" }
+            "os": { "const": "iOS 26.6" }
           }
         },
         "tracker": {

@@ -38,8 +38,8 @@
   "regions": ["US-NY"],
   "schemas": { "catalog": 1, "backup": 1 },
   "phase0": {
-    "profileId": "iphone14-ios26.2-phase0-v1",
-    "referenceDevice": { "model": "iPhone 14", "os": "iOS 26.2" },
+    "profileId": "iphone14-ios26.6-phase0-v1",
+    "referenceDevice": { "model": "iPhone 14", "os": "iOS 26.6" },
     "tracker": {
       "batchMaximumSeconds": 30,
       "recordingControlP95Ms": 500,

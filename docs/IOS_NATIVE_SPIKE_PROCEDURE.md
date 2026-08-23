@@ -1,6 +1,6 @@
 # WP-007/WP-008 physical iPhone workoff procedure
 
-**Device/profile:** iPhone 14, iOS 26.2, `iphone14-ios26.2-phase0-v1`
+**Device/profile:** iPhone 14, iOS 26.6, `iphone14-ios26.6-phase0-v1`
 
 ## Candidate preparation
 

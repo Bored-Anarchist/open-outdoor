@@ -127,6 +127,11 @@ for (const token of [
 ]) {
   requireText(performanceDiagnostics, token, 'Phase 0 physical diagnostics');
 }
+requireText(
+  performanceDiagnostics,
+  `private static let profileId = "${release.phase0.profileId}"`,
+  'Phase 0 physical diagnostics profile',
+);
 for (const token of [
   'activePolicyReport()',
   'completeUntilFirstUserAuthentication.rawValue',

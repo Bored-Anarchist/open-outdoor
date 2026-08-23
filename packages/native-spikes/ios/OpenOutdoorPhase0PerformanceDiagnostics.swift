@@ -53,7 +53,7 @@ internal struct OpenOutdoorPhysicalDiagnosticReport: Codable {
 }
 
 internal final class OpenOutdoorPhase0PerformanceDiagnostics {
-  private static let profileId = "iphone14-ios26.2-phase0-v1"
+  private static let profileId = "iphone14-ios26.6-phase0-v1"
   private static let acknowledgementThresholdMs = 500.0
   private static let memoryThresholdBytes: UInt64 = 150 * 1_024 * 1_024
   private static let minimumMemoryDurationSeconds = 30.0 * 60.0

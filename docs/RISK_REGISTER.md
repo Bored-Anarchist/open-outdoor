@@ -43,7 +43,7 @@
 WP-007 and WP-008 reduced implementation uncertainty but did not provide the required physical evidence, so no probability or impact score is lowered:
 
 - `R-001` remains open pending the full same-identity A→B refresh, data-retention, and expiry workoff; encrypted restore is a later WP-107/WP-306 control.
-- `R-002` and `R-021` remain open pending iPhone 14/iOS 26.2 screen-lock, process-death, protection-class, and backup-inventory evidence.
+- `R-002` and `R-021` remain open where the current iPhone 14/iOS 26.6 protection/pre-first-unlock evidence or later production evidence is still pending; historical iOS 26.2 launch evidence remains recorded.
 - `R-003` remains score 20 and open. Its measurement is accepted as deferred for Phase 0/Phase 1, but it blocks battery/endurance claims and production until WP-307/WP-503 evidence exists.
 - `R-009` and `R-024` now have deterministic activation, rollback, private-digest, and compatibility prechecks, but remain open pending native/device integration.
 - `R-029` is controlled by a bounded ledger: after the recorded start, the first 20 applicable runs must contain zero avoidable failures. Candidate-only macOS execution, local-first checks, and an explicit reason for exclusions remain required before Phase 1.
