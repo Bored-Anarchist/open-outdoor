@@ -1,6 +1,8 @@
 {
   "platforms": ["apple"],
   "apple": {
-    "modules": ["OpenOutdoorNativeSpikesModule"]
+    "modules": ["OpenOutdoorNativeSpikesModule"],
+    "podspecPath": "OpenOutdoorNativeSpikes.podspec",
+    "swiftModuleName": "OpenOutdoorNativeSpikes"
   }
 }

@@ -14,6 +14,7 @@ const app = JSON.parse(await text('apps/mobile/app.json'));
 const mobilePackage = JSON.parse(await text('apps/mobile/package.json'));
 const moduleConfig = JSON.parse(await text('packages/native-spikes/expo-module.config.json'));
 const podspec = await text('packages/native-spikes/OpenOutdoorNativeSpikes.podspec');
+const iosBuildScript = await text('scripts/Build-IosUnsigned.ps1');
 const tracker = await text('packages/native-spikes/ios/OpenOutdoorTrackerSpike.swift');
 const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diagnostics.swift');
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
@@ -31,6 +32,18 @@ if (mobilePackage.dependencies['@open-outdoor/native-spikes'] !== 'workspace:*')
 }
 if (!moduleConfig.platforms.includes('apple'))
   throw new Error('native spike must autolink on Apple');
+if (moduleConfig.apple.podspecPath !== 'OpenOutdoorNativeSpikes.podspec') {
+  throw new Error('native spike must declare its root-level podspec to Expo autolinking');
+}
+if (moduleConfig.apple.swiftModuleName !== 'OpenOutdoorNativeSpikes') {
+  throw new Error('native spike must declare its Swift product module to Expo autolinking');
+}
+requireText(
+  iosBuildScript,
+  'internal import OpenOutdoorNativeSpikes',
+  'iOS build registration gate',
+);
+requireText(iosBuildScript, 'OpenOutdoorNativeSpikesModule.self', 'iOS build registration gate');
 requireText(podspec, "File.join(__dir__, 'package.json')", 'podspec');
 requireText(podspec, "s.dependency 'ExpoModulesCore'", 'podspec');
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
