@@ -34,12 +34,12 @@ Adopted in ADR-041: encrypted backup restore is removed from WP-008 and the Phas
 
 ### 6. Hosted-CI history criterion
 
-Implemented gate schema v2 and `config/hosted-ci-window.json`: the first 20 applicable runs after the recorded start must contain zero avoidable failures. Exclusions require a reason, duplicate or pre-window run IDs fail validation, and only the bounded first 20 count. The current 0/20 collecting state remains a blocker.
+Implemented gate schema v2 and `config/hosted-ci-window.json`: the first 20 applicable runs after the recorded start must contain zero avoidable failures. Exclusions require a reason, duplicate or pre-window run IDs fail validation, and only the bounded first 20 count. On 2026-08-23 the bounded window reached 20/20 applicable runs with zero avoidable failures and passed.
 
 ## Physical workoff order
 
 1. Compile the exact native candidate and install it with the stable local identity.
 2. Execute tracker recovery/readback and the 30-minute memory smoke on the iPhone.
 3. Execute the synthetic WP-008 protection/system-backup/A-to-B checkpoint matrix and retain the shared private reports.
-4. Complete the bounded 20-run hosted-CI window with zero avoidable failures.
+4. Completed 2026-08-23: the bounded 20-run hosted-CI window passed with zero avoidable failures.
 5. Schedule full battery/thermal characterization only in WP-307/WP-503.

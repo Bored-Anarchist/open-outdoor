@@ -12,7 +12,7 @@ describe('WP-009 Phase 0 gate evaluation', () => {
     expect(result.status).toBe('blocked');
     expect(result.blockers).toContain('WP-007: physical-pending');
     expect(result.blockers).toContain('BUD-MEM-001: physical-pending');
-    expect(result.blockers).toContain('hosted CI: clean window incomplete (18/20)');
+    expect(result.blockers.some((blocker) => blocker.startsWith('hosted CI:'))).toBe(false);
   });
 
   it('T-REL-001-C10 passes only when every package, budget, and clean window passes', () => {

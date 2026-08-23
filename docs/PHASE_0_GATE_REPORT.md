@@ -31,7 +31,7 @@ GitHub run history from 2026-08-19 through 2026-08-21 contains 57 requested/comp
 | security-rights-privacy | 12 | 12 | 0 | 0 | 3.78 |
 | windows-quality | 12 | 8 | 4 | 0 | 24.62 |
 
-The historical interval remains the baseline but no longer creates a permanent blocker. Gate schema v2 starts a bounded clean window after 2026-08-21T23:40:00Z. The first 20 applicable runs must contain zero avoidable failures; excluded runs require an explicit reason in config/hosted-ci-window.json. As of 2026-08-23, the machine evaluator reports 18/20 applicable runs with zero avoidable failures, so CI efficiency remains blocked until two more applicable runs complete cleanly and the ledger reaches a pass.
+The historical interval remains the baseline but no longer creates a permanent blocker. Gate schema v2 starts a bounded clean window after 2026-08-21T23:40:00Z. The first 20 applicable runs must contain zero avoidable failures; excluded runs require an explicit reason in config/hosted-ci-window.json. As of 2026-08-23, the machine evaluator reports 20/20 applicable runs with zero avoidable failures and status `passed`. Later assessments remain recorded but do not change the bounded first-20 result.
 
 ## Risk disposition
 
@@ -42,5 +42,5 @@ R-001 is reduced by accepted WP-006 launch/refresh feasibility but remains open 
 1. Build the native-spike candidate once in the pinned macOS workflow and install it with the stable local identity.
 2. Execute the WP-007 physical tracking protocol and 30-minute memory smoke.
 3. Execute WP-008 protection, backup inventory, A→B retention, downgrade, and rollback inspection.
-4. Classify the first 20 applicable post-baseline workflow runs in the bounded ledger; zero may be avoidable failures.
+4. Completed 2026-08-23: the bounded first 20 applicable post-baseline workflow runs passed with zero avoidable failures.
 5. Change `config/phase0-gate.json` to passed only when every machine-readable item is accepted/passed and protected checks pass on the exact candidate.

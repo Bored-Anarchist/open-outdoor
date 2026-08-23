@@ -39,9 +39,9 @@
     "cleanWindow": {
       "startsAfter": "2026-08-21T23:40:00Z",
       "requiredApplicableRuns": 20,
-      "evaluatedApplicableRuns": 18,
+      "evaluatedApplicableRuns": 20,
       "avoidableFailureCount": 0,
-      "status": "collecting"
+      "status": "passed"
     }
   }
 }

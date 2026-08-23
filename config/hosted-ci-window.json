@@ -129,6 +129,34 @@
       "createdAt": "2026-08-23T16:13:41Z",
       "classification": "applicable-clean",
       "reason": "Required pull-request check completed successfully for acceptance-evidence commit 1d10fc67e673321a9ac7f33f68eea8b834554ba3."
+    },
+    {
+      "runId": "32651277635",
+      "workflow": "documentation-integrity",
+      "createdAt": "2026-08-23T16:18:54Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for 18-run-ledger commit 6b92bd268a694140e8b3725ab44486cc80fda900."
+    },
+    {
+      "runId": "32651277641",
+      "workflow": "design-accessibility-traceability",
+      "createdAt": "2026-08-23T16:18:54Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for 18-run-ledger commit 6b92bd268a694140e8b3725ab44486cc80fda900."
+    },
+    {
+      "runId": "32651277656",
+      "workflow": "windows-quality",
+      "createdAt": "2026-08-23T16:18:54Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for 18-run-ledger commit 6b92bd268a694140e8b3725ab44486cc80fda900."
+    },
+    {
+      "runId": "32651277663",
+      "workflow": "security-rights-privacy",
+      "createdAt": "2026-08-23T16:18:54Z",
+      "classification": "applicable-clean",
+      "reason": "Required pull-request check completed successfully for 18-run-ledger commit 6b92bd268a694140e8b3725ab44486cc80fda900."
     }
   ]
 }
