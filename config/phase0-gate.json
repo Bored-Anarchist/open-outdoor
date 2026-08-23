@@ -22,8 +22,8 @@
       "evidence": "physical iPhone acknowledgement timing"
     },
     "BUD-REC-002": {
-      "status": "physical-pending",
-      "evidence": "screen-off process-death durability"
+      "status": "passed",
+      "evidence": "docs/evidence/WP-007.md#physical-device-evidence"
     },
     "BUD-REC-003": {
       "status": "passed",

@@ -10,13 +10,13 @@ WP-001 through WP-006, WP-008, and WP-010 are accepted. WP-008 owner acceptance 
 
 ## Blocking evidence
 
-- WP-007: acknowledgement timing, exact recovery sequencing, dedicated adversity cases, protection/pre-first-unlock behavior, and the 30-minute memory profile remain incomplete.
-- BUD-REC-001 and BUD-REC-002: acknowledgement and committed-gap thresholds lack physical measurements.
+- WP-007: acknowledgement timing, dedicated adversity cases, protection/pre-first-unlock behavior, and the 30-minute memory profile remain incomplete. Exact process-death sequencing passed with sequence 2 preserved across relaunch and monotonic continuation through sequence 5.
+- BUD-REC-001: the acknowledgement threshold lacks a physical measurement.
 - BUD-MEM-001: the 30-minute screen-off p95 memory smoke is absent.
 - Battery/thermal scope: measured acceptance is deferred to WP-307/WP-503 and is not a current blocker; no endurance claim is permitted.
 - CI efficiency: avoidable failed/repeated hosted runs occurred during Phase 0 and require process workoff.
 
-BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit. It does not substitute for BUD-REC-002 physical durability.
+BUD-REC-002 passes on the physical iPhone with an observed zero committed-data gap across forced termination and relaunch. BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit.
 
 ## Hosted CI usage
 
