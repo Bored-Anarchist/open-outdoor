@@ -30,8 +30,8 @@
       "evidence": "T-PHY-001-C01 through C06 deterministic replay"
     },
     "BUD-MEM-001": {
-      "status": "physical-pending",
-      "evidence": "30-minute screen-off memory smoke profile"
+      "status": "passed",
+      "evidence": "docs/evidence/artifacts/WP-007-memory-ios26.6-redacted.json"
     }
   },
   "hostedCi": {

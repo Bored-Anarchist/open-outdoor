@@ -10,12 +10,11 @@ WP-001 through WP-006, WP-008, and WP-010 are accepted. WP-008 owner acceptance 
 
 ## Blocking evidence
 
-- WP-007: protection/pre-first-unlock behavior and the 30-minute memory profile remain incomplete. Exact process-death sequencing, Endurance radio/GPS adversity, permission-loss/recovery with explicit Stop, and acknowledgement timing have passed on the physical iPhone.
-- BUD-MEM-001: the 30-minute screen-off p95 memory smoke is absent.
+- WP-007: locked-screen active-spool availability, sealed-library denial, and safe pre-first-unlock behavior remain incomplete. Exact process-death sequencing, Endurance radio/GPS adversity, permission-loss/recovery with explicit Stop, acknowledgement timing, effective active-spool policy, and the 30-minute memory profile have passed on the physical iPhone.
 - Battery/thermal scope: measured acceptance is deferred to WP-307/WP-503 and is not a current blocker; no endurance claim is permitted.
 - CI efficiency: avoidable failed/repeated hosted runs occurred during Phase 0 and require process workoff.
 
-BUD-REC-001 passes on the physical iPhone running iOS 26.6 with Start p95 13 ms and Stop p95 2 ms against the 500 ms threshold. BUD-REC-002 passes with an observed zero committed-data gap across forced termination and relaunch. BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit.
+BUD-REC-001 passes on the physical iPhone running iOS 26.6 with Start p95 13 ms and Stop p95 2 ms against the 500 ms threshold. BUD-REC-002 passes with an observed zero committed-data gap across forced termination and relaunch. BUD-REC-003 passes at the deterministic replay layer: duplicate sequences are idempotent, conflicting duplicates fail, and gaps are explicit. BUD-MEM-001 passes with 392 samples over 1,953.73 seconds and independently recomputed p95 resident memory of 42.141 MiB against the 150 MiB threshold.
 
 ## Hosted CI usage
 
