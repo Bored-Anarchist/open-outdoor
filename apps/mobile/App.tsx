@@ -6,6 +6,7 @@ import {
   type NativeTrackingInspection,
   type NativeTrackingMode,
   type Phase0DiagnosticReport,
+  type Phase0PhysicalDiagnosticReport,
 } from './nativeSpikes';
 
 const modeLabels: Readonly<Record<NativeTrackingMode, string>> = {
@@ -68,6 +69,10 @@ function diagnosticSummary(report: Phase0DiagnosticReport): string {
   );
 }
 
+function mebibytes(bytes: number): string {
+  return (bytes / (1024 * 1024)).toFixed(1);
+}
+
 export default function App() {
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
   const [recording, setRecording] = useState(false);
@@ -75,6 +80,10 @@ export default function App() {
   const [checkpoint, setCheckpoint] =
     useState<(typeof activationCheckpoints)[number]>('after-first-launch');
   const [diagnostic, setDiagnostic] = useState<Phase0DiagnosticReport | null>(null);
+  const [physicalDiagnostic, setPhysicalDiagnostic] =
+    useState<Phase0PhysicalDiagnosticReport | null>(null);
+  const [benchmarking, setBenchmarking] = useState(false);
+  const [memoryProfileActive, setMemoryProfileActive] = useState(false);
   const [status, setStatus] = useState(
     nativeSpikes.available
       ? 'Native tracker ready for Phase 0 workoff.'
@@ -194,6 +203,113 @@ export default function App() {
     }
   }
 
+  async function benchmarkAcknowledgements(): Promise<void> {
+    setBenchmarking(true);
+    setStatus('Measuring 20 Start and 20 Stop acknowledgements.');
+    const startDurationsMs: number[] = [];
+    const stopDurationsMs: number[] = [];
+    try {
+      for (let index = 0; index < 20; index += 1) {
+        let startedAt = Date.now();
+        await nativeSpikes.startTracking(mode);
+        startDurationsMs.push(Date.now() - startedAt);
+        await new Promise((resolve) => setTimeout(resolve, 25));
+
+        startedAt = Date.now();
+        await nativeSpikes.stopTracking();
+        stopDurationsMs.push(Date.now() - startedAt);
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
+      const report = await nativeSpikes.recordAcknowledgementBenchmark(
+        JSON.stringify({ mode, startDurationsMs, stopDurationsMs }),
+      );
+      setPhysicalDiagnostic(report);
+      const result = report.acknowledgement;
+      if (result === null) throw new Error('Native acknowledgement report was empty');
+      setStatus(
+        'Acknowledgement ' +
+          (result.passed ? 'PASS' : 'FAIL') +
+          ': Start p95 ' +
+          result.startP95Ms.toFixed(0) +
+          ' ms; Stop p95 ' +
+          result.stopP95Ms.toFixed(0) +
+          ' ms; threshold ' +
+          result.thresholdMs.toFixed(0) +
+          ' ms.',
+      );
+    } catch (error) {
+      try {
+        if (await nativeSpikes.isTracking()) await nativeSpikes.stopTracking();
+      } catch {
+        // Preserve the original benchmark error.
+      }
+      setStatus('Acknowledgement benchmark failed: ' + errorMessage(error));
+    } finally {
+      setRecording(false);
+      setBenchmarking(false);
+    }
+  }
+
+  async function inspectTrackingProtection(): Promise<void> {
+    try {
+      const report = await nativeSpikes.inspectTrackingProtection();
+      setPhysicalDiagnostic(report);
+      const result = report.trackingProtection;
+      if (result === null) throw new Error('Native tracking protection report was empty');
+      setStatus(
+        'Active tracking protection ' +
+          (result.passed ? 'PASS' : 'FAIL') +
+          ': ' +
+          result.artifacts.length +
+          ' artifacts checked.',
+      );
+    } catch (error) {
+      setStatus('Tracking protection inspection failed: ' + errorMessage(error));
+    }
+  }
+
+  async function beginMemoryProfile(): Promise<void> {
+    try {
+      const report = await nativeSpikes.beginMemoryProfile();
+      setPhysicalDiagnostic(report);
+      setMemoryProfileActive(true);
+      setStatus('Memory profile active. Lock the phone for at least 30 minutes.');
+    } catch (error) {
+      setStatus('Memory profile start failed: ' + errorMessage(error));
+    }
+  }
+
+  async function finishMemoryProfile(): Promise<void> {
+    try {
+      const report = await nativeSpikes.finishMemoryProfile();
+      setPhysicalDiagnostic(report);
+      setMemoryProfileActive(false);
+      const result = report.memory;
+      if (result === null) throw new Error('Native memory report was empty');
+      setStatus(
+        'Memory ' +
+          (result.passed ? 'PASS' : 'FAIL') +
+          ': p95 ' +
+          mebibytes(result.p95ResidentBytes) +
+          ' MiB; max ' +
+          mebibytes(result.maxResidentBytes) +
+          ' MiB across ' +
+          result.sampleCount +
+          ' samples.',
+      );
+    } catch (error) {
+      setStatus('Memory profile finish failed: ' + errorMessage(error));
+    }
+  }
+
+  async function sharePhysicalReport(): Promise<void> {
+    try {
+      const path = await nativeSpikes.sharePhysicalDiagnosticReport();
+      setStatus('Physical diagnostic report prepared and shared from ' + path + '.');
+    } catch (error) {
+      setStatus('Physical report sharing failed: ' + errorMessage(error));
+    }
+  }
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text accessibilityRole="header" style={styles.heading}>
@@ -221,43 +337,122 @@ export default function App() {
       <View style={styles.controls}>
         <Button
           title="Request Always Location"
-          disabled={!nativeSpikes.available}
+          disabled={!nativeSpikes.available || benchmarking || memoryProfileActive}
           onPress={() => void requestPermission()}
         />
         {(Object.keys(modeLabels) as NativeTrackingMode[]).map((candidate) => (
           <Button
             key={candidate}
             title={(candidate === mode ? 'Selected: ' : '') + modeLabels[candidate]}
-            disabled={!nativeSpikes.available || recording || recoverable !== null}
+            disabled={
+              !nativeSpikes.available ||
+              recording ||
+              recoverable !== null ||
+              benchmarking ||
+              memoryProfileActive
+            }
             onPress={() => setMode(candidate)}
           />
         ))}
         <Button
           title="Start native tracking"
-          disabled={!nativeSpikes.available || recording || recoverable !== null}
+          disabled={
+            !nativeSpikes.available ||
+            recording ||
+            recoverable !== null ||
+            benchmarking ||
+            memoryProfileActive
+          }
           onPress={() => void startTracking()}
         />
         <Button
           title="Stop native tracking"
-          disabled={!nativeSpikes.available || !recording}
+          disabled={!nativeSpikes.available || !recording || benchmarking || memoryProfileActive}
           onPress={() => void stopTracking()}
         />
         <Button
           title="Inspect tracking spool"
-          disabled={!nativeSpikes.available}
+          disabled={!nativeSpikes.available || benchmarking}
           onPress={() => void inspectTracking()}
         />
         <Button
           title="Recover interrupted session"
-          disabled={!nativeSpikes.available || recording || recoverable === null}
+          disabled={
+            !nativeSpikes.available ||
+            recording ||
+            recoverable === null ||
+            benchmarking ||
+            memoryProfileActive
+          }
           onPress={() => void recoverTracking()}
         />
         <Button
           title="Discard recovery marker"
-          disabled={!nativeSpikes.available || recording || recoverable === null}
+          disabled={
+            !nativeSpikes.available ||
+            recording ||
+            recoverable === null ||
+            benchmarking ||
+            memoryProfileActive
+          }
           onPress={() => void discardRecovery()}
         />
       </View>
+
+      {nativeSpikes.phase0DiagnosticsEnabled ? (
+        <>
+          <Text accessibilityRole="header" style={styles.sectionHeading}>
+            Physical acceptance diagnostics
+          </Text>
+          <Text style={styles.copy}>
+            Reports contain timings, memory sizes, and file-policy metadata only—never coordinates.
+          </Text>
+          <View style={styles.controls}>
+            <Button
+              title={
+                benchmarking
+                  ? 'Measuring acknowledgements…'
+                  : 'Measure 20 Start/Stop acknowledgements'
+              }
+              disabled={
+                !nativeSpikes.available ||
+                recording ||
+                recoverable !== null ||
+                benchmarking ||
+                memoryProfileActive
+              }
+              onPress={() => void benchmarkAcknowledgements()}
+            />
+            <Button
+              title="Inspect active tracking protection"
+              disabled={!nativeSpikes.available || !recording || benchmarking}
+              onPress={() => void inspectTrackingProtection()}
+            />
+            <Button
+              title="Begin 30-minute memory profile"
+              disabled={
+                !nativeSpikes.available || !recording || benchmarking || memoryProfileActive
+              }
+              onPress={() => void beginMemoryProfile()}
+            />
+            <Button
+              title="Finish 30-minute memory profile"
+              disabled={!nativeSpikes.available || !memoryProfileActive}
+              onPress={() => void finishMemoryProfile()}
+            />
+            <Button
+              title="Share physical diagnostic JSON"
+              disabled={
+                !nativeSpikes.available ||
+                physicalDiagnostic === null ||
+                benchmarking ||
+                memoryProfileActive
+              }
+              onPress={() => void sharePhysicalReport()}
+            />
+          </View>
+        </>
+      ) : null}
 
       {nativeSpikes.phase0DiagnosticsEnabled ? (
         <>

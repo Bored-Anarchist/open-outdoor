@@ -65,6 +65,13 @@ internal struct OpenOutdoorTrackingInspection: Codable {
   }
 }
 
+internal struct OpenOutdoorTrackingPolicyReport: Codable {
+  let expectedProtection: String
+  let expectedExcludedFromBackup: Bool
+  let artifacts: [OpenOutdoorFilePolicySnapshot]
+  let passed: Bool
+}
+
 private final class OpenOutdoorActiveSpool {
   private static let manifestFileName = "active-session.json"
 
@@ -232,7 +239,32 @@ private final class OpenOutdoorActiveSpool {
     return try inspect(manifest: manifest, directory: directory, recording: recording)
   }
 
+  static func activePolicyReport() throws -> OpenOutdoorTrackingPolicyReport {
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else {
+      throw OpenOutdoorTrackerError.noRecoverableSession
+    }
+    let applicationSupport = directory.deletingLastPathComponent().deletingLastPathComponent()
+    let expectedProtection = FileProtectionType.completeUntilFirstUserAuthentication.rawValue
+    let artifacts = try [
+      OpenOutdoorFilePolicy.inspect(directory, relativeTo: applicationSupport),
+      OpenOutdoorFilePolicy.inspect(manifestURL(in: directory), relativeTo: applicationSupport),
+      OpenOutdoorFilePolicy.inspect(
+        directory.appendingPathComponent(manifest.spoolFileName),
+        relativeTo: applicationSupport
+      ),
+    ]
+    return OpenOutdoorTrackingPolicyReport(
+      expectedProtection: expectedProtection,
+      expectedExcludedFromBackup: true,
+      artifacts: artifacts,
+      passed: artifacts.allSatisfy {
+        $0.exists && $0.protection == expectedProtection && $0.excludedFromBackup == true
+      }
+    )
+  }
   static func recover() throws -> (OpenOutdoorActiveSpool, OpenOutdoorTrackingInspection, OpenOutdoorTrackingMode) {
+
     let directory = try activeDirectory()
     guard let manifest = try readManifest(in: directory) else {
       throw OpenOutdoorTrackerError.noRecoverableSession
@@ -366,6 +398,13 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
       return try inspection?.json()
     }
     return try OpenOutdoorActiveSpool.latestInspection()?.json()
+  }
+
+  func inspectActiveFilePolicy() throws -> OpenOutdoorTrackingPolicyReport {
+    guard isTracking else {
+      throw OpenOutdoorTrackerError.notTracking
+    }
+    return try OpenOutdoorActiveSpool.activePolicyReport()
   }
 
   func recover() throws -> String {

@@ -5,11 +5,19 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private lazy var tracker = OpenOutdoorTrackerSpike()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
+  private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
 
   private func phase0Diagnostics() throws -> OpenOutdoorPhase0Diagnostics {
     if let phase0DiagnosticsInstance { return phase0DiagnosticsInstance }
     let diagnostics = try OpenOutdoorPhase0Diagnostics()
     phase0DiagnosticsInstance = diagnostics
+    return diagnostics
+  }
+
+  private func phase0Performance() throws -> OpenOutdoorPhase0PerformanceDiagnostics {
+    if let phase0PerformanceInstance { return phase0PerformanceInstance }
+    let diagnostics = try OpenOutdoorPhase0PerformanceDiagnostics(tracker: tracker)
+    phase0PerformanceInstance = diagnostics
     return diagnostics
   }
 #endif
@@ -47,7 +55,11 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     }.runOnQueue(.main)
 
     AsyncFunction("stopTracking") { () -> Int64 in
-      try self.tracker.stop()
+      let finalSequence = try self.tracker.stop()
+#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
+      self.phase0PerformanceInstance?.cancelMemoryProfile()
+#endif
+      return finalSequence
     }.runOnQueue(.main)
 
     AsyncFunction("inspectTrackingSession") { () -> String? in
@@ -89,6 +101,26 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
     AsyncFunction("sharePhase0DiagnosticReport") { () -> String in
       try self.phase0Diagnostics().shareLastReport()
+    }.runOnQueue(.main)
+
+    AsyncFunction("recordAcknowledgementBenchmark") { (inputJSON: String) -> String in
+      try self.phase0Performance().recordAcknowledgement(inputJSON)
+    }.runOnQueue(.main)
+
+    AsyncFunction("beginMemoryProfile") { () -> String in
+      try self.phase0Performance().beginMemoryProfile()
+    }.runOnQueue(.main)
+
+    AsyncFunction("finishMemoryProfile") { () -> String in
+      try self.phase0Performance().finishMemoryProfile()
+    }.runOnQueue(.main)
+
+    AsyncFunction("inspectTrackingProtection") { () -> String in
+      try self.phase0Performance().inspectTrackingProtection()
+    }.runOnQueue(.main)
+
+    AsyncFunction("sharePhysicalDiagnosticReport") { () -> String in
+      try self.phase0Performance().shareLastReport()
     }.runOnQueue(.main)
 #endif
   }

@@ -30,6 +30,49 @@ export interface Phase0DiagnosticReport {
   }[];
 }
 
+export interface Phase0PhysicalDiagnosticReport {
+  readonly schemaVersion: 1;
+  readonly profileId: string;
+  readonly generatedAt: string;
+  readonly deviceClass: string;
+  readonly systemName: string;
+  readonly systemVersion: string;
+  readonly memoryProfileActive: boolean;
+  readonly acknowledgement: {
+    readonly mode: string;
+    readonly sampleCount: number;
+    readonly startDurationsMs: readonly number[];
+    readonly stopDurationsMs: readonly number[];
+    readonly startP95Ms: number;
+    readonly stopP95Ms: number;
+    readonly startMaxMs: number;
+    readonly stopMaxMs: number;
+    readonly thresholdMs: number;
+    readonly passed: boolean;
+  } | null;
+  readonly memory: {
+    readonly elapsedSeconds: number;
+    readonly sampleCount: number;
+    readonly samplesBytes: readonly number[];
+    readonly p95ResidentBytes: number;
+    readonly maxResidentBytes: number;
+    readonly thresholdBytes: number;
+    readonly passed: boolean;
+  } | null;
+  readonly trackingProtection: {
+    readonly expectedProtection: string;
+    readonly expectedExcludedFromBackup: boolean;
+    readonly artifacts: readonly {
+      readonly relativePath: string;
+      readonly exists: boolean;
+      readonly protection: string | null;
+      readonly excludedFromBackup: boolean | null;
+      readonly sizeBytes: number;
+    }[];
+    readonly passed: boolean;
+  } | null;
+}
+
 interface OpenOutdoorNativeSpikesModule {
   readonly policyVersion: number;
   readonly phase0DiagnosticsEnabled: boolean;
@@ -46,6 +89,11 @@ interface OpenOutdoorNativeSpikesModule {
   readonly applyPhase0FixtureB: (checkpoint: string | null) => Promise<string>;
   readonly inspectPhase0Fixture: () => Promise<string>;
   readonly sharePhase0DiagnosticReport: () => Promise<string>;
+  readonly recordAcknowledgementBenchmark: (inputJson: string) => Promise<string>;
+  readonly beginMemoryProfile: () => Promise<string>;
+  readonly finishMemoryProfile: () => Promise<string>;
+  readonly inspectTrackingProtection: () => Promise<string>;
+  readonly sharePhysicalDiagnosticReport: () => Promise<string>;
 }
 
 function parseJson<T>(value: string): T {
@@ -91,4 +139,18 @@ export const nativeSpikes = {
     parseJson<Phase0DiagnosticReport>(await requiredModule().inspectPhase0Fixture()),
   sharePhase0DiagnosticReport: (): Promise<string> =>
     requiredModule().sharePhase0DiagnosticReport(),
+  recordAcknowledgementBenchmark: async (
+    inputJson: string,
+  ): Promise<Phase0PhysicalDiagnosticReport> =>
+    parseJson<Phase0PhysicalDiagnosticReport>(
+      await requiredModule().recordAcknowledgementBenchmark(inputJson),
+    ),
+  beginMemoryProfile: async (): Promise<Phase0PhysicalDiagnosticReport> =>
+    parseJson<Phase0PhysicalDiagnosticReport>(await requiredModule().beginMemoryProfile()),
+  finishMemoryProfile: async (): Promise<Phase0PhysicalDiagnosticReport> =>
+    parseJson<Phase0PhysicalDiagnosticReport>(await requiredModule().finishMemoryProfile()),
+  inspectTrackingProtection: async (): Promise<Phase0PhysicalDiagnosticReport> =>
+    parseJson<Phase0PhysicalDiagnosticReport>(await requiredModule().inspectTrackingProtection()),
+  sharePhysicalDiagnosticReport: (): Promise<string> =>
+    requiredModule().sharePhysicalDiagnosticReport(),
 };

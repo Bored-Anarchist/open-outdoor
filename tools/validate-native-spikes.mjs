@@ -17,6 +17,9 @@ const podspec = await text('packages/native-spikes/OpenOutdoorNativeSpikes.podsp
 const iosBuildScript = await text('scripts/Build-IosUnsigned.ps1');
 const tracker = await text('packages/native-spikes/ios/OpenOutdoorTrackerSpike.swift');
 const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diagnostics.swift');
+const performanceDiagnostics = await text(
+  'packages/native-spikes/ios/OpenOutdoorPhase0PerformanceDiagnostics.swift',
+);
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
@@ -102,12 +105,51 @@ for (const functionName of [
   requireText(nativeModule, `AsyncFunction("${functionName}")`, 'native module');
   requireText(mobileBinding, `readonly ${functionName}`, 'mobile native binding');
 }
+for (const functionName of [
+  'recordAcknowledgementBenchmark',
+  'beginMemoryProfile',
+  'finishMemoryProfile',
+  'inspectTrackingProtection',
+  'sharePhysicalDiagnosticReport',
+]) {
+  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'physical diagnostics module');
+  requireText(mobileBinding, `readonly ${functionName}`, 'physical diagnostics binding');
+}
+for (const token of [
+  'mach_task_basic_info',
+  'minimumAcknowledgementSamples = 20',
+  'minimumMemoryDurationSeconds = 30.0 * 60.0',
+  'minimumMemorySamples = 20',
+  'memoryThresholdBytes: UInt64 = 150 * 1_024 * 1_024',
+  'samplesBytes',
+  'phase0-physical-report.json',
+  'UIActivityViewController',
+]) {
+  requireText(performanceDiagnostics, token, 'Phase 0 physical diagnostics');
+}
+for (const token of [
+  'activePolicyReport()',
+  'completeUntilFirstUserAuthentication.rawValue',
+  '$0.excludedFromBackup == true',
+]) {
+  requireText(tracker, token, 'active tracking file-policy diagnostics');
+}
+for (const token of [
+  'Measure 20 Start/Stop acknowledgements',
+  'Begin 30-minute memory profile',
+  'Finish 30-minute memory profile',
+  'Inspect active tracking protection',
+  'Share physical diagnostic JSON',
+  'for (let index = 0; index < 20; index += 1)',
+]) {
+  requireText(mobileApp, token, 'mobile physical diagnostics UI');
+}
 requireText(nativeModule, '.runOnQueue(.main)', 'native module');
 requireText(mobileBinding, 'requireOptionalNativeModule', 'startup-safe mobile native binding');
 requireText(mobileBinding, 'module !== null', 'startup-safe mobile native binding');
 requireText(mobileBinding, 'requiredModule()', 'startup-safe mobile native binding');
 requireText(mobileApp, 'Native startup check failed', 'mobile startup diagnostic UI');
-requireText(mobileApp, 'disabled={!nativeSpikes.available}', 'mobile startup diagnostic UI');
+requireText(mobileApp, 'disabled={!nativeSpikes.available ||', 'mobile startup diagnostic UI');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
