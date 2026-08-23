@@ -47,7 +47,7 @@
 | `THR-009` | Persistent diagnostics reveal locations/secrets | Privacy exposure | Local-only default, field allowlist, redaction, bounded retention, reviewed export | T-DIA-001, T-SEC-002 |
 | `THR-010` | Poisoned/stale/conflicting source produces false positive camping status | Legal/safety harm | Authority/scope/freshness evaluator, provenance, conflict-to-unknown, release block | T-UNIT-001 |
 | `THR-011` | False entity merge combines distinct sites/restrictions | Misleading location/safety state | Precision-first thresholds, source/type calibration, reversible audit/review | T-UNIT-003 |
-| `THR-012` | Background recorder continues after stop or loses unreported samples | Privacy/battery/data-integrity harm | Native state machine, durable sequence/checkpoints, visible state, energy tests | T-PHY-001, T-PHY-002 |
+| `THR-012` | Background recorder continues after stop or loses unreported samples | Privacy/battery/data-integrity harm | Native state machine, durable sequence/checkpoints, visible state, active-session-only sensors | T-PHY-001, configuration/source review |
 | `THR-013` | Source revocation/retention deadline cannot be enforced in Git/cache/backups | Contract/license violation | No deadline-bound data in Git, classified inventories, purge/expiry jobs | T-UNIT-004, T-SEC-002, T-SEC-003 |
 | `THR-014` | Dependency/action/toolchain compromise alters release | Supply-chain compromise | Immutable pins, SBOM, provenance, clean reproduction, signature | T-REL-001, T-REL-002 |
 | `THR-015` | Sensitive export is shared without trimming/awareness | Location privacy harm | Explicit selection, endpoint/EXIF preview, confirmation, encrypted backup distinction | T-INT-004 |

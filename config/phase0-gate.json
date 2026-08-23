@@ -1,0 +1,47 @@
+{
+  "$schema": "./phase0-gate.schema.json",
+  "schemaVersion": 2,
+  "asOf": "2026-08-23",
+  "profileId": "iphone14-ios26.6-phase0-v1",
+  "gateStatus": "passed",
+  "packages": {
+    "WP-001": { "status": "accepted", "evidence": "docs/evidence/WP-001.md" },
+    "WP-002": { "status": "accepted", "evidence": "docs/evidence/WP-002.md" },
+    "WP-003": { "status": "accepted", "evidence": "docs/evidence/WP-003.md" },
+    "WP-004": { "status": "accepted", "evidence": "docs/evidence/WP-004.md" },
+    "WP-005": { "status": "accepted", "evidence": "docs/evidence/WP-005.md" },
+    "WP-006": { "status": "accepted", "evidence": "docs/evidence/WP-006.md" },
+    "WP-007": { "status": "accepted", "evidence": "docs/evidence/WP-007.md" },
+    "WP-008": { "status": "accepted", "evidence": "docs/evidence/WP-008.md" },
+    "WP-009": { "status": "accepted", "evidence": "docs/evidence/WP-009.md" },
+    "WP-010": { "status": "accepted", "evidence": "docs/evidence/WP-010.md" }
+  },
+  "budgets": {
+    "BUD-REC-001": {
+      "status": "passed",
+      "evidence": "docs/evidence/artifacts/WP-007-ack-ios26.6-source.json"
+    },
+    "BUD-REC-002": {
+      "status": "passed",
+      "evidence": "docs/evidence/WP-007.md#physical-device-evidence"
+    },
+    "BUD-REC-003": {
+      "status": "passed",
+      "evidence": "T-PHY-001-C01 through C06 deterministic replay"
+    },
+    "BUD-MEM-001": {
+      "status": "passed",
+      "evidence": "docs/evidence/artifacts/WP-007-memory-ios26.6-redacted.json"
+    }
+  },
+  "hostedCi": {
+    "report": "docs/PHASE_0_GATE_REPORT.md#hosted-ci-usage",
+    "cleanWindow": {
+      "startsAfter": "2026-08-21T23:40:00Z",
+      "requiredApplicableRuns": 20,
+      "evaluatedApplicableRuns": 20,
+      "avoidableFailureCount": 0,
+      "status": "passed"
+    }
+  }
+}

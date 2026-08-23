@@ -71,6 +71,8 @@ There is no automatic phone-to-public-catalog path. Dashed promotion paths requi
 - Backup/export is explicit and encrypted where it contains the full private state.
 - The sealed database, active spool, attachments, diagnostics, and catalogs use the protection and system-backup behavior in the [iOS data protection and backup policy](IOS_DATA_PROTECTION_AND_BACKUP.md).
 - The native tracker writes only its versioned active spool. The application storage coordinator imports complete idempotent batches and is the sole writer to the sealed database; catalog readers never receive write access.
+- A protected active-session manifest identifies the recoverable spool and mode; recovery derives the highest contiguous committed sequence from synchronized JSONL and ignores only a torn final line.
+- The Phase-0 native-spikes package may compile a synthetic-only diagnostic harness for file-policy inspection and A-to-B evidence. It shares one explicit report, has no production/private input, and is not part of the future production bridge.
 
 ### 5.2 Reference catalogs
 

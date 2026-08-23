@@ -4,6 +4,7 @@
   "private": true,
   "main": "index.ts",
   "dependencies": {
+    "@open-outdoor/native-spikes": "workspace:*",
     "expo": "56.0.20",
     "expo-status-bar": "56.0.4",
     "react": "19.2.3",

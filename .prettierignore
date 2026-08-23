@@ -5,6 +5,7 @@ node_modules
 .tmp-*
 dist
 coverage
+docs/evidence/artifacts/*.json
 apps/mobile/ios
 apps/mobile/android
 *.lock
