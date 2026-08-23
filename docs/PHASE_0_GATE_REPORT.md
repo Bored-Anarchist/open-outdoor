@@ -10,7 +10,7 @@ WP-001 through WP-006, WP-008, and WP-010 are accepted. WP-008 owner acceptance 
 
 ## Blocking evidence
 
-- WP-007: acknowledgement timing, dedicated adversity cases, protection/pre-first-unlock behavior, and the 30-minute memory profile remain incomplete. Exact process-death sequencing passed with sequence 2 preserved across relaunch and monotonic continuation through sequence 5.
+- WP-007: acknowledgement timing, permission-loss/recovery, protection/pre-first-unlock behavior, and the 30-minute memory profile remain incomplete. Exact process-death sequencing passed with sequence 2 preserved across relaunch and monotonic continuation through sequence 5; the Endurance radio/GPS adversity case passed with sequence 3 retained during interruption and monotonic continuation through sequence 4 after restoration.
 - BUD-REC-001: the acknowledgement threshold lacks a physical measurement.
 - BUD-MEM-001: the 30-minute screen-off p95 memory smoke is absent.
 - Battery/thermal scope: measured acceptance is deferred to WP-307/WP-503 and is not a current blocker; no endurance claim is permitted.
