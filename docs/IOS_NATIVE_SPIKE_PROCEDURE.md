@@ -24,7 +24,7 @@ Full battery/thermal characterization is deferred to WP-307/WP-503 and must not 
 1. Tap **Seed fixture version A**. This creates only synthetic user SQLite/WAL/SHM records, an attachment, diagnostic, and public/private catalogs.
 2. Tap **Inspect current fixture** and **Share diagnostic JSON**. Review every reported effective protection class, backup-exclusion value, record count, and record hash.
 3. Lock the device: the active spool must remain available; the sealed private database must be denied. Reboot and verify safe pre-first-unlock behavior.
-4. Create an encrypted iTunes backup on Windows. Run `uv run --frozen python -m open_outdoor_data.ios_backup_inspector --backup-root <backup-directory> --report <private-report.json>` and require `passed: true`.
+4. Create a temporary local Apple Devices/iTunes backup on Windows with **Encrypt local backup** disabled. Phase 0 reads only the plaintext `Manifest.db` inventory and never reads payload files. Run `uv run --frozen python -m open_outdoor_data.ios_backup_inspector --backup-root <backup-directory> --report <private-report.json>` and require `passed: true`, then delete the temporary unencrypted backup after retaining the redacted report. Encrypted-container parsing and restore remain WP-107/WP-306 under ADR-041.
 5. Verify the uninstall warning. Do not uninstall for Phase 0: ADR-041 moves encrypted restore to WP-107/WP-306.
 
 ## Same-identity A→B and downgrade matrix

@@ -29,6 +29,12 @@ def inspect_backup(
     manifest = (root / "Manifest.db").resolve(strict=True)
     if manifest.parent != root:
         raise ValueError("Manifest.db must be directly below the selected backup root")
+    with manifest.open("rb") as stream:
+        if stream.read(16) != b"SQLite format 3\x00":
+            raise ValueError(
+                "Manifest.db is not plaintext SQLite; encrypted local-backup "
+                "inventory is outside WP-008"
+            )
     if not bundle_id or any(character.isspace() for character in bundle_id):
         raise ValueError("bundle ID must be a non-empty value without whitespace")
 

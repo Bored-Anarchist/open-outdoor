@@ -75,5 +75,15 @@ class IosBackupInspectorTests(unittest.TestCase):
                 inspect_backup(root, "org.openoutdoor.local")
 
 
+    def test_rejects_an_encrypted_manifest_with_a_scoped_message(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "Manifest.db").write_bytes(b"synthetic encrypted manifest")
+            with self.assertRaisesRegex(
+                ValueError, "encrypted local-backup inventory is outside WP-008"
+            ):
+                inspect_backup(root, "org.openoutdoor.local")
+
+
 if __name__ == "__main__":
     unittest.main()
