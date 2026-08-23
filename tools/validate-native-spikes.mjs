@@ -60,6 +60,10 @@ requireText(tracker, 'allowsBackgroundLocationUpdates = true', 'tracker');
 requireText(tracker, 'CMAltimeter', 'tracker');
 requireText(tracker, 'completeUntilFirstUserAuthentication', 'tracker');
 requireText(tracker, 'try fileHandle.synchronize()', 'tracker');
+requireText(tracker, 'segment += 1', 'Phase 1 native batch bridge');
+requireText(tracker, 'verticalAccuracyM', 'Phase 1 native batch bridge');
+requireText(tracker, 'batchJSON(afterSequence:', 'Phase 1 native batch bridge');
+requireText(tracker, 'OpenOutdoorTrackingBatchPayload', 'Phase 1 native batch bridge');
 for (const token of [
   'active-session.json',
   'tornFinalLineIgnored',
@@ -94,10 +98,13 @@ if (
 for (const functionName of [
   'requestAlwaysAuthorization',
   'startTracking',
+  'pauseTracking',
+  'resumeTracking',
   'stopTracking',
   'isTracking',
   'currentSessionId',
   'lastTrackingError',
+  'readTrackingBatch',
   'inspectTrackingSession',
   'recoverTrackingSession',
   'discardRecoverableTrackingSession',
@@ -153,17 +160,24 @@ requireText(nativeModule, '.runOnQueue(.main)', 'native module');
 requireText(mobileBinding, 'requireOptionalNativeModule', 'startup-safe mobile native binding');
 requireText(mobileBinding, 'module !== null', 'startup-safe mobile native binding');
 requireText(mobileBinding, 'requiredModule()', 'startup-safe mobile native binding');
-requireText(mobileApp, 'Native startup check failed', 'mobile startup diagnostic UI');
+requireText(mobileApp, 'Native capability unavailable', 'mobile startup diagnostic UI');
 requireText(mobileApp, 'disabled={!nativeSpikes.available ||', 'mobile startup diagnostic UI');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
-requireText(mobileApp, 'Start native tracking', 'mobile feasibility UI');
-requireText(mobileApp, 'Stop native tracking', 'mobile feasibility UI');
-requireText(mobileApp, 'Recover interrupted session', 'mobile feasibility UI');
-requireText(mobileApp, 'Seed fixture version A', 'mobile feasibility UI');
-requireText(mobileApp, 'Share diagnostic JSON', 'mobile feasibility UI');
-requireText(mobileApp, 'Synthetic storage diagnostics unavailable', 'mobile feasibility UI');
+for (const token of [
+  'Start recording',
+  'Pause recording',
+  'Resume recording',
+  'Finish and save recording',
+  'Recover interrupted recording',
+  'Discard interrupted recording',
+  'Alert.alert',
+  'minHeight: 52',
+  'no turn instructions, rerouting, or',
+]) {
+  requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
+}
 requireText(nativeModule, 'OpenOutdoorPhase0DiagnosticsEnabled', 'native diagnostics gate');
 for (const token of [
   '#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS',

@@ -2,6 +2,24 @@ import { requireOptionalNativeModule } from 'expo';
 
 export type NativeTrackingMode = 'balanced' | 'endurance' | 'high-accuracy';
 
+export interface NativeTrackingBatch {
+  readonly sessionId: string;
+  readonly mode: NativeTrackingMode;
+  readonly firstSequence: number;
+  readonly createdAt: string;
+  readonly observations: readonly {
+    readonly sequence: number;
+    readonly coordinate: readonly [number, number];
+    readonly recordedAt: string;
+    readonly horizontalAccuracyM: number;
+    readonly verticalAccuracyM: number | null;
+    readonly altitudeM: number;
+    readonly pressureKPa: number | null;
+    readonly segment: number;
+    readonly paused: boolean;
+  }[];
+}
+
 export interface NativeTrackingInspection {
   readonly sessionId: string;
   readonly mode: NativeTrackingMode;
@@ -78,7 +96,10 @@ interface OpenOutdoorNativeSpikesModule {
   readonly phase0DiagnosticsEnabled: boolean;
   readonly requestAlwaysAuthorization: () => Promise<void>;
   readonly startTracking: (mode: NativeTrackingMode) => Promise<string>;
+  readonly pauseTracking: () => Promise<number>;
+  readonly resumeTracking: () => Promise<number>;
   readonly stopTracking: () => Promise<number>;
+  readonly readTrackingBatch: (afterSequence: number) => Promise<string | null>;
   readonly inspectTrackingSession: () => Promise<string | null>;
   readonly recoverTrackingSession: () => Promise<string>;
   readonly discardRecoverableTrackingSession: () => Promise<string>;
@@ -119,10 +140,16 @@ export const nativeSpikes = {
   requestAlwaysAuthorization: (): Promise<void> => requiredModule().requestAlwaysAuthorization(),
   startTracking: (mode: NativeTrackingMode): Promise<string> =>
     requiredModule().startTracking(mode),
+  pauseTracking: (): Promise<number> => requiredModule().pauseTracking(),
+  resumeTracking: (): Promise<number> => requiredModule().resumeTracking(),
   stopTracking: (): Promise<number> => requiredModule().stopTracking(),
   isTracking: (): Promise<boolean> => requiredModule().isTracking(),
   currentSessionId: (): Promise<string | null> => requiredModule().currentSessionId(),
   lastTrackingError: (): Promise<string | null> => requiredModule().lastTrackingError(),
+  readTrackingBatch: async (afterSequence: number): Promise<NativeTrackingBatch | null> => {
+    const value = await requiredModule().readTrackingBatch(afterSequence);
+    return value === null ? null : parseJson<NativeTrackingBatch>(value);
+  },
   inspectTrackingSession: async (): Promise<NativeTrackingInspection | null> => {
     const value = await requiredModule().inspectTrackingSession();
     return value === null ? null : parseJson<NativeTrackingInspection>(value);

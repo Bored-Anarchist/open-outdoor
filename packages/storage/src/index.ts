@@ -348,3 +348,4 @@ export function phase0FixtureHashes(fixture: Phase0Fixture): Readonly<Record<str
     attachments: fnv1a64(JSON.stringify(fixture.attachments)),
   };
 }
+export * from './private.js';

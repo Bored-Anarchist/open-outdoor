@@ -54,12 +54,24 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       return try self.tracker.start(mode: mode)
     }.runOnQueue(.main)
 
+    AsyncFunction("pauseTracking") { () -> Int64 in
+      try self.tracker.pause()
+    }.runOnQueue(.main)
+
+    AsyncFunction("resumeTracking") { () -> Int64 in
+      try self.tracker.resume()
+    }.runOnQueue(.main)
+
     AsyncFunction("stopTracking") { () -> Int64 in
       let finalSequence = try self.tracker.stop()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
       self.phase0PerformanceInstance?.cancelMemoryProfile()
 #endif
       return finalSequence
+    }.runOnQueue(.main)
+
+    AsyncFunction("readTrackingBatch") { (afterSequence: Int64) -> String? in
+      try self.tracker.readBatch(afterSequence: afterSequence)
     }.runOnQueue(.main)
 
     AsyncFunction("inspectTrackingSession") { () -> String? in

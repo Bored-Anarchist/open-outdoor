@@ -1,0 +1,38 @@
+{
+  "$schema": "./phase1-gate.schema.json",
+  "schemaVersion": 1,
+  "asOf": "2026-08-23",
+  "profileId": "iphone14-ios26.6-phase1-v1",
+  "gateStatus": "blocked",
+  "packages": {
+    "WP-101": { "status": "implemented", "evidence": "docs/evidence/WP-101.md" },
+    "WP-102": { "status": "implemented", "evidence": "docs/evidence/WP-102.md" },
+    "WP-103": { "status": "physical-pending", "evidence": "docs/evidence/WP-103.md" },
+    "WP-104": { "status": "physical-pending", "evidence": "docs/evidence/WP-104.md" },
+    "WP-105": { "status": "physical-pending", "evidence": "docs/evidence/WP-105.md" },
+    "WP-106": { "status": "implemented", "evidence": "docs/evidence/WP-106.md" },
+    "WP-107": { "status": "implemented", "evidence": "docs/evidence/WP-107.md" },
+    "WP-108": { "status": "implemented", "evidence": "docs/evidence/WP-108.md" },
+    "WP-109": { "status": "physical-pending", "evidence": "docs/evidence/WP-109.md" }
+  },
+  "acceptance": {
+    "automatedCore": { "status": "passed", "evidence": "pnpm test:phase1" },
+    "trackerCorrectness": { "status": "physical-pending", "evidence": "T-PHY-001-C07 through C09" },
+    "memorySmoke": {
+      "status": "physical-pending",
+      "evidence": "BUD-MEM-001 with Phase 1 recorder/map UI"
+    },
+    "voiceOver": { "status": "physical-pending", "evidence": "T-PHY-003 physical VoiceOver flow" },
+    "dynamicType": {
+      "status": "physical-pending",
+      "evidence": "T-PHY-003 largest accessibility size"
+    },
+    "elevation": {
+      "status": "physical-pending",
+      "evidence": "controlled barometric climb threshold"
+    }
+  },
+  "deferred": {
+    "measuredEnergy": "WP-307/WP-503"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/phase1-gate.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "asOf",
+    "profileId",
+    "gateStatus",
+    "packages",
+    "acceptance",
+    "deferred"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "profileId": { "type": "string", "minLength": 1 },
+    "gateStatus": { "enum": ["passed", "blocked"] },
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "WP-101",
+        "WP-102",
+        "WP-103",
+        "WP-104",
+        "WP-105",
+        "WP-106",
+        "WP-107",
+        "WP-108",
+        "WP-109"
+      ],
+      "properties": {
+        "WP-101": { "$ref": "#/$defs/evidenceItem" },
+        "WP-102": { "$ref": "#/$defs/evidenceItem" },
+        "WP-103": { "$ref": "#/$defs/evidenceItem" },
+        "WP-104": { "$ref": "#/$defs/evidenceItem" },
+        "WP-105": { "$ref": "#/$defs/evidenceItem" },
+        "WP-106": { "$ref": "#/$defs/evidenceItem" },
+        "WP-107": { "$ref": "#/$defs/evidenceItem" },
+        "WP-108": { "$ref": "#/$defs/evidenceItem" },
+        "WP-109": { "$ref": "#/$defs/evidenceItem" }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "automatedCore",
+        "trackerCorrectness",
+        "memorySmoke",
+        "voiceOver",
+        "dynamicType",
+        "elevation"
+      ],
+      "properties": {
+        "automatedCore": { "$ref": "#/$defs/acceptanceItem" },
+        "trackerCorrectness": { "$ref": "#/$defs/acceptanceItem" },
+        "memorySmoke": { "$ref": "#/$defs/acceptanceItem" },
+        "voiceOver": { "$ref": "#/$defs/acceptanceItem" },
+        "dynamicType": { "$ref": "#/$defs/acceptanceItem" },
+        "elevation": { "$ref": "#/$defs/acceptanceItem" }
+      }
+    },
+    "deferred": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["measuredEnergy"],
+      "properties": { "measuredEnergy": { "const": "WP-307/WP-503" } }
+    }
+  },
+  "$defs": {
+    "evidenceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["implemented", "accepted", "passed", "physical-pending", "blocked"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "acceptanceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["passed", "physical-pending", "blocked"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

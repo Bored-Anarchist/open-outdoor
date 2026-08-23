@@ -1,0 +1,11 @@
+{
+  "name": "@open-outdoor/recorder",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@open-outdoor/storage": "workspace:*",
+    "@open-outdoor/tracking": "workspace:*"
+  },
+  "exports": "./src/index.ts"
+}

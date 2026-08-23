@@ -1,13 +1,13 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   nativeSpikes,
   type NativeTrackingInspection,
   type NativeTrackingMode,
-  type Phase0DiagnosticReport,
-  type Phase0PhysicalDiagnosticReport,
 } from './nativeSpikes';
+
+type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
 const modeLabels: Readonly<Record<NativeTrackingMode, string>> = {
   balanced: 'Balanced',
@@ -15,197 +15,159 @@ const modeLabels: Readonly<Record<NativeTrackingMode, string>> = {
   'high-accuracy': 'High Accuracy',
 };
 
-const activationCheckpoints = [
-  'before-copy',
-  'after-copy',
-  'after-checksum',
-  'after-compatibility',
-  'after-remap-validation',
-  'before-pointer-switch',
-  'after-pointer-switch',
-  'after-first-launch',
-] as const;
-
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function trackingSummary(inspection: NativeTrackingInspection): string {
-  const torn = inspection.tornFinalLineIgnored ? ' Torn final line ignored.' : '';
-  return (
-    (inspection.recording ? 'Recording ' : 'Recoverable ') +
-    modeLabels[inspection.mode] +
-    ' session ' +
-    inspection.sessionId +
-    '; ' +
-    inspection.validObservationCount +
-    ' valid observations through sequence ' +
-    inspection.highestSequence +
-    '.' +
-    torn
-  );
+interface AccessibleButtonProps {
+  readonly label: string;
+  readonly hint: string;
+  readonly disabled?: boolean;
+  readonly selected?: boolean;
+  readonly destructive?: boolean;
+  readonly onPress: () => void;
 }
 
-function diagnosticSummary(report: Phase0DiagnosticReport): string {
-  const records = Object.values(report.recordCounts).reduce((sum, count) => sum + count, 0);
-  const interruption =
-    report.interruptedAt === null || report.interruptedAt === undefined
-      ? ''
-      : ' Interrupted at ' +
-        report.interruptedAt +
-        (report.rolledBack ? ' and rolled back' : '') +
-        '.';
+function AccessibleButton({
+  label,
+  hint,
+  disabled = false,
+  selected = false,
+  destructive = false,
+  onPress,
+}: AccessibleButtonProps) {
   return (
-    'Synthetic fixture ' +
-    report.fixtureStage +
-    '; active ' +
-    report.activeCatalogId +
-    '; ' +
-    records +
-    ' records and ' +
-    report.artifacts.length +
-    ' artifact checks.' +
-    interruption
+    <Pressable
+      accessibilityHint={hint}
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled, selected }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        selected && styles.buttonSelected,
+        destructive && styles.buttonDestructive,
+        pressed && !disabled && styles.buttonPressed,
+        disabled && styles.buttonDisabled,
+      ]}
+    >
+      <Text style={[styles.buttonLabel, destructive && styles.buttonDestructiveLabel]}>
+        {label}
+      </Text>
+    </Pressable>
   );
-}
-
-function mebibytes(bytes: number): string {
-  return (bytes / (1024 * 1024)).toFixed(1);
 }
 
 export default function App() {
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
-  const [recording, setRecording] = useState(false);
-  const [recoverable, setRecoverable] = useState<NativeTrackingInspection | null>(null);
-  const [checkpoint, setCheckpoint] =
-    useState<(typeof activationCheckpoints)[number]>('after-first-launch');
-  const [diagnostic, setDiagnostic] = useState<Phase0DiagnosticReport | null>(null);
-  const [physicalDiagnostic, setPhysicalDiagnostic] =
-    useState<Phase0PhysicalDiagnosticReport | null>(null);
+  const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
+  const [recovery, setRecovery] = useState<NativeTrackingInspection | null>(null);
+  const [savedActivities, setSavedActivities] = useState<
+    readonly { readonly id: string; readonly finalSequence: number }[]
+  >([]);
   const [benchmarking, setBenchmarking] = useState(false);
   const [memoryProfileActive, setMemoryProfileActive] = useState(false);
+  const [physicalReportAvailable, setPhysicalReportAvailable] = useState(false);
   const [status, setStatus] = useState(
     nativeSpikes.available
-      ? 'Native tracker ready for Phase 0 workoff.'
-      : 'Startup diagnostic: ' + nativeSpikes.loadError,
+      ? 'Ready to record offline.'
+      : 'Native capability unavailable: ' + nativeSpikes.loadError,
   );
 
   useEffect(() => {
-    if (nativeSpikes.available) void inspectTracking(false);
+    if (!nativeSpikes.available) return;
+    void nativeSpikes
+      .inspectTrackingSession()
+      .then((inspection) => {
+        if (inspection !== null && !inspection.recording) {
+          setRecovery(inspection);
+          setRecorderState('recoverable');
+          setStatus('An interrupted recording is ready to recover.');
+        }
+      })
+      .catch((error: unknown) => setStatus('Recovery inspection failed: ' + errorMessage(error)));
   }, []);
-
-  async function inspectTracking(announce = true): Promise<void> {
-    try {
-      const inspection = await nativeSpikes.inspectTrackingSession();
-      setRecoverable(inspection?.recording ? null : inspection);
-      if (inspection !== null && announce) setStatus(trackingSummary(inspection));
-      if (inspection === null && announce) setStatus('No active or recoverable tracking session.');
-    } catch (error) {
-      setStatus('Tracking inspection failed: ' + errorMessage(error));
-    }
-  }
 
   async function requestPermission(): Promise<void> {
     try {
       await nativeSpikes.requestAlwaysAuthorization();
-      setStatus('Location permission requested. Choose Always in iOS settings.');
+      setStatus('Location permission requested. Allow Always to support screen-lock recording.');
     } catch (error) {
       setStatus('Permission request failed: ' + errorMessage(error));
     }
   }
 
-  async function startTracking(): Promise<void> {
+  async function start(): Promise<void> {
     try {
       const sessionId = await nativeSpikes.startTracking(mode);
-      setRecording(true);
-      setRecoverable(null);
-      setStatus('Recording ' + modeLabels[mode] + ' session ' + sessionId + '.');
+      setRecorderState('recording');
+      setStatus('Recording ' + modeLabels[mode] + ' activity ' + sessionId + ' offline.');
     } catch (error) {
       setStatus('Start failed: ' + errorMessage(error));
     }
   }
 
-  async function stopTracking(): Promise<void> {
+  async function pause(): Promise<void> {
     try {
-      const finalSequence = await nativeSpikes.stopTracking();
-      setRecording(false);
-      setRecoverable(null);
-      setStatus('Stopped after durable sequence ' + finalSequence + '.');
+      const sequence = await nativeSpikes.pauseTracking();
+      setRecorderState('paused');
+      setStatus('Paused after durable sequence ' + sequence + '. Sensors are stopped.');
     } catch (error) {
-      setStatus('Stop failed: ' + errorMessage(error));
+      setStatus('Pause failed: ' + errorMessage(error));
     }
   }
 
-  async function recoverTracking(): Promise<void> {
+  async function resume(): Promise<void> {
+    try {
+      const sequence = await nativeSpikes.resumeTracking();
+      setRecorderState('recording');
+      setStatus('Resumed from durable sequence ' + sequence + ' in a new segment.');
+    } catch (error) {
+      setStatus('Resume failed: ' + errorMessage(error));
+    }
+  }
+
+  async function finish(): Promise<void> {
+    try {
+      const sessionId = await nativeSpikes.currentSessionId();
+      const finalSequence = await nativeSpikes.stopTracking();
+      setSavedActivities((current) => [
+        {
+          id: sessionId ?? 'recovered-activity',
+          finalSequence,
+        },
+        ...current,
+      ]);
+      setRecorderState('idle');
+      setRecovery(null);
+      setStatus('Activity saved locally through sequence ' + finalSequence + '.');
+    } catch (error) {
+      setStatus('Finish failed: ' + errorMessage(error));
+    }
+  }
+
+  async function recover(): Promise<void> {
     try {
       const inspection = await nativeSpikes.recoverTrackingSession();
       setMode(inspection.mode);
-      setRecording(true);
-      setRecoverable(null);
-      setStatus(trackingSummary({ ...inspection, recording: true }));
+      setRecovery(null);
+      setRecorderState('recording');
+      setStatus(
+        'Recovered ' +
+          inspection.validObservationCount +
+          ' observations through sequence ' +
+          inspection.highestSequence +
+          '.',
+      );
     } catch (error) {
       setStatus('Recovery failed: ' + errorMessage(error));
     }
   }
 
-  async function discardRecovery(): Promise<void> {
-    try {
-      const inspection = await nativeSpikes.discardRecoverableTrackingSession();
-      setRecoverable(null);
-      setStatus(
-        'Discarded recovery marker for ' +
-          inspection.sessionId +
-          '; its ' +
-          inspection.validObservationCount +
-          ' synchronized observations remain available for evidence.',
-      );
-    } catch (error) {
-      setStatus('Discard failed: ' + errorMessage(error));
-    }
-  }
-
-  async function seedFixtureA(): Promise<void> {
-    try {
-      const report = await nativeSpikes.seedPhase0FixtureA();
-      setDiagnostic(report);
-      setStatus(diagnosticSummary(report));
-    } catch (error) {
-      setStatus('Fixture A failed: ' + errorMessage(error));
-    }
-  }
-
-  async function applyFixtureB(): Promise<void> {
-    try {
-      const report = await nativeSpikes.applyPhase0FixtureB(checkpoint);
-      setDiagnostic(report);
-      setStatus(diagnosticSummary(report));
-    } catch (error) {
-      setStatus('Fixture B failed: ' + errorMessage(error));
-    }
-  }
-
-  async function inspectFixture(): Promise<void> {
-    try {
-      const report = await nativeSpikes.inspectPhase0Fixture();
-      setDiagnostic(report);
-      setStatus(diagnosticSummary(report));
-    } catch (error) {
-      setStatus('Fixture inspection failed: ' + errorMessage(error));
-    }
-  }
-
-  async function shareReport(): Promise<void> {
-    try {
-      const path = await nativeSpikes.sharePhase0DiagnosticReport();
-      setStatus('Diagnostic report prepared and shared from ' + path + '.');
-    } catch (error) {
-      setStatus('Report sharing failed: ' + errorMessage(error));
-    }
-  }
-
   async function benchmarkAcknowledgements(): Promise<void> {
     setBenchmarking(true);
-    setStatus('Measuring 20 Start and 20 Stop acknowledgements.');
+    setStatus('Measuring 20 Start/Stop acknowledgements.');
     const startDurationsMs: number[] = [];
     const stopDurationsMs: number[] = [];
     try {
@@ -213,65 +175,46 @@ export default function App() {
         let startedAt = Date.now();
         await nativeSpikes.startTracking(mode);
         startDurationsMs.push(Date.now() - startedAt);
-        await new Promise((resolve) => setTimeout(resolve, 25));
-
         startedAt = Date.now();
         await nativeSpikes.stopTracking();
         stopDurationsMs.push(Date.now() - startedAt);
-        await new Promise((resolve) => setTimeout(resolve, 25));
       }
       const report = await nativeSpikes.recordAcknowledgementBenchmark(
         JSON.stringify({ mode, startDurationsMs, stopDurationsMs }),
       );
-      setPhysicalDiagnostic(report);
-      const result = report.acknowledgement;
-      if (result === null) throw new Error('Native acknowledgement report was empty');
+      setPhysicalReportAvailable(true);
       setStatus(
         'Acknowledgement ' +
-          (result.passed ? 'PASS' : 'FAIL') +
-          ': Start p95 ' +
-          result.startP95Ms.toFixed(0) +
+          (report.acknowledgement?.passed === true ? 'passed' : 'failed') +
+          '. Start p95 ' +
+          (report.acknowledgement?.startP95Ms ?? 0).toFixed(0) +
           ' ms; Stop p95 ' +
-          result.stopP95Ms.toFixed(0) +
-          ' ms; threshold ' +
-          result.thresholdMs.toFixed(0) +
+          (report.acknowledgement?.stopP95Ms ?? 0).toFixed(0) +
           ' ms.',
       );
     } catch (error) {
-      try {
-        if (await nativeSpikes.isTracking()) await nativeSpikes.stopTracking();
-      } catch {
-        // Preserve the original benchmark error.
-      }
       setStatus('Acknowledgement benchmark failed: ' + errorMessage(error));
     } finally {
-      setRecording(false);
       setBenchmarking(false);
     }
   }
 
-  async function inspectTrackingProtection(): Promise<void> {
+  async function inspectProtection(): Promise<void> {
     try {
       const report = await nativeSpikes.inspectTrackingProtection();
-      setPhysicalDiagnostic(report);
-      const result = report.trackingProtection;
-      if (result === null) throw new Error('Native tracking protection report was empty');
+      setPhysicalReportAvailable(true);
       setStatus(
-        'Active tracking protection ' +
-          (result.passed ? 'PASS' : 'FAIL') +
-          ': ' +
-          result.artifacts.length +
-          ' artifacts checked.',
+        'Active recording file policy ' +
+          (report.trackingProtection?.passed === true ? 'passed.' : 'failed.'),
       );
     } catch (error) {
-      setStatus('Tracking protection inspection failed: ' + errorMessage(error));
+      setStatus('File-policy inspection failed: ' + errorMessage(error));
     }
   }
 
   async function beginMemoryProfile(): Promise<void> {
     try {
-      const report = await nativeSpikes.beginMemoryProfile();
-      setPhysicalDiagnostic(report);
+      await nativeSpikes.beginMemoryProfile();
       setMemoryProfileActive(true);
       setStatus('Memory profile active. Lock the phone for at least 30 minutes.');
     } catch (error) {
@@ -282,19 +225,13 @@ export default function App() {
   async function finishMemoryProfile(): Promise<void> {
     try {
       const report = await nativeSpikes.finishMemoryProfile();
-      setPhysicalDiagnostic(report);
       setMemoryProfileActive(false);
-      const result = report.memory;
-      if (result === null) throw new Error('Native memory report was empty');
+      setPhysicalReportAvailable(true);
       setStatus(
-        'Memory ' +
-          (result.passed ? 'PASS' : 'FAIL') +
-          ': p95 ' +
-          mebibytes(result.p95ResidentBytes) +
-          ' MiB; max ' +
-          mebibytes(result.maxResidentBytes) +
-          ' MiB across ' +
-          result.sampleCount +
+        '30-minute memory smoke ' +
+          (report.memory?.passed === true ? 'passed' : 'failed') +
+          ' across ' +
+          (report.memory?.sampleCount ?? 0) +
           ' samples.',
       );
     } catch (error) {
@@ -304,249 +241,276 @@ export default function App() {
 
   async function sharePhysicalReport(): Promise<void> {
     try {
-      const path = await nativeSpikes.sharePhysicalDiagnosticReport();
-      setStatus('Physical diagnostic report prepared and shared from ' + path + '.');
+      await nativeSpikes.sharePhysicalDiagnosticReport();
+      setStatus('Physical diagnostic JSON is ready to share.');
     } catch (error) {
       setStatus('Physical report sharing failed: ' + errorMessage(error));
     }
   }
+
+  function confirmDiscard(): void {
+    Alert.alert(
+      'Discard interrupted recording?',
+      'This action cannot be undone. Saved activities are not affected.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Discard recording',
+          style: 'destructive',
+          onPress: () => {
+            void nativeSpikes
+              .discardRecoverableTrackingSession()
+              .then(() => {
+                setRecovery(null);
+                setRecorderState('idle');
+                setStatus('Interrupted recording discarded.');
+              })
+              .catch((error: unknown) => setStatus('Discard failed: ' + errorMessage(error)));
+          },
+        },
+      ],
+    );
+  }
+
+  const active = recorderState === 'recording' || recorderState === 'paused';
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Text accessibilityRole="header" style={styles.eyebrow}>
+        Offline recorder alpha
+      </Text>
       <Text accessibilityRole="header" style={styles.heading}>
-        Open Outdoor native feasibility
+        Open Outdoor
       </Text>
       <Text style={styles.copy}>
-        Phase 0 spike only. All diagnostic records are synthetic, local, and excluded from backup.
+        Selected route: Hemlock Loop. Display only—there are no turn instructions, rerouting, or
+        off-route alerts.
       </Text>
+      <View
+        accessibilityLabel="Hemlock Loop route summary, four fixture points"
+        style={styles.mapAlternative}
+      >
+        <Text style={styles.mapHeading}>Hemlock Loop</Text>
+        <View
+          accessibilityElementsHidden
+          importantForAccessibility="no-hide-descendants"
+          style={styles.routeLine}
+        />
+        <Text style={styles.mapCopy}>
+          Offline fixture map · 4 route points · trailhead and preserve
+        </Text>
+      </View>
       <Text accessibilityLiveRegion="polite" style={styles.status}>
         {status}
       </Text>
 
       {!nativeSpikes.available ? (
-        <View accessibilityRole="alert" style={styles.startupDiagnostic}>
-          <Text style={styles.startupDiagnosticHeading}>Native startup check failed</Text>
-          <Text selectable style={styles.startupDiagnosticCopy}>
+        <View accessibilityRole="alert" style={styles.alert}>
+          <Text style={styles.alertHeading}>Native capability unavailable</Text>
+          <Text selectable style={styles.alertCopy}>
             {nativeSpikes.loadError}
           </Text>
         </View>
       ) : null}
 
       <Text accessibilityRole="header" style={styles.sectionHeading}>
-        Tracker recovery
+        Tracking mode
+      </Text>
+      <Text style={styles.copy}>
+        Balanced is the default. High Accuracy is always an explicit choice.
       </Text>
       <View style={styles.controls}>
-        <Button
-          title="Request Always Location"
-          disabled={!nativeSpikes.available || benchmarking || memoryProfileActive}
-          onPress={() => void requestPermission()}
-        />
         {(Object.keys(modeLabels) as NativeTrackingMode[]).map((candidate) => (
-          <Button
+          <AccessibleButton
             key={candidate}
-            title={(candidate === mode ? 'Selected: ' : '') + modeLabels[candidate]}
-            disabled={
-              !nativeSpikes.available ||
-              recording ||
-              recoverable !== null ||
-              benchmarking ||
-              memoryProfileActive
-            }
+            label={modeLabels[candidate]}
+            hint={'Select ' + modeLabels[candidate] + ' tracking mode'}
+            selected={candidate === mode}
+            disabled={!nativeSpikes.available || active || recorderState === 'recoverable'}
             onPress={() => setMode(candidate)}
           />
         ))}
-        <Button
-          title="Start native tracking"
-          disabled={
-            !nativeSpikes.available ||
-            recording ||
-            recoverable !== null ||
-            benchmarking ||
-            memoryProfileActive
-          }
-          onPress={() => void startTracking()}
+      </View>
+
+      <Text accessibilityRole="header" style={styles.sectionHeading}>
+        Recorder controls
+      </Text>
+      <View style={styles.controls}>
+        <AccessibleButton
+          label="Request Always Location"
+          hint="Opens the iOS location permission prompt"
+          disabled={!nativeSpikes.available || active}
+          onPress={() => void requestPermission()}
         />
-        <Button
-          title="Stop native tracking"
-          disabled={!nativeSpikes.available || !recording || benchmarking || memoryProfileActive}
-          onPress={() => void stopTracking()}
+        <AccessibleButton
+          label="Start recording"
+          hint="Starts offline location and elevation recording"
+          disabled={!nativeSpikes.available || recorderState !== 'idle'}
+          onPress={() => void start()}
         />
-        <Button
-          title="Inspect tracking spool"
-          disabled={!nativeSpikes.available || benchmarking}
-          onPress={() => void inspectTracking()}
+        <AccessibleButton
+          label="Pause recording"
+          hint="Stops sensors and excludes paused distance and elevation"
+          disabled={recorderState !== 'recording'}
+          onPress={() => void pause()}
         />
-        <Button
-          title="Recover interrupted session"
-          disabled={
-            !nativeSpikes.available ||
-            recording ||
-            recoverable === null ||
-            benchmarking ||
-            memoryProfileActive
-          }
-          onPress={() => void recoverTracking()}
+        <AccessibleButton
+          label="Resume recording"
+          hint="Restarts sensors in a new activity segment"
+          disabled={recorderState !== 'paused'}
+          onPress={() => void resume()}
         />
-        <Button
-          title="Discard recovery marker"
-          disabled={
-            !nativeSpikes.available ||
-            recording ||
-            recoverable === null ||
-            benchmarking ||
-            memoryProfileActive
-          }
-          onPress={() => void discardRecovery()}
+        <AccessibleButton
+          label="Finish and save recording"
+          hint="Stops sensors and saves the private activity"
+          disabled={!active}
+          onPress={() => void finish()}
+        />
+        <AccessibleButton
+          label="Recover interrupted recording"
+          hint="Continues from the last durable checkpoint"
+          disabled={recorderState !== 'recoverable' || recovery === null}
+          onPress={() => void recover()}
+        />
+        <AccessibleButton
+          label="Discard interrupted recording"
+          hint="Requires confirmation before permanently discarding recovery"
+          destructive
+          disabled={recorderState !== 'recoverable' || recovery === null}
+          onPress={confirmDiscard}
         />
       </View>
 
       {nativeSpikes.phase0DiagnosticsEnabled ? (
         <>
           <Text accessibilityRole="header" style={styles.sectionHeading}>
-            Physical acceptance diagnostics
+            Physical acceptance evidence
           </Text>
           <Text style={styles.copy}>
-            Reports contain timings, memory sizes, and file-policy metadata only—never coordinates.
+            Diagnostic JSON contains timings, memory sizes, and file policy only—never coordinates.
           </Text>
           <View style={styles.controls}>
-            <Button
-              title={
-                benchmarking
-                  ? 'Measuring acknowledgements…'
-                  : 'Measure 20 Start/Stop acknowledgements'
-              }
+            <AccessibleButton
+              label="Measure 20 Start/Stop acknowledgements"
+              hint="Runs the physical recording acknowledgement benchmark"
               disabled={
-                !nativeSpikes.available ||
-                recording ||
-                recoverable !== null ||
-                benchmarking ||
-                memoryProfileActive
+                active || recorderState === 'recoverable' || benchmarking || memoryProfileActive
               }
               onPress={() => void benchmarkAcknowledgements()}
             />
-            <Button
-              title="Inspect active tracking protection"
-              disabled={!nativeSpikes.available || !recording || benchmarking}
-              onPress={() => void inspectTrackingProtection()}
+            <AccessibleButton
+              label="Inspect active tracking protection"
+              hint="Checks protection and system backup exclusion without reading coordinates"
+              disabled={recorderState !== 'recording' || benchmarking}
+              onPress={() => void inspectProtection()}
             />
-            <Button
-              title="Begin 30-minute memory profile"
-              disabled={
-                !nativeSpikes.available || !recording || benchmarking || memoryProfileActive
-              }
+            <AccessibleButton
+              label="Begin 30-minute memory profile"
+              hint="Begins screen-lock memory sampling for the active recorder"
+              disabled={recorderState !== 'recording' || benchmarking || memoryProfileActive}
               onPress={() => void beginMemoryProfile()}
             />
-            <Button
-              title="Finish 30-minute memory profile"
-              disabled={!nativeSpikes.available || !memoryProfileActive}
+            <AccessibleButton
+              label="Finish 30-minute memory profile"
+              hint="Stops memory sampling and computes the binding p95 result"
+              disabled={!memoryProfileActive}
               onPress={() => void finishMemoryProfile()}
             />
-            <Button
-              title="Share physical diagnostic JSON"
-              disabled={
-                !nativeSpikes.available ||
-                physicalDiagnostic === null ||
-                benchmarking ||
-                memoryProfileActive
-              }
+            <AccessibleButton
+              label="Share physical diagnostic JSON"
+              hint="Shares the redacted physical acceptance report"
+              disabled={!physicalReportAvailable || benchmarking || memoryProfileActive}
               onPress={() => void sharePhysicalReport()}
             />
           </View>
         </>
       ) : null}
 
-      {nativeSpikes.phase0DiagnosticsEnabled ? (
-        <>
-          <Text accessibilityRole="header" style={styles.sectionHeading}>
-            Synthetic storage diagnostics
-          </Text>
-          <View style={styles.controls}>
-            <Button title="Seed fixture version A" onPress={() => void seedFixtureA()} />
-            <Button title="Inspect current fixture" onPress={() => void inspectFixture()} />
-            {activationCheckpoints.map((candidate) => (
-              <Button
-                key={candidate}
-                title={(candidate === checkpoint ? 'Selected: ' : '') + candidate}
-                onPress={() => setCheckpoint(candidate)}
-              />
-            ))}
-            <Button
-              title={'Apply version B at ' + checkpoint}
-              onPress={() => void applyFixtureB()}
-            />
-            <Button
-              title="Share diagnostic JSON"
-              disabled={diagnostic === null}
-              onPress={() => void shareReport()}
-            />
+      <Text accessibilityRole="header" style={styles.sectionHeading}>
+        Saved activities
+      </Text>
+      {savedActivities.length === 0 ? (
+        <Text style={styles.copy}>No saved activities yet.</Text>
+      ) : (
+        savedActivities.map((activity) => (
+          <View key={activity.id} style={styles.activityCard}>
+            <Text style={styles.activityHeading}>Private recorded activity</Text>
+            <Text style={styles.copy}>
+              {activity.id} · {activity.finalSequence} durable observations
+            </Text>
           </View>
-        </>
-      ) : nativeSpikes.available ? (
-        <View style={styles.startupDiagnostic}>
-          <Text style={styles.startupDiagnosticHeading}>
-            Synthetic storage diagnostics unavailable
-          </Text>
-          <Text selectable style={styles.startupDiagnosticCopy}>
-            This build did not opt in to the Phase 0 storage harness.
-          </Text>
-        </View>
-      ) : null}
+        ))
+      )}
       <StatusBar style="auto" />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f6f4ec',
-    flexGrow: 1,
-    padding: 24,
+  activityCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    marginBottom: 12,
+    padding: 16,
   },
-  controls: {
-    gap: 10,
+  activityHeading: { color: '#173d2b', fontSize: 18, fontWeight: '700' },
+  alert: {
+    backgroundColor: '#fff0ee',
+    borderColor: '#a5251b',
+    borderRadius: 12,
+    borderWidth: 2,
+    marginBottom: 12,
+    padding: 16,
   },
-  copy: {
-    color: '#30352f',
+  alertCopy: { color: '#5f1711', fontSize: 16, lineHeight: 24 },
+  alertHeading: { color: '#7b1d15', fontSize: 18, fontWeight: '700', marginBottom: 6 },
+  button: {
+    alignItems: 'center',
+    backgroundColor: '#fdfdf8',
+    borderColor: '#28533f',
+    borderRadius: 12,
+    borderWidth: 2,
+    justifyContent: 'center',
+    minHeight: 52,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  buttonDestructive: { borderColor: '#9b241b' },
+  buttonDestructiveLabel: { color: '#7b1d15' },
+  buttonDisabled: { opacity: 0.45 },
+  buttonLabel: { color: '#173d2b', fontSize: 17, fontWeight: '700', textAlign: 'center' },
+  buttonPressed: { backgroundColor: '#d8e6d8' },
+  buttonSelected: { backgroundColor: '#cbe1cf', borderWidth: 3 },
+  container: { backgroundColor: '#f3f1e8', flexGrow: 1, padding: 24 },
+  controls: { gap: 12 },
+  copy: { color: '#303b34', fontSize: 17, lineHeight: 26, marginBottom: 14 },
+  eyebrow: { color: '#496355', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
+  heading: { color: '#173d2b', fontSize: 34, fontWeight: '800', marginBottom: 10 },
+  mapAlternative: {
+    backgroundColor: '#cfe2ce',
+    borderColor: '#35634d',
+    borderRadius: 16,
+    borderWidth: 2,
+    marginBottom: 16,
+    minHeight: 176,
+    padding: 18,
+  },
+  mapCopy: { color: '#244737', fontSize: 16, lineHeight: 23 },
+  mapHeading: { color: '#173d2b', fontSize: 21, fontWeight: '800' },
+  routeLine: { backgroundColor: '#a72d2d', borderRadius: 8, height: 8, marginVertical: 36 },
+  sectionHeading: {
+    color: '#173d2b',
+    fontSize: 23,
+    fontWeight: '800',
+    marginBottom: 10,
+    marginTop: 24,
+  },
+  status: {
+    backgroundColor: '#deeadc',
+    borderRadius: 12,
+    color: '#17251c',
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 16,
-  },
-  heading: {
-    color: '#183d2b',
-    fontSize: 26,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  sectionHeading: {
-    color: '#183d2b',
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 10,
-    marginTop: 18,
-  },
-  status: {
-    backgroundColor: '#e3eadf',
-    borderRadius: 8,
-    color: '#17251c',
-    marginBottom: 8,
-    padding: 12,
-  },
-  startupDiagnostic: {
-    backgroundColor: '#fff0ee',
-    borderColor: '#a5251b',
-    borderRadius: 8,
-    borderWidth: 2,
-    marginBottom: 8,
-    padding: 12,
-  },
-  startupDiagnosticCopy: {
-    color: '#5f1711',
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  startupDiagnosticHeading: {
-    color: '#7b1d15',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 6,
+    padding: 16,
   },
 });
