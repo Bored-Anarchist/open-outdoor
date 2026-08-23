@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "phase0-active-tracking-protection-redacted",
+  "generatedAt": "2026-08-23T21:45:59Z",
+  "sourceSha256": "2A1B86F061040BF62F3E05BA3F140A36F0009076260F327376104AA688799EC1",
+  "sourceCommitted": false,
+  "sourceOmissionReason": "The raw relativePath contains an ephemeral tracking-session UUID.",
+  "deviceClass": "iPhone",
+  "profileId": "iphone14-ios26.6-phase0-v1",
+  "systemName": "iOS",
+  "systemVersion": "26.6",
+  "trackingProtection": {
+    "expectedExcludedFromBackup": true,
+    "expectedProtection": "NSFileProtectionCompleteUntilFirstUserAuthentication",
+    "passed": true,
+    "artifacts": [
+      {
+        "relativePath": "Tracking/Active",
+        "exists": true,
+        "excludedFromBackup": true,
+        "protection": "NSFileProtectionCompleteUntilFirstUserAuthentication",
+        "sizeBytes": 0
+      },
+      {
+        "relativePath": "Tracking/Active/active-session.json",
+        "exists": true,
+        "excludedFromBackup": true,
+        "protection": "NSFileProtectionCompleteUntilFirstUserAuthentication",
+        "sizeBytes": 177
+      },
+      {
+        "relativePath": "Tracking/Active/<session>.jsonl",
+        "exists": true,
+        "excludedFromBackup": true,
+        "protection": "NSFileProtectionCompleteUntilFirstUserAuthentication",
+        "sizeBytes": 1310
+      }
+    ]
+  }
+}
