@@ -190,5 +190,5 @@ export function replayTrackingBatches(
     highestCommittedSequence: ordered.at(-1)?.sequence ?? lastCommittedSequence,
   };
 }
-export * from './recorder.js';
-export * from './algorithms.js';
+export * from './recorder';
+export * from './algorithms';

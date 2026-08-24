@@ -1,8 +1,8 @@
 import type { Coordinate } from '@open-outdoor/shared';
-import type { TrackObservation } from './index.js';
+import type { TrackObservation } from './index';
 
 export const DISTANCE_ALGORITHM_VERSION = 'distance-v1';
-export const ELEVATION_ALGORITHM_VERSION = 'elevation-v1';
+export const ELEVATION_ALGORITHM_VERSION = 'elevation-v2';
 
 export interface DistanceRevision {
   readonly algorithmVersion: typeof DISTANCE_ALGORITHM_VERSION;
@@ -15,20 +15,23 @@ export interface DistanceRevision {
 
 export interface ElevationRevision {
   readonly algorithmVersion: typeof ELEVATION_ALGORITHM_VERSION;
-  readonly source: 'barometer' | 'gps' | 'insufficient';
+  readonly source: 'barometer-fused' | 'gps' | 'insufficient';
   readonly ascentM: number;
   readonly descentM: number;
   readonly uncertaintyM: number;
   readonly calibrationAnchors: readonly {
     readonly sequence: number;
     readonly altitudeM: number;
+    readonly correctionM: number;
     readonly source: 'gps';
   }[];
   readonly filterParameters: {
     readonly hysteresisM: number;
     readonly maximumVerticalAccuracyM: number;
+    readonly maximumSpikeM: number;
   };
   readonly qualityFlags: readonly string[];
+  readonly elevationProfile: readonly { readonly sequence: number; readonly elevationM: number }[];
 }
 
 function radians(value: number): number {
@@ -237,77 +240,164 @@ function barometricElevations(group: readonly TrackObservation[]): readonly numb
 
 export function calculateElevationRevision(
   observations: readonly TrackObservation[],
-  options: { readonly hysteresisM?: number; readonly maximumVerticalAccuracyM?: number } = {},
+  options: {
+    readonly hysteresisM?: number;
+    readonly maximumVerticalAccuracyM?: number;
+    readonly maximumSpikeM?: number;
+  } = {},
 ): ElevationRevision {
   const hysteresisM = options.hysteresisM ?? 3;
   const maximumVerticalAccuracyM = options.maximumVerticalAccuracyM ?? 20;
+  const maximumSpikeM = options.maximumSpikeM ?? 25;
   if (
     !Number.isFinite(hysteresisM) ||
     hysteresisM <= 0 ||
     !Number.isFinite(maximumVerticalAccuracyM) ||
-    maximumVerticalAccuracyM <= 0
+    maximumVerticalAccuracyM <= 0 ||
+    !Number.isFinite(maximumSpikeM) ||
+    maximumSpikeM <= 0
   ) {
     throw new RangeError('elevation filter parameters must be positive');
   }
 
   const normalized = normalizeObservations(observations);
+  const gpsAccepts = (observation: TrackObservation): boolean =>
+    observation.altitudeM !== undefined &&
+    observation.verticalAccuracyM !== undefined &&
+    observation.verticalAccuracyM >= 0 &&
+    observation.verticalAccuracyM <= maximumVerticalAccuracyM;
   const barometerGroups = observationGroups(
     normalized.ordered,
     (observation) =>
       observation.relativeAltitudeM !== undefined ||
       (observation.pressureKPa !== undefined && observation.pressureKPa > 0),
   );
-  const gpsAccepts = (observation: TrackObservation): boolean =>
-    observation.altitudeM !== undefined &&
-    observation.verticalAccuracyM !== undefined &&
-    observation.verticalAccuracyM >= 0 &&
-    observation.verticalAccuracyM <= maximumVerticalAccuracyM;
   const gpsGroups = observationGroups(normalized.ordered, gpsAccepts);
   const gps = normalized.ordered.filter(gpsAccepts);
-  const anchors = gps.map((observation) => ({
-    sequence: observation.sequence,
-    altitudeM: observation.altitudeM ?? 0,
-    source: 'gps' as const,
-  }));
+  const qualityFlags: string[] = [];
+  let spikeCount = 0;
+  let driftCorrected = false;
+
+  const rejectSpikes = (values: readonly number[]): readonly number[] => {
+    const filtered: number[] = [];
+    for (const value of values) {
+      const previous = filtered.at(-1);
+      if (previous !== undefined && Math.abs(value - previous) > maximumSpikeM) {
+        filtered.push(previous);
+        spikeCount += 1;
+      } else {
+        filtered.push(value);
+      }
+    }
+    return filtered;
+  };
+
+  const smoothGps = (values: readonly number[]): readonly number[] => {
+    if (values.length < 3) return [...values];
+    return values.map((_, index) => {
+      const window = values
+        .slice(Math.max(0, index - 1), index + 2)
+        .slice()
+        .sort((a, b) => a - b);
+      return window[Math.floor(window.length / 2)] ?? values[index] ?? 0;
+    });
+  };
 
   let source: ElevationRevision['source'] = 'insufficient';
-  let selectedGroups: readonly (readonly number[])[] = [];
+  let profiles: readonly (readonly { readonly sequence: number; readonly elevationM: number }[])[] =
+    [];
+  const corrections = new Map<number, number>();
+
   if (barometerGroups.length > 0) {
-    source = 'barometer';
-    selectedGroups = barometerGroups.map(barometricElevations);
+    source = 'barometer-fused';
+    profiles = barometerGroups.map((group) => {
+      const raw = barometricElevations(group);
+      const anchors = group.flatMap((observation, index) =>
+        gpsAccepts(observation)
+          ? [{ index, altitudeM: observation.altitudeM ?? 0, sequence: observation.sequence }]
+          : [],
+      );
+      const first = anchors[0];
+      const last = anchors.at(-1);
+      let adjusted = [...raw];
+      if (first !== undefined) {
+        const durationSeconds =
+          (Date.parse(group.at(-1)?.recordedAt ?? '') - Date.parse(group[0]?.recordedAt ?? '')) /
+          1_000;
+        const canCorrectDrift = anchors.length >= 2 && durationSeconds >= 5 * 60;
+        const firstCorrection = first.altitudeM - (raw[first.index] ?? raw[0] ?? 0);
+        const lastCorrection =
+          !canCorrectDrift || last === undefined
+            ? firstCorrection
+            : last.altitudeM - (raw[last.index] ?? raw.at(-1) ?? 0);
+        adjusted = raw.map((value, index) => {
+          const lastIndex = canCorrectDrift ? (last?.index ?? first.index) : first.index;
+          const span = Math.max(1, lastIndex - first.index);
+          const progress = Math.max(0, Math.min(1, (index - first.index) / span));
+          return value + firstCorrection + (lastCorrection - firstCorrection) * progress;
+        });
+        for (const anchor of anchors) {
+          corrections.set(anchor.sequence, anchor.altitudeM - (raw[anchor.index] ?? 0));
+        }
+        driftCorrected = driftCorrected || canCorrectDrift;
+      }
+      return rejectSpikes(adjusted).map((elevationM, index) => ({
+        sequence: group[index]?.sequence ?? group[0]?.sequence ?? 0,
+        elevationM,
+      }));
+    });
   } else if (gpsGroups.length > 0) {
     source = 'gps';
-    selectedGroups = gpsGroups.map((group) => group.map(({ altitudeM }) => altitudeM ?? 0));
+    profiles = gpsGroups.map((group) =>
+      smoothGps(group.map(({ altitudeM }) => altitudeM ?? 0)).map((elevationM, index) => ({
+        sequence: group[index]?.sequence ?? group[0]?.sequence ?? 0,
+        elevationM,
+      })),
+    );
   }
 
-  const totals = selectedGroups.reduce(
-    (sum, elevations) => {
-      const group = accumulateHysteresis(elevations, hysteresisM);
-      return {
-        ascentM: sum.ascentM + group.ascentM,
-        descentM: sum.descentM + group.descentM,
-      };
+  const totals = profiles.reduce(
+    (sum, profile) => {
+      const group = accumulateHysteresis(
+        profile.map(({ elevationM }) => elevationM),
+        hysteresisM,
+      );
+      return { ascentM: sum.ascentM + group.ascentM, descentM: sum.descentM + group.descentM };
     },
     { ascentM: 0, descentM: 0 },
   );
-  const qualityFlags: string[] = [];
   if (source === 'gps') qualityFlags.push('lower-confidence-gps-fallback');
   if (source === 'insufficient') qualityFlags.push('insufficient-elevation-data');
+  if (driftCorrected) qualityFlags.push('barometer-drift-corrected');
+  if (spikeCount > 0) qualityFlags.push('elevation-spikes-rejected');
   if (normalized.rejectedCount > 0 || normalized.ordered.some(({ paused }) => paused === true)) {
     qualityFlags.push('paused-or-invalid-observations-excluded');
   }
+  const acceptedGpsAccuracy = gps.map(({ verticalAccuracyM }) => verticalAccuracyM ?? 50);
+  const typicalGpsAccuracy =
+    acceptedGpsAccuracy.length === 0
+      ? 15
+      : (acceptedGpsAccuracy.slice().sort((a, b) => a - b)[
+          Math.floor(acceptedGpsAccuracy.length / 2)
+        ] ?? 15);
   return {
     algorithmVersion: ELEVATION_ALGORITHM_VERSION,
     source,
     ...totals,
     uncertaintyM:
-      source === 'barometer'
-        ? Math.max(3, anchors.length === 0 ? 15 : 8)
+      source === 'barometer-fused'
+        ? Math.max(3, gps.length === 0 ? 15 : typicalGpsAccuracy)
         : source === 'gps'
-          ? Math.max(50, ...gps.map(({ verticalAccuracyM }) => verticalAccuracyM ?? 50))
+          ? Math.max(30, typicalGpsAccuracy)
           : Number.POSITIVE_INFINITY,
-    calibrationAnchors: anchors,
-    filterParameters: { hysteresisM, maximumVerticalAccuracyM },
+    calibrationAnchors: gps.map((observation) => ({
+      sequence: observation.sequence,
+      altitudeM: observation.altitudeM ?? 0,
+      correctionM: corrections.get(observation.sequence) ?? 0,
+      source: 'gps' as const,
+    })),
+    filterParameters: { hysteresisM, maximumVerticalAccuracyM, maximumSpikeM },
+    elevationProfile: profiles.flat(),
     qualityFlags,
   };
 }

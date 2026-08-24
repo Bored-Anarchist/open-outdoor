@@ -61,6 +61,7 @@ internal final class OpenOutdoorPhase0PerformanceDiagnostics {
   private static let minimumMemorySamples = 20
 
   private let tracker: OpenOutdoorTrackerSpike
+  private let reportProfileId: String
   private var acknowledgementReport: OpenOutdoorAcknowledgementReport?
   private var memoryReport: OpenOutdoorMemoryReport?
   private var trackingProtectionReport: OpenOutdoorTrackingPolicyReport?
@@ -69,7 +70,7 @@ internal final class OpenOutdoorPhase0PerformanceDiagnostics {
   private var memoryTimer: DispatchSourceTimer?
   private var lastReportJSON: String?
 
-  init(tracker: OpenOutdoorTrackerSpike) throws {
+  init(tracker: OpenOutdoorTrackerSpike, profileId: String = Self.profileId) throws {
     guard Bundle.main.object(forInfoDictionaryKey: "OpenOutdoorPhase0DiagnosticsEnabled") as? Bool == true else {
       throw NSError(
         domain: "OpenOutdoorPhase0PerformanceDiagnostics",
@@ -78,6 +79,7 @@ internal final class OpenOutdoorPhase0PerformanceDiagnostics {
       )
     }
     self.tracker = tracker
+    self.reportProfileId = profileId
   }
 
   private static func percentile95(_ samples: [Double]) -> Double {
@@ -112,7 +114,7 @@ internal final class OpenOutdoorPhase0PerformanceDiagnostics {
   private func currentReport() -> OpenOutdoorPhysicalDiagnosticReport {
     OpenOutdoorPhysicalDiagnosticReport(
       schemaVersion: 1,
-      profileId: Self.profileId,
+      profileId: reportProfileId,
       generatedAt: Date(),
       deviceClass: UIDevice.current.model,
       systemName: UIDevice.current.systemName,

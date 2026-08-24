@@ -1,5 +1,6 @@
 import {
-  InMemoryPrivateRepository,
+  type PrivateDatabaseSnapshot,
+  type PrivateRepository,
   type RecordedActivity,
   type UserTrail,
 } from '@open-outdoor/storage';
@@ -92,11 +93,17 @@ export interface FinishedActivitySummary {
   readonly distanceM: number;
   readonly ascentM: number;
   readonly descentM: number;
-  readonly elevationConfidence: 'barometer' | 'gps' | 'insufficient';
+  readonly elevationConfidence: 'barometer-fused' | 'gps' | 'insufficient';
 }
 
 function activityId(sessionId: string): string {
   return `activity-${sessionId}`;
+}
+export interface RecorderPersistence {
+  readonly commit: (
+    snapshot: PrivateDatabaseSnapshot,
+    checkpoint?: { readonly sessionId: string; readonly highestSequence: number },
+  ) => Promise<void>;
 }
 
 export class RecorderCoordinator {
@@ -104,8 +111,18 @@ export class RecorderCoordinator {
 
   constructor(
     readonly tracker: ProductionTrackerAdapter,
-    readonly repository: InMemoryPrivateRepository,
+    readonly repository: PrivateRepository,
+    readonly persistence?: RecorderPersistence,
   ) {}
+
+  private async persist(sessionId?: string, highestSequence?: number): Promise<void> {
+    await this.persistence?.commit(
+      this.repository.exportSnapshot(),
+      sessionId === undefined || highestSequence === undefined
+        ? undefined
+        : { sessionId, highestSequence },
+    );
+  }
 
   async start(
     mode: TrackingMode,
@@ -114,7 +131,7 @@ export class RecorderCoordinator {
   ): Promise<RecordedActivity> {
     const { sessionId } = await this.tracker.start(mode);
     this.stateMachine.start(sessionId, mode, startedAt);
-    return this.repository.createActivity({
+    const activity = this.repository.createActivity({
       id: activityId(sessionId),
       name,
       mode,
@@ -122,20 +139,71 @@ export class RecorderCoordinator {
       startedAt,
       finishedAt: null,
     });
+    await this.persist(sessionId, 0);
+    return activity;
   }
 
   async pause(recordedAt = new Date().toISOString()): Promise<void> {
     await this.tracker.pause();
     this.stateMachine.pause(recordedAt);
     this.repository.updateActivityLifecycle(activityId(this.activeSessionId()), 'paused');
+    await this.persist(
+      this.activeSessionId(),
+      this.stateMachine.state.kind === 'paused'
+        ? this.stateMachine.state.highestCommittedSequence
+        : 0,
+    );
   }
 
   async resume(recordedAt = new Date().toISOString()): Promise<void> {
     await this.tracker.resume();
     this.stateMachine.resume(recordedAt);
     this.repository.updateActivityLifecycle(activityId(this.activeSessionId()), 'recording');
+    await this.persist(
+      this.activeSessionId(),
+      this.stateMachine.state.kind === 'recording'
+        ? this.stateMachine.state.highestCommittedSequence
+        : 0,
+    );
   }
 
+  async recover(recordedAt = new Date().toISOString()): Promise<RecordedActivity | null> {
+    const checkpoint = await this.tracker.recover();
+    if (checkpoint === null) return null;
+    const id = activityId(checkpoint.sessionId);
+    const existing = this.repository.listActivities().find((activity) => activity.id === id);
+    this.stateMachine.start(checkpoint.sessionId, checkpoint.mode, recordedAt);
+    if (existing !== undefined) {
+      this.stateMachine.commit(
+        existing.samples.map((sample) => ({
+          segment: sample.segment,
+          sequence: sample.sequence,
+          coordinate: sample.coordinate,
+          recordedAt: sample.recordedAt,
+          horizontalAccuracyM: sample.horizontalAccuracyM,
+          ...(sample.verticalAccuracyM === null
+            ? {}
+            : { verticalAccuracyM: sample.verticalAccuracyM }),
+          ...(sample.altitudeM === null ? {} : { altitudeM: sample.altitudeM }),
+          ...(sample.pressureKPa === null ? {} : { pressureKPa: sample.pressureKPa }),
+          paused: sample.paused,
+        })),
+        recordedAt,
+      );
+      this.repository.updateActivityLifecycle(id, 'recovered');
+    } else {
+      this.repository.createActivity({
+        id,
+        name: 'Recovered hike',
+        mode: checkpoint.mode,
+        lifecycle: 'recovered',
+        startedAt: recordedAt,
+        finishedAt: null,
+      });
+    }
+    await this.synchronize(recordedAt);
+    return this.repository.listActivities().find((activity) => activity.id === id) ?? null;
+  }
   private activeSessionId(): string {
     const state = this.stateMachine.state;
     if (state.kind !== 'recording' && state.kind !== 'paused' && state.kind !== 'recoverable') {
@@ -159,6 +227,7 @@ export class RecorderCoordinator {
       activityId(state.sessionId),
       replay.observations.map((observation) => ({
         activityId: activityId(state.sessionId),
+        segment: observation.segment ?? 1,
         sequence: observation.sequence,
         coordinate: observation.coordinate,
         recordedAt: observation.recordedAt,
@@ -169,14 +238,32 @@ export class RecorderCoordinator {
         paused: observation.paused ?? state.kind === 'paused',
       })),
     );
+    await this.persist(state.sessionId, replay.highestCommittedSequence);
     await this.tracker.acknowledge(replay.highestCommittedSequence);
     return replay.highestCommittedSequence;
   }
 
   async finish(finishedAt = new Date().toISOString()): Promise<FinishedActivitySummary> {
-    await this.synchronize(finishedAt);
+    for (let batch = 0; batch < 10_000; batch += 1) {
+      const state = this.stateMachine.state;
+      const before =
+        state.kind === 'recording' || state.kind === 'paused' ? state.highestCommittedSequence : 0;
+      const after = await this.synchronize(finishedAt);
+      if (after === before) break;
+      if (batch === 9_999) throw new Error('tracking spool exceeded the bounded drain limit');
+    }
     const sessionId = this.activeSessionId();
-    await this.tracker.finish();
+    const stopped = await this.tracker.finish();
+    for (let batch = 0; batch < 10_000; batch += 1) {
+      const state = this.stateMachine.state;
+      const committed =
+        state.kind === 'recording' || state.kind === 'paused' ? state.highestCommittedSequence : 0;
+      if (committed === stopped.finalSequence) break;
+      const after = await this.synchronize(finishedAt);
+      if (after === committed || batch === 9_999) {
+        throw new Error('final native tracking sequence was not durably imported');
+      }
+    }
     this.stateMachine.finish(finishedAt);
     const observations = this.stateMachine.committedObservations;
     const distance = calculateDistanceRevision(observations);
@@ -198,7 +285,16 @@ export class RecorderCoordinator {
       uncertaintyM: Math.max(distance.uncertaintyM, elevation.uncertaintyM),
       qualityFlags: activity.qualityFlags,
       createdAt: finishedAt,
+      elevationSource: elevation.source,
+      calibrationAnchors: elevation.calibrationAnchors,
+      filterParameters: elevation.filterParameters,
+      elevationProfile: elevation.elevationProfile,
+      inputFingerprint: `${sessionId}:${observations.length}:${observations.at(-1)?.sequence ?? 0}`,
     });
+    const finalSequence =
+      this.stateMachine.state.kind === 'finished' ? this.stateMachine.state.finalSequence : 0;
+    await this.persist(sessionId, finalSequence);
+    await this.tracker.finalize?.(sessionId, finalSequence);
     return {
       activity,
       distanceM: distance.distanceM,
@@ -210,7 +306,7 @@ export class RecorderCoordinator {
 }
 
 export class ActivityLibrary {
-  constructor(readonly repository: InMemoryPrivateRepository) {}
+  constructor(readonly repository: PrivateRepository) {}
 
   list(): readonly RecordedActivity[] {
     return this.repository

@@ -3,6 +3,7 @@ import Foundation
 
 public final class OpenOutdoorNativeSpikesModule: Module {
   private lazy var tracker = OpenOutdoorTrackerSpike()
+  private lazy var privateStore = try? OpenOutdoorStorageCoordinatorSpike()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -16,7 +17,10 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
   private func phase0Performance() throws -> OpenOutdoorPhase0PerformanceDiagnostics {
     if let phase0PerformanceInstance { return phase0PerformanceInstance }
-    let diagnostics = try OpenOutdoorPhase0PerformanceDiagnostics(tracker: tracker)
+    let diagnostics = try OpenOutdoorPhase0PerformanceDiagnostics(
+      tracker: tracker,
+      profileId: "iphone14-ios26.6-phase1-v1"
+    )
     phase0PerformanceInstance = diagnostics
     return diagnostics
   }
@@ -70,6 +74,10 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       return finalSequence
     }.runOnQueue(.main)
 
+    AsyncFunction("sealTrackingSession") { (sessionID: String, highestSequence: Int64) in
+      try self.tracker.seal(sessionID: sessionID, throughSequence: highestSequence)
+    }.runOnQueue(.main)
+
     AsyncFunction("readTrackingBatch") { (afterSequence: Int64) -> String? in
       try self.tracker.readBatch(afterSequence: afterSequence)
     }.runOnQueue(.main)
@@ -96,6 +104,39 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
     AsyncFunction("lastTrackingError") { () -> String? in
       self.tracker.lastError
+    }.runOnQueue(.main)
+
+    AsyncFunction("loadPrivateSnapshot") { () -> String? in
+      guard let store = self.privateStore else {
+        throw NSError(domain: "OpenOutdoorStorage", code: 1)
+      }
+      return try store.loadPrivateSnapshot()
+    }.runOnQueue(.main)
+
+    AsyncFunction("commitPrivateSnapshot") { (snapshotJSON: String) in
+      guard let store = self.privateStore else {
+        throw NSError(domain: "OpenOutdoorStorage", code: 1)
+      }
+      try store.commitPrivateSnapshot(snapshotJSON)
+    }.runOnQueue(.main)
+
+    AsyncFunction("commitTrackingSnapshot") {
+      (snapshotJSON: String, sessionID: String, highestSequence: Int64) in
+      guard let store = self.privateStore else {
+        throw NSError(domain: "OpenOutdoorStorage", code: 1)
+      }
+      try store.commitTrackingSnapshot(
+        snapshotJSON,
+        sessionID: sessionID,
+        highestSequence: highestSequence
+      )
+    }.runOnQueue(.main)
+
+    AsyncFunction("trackingCheckpoint") { (sessionID: String) -> Int64 in
+      guard let store = self.privateStore else {
+        throw NSError(domain: "OpenOutdoorStorage", code: 1)
+      }
+      return try store.trackingCheckpoint(sessionID: sessionID)
     }.runOnQueue(.main)
 
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS

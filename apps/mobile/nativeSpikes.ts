@@ -26,6 +26,7 @@ export interface NativeTrackingInspection {
   readonly highestSequence: number;
   readonly validObservationCount: number;
   readonly tornFinalLineIgnored: boolean;
+  readonly highestSegment: number;
   readonly spoolFileName: string;
   readonly recording: boolean;
 }
@@ -106,6 +107,15 @@ interface OpenOutdoorNativeSpikesModule {
   readonly isTracking: () => Promise<boolean>;
   readonly currentSessionId: () => Promise<string | null>;
   readonly lastTrackingError: () => Promise<string | null>;
+  readonly sealTrackingSession: (sessionId: string, highestSequence: number) => Promise<void>;
+  readonly loadPrivateSnapshot: () => Promise<string | null>;
+  readonly commitPrivateSnapshot: (snapshotJson: string) => Promise<void>;
+  readonly commitTrackingSnapshot: (
+    snapshotJson: string,
+    sessionId: string,
+    highestSequence: number,
+  ) => Promise<void>;
+  readonly trackingCheckpoint: (sessionId: string) => Promise<number>;
   readonly seedPhase0FixtureA: () => Promise<string>;
   readonly applyPhase0FixtureB: (checkpoint: string | null) => Promise<string>;
   readonly inspectPhase0Fixture: () => Promise<string>;
@@ -146,6 +156,19 @@ export const nativeSpikes = {
   isTracking: (): Promise<boolean> => requiredModule().isTracking(),
   currentSessionId: (): Promise<string | null> => requiredModule().currentSessionId(),
   lastTrackingError: (): Promise<string | null> => requiredModule().lastTrackingError(),
+  sealTrackingSession: (sessionId: string, highestSequence: number): Promise<void> =>
+    requiredModule().sealTrackingSession(sessionId, highestSequence),
+  loadPrivateSnapshot: (): Promise<string | null> => requiredModule().loadPrivateSnapshot(),
+  commitPrivateSnapshot: (snapshotJson: string): Promise<void> =>
+    requiredModule().commitPrivateSnapshot(snapshotJson),
+  commitTrackingSnapshot: (
+    snapshotJson: string,
+    sessionId: string,
+    highestSequence: number,
+  ): Promise<void> =>
+    requiredModule().commitTrackingSnapshot(snapshotJson, sessionId, highestSequence),
+  trackingCheckpoint: (sessionId: string): Promise<number> =>
+    requiredModule().trackingCheckpoint(sessionId),
   readTrackingBatch: async (afterSequence: number): Promise<NativeTrackingBatch | null> => {
     const value = await requiredModule().readTrackingBatch(afterSequence);
     return value === null ? null : parseJson<NativeTrackingBatch>(value);

@@ -1,12 +1,23 @@
-const passing = new Set(['implemented', 'accepted', 'passed']);
+const passing = new Set(['accepted', 'passed']);
+const requiredPackages = Array.from({ length: 9 }, (_, index) => `WP-${101 + index}`);
+const requiredAcceptance = [
+  'automatedCore',
+  'trackerCorrectness',
+  'memorySmoke',
+  'voiceOver',
+  'dynamicType',
+  'elevation',
+];
 
 export function evaluatePhase1Gate(record) {
   const blockers = [];
   if (record?.schemaVersion !== 1) blockers.push('phase1 gate schemaVersion must be 1');
-  for (const [packageId, item] of Object.entries(record?.packages ?? {})) {
+  for (const packageId of requiredPackages) {
+    const item = record?.packages?.[packageId];
     if (!passing.has(item?.status)) blockers.push(`${packageId}: ${item?.status ?? 'missing'}`);
   }
-  for (const [caseId, item] of Object.entries(record?.acceptance ?? {})) {
+  for (const caseId of requiredAcceptance) {
+    const item = record?.acceptance?.[caseId];
     if (!passing.has(item?.status)) blockers.push(`${caseId}: ${item?.status ?? 'missing'}`);
   }
   if (record?.deferred?.measuredEnergy !== 'WP-307/WP-503') {

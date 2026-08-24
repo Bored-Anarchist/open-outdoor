@@ -20,6 +20,7 @@ const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diag
 const performanceDiagnostics = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase0PerformanceDiagnostics.swift',
 );
+const privateStore = await text('packages/native-spikes/ios/OpenOutdoorPrivateStore.swift');
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
@@ -96,6 +97,11 @@ if (
   throw new Error('release configuration must retain the deferred energy-conscious tracker policy');
 }
 for (const functionName of [
+  'sealTrackingSession',
+  'loadPrivateSnapshot',
+  'commitPrivateSnapshot',
+  'commitTrackingSnapshot',
+  'trackingCheckpoint',
   'requestAlwaysAuthorization',
   'startTracking',
   'pauseTracking',
@@ -165,6 +171,18 @@ requireText(mobileApp, 'disabled={!nativeSpikes.available ||', 'mobile startup d
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
+for (const token of [
+  'BEGIN IMMEDIATE',
+  'private_snapshot',
+  'tracking_checkpoint',
+  'migration_audit',
+  'PRAGMA user_version=3',
+  'ON CONFLICT(session_id)',
+  'ROLLBACK',
+]) {
+  requireText(privateStore, token, 'production private SQLite store');
+}
+requireText(tracker, 'observations.count >= 256', 'bounded native tracking batch');
 for (const token of [
   'Start recording',
   'Pause recording',

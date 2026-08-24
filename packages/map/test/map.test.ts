@@ -14,4 +14,18 @@ describe('WP-108 fixture-backed offline map', () => {
     expect(map.selectedRoute?.id).toBe('trail-hemlock-loop');
     expect(map.queryFeatures([-74, 41]).map(({ id }) => id)).toContain('poi-trailhead');
   });
+  it('rejects any network-backed style resource', () => {
+    expect(
+      () =>
+        new FixtureMapAdapter({
+          ...phase1OfflineMapFixture,
+          style: {
+            ...phase1OfflineMapFixture.style,
+            sources: {
+              remote: { type: 'geojson', data: 'https://example.invalid/private.geojson' },
+            },
+          },
+        }),
+    ).toThrow('network resource');
+  });
 });

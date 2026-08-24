@@ -5,7 +5,7 @@ export interface TrackPoint {
   readonly recordedAt: string;
 }
 
-export type AppSection = 'explore' | 'track' | 'saved';
+export type AppSection = 'explore' | 'search' | 'track' | 'saved';
 
 export type NativeCapability<T> =
   | { readonly available: true; readonly adapter: T }
@@ -56,6 +56,9 @@ export interface SensorSnapshot {
   readonly pressureKPa: number | null;
   readonly batteryLevel: number | null;
   readonly lowPowerMode: boolean;
+  readonly motion: 'stationary' | 'walking' | 'running' | 'automotive' | 'unknown';
+  readonly locationPermission: 'not-determined' | 'denied' | 'when-in-use' | 'always';
+  readonly motionPermission: 'not-determined' | 'denied' | 'authorized' | 'unavailable';
   readonly recordedAt: string;
 }
 
@@ -64,6 +67,41 @@ export interface SensorAdapter {
   readonly start: () => Promise<void>;
   readonly stop: () => Promise<void>;
   readonly read: () => Promise<SensorSnapshot>;
+}
+
+export class FixtureSensorAdapter implements SensorAdapter {
+  readonly capability = 'fixture-sensors';
+  private active = false;
+
+  constructor(
+    private snapshot: SensorSnapshot = {
+      relativeAltitudeM: 0,
+      pressureKPa: 101.325,
+      batteryLevel: 1,
+      lowPowerMode: false,
+      motion: 'stationary',
+      locationPermission: 'always',
+      motionPermission: 'authorized',
+      recordedAt: '2026-08-23T12:00:00.000Z',
+    },
+  ) {}
+
+  async start(): Promise<void> {
+    this.active = true;
+  }
+
+  async stop(): Promise<void> {
+    this.active = false;
+  }
+
+  async read(): Promise<SensorSnapshot> {
+    if (!this.active) throw new Error('fixture sensors are not active');
+    return structuredClone(this.snapshot);
+  }
+
+  update(snapshot: SensorSnapshot): void {
+    this.snapshot = structuredClone(snapshot);
+  }
 }
 
 export interface KeyValueStoragePort {

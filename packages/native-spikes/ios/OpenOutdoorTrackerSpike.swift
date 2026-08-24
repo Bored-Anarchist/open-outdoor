@@ -83,6 +83,7 @@ internal struct OpenOutdoorTrackingInspection: Codable {
   let mode: String
   let highestSequence: Int64
   let validObservationCount: Int
+  let highestSegment: Int
   let tornFinalLineIgnored: Bool
   let spoolFileName: String
   let recording: Bool
@@ -178,6 +179,7 @@ private final class OpenOutdoorActiveSpool {
     let lines = data.split(separator: 0x0A, omittingEmptySubsequences: true)
     var expectedSequence: Int64 = 1
     var validCount = 0
+    var highestSegment = 1
     var tornFinalLineIgnored = false
 
     for (index, line) in lines.enumerated() {
@@ -193,6 +195,7 @@ private final class OpenOutdoorActiveSpool {
         }
         expectedSequence += 1
         validCount += 1
+        highestSegment = max(highestSegment, observation.segment ?? 1)
       } catch {
         if index == lines.count - 1 && !endsInNewline {
           tornFinalLineIgnored = true
@@ -211,6 +214,7 @@ private final class OpenOutdoorActiveSpool {
       sessionId: manifest.sessionID.uuidString,
       mode: manifest.mode.rawValue,
       highestSequence: Int64(validCount),
+      highestSegment: highestSegment,
       validObservationCount: validCount,
       tornFinalLineIgnored: tornFinalLineIgnored,
       spoolFileName: manifest.spoolFileName,
@@ -301,6 +305,7 @@ private final class OpenOutdoorActiveSpool {
               paused: observation.paused ?? false
             )
           )
+          if observations.count >= 256 { break }
         }
       } catch {
         if index == lines.count - 1 && !endsInNewline { break }
@@ -367,8 +372,21 @@ private final class OpenOutdoorActiveSpool {
       throw OpenOutdoorTrackerError.noRecoverableSession
     }
     let inspection = try inspect(manifest: manifest, directory: directory, recording: false)
+    try FileManager.default.removeItem(at: directory.appendingPathComponent(manifest.spoolFileName))
     try FileManager.default.removeItem(at: manifestURL(in: directory))
     return inspection
+  }
+  static func seal(sessionID: String, throughSequence: Int64) throws {
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else {
+      throw OpenOutdoorTrackerError.noRecoverableSession
+    }
+    let inspection = try inspect(manifest: manifest, directory: directory, recording: false)
+    guard manifest.sessionID.uuidString == sessionID, inspection.highestSequence == throughSequence else {
+      throw OpenOutdoorTrackerError.invalidSpool("seal checkpoint does not cover the complete session")
+    }
+    try FileManager.default.removeItem(at: directory.appendingPathComponent(manifest.spoolFileName))
+    try FileManager.default.removeItem(at: manifestURL(in: directory))
   }
 
   func append(_ observation: OpenOutdoorSpoolObservation) throws {
@@ -511,6 +529,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     let recovered = try OpenOutdoorActiveSpool.recover()
     spool = recovered.0
     sequence = recovered.1.highestSequence
+    segment = recovered.1.highestSegment + 1
     currentSessionID = UUID(uuidString: recovered.1.sessionId)
     currentMode = recovered.2
     lastError = nil
@@ -521,6 +540,10 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   func discardRecovery() throws -> String {
     guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
     return try OpenOutdoorActiveSpool.discardRecovery().json()
+  }
+
+  func seal(sessionID: String, throughSequence: Int64) throws {
+    try OpenOutdoorActiveSpool.seal(sessionID: sessionID, throughSequence: throughSequence)
   }
 
   func pause() throws -> Int64 {
@@ -550,7 +573,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
       isPaused = false
     }
     do {
-      try spool?.close(clearManifest: true)
+      try spool?.close(clearManifest: false)
     } catch {
       lastError = error.localizedDescription
       throw error
@@ -586,5 +609,26 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
         isPaused = false
       }
     }
+  }
+
+  func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    guard isTracking else { return }
+    guard manager.authorizationStatus == .authorizedAlways else {
+      lastError = "Always location authorization was lost during recording"
+      stopSensors()
+      try? spool?.close(clearManifest: false)
+      spool = nil
+      currentPressureKPa = nil
+      currentSessionID = nil
+      currentMode = nil
+      isPaused = false
+      return
+    }
+  }
+
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    lastError = error.localizedDescription
+    if let locationError = error as? CLError, locationError.code == .locationUnknown { return }
+    stopSensors()
   }
 }

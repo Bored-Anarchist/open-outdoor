@@ -59,7 +59,7 @@ describe('WP-104 distance and elevation revisions', () => {
       point(3, { relativeAltitudeM: 0 }),
       point(4, { relativeAltitudeM: 10 }),
     ]);
-    expect(result.source).toBe('barometer');
+    expect(result.source).toBe('barometer-fused');
     expect(result.ascentM).toBeCloseTo(10, 6);
   });
 
@@ -106,5 +106,30 @@ describe('WP-104 distance and elevation revisions', () => {
       }),
     );
     expect(calculateElevationRevision(flat).ascentM).toBeLessThanOrEqual(25);
+  });
+  it('anchors long barometer drift to accuracy-gated GPS elevations', () => {
+    const startedAt = Date.parse('2026-08-23T12:00:00.000Z');
+    const observations = Array.from({ length: 6 }, (_, index) =>
+      point(index + 1, {
+        recordedAt: new Date(startedAt + index * 60_000).toISOString(),
+        relativeAltitudeM: index * 12,
+        altitudeM: 100 + index * 6,
+      }),
+    );
+    const result = calculateElevationRevision(observations);
+    expect(result.ascentM).toBeCloseTo(30, 6);
+    expect(result.qualityFlags).toContain('barometer-drift-corrected');
+  });
+
+  it('rejects isolated elevation spikes without rewriting raw observations', () => {
+    const result = calculateElevationRevision([
+      point(1, { relativeAltitudeM: 0 }),
+      point(2, { relativeAltitudeM: 5 }),
+      point(3, { relativeAltitudeM: 100 }),
+      point(4, { relativeAltitudeM: 10 }),
+      point(5, { relativeAltitudeM: 15 }),
+    ]);
+    expect(result.ascentM).toBeCloseTo(15, 6);
+    expect(result.qualityFlags).toContain('elevation-spikes-rejected');
   });
 });

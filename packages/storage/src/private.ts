@@ -1,7 +1,7 @@
 import { assertCoordinate, type Coordinate } from '@open-outdoor/shared';
 
-export const PRIVATE_SCHEMA_VERSION = 2;
-export const PRIVATE_SCHEMA_PREVIOUS_VERSION = 1;
+export const PRIVATE_SCHEMA_VERSION = 3;
+export const PRIVATE_SCHEMA_PREVIOUS_VERSION = 2;
 
 export type ActivityLifecycle = 'recording' | 'paused' | 'finished' | 'recovered';
 
@@ -15,6 +15,7 @@ export interface ImmutableActivitySample {
   readonly altitudeM: number | null;
   readonly pressureKPa: number | null;
   readonly paused: boolean;
+  readonly segment: number;
 }
 
 export interface RecordedActivity {
@@ -66,7 +67,30 @@ export interface DerivedRevisionRecord {
   readonly descentM: number;
   readonly uncertaintyM: number;
   readonly qualityFlags: readonly string[];
+  readonly elevationSource: 'barometer-fused' | 'gps' | 'insufficient';
+  readonly calibrationAnchors: readonly { readonly sequence: number; readonly altitudeM: number }[];
+  readonly filterParameters: Readonly<Record<string, number>>;
+  readonly elevationProfile: readonly { readonly sequence: number; readonly elevationM: number }[];
+  readonly inputFingerprint: string;
   readonly createdAt: string;
+}
+export interface ImportExportHistoryRecord {
+  readonly id: string;
+  readonly direction: 'import' | 'export';
+  readonly format: 'gpx' | 'geojson' | 'backup';
+  readonly privateByDefault: true;
+  readonly createdAt: string;
+}
+
+export interface PrivateSettingRecord {
+  readonly key: string;
+  readonly value: string | number | boolean | null;
+}
+
+export interface CatalogInventoryRecord {
+  readonly id: string;
+  readonly version: string;
+  readonly private: boolean;
 }
 
 export interface PrivateDatabaseSnapshot {
@@ -76,6 +100,9 @@ export interface PrivateDatabaseSnapshot {
   readonly associations: readonly TrailAssociation[];
   readonly overlays: readonly PrivateOverlay[];
   readonly revisions: readonly DerivedRevisionRecord[];
+  readonly importExportHistory: readonly ImportExportHistoryRecord[];
+  readonly settings: readonly PrivateSettingRecord[];
+  readonly catalogInventory: readonly CatalogInventoryRecord[];
 }
 
 export const privateSchemaMigrations: Readonly<Record<number, readonly string[]>> = {
@@ -89,6 +116,14 @@ export const privateSchemaMigrations: Readonly<Record<number, readonly string[]>
   2: [
     'ALTER TABLE activity_sample ADD COLUMN vertical_accuracy_m REAL',
     'CREATE TABLE derived_revision (id TEXT PRIMARY KEY, activity_id TEXT NOT NULL, revision INTEGER NOT NULL, algorithm_version TEXT NOT NULL, distance_m REAL NOT NULL, ascent_m REAL NOT NULL, descent_m REAL NOT NULL, uncertainty_m REAL NOT NULL, quality_flags_json TEXT NOT NULL, created_at TEXT NOT NULL, UNIQUE(activity_id, revision))',
+  ],
+  3: [
+    'CREATE TABLE user_trail_revision (id TEXT NOT NULL, revision INTEGER NOT NULL, payload_json TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(id, revision))',
+    'CREATE TABLE import_export_history (id TEXT PRIMARY KEY, direction TEXT NOT NULL, format TEXT NOT NULL, private_by_default INTEGER NOT NULL, created_at TEXT NOT NULL)',
+    'CREATE TABLE private_setting (key TEXT PRIMARY KEY, value_json TEXT NOT NULL)',
+    'CREATE TABLE catalog_inventory (id TEXT PRIMARY KEY, version TEXT NOT NULL, private INTEGER NOT NULL)',
+    'CREATE TABLE tracking_checkpoint (session_id TEXT PRIMARY KEY, highest_sequence INTEGER NOT NULL, updated_at TEXT NOT NULL)',
+    'CREATE TABLE migration_audit (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)',
   ],
 };
 
@@ -136,7 +171,14 @@ export function migratePrivateSnapshot(snapshot: PrivateDatabaseSnapshot): Priva
   return {
     ...migrated,
     schemaVersion: PRIVATE_SCHEMA_VERSION,
+    activities: migrated.activities.map((activity) => ({
+      ...activity,
+      samples: activity.samples.map((sample) => ({ ...sample, segment: sample.segment ?? 1 })),
+    })),
     revisions: migrated.revisions ?? [],
+    importExportHistory: migrated.importExportHistory ?? [],
+    settings: migrated.settings ?? [],
+    catalogInventory: migrated.catalogInventory ?? [],
   };
 }
 
@@ -147,6 +189,9 @@ const emptySnapshot: PrivateDatabaseSnapshot = {
   associations: [],
   overlays: [],
   revisions: [],
+  importExportHistory: [],
+  settings: [],
+  catalogInventory: [],
 };
 
 function samplesEqual(left: ImmutableActivitySample, right: ImmutableActivitySample): boolean {
@@ -258,9 +303,19 @@ export class InMemoryPrivateRepository {
       throw new PrivateStorageError('VALIDATION_FAILED', 'user trail needs at least two points');
     }
     trail.geometry.forEach(assertCoordinate);
+    const priorRevisions = this.data.userTrails.filter(({ id }) => id === trail.id);
+    const expectedRevision =
+      (priorRevisions.reduce((highest, candidate) => Math.max(highest, candidate.revision), 0) ||
+        0) + 1;
+    if (!Number.isSafeInteger(trail.revision) || trail.revision !== expectedRevision) {
+      throw new PrivateStorageError(
+        'VALIDATION_FAILED',
+        `user trail revision must be ${expectedRevision}`,
+      );
+    }
     this.transaction((draft) => ({
       ...draft,
-      userTrails: [...draft.userTrails.filter(({ id }) => id !== trail.id), structuredClone(trail)],
+      userTrails: [...draft.userTrails, structuredClone(trail)],
     }));
     return structuredClone(trail);
   }
@@ -312,3 +367,15 @@ export class InMemoryPrivateRepository {
     return structuredClone(revision);
   }
 }
+export type PrivateRepository = Pick<
+  InMemoryPrivateRepository,
+  | 'exportSnapshot'
+  | 'createActivity'
+  | 'appendSamples'
+  | 'updateActivityLifecycle'
+  | 'listActivities'
+  | 'saveUserTrail'
+  | 'saveAssociation'
+  | 'saveOverlay'
+  | 'saveDerivedRevision'
+>;

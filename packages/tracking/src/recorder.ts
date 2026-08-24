@@ -1,4 +1,4 @@
-import type { TrackObservation, TrackingBatch, TrackingMode } from './index.js';
+import type { TrackObservation, TrackingBatch, TrackingMode } from './index';
 
 export type RecorderState =
   | { readonly kind: 'idle' }
@@ -41,6 +41,7 @@ export interface ProductionTrackerAdapter {
   readonly recover: () => Promise<TrackerCheckpoint | null>;
   readonly readPendingBatches: () => Promise<readonly TrackingBatch[]>;
   readonly acknowledge: (highestSequence: number) => Promise<void>;
+  readonly finalize?: (sessionId: string, highestSequence: number) => Promise<void>;
 }
 
 export class RecorderTransitionError extends Error {
@@ -223,6 +224,8 @@ export class FixtureTrackerAdapter implements ProductionTrackerAdapter {
     }
     this.acknowledged = highestSequence;
   }
+
+  async finalize(): Promise<void> {}
 
   inject(batch: TrackingBatch): void {
     this.batches.push(batch);

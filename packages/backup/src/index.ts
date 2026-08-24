@@ -15,6 +15,22 @@ import {
 
 export const BACKUP_FORMAT_VERSION = 1;
 const MAGIC = 'OPEN-OUTDOOR-BACKUP';
+const MAXIMUM_CONTAINER_BYTES = 512 * 1024 * 1024;
+const MAXIMUM_ATTACHMENT_BYTES = 256 * 1024 * 1024;
+const MAXIMUM_ATTACHMENTS = 10_000;
+const RESTORE_RESERVE_BYTES = 64 * 1024 * 1024;
+
+function validAttachmentName(value: string): boolean {
+  return (
+    value.length > 0 &&
+    value.length <= 255 &&
+    value !== '.' &&
+    value !== '..' &&
+    !value.includes('/') &&
+    !value.includes('\\') &&
+    !/[\u0000-\u001f]/.test(value)
+  );
+}
 
 export interface BackupAttachment {
   readonly id: string;
@@ -142,8 +158,17 @@ export function createEncryptedBackup(
   if (!Number.isFinite(Date.parse(createdAt))) {
     throw new BackupError('INPUT_INVALID', 'backup creation timestamp is invalid');
   }
+  if (attachments.length > MAXIMUM_ATTACHMENTS) {
+    throw new BackupError('INPUT_INVALID', 'backup contains too many attachments');
+  }
   const ids = new Set<string>();
   for (const attachment of attachments) {
+    if (
+      !validAttachmentName(attachment.fileName) ||
+      attachment.bytes.byteLength > MAXIMUM_ATTACHMENT_BYTES
+    ) {
+      throw new BackupError('INPUT_INVALID', 'attachment name or size is unsafe');
+    }
     if (attachment.id.length === 0 || ids.has(attachment.id)) {
       throw new BackupError('INPUT_INVALID', 'attachment identifiers must be unique');
     }
@@ -188,6 +213,9 @@ export function createEncryptedBackup(
 }
 
 function parseContainer(container: Uint8Array): SerializedContainer {
+  if (container.byteLength === 0 || container.byteLength > MAXIMUM_CONTAINER_BYTES) {
+    throw new BackupError('INPUT_INVALID', 'backup container exceeds the configured size limit');
+  }
   let parsed: unknown;
   try {
     parsed = JSON.parse(Buffer.from(container).toString('utf8'));
@@ -260,6 +288,20 @@ function validatePayload(payload: EncryptedPayload): RestoredPrivateData {
   ) {
     throw new BackupError('INTEGRITY_FAILED', 'backup manifest counts do not match its data');
   }
+  if (payload.attachments.length > MAXIMUM_ATTACHMENTS) {
+    throw new BackupError('INTEGRITY_FAILED', 'backup contains too many attachments');
+  }
+  const restoredIds = new Set<string>();
+  for (const attachment of payload.attachments) {
+    if (
+      restoredIds.has(attachment.id) ||
+      !validAttachmentName(attachment.fileName) ||
+      Buffer.from(attachment.bytes, 'base64').byteLength > MAXIMUM_ATTACHMENT_BYTES
+    ) {
+      throw new BackupError('INTEGRITY_FAILED', 'backup attachment manifest is unsafe');
+    }
+    restoredIds.add(attachment.id);
+  }
   const attachments = payload.attachments.map((attachment) => ({
     id: attachment.id,
     fileName: attachment.fileName,
@@ -294,9 +336,10 @@ export function stageEncryptedRestore(
   const parsed = parseContainer(bytes);
   const payload = decryptPayload(parsed, passphrase);
   const staged = validatePayload(payload);
-  const requiredBytes =
+  const stagedPayloadBytes =
     Buffer.byteLength(JSON.stringify(staged.snapshot)) +
     staged.attachments.reduce((total, attachment) => total + attachment.bytes.byteLength, 0);
+  const requiredBytes = bytes.byteLength + stagedPayloadBytes * 2 + RESTORE_RESERVE_BYTES;
   if (availableSpaceBytes < requiredBytes) {
     throw new BackupError('SPACE_INSUFFICIENT', 'restore staging space is insufficient');
   }
@@ -312,4 +355,26 @@ export function transactionalRestore(
   const staged = stageEncryptedRestore(bytes, passphrase, availableSpaceBytes);
   commit(staged);
   return staged;
+}
+export interface AtomicRestoreTarget<TStaged> {
+  readonly stage: (restored: RestoredPrivateData) => TStaged;
+  readonly commit: (staged: TStaged) => void;
+  readonly rollback: (staged: TStaged) => void;
+}
+
+export function restoreToAtomicTarget<TStaged>(
+  bytes: Uint8Array,
+  passphrase: string,
+  target: AtomicRestoreTarget<TStaged>,
+  availableSpaceBytes = Number.MAX_SAFE_INTEGER,
+): RestoredPrivateData {
+  const restored = stageEncryptedRestore(bytes, passphrase, availableSpaceBytes);
+  const staged = target.stage(restored);
+  try {
+    target.commit(staged);
+  } catch (error) {
+    target.rollback(staged);
+    throw error;
+  }
+  return restored;
 }

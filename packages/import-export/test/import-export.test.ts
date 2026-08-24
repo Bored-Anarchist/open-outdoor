@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { geodesicDistanceM } from '@open-outdoor/tracking';
 import {
   RouteFileError,
   exportGeoJson,
@@ -6,6 +7,7 @@ import {
   importGpx,
   privacyFirstExportOptions,
   trimSensitiveEndpoints,
+  removePhotoMetadata,
 } from '../src/index.js';
 
 const gpx =
@@ -55,7 +57,17 @@ describe('WP-106 route import/export privacy', () => {
       ],
       80,
     );
-    expect(trimmed.length).toBeLessThan(5);
     expect(trimmed.length).toBeGreaterThanOrEqual(2);
+    expect(geodesicDistanceM([-74, 41], trimmed[0] ?? [-74, 41])).toBeCloseTo(80, 1);
+    expect(geodesicDistanceM(trimmed.at(-1) ?? [-73.996, 41], [-73.996, 41])).toBeCloseTo(80, 1);
+  });
+  it('removes JPEG EXIF metadata rather than only returning a policy flag', () => {
+    const jpeg = new Uint8Array([
+      0xff, 0xd8, 0xff, 0xe1, 0x00, 0x08, 0x45, 0x78, 0x69, 0x66, 0x00, 0x00, 0xff, 0xda, 0x00,
+      0x02, 0xff, 0xd9,
+    ]);
+    const sanitized = removePhotoMetadata(jpeg, 'image/jpeg');
+    expect(new TextDecoder().decode(sanitized.bytes)).not.toContain('Exif');
+    expect(sanitized.removedMetadata).toBe(true);
   });
 });

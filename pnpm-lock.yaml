@@ -48,6 +48,24 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@open-outdoor/import-export':
+        specifier: workspace:*
+        version: link:../../packages/import-export
+      '@open-outdoor/map':
+        specifier: workspace:*
+        version: link:../../packages/map
+      '@open-outdoor/recorder':
+        specifier: workspace:*
+        version: link:../../packages/recorder
+      '@open-outdoor/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@open-outdoor/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      '@open-outdoor/tracking':
+        specifier: workspace:*
+        version: link:../../packages/tracking
       '@open-outdoor/native-spikes':
         specifier: workspace:*
         version: link:../../packages/native-spikes

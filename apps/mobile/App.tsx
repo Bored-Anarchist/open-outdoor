@@ -1,4 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
+import type { AppSection } from '@open-outdoor/shared';
+import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
@@ -6,6 +8,7 @@ import {
   type NativeTrackingInspection,
   type NativeTrackingMode,
 } from './nativeSpikes';
+import { createMobileApplication, type MobileApplication } from './application';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
@@ -61,11 +64,19 @@ function AccessibleButton({
 
 export default function App() {
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
+  const [section, setSection] = useState<AppSection>('track');
   const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
   const [recovery, setRecovery] = useState<NativeTrackingInspection | null>(null);
   const [savedActivities, setSavedActivities] = useState<
     readonly { readonly id: string; readonly finalSequence: number }[]
   >([]);
+  const [application, setApplication] = useState<MobileApplication | null>(null);
+  const [liveStats, setLiveStats] = useState({
+    sequence: 0,
+    distanceM: 0,
+    ascentM: 0,
+    gpsQuality: 'Waiting',
+  });
   const [benchmarking, setBenchmarking] = useState(false);
   const [memoryProfileActive, setMemoryProfileActive] = useState(false);
   const [physicalReportAvailable, setPhysicalReportAvailable] = useState(false);
@@ -77,21 +88,65 @@ export default function App() {
 
   useEffect(() => {
     if (!nativeSpikes.available) return;
-    void nativeSpikes
-      .inspectTrackingSession()
-      .then((inspection) => {
+    void createMobileApplication()
+      .then(async (nextApplication) => {
+        setApplication(nextApplication);
+        setSavedActivities(
+          nextApplication.library.list().map((activity) => ({
+            id: activity.id,
+            finalSequence: activity.samples.at(-1)?.sequence ?? 0,
+          })),
+        );
+        const inspection = await nativeSpikes.inspectTrackingSession();
         if (inspection !== null && !inspection.recording) {
           setRecovery(inspection);
           setRecorderState('recoverable');
           setStatus('An interrupted recording is ready to recover.');
         }
       })
-      .catch((error: unknown) => setStatus('Recovery inspection failed: ' + errorMessage(error)));
+      .catch((error: unknown) => setStatus('Private store startup failed: ' + errorMessage(error)));
   }, []);
+  useEffect(() => {
+    if (application === null || recorderState !== 'recording') return;
+    let cancelled = false;
+    const synchronize = async (): Promise<void> => {
+      try {
+        await application.recorder.synchronize();
+        if (cancelled) return;
+        const observations = application.recorder.stateMachine.committedObservations;
+        const distance = calculateDistanceRevision(observations);
+        const elevation = calculateElevationRevision(observations);
+        const accuracy = observations.at(-1)?.horizontalAccuracyM;
+        application.map.setActiveTrack(observations.map(({ coordinate }) => coordinate));
+        setLiveStats({
+          sequence: observations.at(-1)?.sequence ?? 0,
+          distanceM: distance.distanceM,
+          ascentM: elevation.ascentM,
+          gpsQuality:
+            accuracy === undefined
+              ? 'Waiting'
+              : accuracy <= 10
+                ? 'Good'
+                : accuracy <= 50
+                  ? 'Degraded'
+                  : 'Poor',
+        });
+      } catch (error) {
+        if (!cancelled) setStatus('Checkpoint failed: ' + errorMessage(error));
+      }
+    };
+    void synchronize();
+    const timer = setInterval(() => void synchronize(), 5_000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [application, recorderState]);
 
   async function requestPermission(): Promise<void> {
     try {
-      await nativeSpikes.requestAlwaysAuthorization();
+      if (application === null) throw new Error('Private recorder is still loading');
+      await application.recorder.tracker.requestPermission();
       setStatus('Location permission requested. Allow Always to support screen-lock recording.');
     } catch (error) {
       setStatus('Permission request failed: ' + errorMessage(error));
@@ -100,9 +155,10 @@ export default function App() {
 
   async function start(): Promise<void> {
     try {
-      const sessionId = await nativeSpikes.startTracking(mode);
+      if (application === null) throw new Error('Private recorder is still loading');
+      const activity = await application.recorder.start(mode);
       setRecorderState('recording');
-      setStatus('Recording ' + modeLabels[mode] + ' activity ' + sessionId + ' offline.');
+      setStatus('Recording ' + modeLabels[mode] + ' activity ' + activity.id + ' offline.');
     } catch (error) {
       setStatus('Start failed: ' + errorMessage(error));
     }
@@ -110,7 +166,11 @@ export default function App() {
 
   async function pause(): Promise<void> {
     try {
-      const sequence = await nativeSpikes.pauseTracking();
+      if (application === null) throw new Error('Private recorder is still loading');
+      await application.recorder.synchronize();
+      await application.recorder.pause();
+      const state = application.recorder.stateMachine.state;
+      const sequence = state.kind === 'paused' ? state.highestCommittedSequence : 0;
       setRecorderState('paused');
       setStatus('Paused after durable sequence ' + sequence + '. Sensors are stopped.');
     } catch (error) {
@@ -120,7 +180,10 @@ export default function App() {
 
   async function resume(): Promise<void> {
     try {
-      const sequence = await nativeSpikes.resumeTracking();
+      if (application === null) throw new Error('Private recorder is still loading');
+      await application.recorder.resume();
+      const state = application.recorder.stateMachine.state;
+      const sequence = state.kind === 'recording' ? state.highestCommittedSequence : 0;
       setRecorderState('recording');
       setStatus('Resumed from durable sequence ' + sequence + ' in a new segment.');
     } catch (error) {
@@ -130,18 +193,23 @@ export default function App() {
 
   async function finish(): Promise<void> {
     try {
-      const sessionId = await nativeSpikes.currentSessionId();
-      const finalSequence = await nativeSpikes.stopTracking();
-      setSavedActivities((current) => [
-        {
-          id: sessionId ?? 'recovered-activity',
-          finalSequence,
-        },
-        ...current,
-      ]);
+      if (application === null) throw new Error('Private recorder is still loading');
+      const summary = await application.recorder.finish();
+      setSavedActivities(
+        application.library.list().map((activity) => ({
+          id: activity.id,
+          finalSequence: activity.samples.at(-1)?.sequence ?? 0,
+        })),
+      );
       setRecorderState('idle');
       setRecovery(null);
-      setStatus('Activity saved locally through sequence ' + finalSequence + '.');
+      setStatus(
+        'Activity saved locally. Distance ' +
+          summary.distanceM.toFixed(0) +
+          ' m; ascent ' +
+          summary.ascentM.toFixed(0) +
+          ' m.',
+      );
     } catch (error) {
       setStatus('Finish failed: ' + errorMessage(error));
     }
@@ -149,16 +217,16 @@ export default function App() {
 
   async function recover(): Promise<void> {
     try {
-      const inspection = await nativeSpikes.recoverTrackingSession();
-      setMode(inspection.mode);
+      if (application === null) throw new Error('Private recorder is still loading');
+      const activity = await application.recorder.recover();
+      if (activity === null) throw new Error('No interrupted recording is available');
+      setMode(activity.mode);
       setRecovery(null);
       setRecorderState('recording');
       setStatus(
         'Recovered ' +
-          inspection.validObservationCount +
-          ' observations through sequence ' +
-          inspection.highestSequence +
-          '.',
+          activity.samples.length +
+          ' durable observations. Unacknowledged native batches were replayed.',
       );
     } catch (error) {
       setStatus('Recovery failed: ' + errorMessage(error));
@@ -173,10 +241,11 @@ export default function App() {
     try {
       for (let index = 0; index < 20; index += 1) {
         let startedAt = Date.now();
-        await nativeSpikes.startTracking(mode);
+        const sessionId = await nativeSpikes.startTracking(mode);
         startDurationsMs.push(Date.now() - startedAt);
         startedAt = Date.now();
-        await nativeSpikes.stopTracking();
+        const finalSequence = await nativeSpikes.stopTracking();
+        await nativeSpikes.sealTrackingSession(sessionId, finalSequence);
         stopDurationsMs.push(Date.now() - startedAt);
       }
       const report = await nativeSpikes.recordAcknowledgementBenchmark(
@@ -281,6 +350,25 @@ export default function App() {
       <Text accessibilityRole="header" style={styles.heading}>
         Open Outdoor
       </Text>
+      <Text accessibilityRole="header" style={styles.sectionHeading}>
+        Primary navigation
+      </Text>
+      <View accessibilityLabel="Primary navigation" style={styles.controls}>
+        {(['explore', 'search', 'track', 'saved'] as const).map((candidate) => (
+          <AccessibleButton
+            key={candidate}
+            label={candidate[0]?.toUpperCase() + candidate.slice(1)}
+            hint={`Open the ${candidate} section`}
+            selected={section === candidate}
+            onPress={() => setSection(candidate)}
+          />
+        ))}
+      </View>
+      {section === 'search' ? (
+        <Text accessibilityLiveRegion="polite" style={styles.copy}>
+          Offline search results: Hemlock Loop, Hemlock Trailhead, Fixture Preserve.
+        </Text>
+      ) : null}
       <Text style={styles.copy}>
         Selected route: Hemlock Loop. Display only—there are no turn instructions, rerouting, or
         off-route alerts.
@@ -302,6 +390,15 @@ export default function App() {
       <Text accessibilityLiveRegion="polite" style={styles.status}>
         {status}
       </Text>
+      {active ? (
+        <View accessibilityLabel="Committed recording statistics" style={styles.activityCard}>
+          <Text style={styles.activityHeading}>Committed checkpoint {liveStats.sequence}</Text>
+          <Text style={styles.copy}>
+            {liveStats.distanceM.toFixed(0)} m distance � {liveStats.ascentM.toFixed(0)} m ascent �
+            GPS {liveStats.gpsQuality} � Battery impact {modeLabels[mode]}
+          </Text>
+        </View>
+      ) : null}
 
       {!nativeSpikes.available ? (
         <View accessibilityRole="alert" style={styles.alert}>
