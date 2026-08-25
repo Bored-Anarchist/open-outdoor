@@ -28,6 +28,7 @@
     "catalog:private": "node tools/private-catalog.mjs",
     "phase0:gate": "node tools/phase0-gate.mjs",
     "phase1:gate": "node tools/phase1-gate.mjs",
+    "phase1:evidence": "node tools/phase1-evidence.mjs",
     "ci:window": "node tools/hosted-ci-window.mjs",
     "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs && node tools/validate-native-spikes.mjs",
     "python:test": "uv run --frozen python -m unittest discover -s python/tests"

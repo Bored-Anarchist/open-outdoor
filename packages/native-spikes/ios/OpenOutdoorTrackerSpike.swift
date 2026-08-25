@@ -423,6 +423,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   private(set) var currentMode: OpenOutdoorTrackingMode?
   private(set) var isPaused = false
   private(set) var lastError: String?
+  private(set) var observedWeakGPS = false
 
   var isTracking: Bool {
     spool != nil
@@ -490,6 +491,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     sequence = 0
     segment = 1
     lastError = nil
+    observedWeakGPS = false
     spool = try OpenOutdoorActiveSpool(sessionID: sessionID, mode: mode)
     currentSessionID = sessionID
     currentMode = mode
@@ -533,6 +535,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     currentSessionID = UUID(uuidString: recovered.1.sessionId)
     currentMode = recovered.2
     lastError = nil
+    observedWeakGPS = false
     startSensors(mode: recovered.2)
     return try recovered.1.json()
   }
@@ -583,6 +586,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
 
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     for location in locations where location.horizontalAccuracy >= 0 {
+      if location.horizontalAccuracy > 50 { observedWeakGPS = true }
       sequence += 1
       let observation = OpenOutdoorSpoolObservation(
         sequence: sequence,
@@ -628,7 +632,10 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
 
   func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     lastError = error.localizedDescription
-    if let locationError = error as? CLError, locationError.code == .locationUnknown { return }
+    if let locationError = error as? CLError, locationError.code == .locationUnknown {
+      observedWeakGPS = true
+      return
+    }
     stopSensors()
   }
 }

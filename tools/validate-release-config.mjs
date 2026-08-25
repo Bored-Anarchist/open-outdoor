@@ -18,6 +18,7 @@ const signatureSchema = await readJson('config/catalog-signature.schema.json');
 const phase0Schema = await readJson('config/phase0-gate.schema.json');
 const phase0 = await readJson('config/phase0-gate.json');
 const phase1Schema = await readJson('config/phase1-gate.schema.json');
+const phase1PhysicalReportSchema = await readJson('config/phase1-physical-report.schema.json');
 const phase1 = await readJson('config/phase1-gate.json');
 const hostedCiSchema = await readJson('config/hosted-ci-window.schema.json');
 const hostedCi = await readJson('config/hosted-ci-window.json');
@@ -44,6 +45,8 @@ for (const [name, schema, value] of checks) {
 
 ajv.compile(signatureSchema);
 console.log('catalog signature envelope schema is valid');
+ajv.compile(phase1PhysicalReportSchema);
+console.log('Phase 1 physical report schema is valid');
 
 for (const channel of ['public', 'local', 'private']) {
   if (release.channels[channel].trustRoot !== trust.channels[channel].trustRoot) {

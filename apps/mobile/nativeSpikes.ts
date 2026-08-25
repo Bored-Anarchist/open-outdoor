@@ -92,6 +92,57 @@ export interface Phase0PhysicalDiagnosticReport {
   } | null;
 }
 
+export interface Phase1AcceptanceReport {
+  readonly schemaVersion: 1;
+  readonly profileId: 'iphone14-ios26.6-phase1-v1';
+  readonly generatedAt: string;
+  readonly status: 'not-started' | 'in-progress' | 'failed' | 'passed';
+  readonly stage: 'idle' | 'crash' | 'permission' | 'field' | 'accessibility' | 'complete';
+  readonly deviceClass: string;
+  readonly systemName: string;
+  readonly systemVersion: string;
+  readonly bundleIdentifier: string;
+  readonly appVersion: string;
+  readonly buildNumber: string;
+  readonly startedAt: string | null;
+  readonly referenceClimbM: number | null;
+  readonly measuredAscentM: number | null;
+  readonly elevationAllowedErrorM: number | null;
+  readonly authorizationStatuses: readonly string[];
+  readonly maximumBackgroundSeconds: number;
+  readonly networkTransitions: number;
+  readonly accessibility: {
+    readonly voiceOverRunning: boolean;
+    readonly preferredContentSizeCategory: string;
+    readonly largestAccessibilitySize: boolean;
+    readonly boldTextEnabled: boolean;
+    readonly increasedContrastEnabled: boolean;
+    readonly differentiateWithoutColorEnabled: boolean;
+    readonly reduceMotionEnabled: boolean;
+    readonly darkModeEnabled: boolean;
+  };
+  readonly memory: {
+    readonly elapsedSeconds: number;
+    readonly sampleCount: number;
+    readonly samplesBytes: readonly number[];
+    readonly p95ResidentBytes: number;
+    readonly maxResidentBytes: number;
+    readonly thresholdBytes: number;
+    readonly passed: boolean;
+  } | null;
+  readonly results: Readonly<
+    Record<
+      'trackerCorrectness' | 'memorySmoke' | 'voiceOver' | 'dynamicType' | 'elevation',
+      { readonly passed: boolean; readonly checks: Readonly<Record<string, boolean>> }
+    >
+  >;
+  readonly events: readonly {
+    readonly kind: string;
+    readonly recordedAt: string;
+    readonly detail?: string | null;
+  }[];
+}
+
 interface OpenOutdoorNativeSpikesModule {
   readonly policyVersion: number;
   readonly phase0DiagnosticsEnabled: boolean;
@@ -125,6 +176,17 @@ interface OpenOutdoorNativeSpikesModule {
   readonly finishMemoryProfile: () => Promise<string>;
   readonly inspectTrackingProtection: () => Promise<string>;
   readonly sharePhysicalDiagnosticReport: () => Promise<string>;
+  readonly beginPhase1Acceptance: (referenceClimbM: number) => Promise<string>;
+  readonly currentPhase1Acceptance: () => Promise<string>;
+  readonly armPhase1CrashRecovery: () => Promise<string>;
+  readonly beginPhase1FieldRun: () => Promise<string>;
+  readonly recordPhase1FieldResult: (
+    memoryReportJson: string,
+    measuredAscentM: number,
+  ) => Promise<string>;
+  readonly confirmPhase1Accessibility: (usable: boolean) => Promise<string>;
+  readonly resetPhase1Acceptance: () => Promise<string>;
+  readonly sharePhase1AcceptanceReport: () => Promise<string>;
 }
 
 function parseJson<T>(value: string): T {
@@ -203,4 +265,27 @@ export const nativeSpikes = {
     parseJson<Phase0PhysicalDiagnosticReport>(await requiredModule().inspectTrackingProtection()),
   sharePhysicalDiagnosticReport: (): Promise<string> =>
     requiredModule().sharePhysicalDiagnosticReport(),
+  beginPhase1Acceptance: async (referenceClimbM: number): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(
+      await requiredModule().beginPhase1Acceptance(referenceClimbM),
+    ),
+  currentPhase1Acceptance: async (): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().currentPhase1Acceptance()),
+  armPhase1CrashRecovery: async (): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().armPhase1CrashRecovery()),
+  beginPhase1FieldRun: async (): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().beginPhase1FieldRun()),
+  recordPhase1FieldResult: async (
+    memoryReport: Phase0PhysicalDiagnosticReport,
+    measuredAscentM: number,
+  ): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(
+      await requiredModule().recordPhase1FieldResult(JSON.stringify(memoryReport), measuredAscentM),
+    ),
+  confirmPhase1Accessibility: async (usable: boolean): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().confirmPhase1Accessibility(usable)),
+  resetPhase1Acceptance: async (): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().resetPhase1Acceptance()),
+  sharePhase1AcceptanceReport: (): Promise<string> =>
+    requiredModule().sharePhase1AcceptanceReport(),
 };

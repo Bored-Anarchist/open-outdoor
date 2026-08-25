@@ -7,6 +7,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
+  private var phase1AcceptanceInstance: OpenOutdoorPhase1AcceptanceCoordinator?
 
   private func phase0Diagnostics() throws -> OpenOutdoorPhase0Diagnostics {
     if let phase0DiagnosticsInstance { return phase0DiagnosticsInstance }
@@ -23,6 +24,13 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     )
     phase0PerformanceInstance = diagnostics
     return diagnostics
+  }
+
+  private func phase1Acceptance() throws -> OpenOutdoorPhase1AcceptanceCoordinator {
+    if let phase1AcceptanceInstance { return phase1AcceptanceInstance }
+    let coordinator = try OpenOutdoorPhase1AcceptanceCoordinator(tracker: tracker)
+    phase1AcceptanceInstance = coordinator
+    return coordinator
   }
 #endif
 
@@ -69,6 +77,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     AsyncFunction("stopTracking") { () -> Int64 in
       let finalSequence = try self.tracker.stop()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
+      self.phase1AcceptanceInstance?.recordExplicitStop(finalSequence: finalSequence)
       self.phase0PerformanceInstance?.cancelMemoryProfile()
 #endif
       return finalSequence
@@ -87,7 +96,11 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     }.runOnQueue(.main)
 
     AsyncFunction("recoverTrackingSession") { () -> String in
-      try self.tracker.recover()
+      let inspection = try self.tracker.recover()
+#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
+      self.phase1AcceptanceInstance?.recordTrackerRecovery()
+#endif
+      return inspection
     }.runOnQueue(.main)
 
     AsyncFunction("discardRecoverableTrackingSession") { () -> String in
@@ -174,6 +187,41 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
     AsyncFunction("sharePhysicalDiagnosticReport") { () -> String in
       try self.phase0Performance().shareLastReport()
+    }.runOnQueue(.main)
+
+    AsyncFunction("beginPhase1Acceptance") { (referenceClimbM: Double) -> String in
+      try self.phase1Acceptance().begin(referenceClimbM: referenceClimbM)
+    }.runOnQueue(.main)
+
+    AsyncFunction("currentPhase1Acceptance") { () -> String in
+      try self.phase1Acceptance().currentReportJSON()
+    }.runOnQueue(.main)
+
+    AsyncFunction("armPhase1CrashRecovery") { () -> String in
+      try self.phase1Acceptance().armCrashRecovery()
+    }.runOnQueue(.main)
+
+    AsyncFunction("beginPhase1FieldRun") { () -> String in
+      try self.phase1Acceptance().beginFieldRun()
+    }.runOnQueue(.main)
+
+    AsyncFunction("recordPhase1FieldResult") { (memoryReportJSON: String, measuredAscentM: Double) -> String in
+      try self.phase1Acceptance().recordFieldResult(
+        memoryReportJSON: memoryReportJSON,
+        measuredAscentM: measuredAscentM
+      )
+    }.runOnQueue(.main)
+
+    AsyncFunction("confirmPhase1Accessibility") { (usable: Bool) -> String in
+      try self.phase1Acceptance().confirmAccessibilityUsability(usable)
+    }.runOnQueue(.main)
+
+    AsyncFunction("resetPhase1Acceptance") { () -> String in
+      try self.phase1Acceptance().reset()
+    }.runOnQueue(.main)
+
+    AsyncFunction("sharePhase1AcceptanceReport") { () -> String in
+      try self.phase1Acceptance().shareCurrentReport()
     }.runOnQueue(.main)
 #endif
   }

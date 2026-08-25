@@ -9,9 +9,11 @@ import {
   type NativeTrackingMode,
 } from './nativeSpikes';
 import { createMobileApplication, type MobileApplication } from './application';
+import { Phase1AcceptanceRunner } from './Phase1AcceptanceRunner';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
+type RecoveryReason = 'process-termination' | 'permission-loss' | 'native-error';
 const modeLabels: Readonly<Record<NativeTrackingMode, string>> = {
   balanced: 'Balanced',
   endurance: 'Endurance',
@@ -191,7 +193,7 @@ export default function App() {
     }
   }
 
-  async function finish(): Promise<void> {
+  async function finish(): Promise<number | null> {
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       const summary = await application.recorder.finish();
@@ -210,15 +212,17 @@ export default function App() {
           summary.ascentM.toFixed(0) +
           ' m.',
       );
+      return summary.ascentM;
     } catch (error) {
       setStatus('Finish failed: ' + errorMessage(error));
+      return null;
     }
   }
 
-  async function recover(): Promise<void> {
+  async function recover(reason: RecoveryReason = 'process-termination'): Promise<void> {
     try {
       if (application === null) throw new Error('Private recorder is still loading');
-      const activity = await application.recorder.recover();
+      const activity = await application.recorder.recover(new Date().toISOString(), reason);
       if (activity === null) throw new Error('No interrupted recording is available');
       setMode(activity.mode);
       setRecovery(null);
@@ -394,8 +398,8 @@ export default function App() {
         <View accessibilityLabel="Committed recording statistics" style={styles.activityCard}>
           <Text style={styles.activityHeading}>Committed checkpoint {liveStats.sequence}</Text>
           <Text style={styles.copy}>
-            {liveStats.distanceM.toFixed(0)} m distance � {liveStats.ascentM.toFixed(0)} m ascent �
-            GPS {liveStats.gpsQuality} � Battery impact {modeLabels[mode]}
+            {liveStats.distanceM.toFixed(0)} m distance · {liveStats.ascentM.toFixed(0)} m ascent ·
+            GPS {liveStats.gpsQuality} · Battery impact {modeLabels[mode]}
           </Text>
         </View>
       ) : null}
@@ -485,6 +489,15 @@ export default function App() {
           <Text style={styles.copy}>
             Diagnostic JSON contains timings, memory sizes, and file policy only—never coordinates.
           </Text>
+          <Phase1AcceptanceRunner
+            enabled={application !== null}
+            onFinish={finish}
+            onMemoryProfileChange={setMemoryProfileActive}
+            onRecover={recover}
+            onStart={start}
+            recorderState={recorderState}
+          />
+          <Text style={styles.copy}>Advanced individual diagnostics:</Text>
           <View style={styles.controls}>
             <AccessibleButton
               label="Measure 20 Start/Stop acknowledgements"

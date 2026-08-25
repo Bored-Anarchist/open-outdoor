@@ -167,29 +167,46 @@ export class RecorderCoordinator {
     );
   }
 
-  async recover(recordedAt = new Date().toISOString()): Promise<RecordedActivity | null> {
+  async recover(
+    recordedAt = new Date().toISOString(),
+    reason: 'process-termination' | 'permission-loss' | 'native-error' = 'process-termination',
+  ): Promise<RecordedActivity | null> {
+    const priorState = this.stateMachine.state;
+    if (priorState.kind === 'recording' || priorState.kind === 'paused') {
+      this.stateMachine.interrupt(reason);
+    }
     const checkpoint = await this.tracker.recover();
     if (checkpoint === null) return null;
     const id = activityId(checkpoint.sessionId);
     const existing = this.repository.listActivities().find((activity) => activity.id === id);
-    this.stateMachine.start(checkpoint.sessionId, checkpoint.mode, recordedAt);
+    const interruptedState = this.stateMachine.state;
+    const continuingInProcess =
+      interruptedState.kind === 'recoverable' &&
+      interruptedState.sessionId === checkpoint.sessionId;
+    if (continuingInProcess) {
+      this.stateMachine.recover(recordedAt);
+    } else {
+      this.stateMachine.start(checkpoint.sessionId, checkpoint.mode, recordedAt);
+    }
     if (existing !== undefined) {
-      this.stateMachine.commit(
-        existing.samples.map((sample) => ({
-          segment: sample.segment,
-          sequence: sample.sequence,
-          coordinate: sample.coordinate,
-          recordedAt: sample.recordedAt,
-          horizontalAccuracyM: sample.horizontalAccuracyM,
-          ...(sample.verticalAccuracyM === null
-            ? {}
-            : { verticalAccuracyM: sample.verticalAccuracyM }),
-          ...(sample.altitudeM === null ? {} : { altitudeM: sample.altitudeM }),
-          ...(sample.pressureKPa === null ? {} : { pressureKPa: sample.pressureKPa }),
-          paused: sample.paused,
-        })),
-        recordedAt,
-      );
+      if (!continuingInProcess) {
+        this.stateMachine.commit(
+          existing.samples.map((sample) => ({
+            segment: sample.segment,
+            sequence: sample.sequence,
+            coordinate: sample.coordinate,
+            recordedAt: sample.recordedAt,
+            horizontalAccuracyM: sample.horizontalAccuracyM,
+            ...(sample.verticalAccuracyM === null
+              ? {}
+              : { verticalAccuracyM: sample.verticalAccuracyM }),
+            ...(sample.altitudeM === null ? {} : { altitudeM: sample.altitudeM }),
+            ...(sample.pressureKPa === null ? {} : { pressureKPa: sample.pressureKPa }),
+            paused: sample.paused,
+          })),
+          recordedAt,
+        );
+      }
       this.repository.updateActivityLifecycle(id, 'recovered');
     } else {
       this.repository.createActivity({

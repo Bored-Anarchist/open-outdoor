@@ -62,4 +62,14 @@ describe('WP-105 recorder and activity-library UX model', () => {
     const confirmation = new DestructiveConfirmation();
     expect(confirmation.confirm(confirmation.request('discard'))).toBe('discard');
   });
+
+  it('recovers a permission-interrupted native session without requiring another relaunch', async () => {
+    const tracker = new FixtureTrackerAdapter();
+    const repository = new InMemoryPrivateRepository();
+    const recorder = new RecorderCoordinator(tracker, repository);
+    await recorder.start('balanced', 'Permission fixture', '2026-08-25T12:00:00.000Z');
+    const recovered = await recorder.recover('2026-08-25T12:01:00.000Z', 'permission-loss');
+    expect(recovered?.lifecycle).toBe('recovered');
+    expect(recorder.stateMachine.state.kind).toBe('recording');
+  });
 });

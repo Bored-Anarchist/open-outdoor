@@ -21,9 +21,13 @@ const performanceDiagnostics = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase0PerformanceDiagnostics.swift',
 );
 const privateStore = await text('packages/native-spikes/ios/OpenOutdoorPrivateStore.swift');
+const phase1Acceptance = await text(
+  'packages/native-spikes/ios/OpenOutdoorPhase1AcceptanceCoordinator.swift',
+);
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
+const phase1Runner = await text('apps/mobile/Phase1AcceptanceRunner.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -57,6 +61,7 @@ requireText(
 );
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
 requireText(podspec, "'CoreLocation', 'CoreMotion'", 'podspec');
+requireText(podspec, "'Network'", 'podspec');
 requireText(tracker, 'allowsBackgroundLocationUpdates = true', 'tracker');
 requireText(tracker, 'CMAltimeter', 'tracker');
 requireText(tracker, 'completeUntilFirstUserAuthentication', 'tracker');
@@ -128,6 +133,19 @@ for (const functionName of [
   requireText(nativeModule, `AsyncFunction("${functionName}")`, 'physical diagnostics module');
   requireText(mobileBinding, `readonly ${functionName}`, 'physical diagnostics binding');
 }
+for (const functionName of [
+  'beginPhase1Acceptance',
+  'currentPhase1Acceptance',
+  'armPhase1CrashRecovery',
+  'beginPhase1FieldRun',
+  'recordPhase1FieldResult',
+  'confirmPhase1Accessibility',
+  'resetPhase1Acceptance',
+  'sharePhase1AcceptanceReport',
+]) {
+  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'Phase 1 acceptance module');
+  requireText(mobileBinding, `readonly ${functionName}`, 'Phase 1 acceptance binding');
+}
 for (const token of [
   'mach_task_basic_info',
   'minimumAcknowledgementSamples = 20',
@@ -183,6 +201,28 @@ for (const token of [
   requireText(privateStore, token, 'production private SQLite store');
 }
 requireText(tracker, 'observations.count >= 256', 'bounded native tracking batch');
+for (const token of [
+  'NWPathMonitor',
+  'didEnterBackgroundNotification',
+  'process-relaunched-after-crash-arm',
+  'permissionSafeStopObserved',
+  'minimumBackgroundSeconds = 30.0 * 60.0',
+  'memoryThresholdBytes: UInt64 = 150 * 1_024 * 1_024',
+  'UIAccessibility.isVoiceOverRunning',
+  'shouldDifferentiateWithoutColor',
+  'phase1-physical-report.json',
+]) {
+  requireText(phase1Acceptance, token, 'guided Phase 1 acceptance coordinator');
+}
+for (const token of [
+  'Begin guided acceptance',
+  'Start and arm crash test',
+  'Begin combined 30-minute field run',
+  'Accessibility flow is usable',
+  'Export consolidated acceptance report',
+]) {
+  requireText(phase1Runner, token, 'guided Phase 1 acceptance UI');
+}
 for (const token of [
   'Start recording',
   'Pause recording',
