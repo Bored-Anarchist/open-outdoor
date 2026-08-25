@@ -70,7 +70,10 @@ internal final class OpenOutdoorPhase0PerformanceDiagnostics {
   private var memoryTimer: DispatchSourceTimer?
   private var lastReportJSON: String?
 
-  init(tracker: OpenOutdoorTrackerSpike, profileId: String = Self.profileId) throws {
+  init(
+    tracker: OpenOutdoorTrackerSpike,
+    profileId: String = OpenOutdoorPhase0PerformanceDiagnostics.profileId
+  ) throws {
     guard Bundle.main.object(forInfoDictionaryKey: "OpenOutdoorPhase0DiagnosticsEnabled") as? Bool == true else {
       throw NSError(
         domain: "OpenOutdoorPhase0PerformanceDiagnostics",
