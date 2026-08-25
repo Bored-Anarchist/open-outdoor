@@ -214,8 +214,8 @@ private final class OpenOutdoorActiveSpool {
       sessionId: manifest.sessionID.uuidString,
       mode: manifest.mode.rawValue,
       highestSequence: Int64(validCount),
-      highestSegment: highestSegment,
       validObservationCount: validCount,
+      highestSegment: highestSegment,
       tornFinalLineIgnored: tornFinalLineIgnored,
       spoolFileName: manifest.spoolFileName,
       recording: recording

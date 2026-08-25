@@ -4,7 +4,7 @@ import Foundation
 import Network
 import UIKit
 
-private struct OpenOutdoorPhase1Event: Codable {
+internal struct OpenOutdoorPhase1Event: Codable {
   let kind: String
   let recordedAt: Date
   let detail: String?
