@@ -126,6 +126,7 @@ for (const functionName of [
 for (const functionName of [
   'recordAcknowledgementBenchmark',
   'beginMemoryProfile',
+  'isMemoryProfileActive',
   'finishMemoryProfile',
   'inspectTrackingProtection',
   'sharePhysicalDiagnosticReport',
@@ -220,6 +221,9 @@ for (const token of [
   'Begin combined 30-minute field run',
   'Accessibility flow is usable',
   'Export consolidated acceptance report',
+  'operationInFlight.current',
+  'combined-field-run-finished',
+  'isMemoryProfileActive',
 ]) {
   requireText(phase1Runner, token, 'guided Phase 1 acceptance UI');
 }

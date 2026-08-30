@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   AppState,
@@ -91,6 +91,7 @@ export function Phase1AcceptanceRunner({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [nativeTracking, setNativeTracking] = useState(false);
+  const operationInFlight = useRef(false);
 
   async function refresh(): Promise<Phase1AcceptanceReport> {
     const [nextReport, tracking] = await Promise.all([
@@ -114,6 +115,8 @@ export function Phase1AcceptanceRunner({
   }, [enabled]);
 
   async function run(operation: () => Promise<Phase1AcceptanceReport | void>): Promise<void> {
+    if (operationInFlight.current) return;
+    operationInFlight.current = true;
     setBusy(true);
     setError(null);
     try {
@@ -122,7 +125,9 @@ export function Phase1AcceptanceRunner({
       await refresh();
     } catch (cause) {
       setError(message(cause));
+      await refresh().catch(() => undefined);
     } finally {
+      operationInFlight.current = false;
       setBusy(false);
     }
   }
@@ -144,7 +149,8 @@ export function Phase1AcceptanceRunner({
   }
 
   const trackerChecks = report?.results.trackerCorrectness?.checks ?? {};
-  const fieldActive = events.has('combined-field-run-started') && report?.memory === null;
+  const fieldActive =
+    events.has('combined-field-run-started') && !events.has('combined-field-run-finished');
 
   if (!enabled) return null;
 
@@ -276,7 +282,9 @@ export function Phase1AcceptanceRunner({
           onPress={() =>
             void run(async () => {
               const next = await nativeSpikes.beginPhase1FieldRun();
-              await nativeSpikes.beginMemoryProfile();
+              if (!(await nativeSpikes.isMemoryProfileActive())) {
+                await nativeSpikes.beginMemoryProfile();
+              }
               onMemoryProfileChange(true);
               return next;
             })

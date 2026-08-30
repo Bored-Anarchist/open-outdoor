@@ -177,6 +177,10 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       try self.phase0Performance().beginMemoryProfile()
     }.runOnQueue(.main)
 
+    AsyncFunction("isMemoryProfileActive") { () -> Bool in
+      try self.phase0Performance().isMemoryProfileActive
+    }.runOnQueue(.main)
+
     AsyncFunction("finishMemoryProfile") { () -> String in
       try self.phase0Performance().finishMemoryProfile()
     }.runOnQueue(.main)

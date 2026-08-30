@@ -173,6 +173,7 @@ interface OpenOutdoorNativeSpikesModule {
   readonly sharePhase0DiagnosticReport: () => Promise<string>;
   readonly recordAcknowledgementBenchmark: (inputJson: string) => Promise<string>;
   readonly beginMemoryProfile: () => Promise<string>;
+  readonly isMemoryProfileActive: () => Promise<boolean>;
   readonly finishMemoryProfile: () => Promise<string>;
   readonly inspectTrackingProtection: () => Promise<string>;
   readonly sharePhysicalDiagnosticReport: () => Promise<string>;
@@ -259,6 +260,7 @@ export const nativeSpikes = {
     ),
   beginMemoryProfile: async (): Promise<Phase0PhysicalDiagnosticReport> =>
     parseJson<Phase0PhysicalDiagnosticReport>(await requiredModule().beginMemoryProfile()),
+  isMemoryProfileActive: (): Promise<boolean> => requiredModule().isMemoryProfileActive(),
   finishMemoryProfile: async (): Promise<Phase0PhysicalDiagnosticReport> =>
     parseJson<Phase0PhysicalDiagnosticReport>(await requiredModule().finishMemoryProfile()),
   inspectTrackingProtection: async (): Promise<Phase0PhysicalDiagnosticReport> =>

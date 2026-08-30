@@ -70,6 +70,8 @@ internal final class OpenOutdoorPhase0PerformanceDiagnostics {
   private var memoryTimer: DispatchSourceTimer?
   private var lastReportJSON: String?
 
+  var isMemoryProfileActive: Bool { memoryTimer != nil }
+
   init(
     tracker: OpenOutdoorTrackerSpike,
     profileId: String = OpenOutdoorPhase0PerformanceDiagnostics.profileId
