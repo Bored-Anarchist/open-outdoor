@@ -17,7 +17,9 @@ type RecoveryReason = 'process-termination' | 'permission-loss' | 'native-error'
 interface Phase1AcceptanceRunnerProps {
   readonly enabled: boolean;
   readonly recorderState: RecorderUiState;
-  readonly onStart: () => Promise<void>;
+  readonly onStart: () => Promise<boolean>;
+  readonly onPause: () => Promise<boolean>;
+  readonly onResume: () => Promise<boolean>;
   readonly onRecover: (reason: RecoveryReason) => Promise<void>;
   readonly onFinish: () => Promise<number | null>;
   readonly onMemoryProfileChange: (active: boolean) => void;
@@ -82,6 +84,8 @@ export function Phase1AcceptanceRunner({
   enabled,
   recorderState,
   onStart,
+  onPause,
+  onResume,
   onRecover,
   onFinish,
   onMemoryProfileChange,
@@ -133,6 +137,20 @@ export function Phase1AcceptanceRunner({
   }
 
   const events = useMemo(() => new Set(report?.events.map(({ kind }) => kind) ?? []), [report]);
+  const accessibilityAttemptEvents = useMemo(() => {
+    const reportEvents = report?.events ?? [];
+    let attemptStart = -1;
+    reportEvents.forEach(({ kind }, index) => {
+      if (
+        kind === 'combined-field-run-finished' ||
+        kind === 'elevation-retry-finished' ||
+        kind === 'accessibility-retry-started'
+      ) {
+        attemptStart = index;
+      }
+    });
+    return new Set(reportEvents.slice(attemptStart + 1).map(({ kind }) => kind));
+  }, [report]);
   function confirmReset(): void {
     Alert.alert(
       'Reset guided acceptance?',
@@ -149,6 +167,15 @@ export function Phase1AcceptanceRunner({
   }
 
   const trackerChecks = report?.results.trackerCorrectness?.checks ?? {};
+  const accessibilityStarted = accessibilityAttemptEvents.has('accessibility-control-start');
+  const accessibilityPaused = accessibilityAttemptEvents.has('accessibility-control-pause');
+  const accessibilityResumed = accessibilityAttemptEvents.has('accessibility-control-resume');
+  const accessibilityFinished = accessibilityAttemptEvents.has('accessibility-control-finish');
+  const accessibilityControlsComplete =
+    accessibilityStarted && accessibilityPaused && accessibilityResumed && accessibilityFinished;
+  const elevationPassed = report?.results.elevation?.passed === true;
+  const accessibilityPassed =
+    report?.results.voiceOver?.passed === true && report.results.dynamicType?.passed === true;
   const fieldActive =
     events.has('combined-field-run-started') && !events.has('combined-field-run-finished');
 
@@ -203,7 +230,9 @@ export function Phase1AcceptanceRunner({
           disabled={busy || recorderState !== 'idle'}
           onPress={() =>
             void run(async () => {
-              await onStart();
+              if (!(await onStart())) {
+                throw new Error('The crash-test recording did not start');
+              }
               return nativeSpikes.armPhase1CrashRecovery();
             })
           }
@@ -241,7 +270,9 @@ export function Phase1AcceptanceRunner({
           disabled={busy || recorderState !== 'idle'}
           onPress={() =>
             void run(async () => {
-              await onStart();
+              if (!(await onStart())) {
+                throw new Error('The permission-test recording did not start');
+              }
               await Linking.openSettings();
             })
           }
@@ -318,32 +349,119 @@ export function Phase1AcceptanceRunner({
         </>
       ) : null}
 
+      {report?.stage === 'elevation' ? (
+        <>
+          <Text style={styles.instruction}>
+            Complete only the known reference climb, then finish. The earlier tracker and memory
+            results remain preserved.
+          </Text>
+          <RunnerButton
+            label="Finish elevation retry"
+            hint="Stops the short retry recording and evaluates the corrected barometer samples"
+            disabled={busy || !nativeTracking}
+            onPress={() =>
+              void run(async () => {
+                const finalAscentM = await onFinish();
+                if (finalAscentM === null) {
+                  throw new Error('The elevation retry recording did not finish');
+                }
+                return nativeSpikes.recordPhase1ElevationRetry(finalAscentM);
+              })
+            }
+          />
+        </>
+      ) : null}
+
       {report?.stage === 'accessibility' ? (
         <>
           <Text style={styles.instruction}>
             Enable VoiceOver, the largest Dynamic Type size, Bold Text, Increase Contrast,
-            Differentiate Without Color, Reduce Motion, and dark mode. Complete the recorder
-            controls once, then record one overall usability result.
+            Differentiate Without Color, Reduce Motion, and dark mode. Keep VoiceOver on while
+            exercising each guided control below.
           </Text>
-          <RunnerButton
-            label="Refresh detected accessibility settings"
-            hint="Reads the current iOS accessibility configuration without changing it"
-            disabled={busy}
-            onPress={() => void run(() => nativeSpikes.currentPhase1Acceptance())}
-          />
-          <RunnerButton
-            label="Accessibility flow is usable"
-            hint="Records the human usability confirmation and detected settings"
-            disabled={busy}
-            onPress={() => void run(() => nativeSpikes.confirmPhase1Accessibility(true))}
-          />
-          <RunnerButton
-            label="Report accessibility problem"
-            hint="Records a blocking accessibility failure"
-            destructive
-            disabled={busy}
-            onPress={() => void run(() => nativeSpikes.confirmPhase1Accessibility(false))}
-          />
+          {!accessibilityStarted ? (
+            <RunnerButton
+              label="Start accessibility test recording"
+              hint="Exercises the recorder Start action with the worst-case accessibility settings"
+              disabled={busy || recorderState !== 'idle'}
+              onPress={() =>
+                void run(async () => {
+                  if (!(await onStart()))
+                    throw new Error('The accessibility recording did not start');
+                  return nativeSpikes.recordPhase1AccessibilityControl('start');
+                })
+              }
+            />
+          ) : null}
+          {accessibilityStarted && !accessibilityPaused ? (
+            <RunnerButton
+              label="Pause accessibility test recording"
+              hint="Exercises the recorder Pause action"
+              disabled={busy || recorderState !== 'recording'}
+              onPress={() =>
+                void run(async () => {
+                  if (!(await onPause()))
+                    throw new Error('The accessibility recording did not pause');
+                  return nativeSpikes.recordPhase1AccessibilityControl('pause');
+                })
+              }
+            />
+          ) : null}
+          {accessibilityPaused && !accessibilityResumed ? (
+            <RunnerButton
+              label="Resume accessibility test recording"
+              hint="Exercises the recorder Resume action"
+              disabled={busy || recorderState !== 'paused'}
+              onPress={() =>
+                void run(async () => {
+                  if (!(await onResume()))
+                    throw new Error('The accessibility recording did not resume');
+                  return nativeSpikes.recordPhase1AccessibilityControl('resume');
+                })
+              }
+            />
+          ) : null}
+          {accessibilityResumed && !accessibilityFinished ? (
+            <RunnerButton
+              label="Finish accessibility test recording"
+              hint="Exercises Finish and Save and records the complete control sequence"
+              disabled={busy || recorderState !== 'recording'}
+              onPress={() =>
+                void run(async () => {
+                  if ((await onFinish()) === null) {
+                    throw new Error('The accessibility recording did not finish');
+                  }
+                  return nativeSpikes.recordPhase1AccessibilityControl('finish');
+                })
+              }
+            />
+          ) : null}
+          {accessibilityControlsComplete ? (
+            <>
+              <Text style={styles.instruction}>
+                Keep VoiceOver enabled. Refresh once, then record the overall human result.
+              </Text>
+              <RunnerButton
+                label="Refresh detected accessibility settings"
+                hint="Reads the current iOS accessibility configuration without changing it"
+                disabled={busy}
+                onPress={() => void run(() => nativeSpikes.currentPhase1Acceptance())}
+              />
+              <RunnerButton
+                label="Accessibility flow is usable"
+                hint="Records the human usability confirmation and detected settings"
+                disabled={busy}
+                onPress={() => void run(() => nativeSpikes.confirmPhase1Accessibility(true))}
+              />
+              <RunnerButton
+                label="Report accessibility problem"
+                hint="Records a blocking accessibility failure"
+                destructive
+                disabled={busy}
+                onPress={() => void run(() => nativeSpikes.confirmPhase1Accessibility(false))}
+              />
+            </>
+          ) : null}
         </>
       ) : null}
 
@@ -353,6 +471,27 @@ export function Phase1AcceptanceRunner({
             Consolidated result: {report.status}. Export the JSON once; repository tooling will
             validate it and prepare the evidence update.
           </Text>
+          {!elevationPassed ? (
+            <RunnerButton
+              label="Retry elevation climb only"
+              hint="Preserves tracker and memory evidence and starts a short corrected barometer recording"
+              disabled={busy || recorderState !== 'idle'}
+              onPress={() =>
+                void run(async () => {
+                  if (!(await onStart())) throw new Error('The elevation retry did not start');
+                  return nativeSpikes.beginPhase1ElevationRetry();
+                })
+              }
+            />
+          ) : null}
+          {elevationPassed && !accessibilityPassed ? (
+            <RunnerButton
+              label="Retry accessibility only"
+              hint="Preserves tracker, memory, and elevation evidence"
+              disabled={busy || recorderState !== 'idle'}
+              onPress={() => void run(() => nativeSpikes.retryPhase1Accessibility())}
+            />
+          ) : null}
           <RunnerButton
             label="Export consolidated acceptance report"
             hint="Shares one redacted JSON report for all Phase 1 physical criteria"
@@ -388,7 +527,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
-  buttonText: { color: '#173d2b', fontSize: 17, fontWeight: '700', textAlign: 'center' },
+  buttonText: {
+    color: '#173d2b',
+    flexShrink: 1,
+    fontSize: 17,
+    fontWeight: '700',
+    textAlign: 'center',
+    width: '100%',
+  },
   copy: { color: '#303b34', fontSize: 17, lineHeight: 26, marginBottom: 12 },
   destructiveButton: { borderColor: '#9b241b' },
   destructiveText: { color: '#7b1d15' },

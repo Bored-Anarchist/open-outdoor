@@ -216,6 +216,22 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       )
     }.runOnQueue(.main)
 
+    AsyncFunction("beginPhase1ElevationRetry") { () -> String in
+      try self.phase1Acceptance().beginElevationRetry()
+    }.runOnQueue(.main)
+
+    AsyncFunction("recordPhase1ElevationRetry") { (measuredAscentM: Double) -> String in
+      try self.phase1Acceptance().recordElevationRetry(measuredAscentM)
+    }.runOnQueue(.main)
+
+    AsyncFunction("retryPhase1Accessibility") { () -> String in
+      try self.phase1Acceptance().retryAccessibility()
+    }.runOnQueue(.main)
+
+    AsyncFunction("recordPhase1AccessibilityControl") { (action: String) -> String in
+      try self.phase1Acceptance().recordAccessibilityControl(action)
+    }.runOnQueue(.main)
+
     AsyncFunction("confirmPhase1Accessibility") { (usable: Bool) -> String in
       try self.phase1Acceptance().confirmAccessibilityUsability(usable)
     }.runOnQueue(.main)

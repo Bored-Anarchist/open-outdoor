@@ -44,7 +44,6 @@ if (!validate(report)) {
   process.exit(2);
 }
 
-const evaluation = evaluatePhase1PhysicalReport(report);
 const sourceCommit =
   argument('--commit') ??
   execFileSync('git', ['rev-parse', 'HEAD'], {
@@ -55,6 +54,8 @@ if (!/^[0-9a-f]{40}$/i.test(sourceCommit)) {
   console.error('source commit must be a full 40-character Git SHA');
   process.exit(2);
 }
+
+const evaluation = evaluatePhase1PhysicalReport(report, { sourceCommit });
 
 const date = report.generatedAt.slice(0, 10);
 const evidencePath = `docs/evidence/artifacts/WP-109-phase1-${date}-redacted.json`;

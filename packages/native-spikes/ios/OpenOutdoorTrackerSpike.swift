@@ -46,6 +46,7 @@ private struct OpenOutdoorSpoolObservation: Codable {
   let verticalAccuracyM: Double?
   let altitudeM: Double
   let pressureKPa: Double?
+  let relativeAltitudeM: Double?
   let segment: Int?
   let paused: Bool?
 }
@@ -58,6 +59,7 @@ private struct OpenOutdoorBridgeObservation: Codable {
   let verticalAccuracyM: Double?
   let altitudeM: Double
   let pressureKPa: Double?
+  let relativeAltitudeM: Double?
   let segment: Int
   let paused: Bool
 }
@@ -301,6 +303,7 @@ private final class OpenOutdoorActiveSpool {
               verticalAccuracyM: observation.verticalAccuracyM,
               altitudeM: observation.altitudeM,
               pressureKPa: observation.pressureKPa,
+              relativeAltitudeM: observation.relativeAltitudeM,
               segment: observation.segment ?? 1,
               paused: observation.paused ?? false
             )
@@ -413,11 +416,18 @@ private final class OpenOutdoorActiveSpool {
 }
 
 internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegate {
+  private static let altimeterPersistenceInterval: TimeInterval = 5
+  private static let altimeterPersistenceDeltaM = 0.5
+
   private let locationManager = CLLocationManager()
   private let altimeter = CMAltimeter()
   private var spool: OpenOutdoorActiveSpool?
   private var sequence: Int64 = 0
   private var currentPressureKPa: Double?
+  private var currentRelativeAltitudeM: Double?
+  private var latestLocation: CLLocation?
+  private var lastPersistedAltimeterAt: Date?
+  private var lastPersistedRelativeAltitudeM: Double?
   private var segment = 1
   private(set) var currentSessionID: UUID?
   private(set) var currentMode: OpenOutdoorTrackingMode?
@@ -454,6 +464,10 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   }
 
   private func startSensors(mode: OpenOutdoorTrackingMode) {
+    currentPressureKPa = nil
+    currentRelativeAltitudeM = nil
+    lastPersistedAltimeterAt = nil
+    lastPersistedRelativeAltitudeM = nil
     isPaused = false
     switch mode {
     case .endurance:
@@ -469,8 +483,32 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
 
     locationManager.startUpdatingLocation()
     if CMAltimeter.isRelativeAltitudeAvailable() {
-      altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, _ in
-        self?.currentPressureKPa = data?.pressure.doubleValue
+      altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, error in
+        guard let self else { return }
+        if let error {
+          self.lastError = error.localizedDescription
+          return
+        }
+        guard let data else { return }
+        let now = Date()
+        let relativeAltitudeM = data.relativeAltitude.doubleValue
+        self.currentPressureKPa = data.pressure.doubleValue
+        self.currentRelativeAltitudeM = relativeAltitudeM
+        guard let latestLocation = self.latestLocation, self.spool != nil, !self.isPaused else {
+          return
+        }
+        let timeDue =
+          self.lastPersistedAltimeterAt.map {
+            now.timeIntervalSince($0) >= Self.altimeterPersistenceInterval
+          } ?? true
+        let altitudeDue =
+          self.lastPersistedRelativeAltitudeM.map {
+            abs(relativeAltitudeM - $0) >= Self.altimeterPersistenceDeltaM
+          } ?? true
+        guard timeDue || altitudeDue else { return }
+        self.lastPersistedAltimeterAt = now
+        self.lastPersistedRelativeAltitudeM = relativeAltitudeM
+        self.appendObservation(location: latestLocation, recordedAt: now)
       }
     }
   }
@@ -487,6 +525,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   func start(mode: OpenOutdoorTrackingMode, sessionID: UUID = UUID()) throws -> String {
     guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
     try requireAlwaysAuthorization()
+    latestLocation = nil
 
     sequence = 0
     segment = 1
@@ -527,6 +566,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   func recover() throws -> String {
     guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
     try requireAlwaysAuthorization()
+    latestLocation = nil
 
     let recovered = try OpenOutdoorActiveSpool.recover()
     spool = recovered.0
@@ -571,6 +611,10 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     defer {
       spool = nil
       currentPressureKPa = nil
+      currentRelativeAltitudeM = nil
+      latestLocation = nil
+      lastPersistedAltimeterAt = nil
+      lastPersistedRelativeAltitudeM = nil
       currentSessionID = nil
       currentMode = nil
       isPaused = false
@@ -584,34 +628,43 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     return sequence
   }
 
+  private func appendObservation(location: CLLocation, recordedAt: Date) {
+    guard let spool else { return }
+    sequence += 1
+    let observation = OpenOutdoorSpoolObservation(
+      sequence: sequence,
+      recordedAt: recordedAt,
+      longitude: location.coordinate.longitude,
+      latitude: location.coordinate.latitude,
+      horizontalAccuracyM: location.horizontalAccuracy,
+      verticalAccuracyM: location.verticalAccuracy >= 0 ? location.verticalAccuracy : nil,
+      altitudeM: location.altitude,
+      pressureKPa: currentPressureKPa,
+      relativeAltitudeM: currentRelativeAltitudeM,
+      segment: segment,
+      paused: false
+    )
+    do {
+      try spool.append(observation)
+    } catch {
+      lastError = error.localizedDescription
+      stopSensors()
+      try? spool.close(clearManifest: false)
+      self.spool = nil
+      currentPressureKPa = nil
+      currentRelativeAltitudeM = nil
+      latestLocation = nil
+      currentSessionID = nil
+      currentMode = nil
+      isPaused = false
+    }
+  }
+
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     for location in locations where location.horizontalAccuracy >= 0 {
       if location.horizontalAccuracy > 50 { observedWeakGPS = true }
-      sequence += 1
-      let observation = OpenOutdoorSpoolObservation(
-        sequence: sequence,
-        recordedAt: location.timestamp,
-        longitude: location.coordinate.longitude,
-        latitude: location.coordinate.latitude,
-        horizontalAccuracyM: location.horizontalAccuracy,
-        verticalAccuracyM: location.verticalAccuracy >= 0 ? location.verticalAccuracy : nil,
-        altitudeM: location.altitude,
-        pressureKPa: currentPressureKPa,
-        segment: segment,
-        paused: false
-      )
-      do {
-        try spool?.append(observation)
-      } catch {
-        lastError = error.localizedDescription
-        stopSensors()
-        try? spool?.close(clearManifest: false)
-        spool = nil
-        currentPressureKPa = nil
-        currentSessionID = nil
-        currentMode = nil
-        isPaused = false
-      }
+      latestLocation = location
+      appendObservation(location: location, recordedAt: location.timestamp)
     }
   }
 
@@ -623,6 +676,8 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
       try? spool?.close(clearManifest: false)
       spool = nil
       currentPressureKPa = nil
+      currentRelativeAltitudeM = nil
+      latestLocation = nil
       currentSessionID = nil
       currentMode = nil
       isPaused = false

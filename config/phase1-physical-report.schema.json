@@ -10,6 +10,8 @@
     "status",
     "stage",
     "deviceClass",
+    "deviceModelIdentifier",
+    "sourceCommit",
     "systemName",
     "systemVersion",
     "bundleIdentifier",
@@ -32,8 +34,12 @@
     "profileId": { "const": "iphone14-ios26.6-phase1-v1" },
     "generatedAt": { "$ref": "#/$defs/instant" },
     "status": { "enum": ["not-started", "in-progress", "failed", "passed"] },
-    "stage": { "enum": ["idle", "crash", "permission", "field", "accessibility", "complete"] },
+    "stage": {
+      "enum": ["idle", "crash", "permission", "field", "elevation", "accessibility", "complete"]
+    },
     "deviceClass": { "type": "string", "minLength": 1 },
+    "deviceModelIdentifier": { "const": "iPhone14,7" },
+    "sourceCommit": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
     "systemName": { "type": "string", "minLength": 1 },
     "systemVersion": { "type": "string", "minLength": 1 },
     "bundleIdentifier": { "type": "string", "minLength": 1 },

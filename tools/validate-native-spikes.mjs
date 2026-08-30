@@ -67,6 +67,9 @@ requireText(tracker, 'CMAltimeter', 'tracker');
 requireText(tracker, 'completeUntilFirstUserAuthentication', 'tracker');
 requireText(tracker, 'try fileHandle.synchronize()', 'tracker');
 requireText(tracker, 'segment += 1', 'Phase 1 native batch bridge');
+requireText(tracker, 'relativeAltitudeM', 'Phase 1 barometer bridge');
+requireText(tracker, 'altimeterPersistenceInterval', 'Phase 1 barometer persistence');
+requireText(tracker, 'appendObservation(location:', 'Phase 1 barometer persistence');
 requireText(tracker, 'verticalAccuracyM', 'Phase 1 native batch bridge');
 requireText(tracker, 'batchJSON(afterSequence:', 'Phase 1 native batch bridge');
 requireText(tracker, 'OpenOutdoorTrackingBatchPayload', 'Phase 1 native batch bridge');
@@ -141,6 +144,10 @@ for (const functionName of [
   'beginPhase1FieldRun',
   'recordPhase1FieldResult',
   'confirmPhase1Accessibility',
+  'beginPhase1ElevationRetry',
+  'recordPhase1ElevationRetry',
+  'retryPhase1Accessibility',
+  'recordPhase1AccessibilityControl',
   'resetPhase1Acceptance',
   'sharePhase1AcceptanceReport',
 ]) {
@@ -212,6 +219,11 @@ for (const token of [
   'UIAccessibility.isVoiceOverRunning',
   'shouldDifferentiateWithoutColor',
   'phase1-physical-report.json',
+  'accessibilityControls',
+  'elevation-retry-started',
+  'Still required:',
+  'deviceModelIdentifier',
+  'OpenOutdoorSourceCommit',
 ]) {
   requireText(phase1Acceptance, token, 'guided Phase 1 acceptance coordinator');
 }
@@ -221,6 +233,11 @@ for (const token of [
   'Begin combined 30-minute field run',
   'Accessibility flow is usable',
   'Export consolidated acceptance report',
+  'Retry elevation climb only',
+  'Retry accessibility only',
+  'Start accessibility test recording',
+  'Pause accessibility test recording',
+  'Finish accessibility test recording',
   'operationInFlight.current',
   'combined-field-run-finished',
   'isMemoryProfileActive',
@@ -236,6 +253,7 @@ for (const token of [
   'Discard interrupted recording',
   'Alert.alert',
   'minHeight: 52',
+  'useWindowDimensions',
   'no turn instructions, rerouting, or',
 ]) {
   requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
@@ -286,3 +304,4 @@ if (!info.UIBackgroundModes.includes('location')) {
 }
 
 console.log('native tracker/storage spike contract is valid');
+requireText(iosBuildScript, 'OpenOutdoorSourceCommit', 'iOS build source binding');

@@ -2,7 +2,15 @@ import { StatusBar } from 'expo-status-bar';
 import type { AppSection } from '@open-outdoor/shared';
 import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import {
   nativeSpikes,
   type NativeTrackingInspection,
@@ -65,6 +73,7 @@ function AccessibleButton({
 }
 
 export default function App() {
+  const { fontScale } = useWindowDimensions();
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
   const [section, setSection] = useState<AppSection>('track');
   const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
@@ -155,18 +164,20 @@ export default function App() {
     }
   }
 
-  async function start(): Promise<void> {
+  async function start(): Promise<boolean> {
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       const activity = await application.recorder.start(mode);
       setRecorderState('recording');
       setStatus('Recording ' + modeLabels[mode] + ' activity ' + activity.id + ' offline.');
+      return true;
     } catch (error) {
       setStatus('Start failed: ' + errorMessage(error));
+      return false;
     }
   }
 
-  async function pause(): Promise<void> {
+  async function pause(): Promise<boolean> {
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       await application.recorder.synchronize();
@@ -175,12 +186,14 @@ export default function App() {
       const sequence = state.kind === 'paused' ? state.highestCommittedSequence : 0;
       setRecorderState('paused');
       setStatus('Paused after durable sequence ' + sequence + '. Sensors are stopped.');
+      return true;
     } catch (error) {
       setStatus('Pause failed: ' + errorMessage(error));
+      return false;
     }
   }
 
-  async function resume(): Promise<void> {
+  async function resume(): Promise<boolean> {
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       await application.recorder.resume();
@@ -188,8 +201,10 @@ export default function App() {
       const sequence = state.kind === 'recording' ? state.highestCommittedSequence : 0;
       setRecorderState('recording');
       setStatus('Resumed from durable sequence ' + sequence + ' in a new segment.');
+      return true;
     } catch (error) {
       setStatus('Resume failed: ' + errorMessage(error));
+      return false;
     }
   }
 
@@ -347,7 +362,7 @@ export default function App() {
 
   const active = recorderState === 'recording' || recorderState === 'paused';
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.container} key={'font-scale-' + fontScale}>
       <Text accessibilityRole="header" style={styles.eyebrow}>
         Offline recorder alpha
       </Text>
@@ -493,6 +508,8 @@ export default function App() {
             enabled={application !== null}
             onFinish={finish}
             onMemoryProfileChange={setMemoryProfileActive}
+            onPause={pause}
+            onResume={resume}
             onRecover={recover}
             onStart={start}
             recorderState={recorderState}
@@ -587,7 +604,14 @@ const styles = StyleSheet.create({
   buttonDestructive: { borderColor: '#9b241b' },
   buttonDestructiveLabel: { color: '#7b1d15' },
   buttonDisabled: { opacity: 0.45 },
-  buttonLabel: { color: '#173d2b', fontSize: 17, fontWeight: '700', textAlign: 'center' },
+  buttonLabel: {
+    color: '#173d2b',
+    flexShrink: 1,
+    fontSize: 17,
+    fontWeight: '700',
+    textAlign: 'center',
+    width: '100%',
+  },
   buttonPressed: { backgroundColor: '#d8e6d8' },
   buttonSelected: { backgroundColor: '#cbe1cf', borderWidth: 3 },
   container: { backgroundColor: '#f3f1e8', flexGrow: 1, padding: 24 },

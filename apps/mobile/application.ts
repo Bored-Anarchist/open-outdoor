@@ -110,6 +110,9 @@ export class NativeTrackerAdapter implements ProductionTrackerAdapter {
             : { verticalAccuracyM: observation.verticalAccuracyM }),
           altitudeM: observation.altitudeM,
           ...(observation.pressureKPa === null ? {} : { pressureKPa: observation.pressureKPa }),
+          ...(observation.relativeAltitudeM === null
+            ? {}
+            : { relativeAltitudeM: observation.relativeAltitudeM }),
           segment: observation.segment,
           paused: observation.paused,
         })),

@@ -14,6 +14,8 @@ function passingReport() {
     status: 'passed',
     stage: 'complete',
     deviceClass: 'iPhone',
+    deviceModelIdentifier: 'iPhone14,7',
+    sourceCommit: 'b'.repeat(40),
     systemName: 'iOS',
     systemVersion: '26.6',
     bundleIdentifier: 'org.openoutdoor.local',
@@ -66,7 +68,7 @@ function passingReport() {
       },
       voiceOver: {
         passed: true,
-        checks: allTrue(['voiceOverRunning', 'usabilityConfirmed']),
+        checks: allTrue(['voiceOverRunning', 'controlsExercised', 'usabilityConfirmed']),
       },
       dynamicType: {
         passed: true,
@@ -74,6 +76,7 @@ function passingReport() {
           'largestAccessibilitySize',
           'boldText',
           'increasedContrast',
+          'controlsExercised',
           'differentiateWithoutColor',
           'reduceMotion',
           'darkMode',
@@ -94,6 +97,18 @@ describe('WP-109 guided physical evidence ingestion', () => {
     });
   });
 
+  it('accepts the sanctioned AltServer team suffix but rejects unrelated bundle identifiers', () => {
+    const signed = passingReport();
+    signed.bundleIdentifier = 'org.openoutdoor.local.24NWAUKHG4';
+    expect(evaluatePhase1PhysicalReport(signed)).toEqual({ status: 'passed', blockers: [] });
+
+    const unrelated = passingReport();
+    unrelated.bundleIdentifier = 'org.openoutdoor.local.attacker';
+    expect(evaluatePhase1PhysicalReport(unrelated).blockers).toContain(
+      'bundle identifier does not match the local acceptance build',
+    );
+  });
+
   it('rejects a self-declared pass when the binding memory threshold fails', () => {
     const report = passingReport();
     report.memory.p95ResidentBytes = 157_286_401;
@@ -105,6 +120,15 @@ describe('WP-109 guided physical evidence ingestion', () => {
     expect(evaluatePhase1PhysicalReport(report).blockers).toContain(
       'privacy: sensitive field $.coordinate',
     );
+  });
+
+  it('rejects the wrong device model or a report from another candidate commit', () => {
+    const wrongDevice = passingReport();
+    wrongDevice.deviceModelIdentifier = 'iPhone14,8';
+    expect(evaluatePhase1PhysicalReport(wrongDevice).status).toBe('blocked');
+    expect(
+      evaluatePhase1PhysicalReport(passingReport(), { sourceCommit: 'c'.repeat(40) }).status,
+    ).toBe('blocked');
   });
 
   it('prepares evidence statuses but preserves mandatory reviewer acceptance', () => {

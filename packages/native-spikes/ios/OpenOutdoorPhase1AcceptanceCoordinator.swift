@@ -1,5 +1,6 @@
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
 import CoreLocation
+import Darwin
 import Foundation
 import Network
 import UIKit
@@ -28,6 +29,7 @@ internal struct OpenOutdoorPhase1CheckResult: Codable {
 
 private struct OpenOutdoorPhase1AcceptanceState: Codable {
   var startedAt: Date
+  var sourceCommit: String?
   var updatedAt: Date
   var stage: String
   var referenceClimbM: Double
@@ -48,6 +50,7 @@ private struct OpenOutdoorPhase1AcceptanceState: Codable {
   var memory: OpenOutdoorMemoryReport?
   var measuredAscentM: Double?
   var accessibility: OpenOutdoorPhase1AccessibilitySnapshot?
+  var accessibilityControls: [String]?
   var accessibilityUsabilityConfirmed: Bool
   var events: [OpenOutdoorPhase1Event]
 }
@@ -59,6 +62,8 @@ internal struct OpenOutdoorPhase1AcceptanceReport: Codable {
   let status: String
   let stage: String
   let deviceClass: String
+  let deviceModelIdentifier: String
+  let sourceCommit: String
   let systemName: String
   let systemVersion: String
   let bundleIdentifier: String
@@ -274,6 +279,17 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
     }
   }
 
+  private func deviceModelIdentifier() -> String {
+    var systemInfo = utsname()
+    uname(&systemInfo)
+    return withUnsafeBytes(of: &systemInfo.machine) { rawBuffer in
+      guard let baseAddress = rawBuffer.bindMemory(to: CChar.self).baseAddress else {
+        return "unknown"
+      }
+      return String(cString: baseAddress)
+    }
+  }
+
   private func accessibilitySnapshot() -> OpenOutdoorPhase1AccessibilitySnapshot {
     let traitCollection = UIApplication.shared.connectedScenes
       .compactMap { $0 as? UIWindowScene }
@@ -350,6 +366,7 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
     let now = Date()
     state = OpenOutdoorPhase1AcceptanceState(
       startedAt: now,
+      sourceCommit: Bundle.main.object(forInfoDictionaryKey: "OpenOutdoorSourceCommit") as? String,
       updatedAt: now,
       stage: "crash",
       referenceClimbM: referenceClimbM,
@@ -370,6 +387,7 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
       memory: nil,
       measuredAscentM: nil,
       accessibility: nil,
+      accessibilityControls: nil,
       accessibilityUsabilityConfirmed: false,
       events: [OpenOutdoorPhase1Event(kind: "acceptance-started", recordedAt: now, detail: nil)]
     )
@@ -471,10 +489,110 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
     state.memory = memory
     state.measuredAscentM = measuredAscentM
     state.weakGPSObserved = state.weakGPSObserved || tracker.observedWeakGPS
+    state.accessibilityControls = []
     state.stage = "accessibility"
     state.updatedAt = Date()
     state.events.append(
       OpenOutdoorPhase1Event(kind: "combined-field-run-finished", recordedAt: Date(), detail: nil)
+    )
+    self.state = state
+    try persist()
+    return try currentReportJSON()
+  }
+
+  func beginElevationRetry() throws -> String {
+    guard var state, state.stage == "complete", tracker.isTracking else {
+      throw NSError(
+        domain: "OpenOutdoorPhase1Acceptance",
+        code: 7,
+        userInfo: [NSLocalizedDescriptionKey: "A completed acceptance and active recording are required"]
+      )
+    }
+    state.stage = "elevation"
+    state.measuredAscentM = nil
+    state.accessibility = nil
+    state.accessibilityControls = []
+    state.accessibilityUsabilityConfirmed = false
+    state.updatedAt = Date()
+    state.events.append(
+      OpenOutdoorPhase1Event(kind: "elevation-retry-started", recordedAt: Date(), detail: nil)
+    )
+    self.state = state
+    try persist()
+    return try currentReportJSON()
+  }
+
+  func recordElevationRetry(_ measuredAscentM: Double) throws -> String {
+    guard measuredAscentM.isFinite && measuredAscentM >= 0 else {
+      throw NSError(
+        domain: "OpenOutdoorPhase1Acceptance",
+        code: 8,
+        userInfo: [NSLocalizedDescriptionKey: "Measured ascent is invalid"]
+      )
+    }
+    guard var state, state.stage == "elevation" else {
+      throw NSError(
+        domain: "OpenOutdoorPhase1Acceptance",
+        code: 9,
+        userInfo: [NSLocalizedDescriptionKey: "Begin the targeted elevation retry first"]
+      )
+    }
+    state.measuredAscentM = measuredAscentM
+    state.stage = "accessibility"
+    state.accessibility = nil
+    state.accessibilityControls = []
+    state.accessibilityUsabilityConfirmed = false
+    state.updatedAt = Date()
+    state.events.append(
+      OpenOutdoorPhase1Event(kind: "elevation-retry-finished", recordedAt: Date(), detail: nil)
+    )
+    self.state = state
+    try persist()
+    return try currentReportJSON()
+  }
+
+  func retryAccessibility() throws -> String {
+    guard var state, state.stage == "complete" else {
+      throw NSError(
+        domain: "OpenOutdoorPhase1Acceptance",
+        code: 10,
+        userInfo: [NSLocalizedDescriptionKey: "Complete the acceptance before retrying accessibility"]
+      )
+    }
+    state.stage = "accessibility"
+    state.accessibility = nil
+    state.accessibilityControls = []
+    state.accessibilityUsabilityConfirmed = false
+    state.updatedAt = Date()
+    state.events.append(
+      OpenOutdoorPhase1Event(kind: "accessibility-retry-started", recordedAt: Date(), detail: nil)
+    )
+    self.state = state
+    try persist()
+    return try currentReportJSON()
+  }
+
+  func recordAccessibilityControl(_ action: String) throws -> String {
+    guard var state, state.stage == "accessibility" else {
+      throw NSError(
+        domain: "OpenOutdoorPhase1Acceptance",
+        code: 11,
+        userInfo: [NSLocalizedDescriptionKey: "Complete the field run before testing controls"]
+      )
+    }
+    let expected = ["start", "pause", "resume", "finish"]
+    let completed = state.accessibilityControls ?? []
+    guard completed.count < expected.count, action == expected[completed.count] else {
+      throw NSError(
+        domain: "OpenOutdoorPhase1Acceptance",
+        code: 12,
+        userInfo: [NSLocalizedDescriptionKey: "Exercise Start, Pause, Resume, and Finish in order"]
+      )
+    }
+    state.accessibilityControls = completed + [action]
+    state.updatedAt = Date()
+    state.events.append(
+      OpenOutdoorPhase1Event(kind: "accessibility-control-" + action, recordedAt: Date(), detail: nil)
     )
     self.state = state
     try persist()
@@ -489,7 +607,28 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
         userInfo: [NSLocalizedDescriptionKey: "Complete the combined field run first"]
       )
     }
-    state.accessibility = accessibilitySnapshot()
+    let snapshot = accessibilitySnapshot()
+    if usable {
+      var missing: [String] = []
+      if !snapshot.voiceOverRunning { missing.append("VoiceOver") }
+      if !snapshot.largestAccessibilitySize { missing.append("largest Dynamic Type") }
+      if !snapshot.boldTextEnabled { missing.append("Bold Text") }
+      if !snapshot.increasedContrastEnabled { missing.append("Increase Contrast") }
+      if !snapshot.differentiateWithoutColorEnabled { missing.append("Differentiate Without Color") }
+      if !snapshot.reduceMotionEnabled { missing.append("Reduce Motion") }
+      if !snapshot.darkModeEnabled { missing.append("dark mode") }
+      if state.accessibilityControls != ["start", "pause", "resume", "finish"] {
+        missing.append("Start/Pause/Resume/Finish")
+      }
+      guard missing.isEmpty else {
+        throw NSError(
+          domain: "OpenOutdoorPhase1Acceptance",
+          code: 13,
+          userInfo: [NSLocalizedDescriptionKey: "Still required: " + missing.joined(separator: ", ")]
+        )
+      }
+    }
+    state.accessibility = snapshot
     state.accessibilityUsabilityConfirmed = usable
     state.stage = "complete"
     state.updatedAt = Date()
@@ -530,8 +669,10 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
       "nativeResult": state.memory?.passed == true,
     ]
     let accessibility = state.accessibility
+    let controlsExercised = state.accessibilityControls == ["start", "pause", "resume", "finish"]
     let voiceOverChecks = [
       "voiceOverRunning": accessibility?.voiceOverRunning == true,
+      "controlsExercised": controlsExercised,
       "usabilityConfirmed": state.accessibilityUsabilityConfirmed,
     ]
     let dynamicTypeChecks = [
@@ -541,6 +682,7 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
       "differentiateWithoutColor": accessibility?.differentiateWithoutColorEnabled == true,
       "reduceMotion": accessibility?.reduceMotionEnabled == true,
       "darkMode": accessibility?.darkModeEnabled == true,
+      "controlsExercised": controlsExercised,
       "usabilityConfirmed": state.accessibilityUsabilityConfirmed,
     ]
     let allowedElevationError = max(15, state.referenceClimbM * 0.10)
@@ -584,6 +726,8 @@ internal final class OpenOutdoorPhase1AcceptanceCoordinator {
       status: status,
       stage: currentState?.stage ?? "idle",
       deviceClass: UIDevice.current.model,
+      deviceModelIdentifier: deviceModelIdentifier(),
+      sourceCommit: currentState?.sourceCommit ?? "unknown",
       systemName: UIDevice.current.systemName,
       systemVersion: UIDevice.current.systemVersion,
       bundleIdentifier: Bundle.main.bundleIdentifier ?? "unknown",

@@ -15,6 +15,7 @@ export interface NativeTrackingBatch {
     readonly verticalAccuracyM: number | null;
     readonly altitudeM: number;
     readonly pressureKPa: number | null;
+    readonly relativeAltitudeM: number | null;
     readonly segment: number;
     readonly paused: boolean;
   }[];
@@ -97,8 +98,11 @@ export interface Phase1AcceptanceReport {
   readonly profileId: 'iphone14-ios26.6-phase1-v1';
   readonly generatedAt: string;
   readonly status: 'not-started' | 'in-progress' | 'failed' | 'passed';
-  readonly stage: 'idle' | 'crash' | 'permission' | 'field' | 'accessibility' | 'complete';
+  readonly stage:
+    'idle' | 'crash' | 'permission' | 'field' | 'elevation' | 'accessibility' | 'complete';
   readonly deviceClass: string;
+  readonly deviceModelIdentifier: string;
+  readonly sourceCommit: string;
   readonly systemName: string;
   readonly systemVersion: string;
   readonly bundleIdentifier: string;
@@ -185,6 +189,10 @@ interface OpenOutdoorNativeSpikesModule {
     memoryReportJson: string,
     measuredAscentM: number,
   ) => Promise<string>;
+  readonly beginPhase1ElevationRetry: () => Promise<string>;
+  readonly recordPhase1ElevationRetry: (measuredAscentM: number) => Promise<string>;
+  readonly retryPhase1Accessibility: () => Promise<string>;
+  readonly recordPhase1AccessibilityControl: (action: string) => Promise<string>;
   readonly confirmPhase1Accessibility: (usable: boolean) => Promise<string>;
   readonly resetPhase1Acceptance: () => Promise<string>;
   readonly sharePhase1AcceptanceReport: () => Promise<string>;
@@ -283,6 +291,18 @@ export const nativeSpikes = {
   ): Promise<Phase1AcceptanceReport> =>
     parseJson<Phase1AcceptanceReport>(
       await requiredModule().recordPhase1FieldResult(JSON.stringify(memoryReport), measuredAscentM),
+    ),
+  beginPhase1ElevationRetry: async (): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().beginPhase1ElevationRetry()),
+  recordPhase1ElevationRetry: async (measuredAscentM: number): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(
+      await requiredModule().recordPhase1ElevationRetry(measuredAscentM),
+    ),
+  retryPhase1Accessibility: async (): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(await requiredModule().retryPhase1Accessibility()),
+  recordPhase1AccessibilityControl: async (action: string): Promise<Phase1AcceptanceReport> =>
+    parseJson<Phase1AcceptanceReport>(
+      await requiredModule().recordPhase1AccessibilityControl(action),
     ),
   confirmPhase1Accessibility: async (usable: boolean): Promise<Phase1AcceptanceReport> =>
     parseJson<Phase1AcceptanceReport>(await requiredModule().confirmPhase1Accessibility(usable)),

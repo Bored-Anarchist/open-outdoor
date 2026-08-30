@@ -17,6 +17,7 @@ const REQUIRED_TRACKER_CHECKS = [
   'weakGPSObserved',
   'explicitStopObserved',
 ];
+const LOCAL_ACCEPTANCE_BUNDLE = /^org\.openoutdoor\.local(?:\.[A-Z0-9]{10})?$/;
 
 const SENSITIVE_KEYS = new Set([
   'coordinate',
@@ -51,7 +52,7 @@ function requireTrueChecks(blockers, report, resultName, checkNames) {
   }
 }
 
-export function evaluatePhase1PhysicalReport(report) {
+export function evaluatePhase1PhysicalReport(report, options = {}) {
   const blockers = [];
   if (report?.schemaVersion !== 1) blockers.push('schemaVersion must be 1');
   if (report?.profileId !== 'iphone14-ios26.6-phase1-v1') {
@@ -60,8 +61,17 @@ export function evaluatePhase1PhysicalReport(report) {
   if (report?.systemName !== 'iOS' || report?.systemVersion !== '26.6') {
     blockers.push('report was not captured on the pinned iOS 26.6 environment');
   }
-  if (report?.bundleIdentifier !== 'org.openoutdoor.local') {
+  if (!LOCAL_ACCEPTANCE_BUNDLE.test(report?.bundleIdentifier ?? '')) {
     blockers.push('bundle identifier does not match the local acceptance build');
+  }
+  if (report?.deviceModelIdentifier !== 'iPhone14,7') {
+    blockers.push('device model does not match the pinned iPhone 14');
+  }
+  if (!/^[0-9a-f]{40}$/i.test(report?.sourceCommit ?? '')) {
+    blockers.push('source commit is missing or invalid');
+  }
+  if (options.sourceCommit !== undefined && report?.sourceCommit !== options.sourceCommit) {
+    blockers.push('report source commit does not match the evaluated candidate');
   }
   if (report?.stage !== 'complete') blockers.push('guided acceptance is not complete');
 
@@ -89,7 +99,11 @@ export function evaluatePhase1PhysicalReport(report) {
   if (accessibility?.voiceOverRunning !== true) {
     blockers.push('voiceOver.voiceOverRunning: VoiceOver was not detected');
   }
-  requireTrueChecks(blockers, report, 'voiceOver', ['voiceOverRunning', 'usabilityConfirmed']);
+  requireTrueChecks(blockers, report, 'voiceOver', [
+    'voiceOverRunning',
+    'controlsExercised',
+    'usabilityConfirmed',
+  ]);
 
   const dynamicChecks = {
     largestAccessibilitySize: accessibility?.largestAccessibilitySize === true,
@@ -109,6 +123,7 @@ export function evaluatePhase1PhysicalReport(report) {
     'differentiateWithoutColor',
     'reduceMotion',
     'darkMode',
+    'controlsExercised',
     'usabilityConfirmed',
   ]);
 
@@ -144,7 +159,7 @@ export function evaluatePhase1PhysicalReport(report) {
 }
 
 export function createPhase1EvidenceProposal(report, options) {
-  const evaluation = evaluatePhase1PhysicalReport(report);
+  const evaluation = evaluatePhase1PhysicalReport(report, { sourceCommit: options.sourceCommit });
   const evidencePath = options.evidencePath;
   const accepted = evaluation.status === 'passed';
   return {
