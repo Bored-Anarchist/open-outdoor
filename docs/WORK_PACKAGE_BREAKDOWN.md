@@ -65,6 +65,8 @@ Accountability, consulted roles, hardware profiles, and cost ownership are defin
 | `WP-108` | Fixture-backed offline map shell | M | WP-101 | Local style/assets, synthetic trail/POI/catalog, active route overlay | Explore and active recording work without network |
 | `WP-109` | Phase 1 physical/accessibility gate | L | WP-103–WP-108 | Tracker correctness and 30-minute memory smoke, VoiceOver/Dynamic Type evidence, elevation evidence | Current Phase 1 acceptance matrix passes on reference device; measured energy remains deferred |
 
+WP-109 execution uses a diagnostics-only persistent guided runner, a combined 30-minute memory/field run, one consolidated coordinate-free report, and fail-closed ingestion tooling. This changes the acceptance procedure, not its thresholds or downstream dependencies.
+
 ## 5. Phase 2 — connector framework and New York authoritative data
 
 | ID | Work package | Size | Depends on | Required outputs | Acceptance summary |

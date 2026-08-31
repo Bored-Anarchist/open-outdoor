@@ -20,9 +20,14 @@ const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diag
 const performanceDiagnostics = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase0PerformanceDiagnostics.swift',
 );
+const privateStore = await text('packages/native-spikes/ios/OpenOutdoorPrivateStore.swift');
+const phase1Acceptance = await text(
+  'packages/native-spikes/ios/OpenOutdoorPhase1AcceptanceCoordinator.swift',
+);
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
+const phase1Runner = await text('apps/mobile/Phase1AcceptanceRunner.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -56,10 +61,18 @@ requireText(
 );
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
 requireText(podspec, "'CoreLocation', 'CoreMotion'", 'podspec');
+requireText(podspec, "'Network'", 'podspec');
 requireText(tracker, 'allowsBackgroundLocationUpdates = true', 'tracker');
 requireText(tracker, 'CMAltimeter', 'tracker');
 requireText(tracker, 'completeUntilFirstUserAuthentication', 'tracker');
 requireText(tracker, 'try fileHandle.synchronize()', 'tracker');
+requireText(tracker, 'segment += 1', 'Phase 1 native batch bridge');
+requireText(tracker, 'relativeAltitudeM', 'Phase 1 barometer bridge');
+requireText(tracker, 'altimeterPersistenceInterval', 'Phase 1 barometer persistence');
+requireText(tracker, 'appendObservation(location:', 'Phase 1 barometer persistence');
+requireText(tracker, 'verticalAccuracyM', 'Phase 1 native batch bridge');
+requireText(tracker, 'batchJSON(afterSequence:', 'Phase 1 native batch bridge');
+requireText(tracker, 'OpenOutdoorTrackingBatchPayload', 'Phase 1 native batch bridge');
 for (const token of [
   'active-session.json',
   'tornFinalLineIgnored',
@@ -92,12 +105,20 @@ if (
   throw new Error('release configuration must retain the deferred energy-conscious tracker policy');
 }
 for (const functionName of [
+  'sealTrackingSession',
+  'loadPrivateSnapshot',
+  'commitPrivateSnapshot',
+  'commitTrackingSnapshot',
+  'trackingCheckpoint',
   'requestAlwaysAuthorization',
   'startTracking',
+  'pauseTracking',
+  'resumeTracking',
   'stopTracking',
   'isTracking',
   'currentSessionId',
   'lastTrackingError',
+  'readTrackingBatch',
   'inspectTrackingSession',
   'recoverTrackingSession',
   'discardRecoverableTrackingSession',
@@ -108,12 +129,30 @@ for (const functionName of [
 for (const functionName of [
   'recordAcknowledgementBenchmark',
   'beginMemoryProfile',
+  'isMemoryProfileActive',
   'finishMemoryProfile',
   'inspectTrackingProtection',
   'sharePhysicalDiagnosticReport',
 ]) {
   requireText(nativeModule, `AsyncFunction("${functionName}")`, 'physical diagnostics module');
   requireText(mobileBinding, `readonly ${functionName}`, 'physical diagnostics binding');
+}
+for (const functionName of [
+  'beginPhase1Acceptance',
+  'currentPhase1Acceptance',
+  'armPhase1CrashRecovery',
+  'beginPhase1FieldRun',
+  'recordPhase1FieldResult',
+  'confirmPhase1Accessibility',
+  'beginPhase1ElevationRetry',
+  'recordPhase1ElevationRetry',
+  'retryPhase1Accessibility',
+  'recordPhase1AccessibilityControl',
+  'resetPhase1Acceptance',
+  'sharePhase1AcceptanceReport',
+]) {
+  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'Phase 1 acceptance module');
+  requireText(mobileBinding, `readonly ${functionName}`, 'Phase 1 acceptance binding');
 }
 for (const token of [
   'mach_task_basic_info',
@@ -153,17 +192,72 @@ requireText(nativeModule, '.runOnQueue(.main)', 'native module');
 requireText(mobileBinding, 'requireOptionalNativeModule', 'startup-safe mobile native binding');
 requireText(mobileBinding, 'module !== null', 'startup-safe mobile native binding');
 requireText(mobileBinding, 'requiredModule()', 'startup-safe mobile native binding');
-requireText(mobileApp, 'Native startup check failed', 'mobile startup diagnostic UI');
+requireText(mobileApp, 'Native capability unavailable', 'mobile startup diagnostic UI');
 requireText(mobileApp, 'disabled={!nativeSpikes.available ||', 'mobile startup diagnostic UI');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
-requireText(mobileApp, 'Start native tracking', 'mobile feasibility UI');
-requireText(mobileApp, 'Stop native tracking', 'mobile feasibility UI');
-requireText(mobileApp, 'Recover interrupted session', 'mobile feasibility UI');
-requireText(mobileApp, 'Seed fixture version A', 'mobile feasibility UI');
-requireText(mobileApp, 'Share diagnostic JSON', 'mobile feasibility UI');
-requireText(mobileApp, 'Synthetic storage diagnostics unavailable', 'mobile feasibility UI');
+for (const token of [
+  'BEGIN IMMEDIATE',
+  'private_snapshot',
+  'tracking_checkpoint',
+  'migration_audit',
+  'PRAGMA user_version=3',
+  'ON CONFLICT(session_id)',
+  'ROLLBACK',
+]) {
+  requireText(privateStore, token, 'production private SQLite store');
+}
+requireText(tracker, 'observations.count >= 256', 'bounded native tracking batch');
+for (const token of [
+  'NWPathMonitor',
+  'didEnterBackgroundNotification',
+  'process-relaunched-after-crash-arm',
+  'permissionSafeStopObserved',
+  'minimumBackgroundSeconds = 30.0 * 60.0',
+  'memoryThresholdBytes: UInt64 = 150 * 1_024 * 1_024',
+  'UIAccessibility.isVoiceOverRunning',
+  'shouldDifferentiateWithoutColor',
+  'phase1-physical-report.json',
+  'accessibilityControls',
+  'elevation-retry-started',
+  'Still required:',
+  'deviceModelIdentifier',
+  'OpenOutdoorSourceCommit',
+]) {
+  requireText(phase1Acceptance, token, 'guided Phase 1 acceptance coordinator');
+}
+for (const token of [
+  'Begin guided acceptance',
+  'Start and arm crash test',
+  'Begin combined 30-minute field run',
+  'Accessibility flow is usable',
+  'Export consolidated acceptance report',
+  'Retry elevation climb only',
+  'Retry accessibility only',
+  'Start accessibility test recording',
+  'Pause accessibility test recording',
+  'Finish accessibility test recording',
+  'operationInFlight.current',
+  'combined-field-run-finished',
+  'isMemoryProfileActive',
+]) {
+  requireText(phase1Runner, token, 'guided Phase 1 acceptance UI');
+}
+for (const token of [
+  'Start recording',
+  'Pause recording',
+  'Resume recording',
+  'Finish and save recording',
+  'Recover interrupted recording',
+  'Discard interrupted recording',
+  'Alert.alert',
+  'minHeight: 52',
+  'useWindowDimensions',
+  'no turn instructions, rerouting, or',
+]) {
+  requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
+}
 requireText(nativeModule, 'OpenOutdoorPhase0DiagnosticsEnabled', 'native diagnostics gate');
 for (const token of [
   '#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS',
@@ -210,3 +304,4 @@ if (!info.UIBackgroundModes.includes('location')) {
 }
 
 console.log('native tracker/storage spike contract is valid');
+requireText(iosBuildScript, 'OpenOutdoorSourceCommit', 'iOS build source binding');

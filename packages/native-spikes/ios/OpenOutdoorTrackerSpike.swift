@@ -10,6 +10,8 @@ internal enum OpenOutdoorTrackingMode: String, Codable {
 
 internal enum OpenOutdoorTrackerError: LocalizedError {
   case alreadyTracking
+  case alreadyPaused
+  case notPaused
   case notTracking
   case recoverableSessionExists
   case noRecoverableSession
@@ -19,6 +21,10 @@ internal enum OpenOutdoorTrackerError: LocalizedError {
     switch self {
     case .alreadyTracking:
       return "A tracking session is already active"
+    case .alreadyPaused:
+      return "The tracking session is already paused"
+    case .notPaused:
+      return "The tracking session is not paused"
     case .notTracking:
       return "No tracking session is active"
     case .recoverableSessionExists:
@@ -37,8 +43,33 @@ private struct OpenOutdoorSpoolObservation: Codable {
   let longitude: Double
   let latitude: Double
   let horizontalAccuracyM: Double
+  let verticalAccuracyM: Double?
   let altitudeM: Double
   let pressureKPa: Double?
+  let relativeAltitudeM: Double?
+  let segment: Int?
+  let paused: Bool?
+}
+
+private struct OpenOutdoorBridgeObservation: Codable {
+  let sequence: Int64
+  let coordinate: [Double]
+  let recordedAt: Date
+  let horizontalAccuracyM: Double
+  let verticalAccuracyM: Double?
+  let altitudeM: Double
+  let pressureKPa: Double?
+  let relativeAltitudeM: Double?
+  let segment: Int
+  let paused: Bool
+}
+
+private struct OpenOutdoorTrackingBatchPayload: Codable {
+  let sessionId: String
+  let mode: String
+  let firstSequence: Int64
+  let createdAt: Date
+  let observations: [OpenOutdoorBridgeObservation]
 }
 
 private struct OpenOutdoorActiveSessionManifest: Codable {
@@ -54,6 +85,7 @@ internal struct OpenOutdoorTrackingInspection: Codable {
   let mode: String
   let highestSequence: Int64
   let validObservationCount: Int
+  let highestSegment: Int
   let tornFinalLineIgnored: Bool
   let spoolFileName: String
   let recording: Bool
@@ -149,6 +181,7 @@ private final class OpenOutdoorActiveSpool {
     let lines = data.split(separator: 0x0A, omittingEmptySubsequences: true)
     var expectedSequence: Int64 = 1
     var validCount = 0
+    var highestSegment = 1
     var tornFinalLineIgnored = false
 
     for (index, line) in lines.enumerated() {
@@ -164,6 +197,7 @@ private final class OpenOutdoorActiveSpool {
         }
         expectedSequence += 1
         validCount += 1
+        highestSegment = max(highestSegment, observation.segment ?? 1)
       } catch {
         if index == lines.count - 1 && !endsInNewline {
           tornFinalLineIgnored = true
@@ -183,6 +217,7 @@ private final class OpenOutdoorActiveSpool {
       mode: manifest.mode.rawValue,
       highestSequence: Int64(validCount),
       validObservationCount: validCount,
+      highestSegment: highestSegment,
       tornFinalLineIgnored: tornFinalLineIgnored,
       spoolFileName: manifest.spoolFileName,
       recording: recording
@@ -239,6 +274,63 @@ private final class OpenOutdoorActiveSpool {
     return try inspect(manifest: manifest, directory: directory, recording: recording)
   }
 
+  static func batchJSON(afterSequence: Int64) throws -> String? {
+    guard afterSequence >= 0 else {
+      throw OpenOutdoorTrackerError.invalidSpool("committed sequence cannot be negative")
+    }
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else {
+      throw OpenOutdoorTrackerError.noRecoverableSession
+    }
+    let spoolURL = directory.appendingPathComponent(manifest.spoolFileName)
+    let data = try Data(contentsOf: spoolURL)
+    let endsInNewline = data.isEmpty || data.last == 0x0A
+    let lines = data.split(separator: 0x0A, omittingEmptySubsequences: true)
+    var observations: [OpenOutdoorBridgeObservation] = []
+    for (index, line) in lines.enumerated() {
+      do {
+        let observation = try JSONDecoder().decode(
+          OpenOutdoorSpoolObservation.self,
+          from: Data(line)
+        )
+        if observation.sequence > afterSequence {
+          observations.append(
+            OpenOutdoorBridgeObservation(
+              sequence: observation.sequence,
+              coordinate: [observation.longitude, observation.latitude],
+              recordedAt: observation.recordedAt,
+              horizontalAccuracyM: observation.horizontalAccuracyM,
+              verticalAccuracyM: observation.verticalAccuracyM,
+              altitudeM: observation.altitudeM,
+              pressureKPa: observation.pressureKPa,
+              relativeAltitudeM: observation.relativeAltitudeM,
+              segment: observation.segment ?? 1,
+              paused: observation.paused ?? false
+            )
+          )
+          if observations.count >= 256 { break }
+        }
+      } catch {
+        if index == lines.count - 1 && !endsInNewline { break }
+        throw OpenOutdoorTrackerError.invalidSpool(
+          "observation \(index + 1) cannot be decoded for batch delivery"
+        )
+      }
+    }
+    guard let first = observations.first else { return nil }
+    let payload = OpenOutdoorTrackingBatchPayload(
+      sessionId: manifest.sessionID.uuidString,
+      mode: manifest.mode.rawValue,
+      firstSequence: first.sequence,
+      createdAt: Date(),
+      observations: observations
+    )
+    let encoder = JSONEncoder()
+    encoder.dateEncodingStrategy = .iso8601
+    encoder.outputFormatting = [.sortedKeys]
+    return String(decoding: try encoder.encode(payload), as: UTF8.self)
+  }
+
   static func activePolicyReport() throws -> OpenOutdoorTrackingPolicyReport {
     let directory = try activeDirectory()
     guard let manifest = try readManifest(in: directory) else {
@@ -283,8 +375,21 @@ private final class OpenOutdoorActiveSpool {
       throw OpenOutdoorTrackerError.noRecoverableSession
     }
     let inspection = try inspect(manifest: manifest, directory: directory, recording: false)
+    try FileManager.default.removeItem(at: directory.appendingPathComponent(manifest.spoolFileName))
     try FileManager.default.removeItem(at: manifestURL(in: directory))
     return inspection
+  }
+  static func seal(sessionID: String, throughSequence: Int64) throws {
+    let directory = try activeDirectory()
+    guard let manifest = try readManifest(in: directory) else {
+      throw OpenOutdoorTrackerError.noRecoverableSession
+    }
+    let inspection = try inspect(manifest: manifest, directory: directory, recording: false)
+    guard manifest.sessionID.uuidString == sessionID, inspection.highestSequence == throughSequence else {
+      throw OpenOutdoorTrackerError.invalidSpool("seal checkpoint does not cover the complete session")
+    }
+    try FileManager.default.removeItem(at: directory.appendingPathComponent(manifest.spoolFileName))
+    try FileManager.default.removeItem(at: manifestURL(in: directory))
   }
 
   func append(_ observation: OpenOutdoorSpoolObservation) throws {
@@ -311,14 +416,24 @@ private final class OpenOutdoorActiveSpool {
 }
 
 internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegate {
+  private static let altimeterPersistenceInterval: TimeInterval = 5
+  private static let altimeterPersistenceDeltaM = 0.5
+
   private let locationManager = CLLocationManager()
   private let altimeter = CMAltimeter()
   private var spool: OpenOutdoorActiveSpool?
   private var sequence: Int64 = 0
   private var currentPressureKPa: Double?
+  private var currentRelativeAltitudeM: Double?
+  private var latestLocation: CLLocation?
+  private var lastPersistedAltimeterAt: Date?
+  private var lastPersistedRelativeAltitudeM: Double?
+  private var segment = 1
   private(set) var currentSessionID: UUID?
   private(set) var currentMode: OpenOutdoorTrackingMode?
+  private(set) var isPaused = false
   private(set) var lastError: String?
+  private(set) var observedWeakGPS = false
 
   var isTracking: Bool {
     spool != nil
@@ -349,6 +464,11 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   }
 
   private func startSensors(mode: OpenOutdoorTrackingMode) {
+    currentPressureKPa = nil
+    currentRelativeAltitudeM = nil
+    lastPersistedAltimeterAt = nil
+    lastPersistedRelativeAltitudeM = nil
+    isPaused = false
     switch mode {
     case .endurance:
       locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
@@ -363,10 +483,39 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
 
     locationManager.startUpdatingLocation()
     if CMAltimeter.isRelativeAltitudeAvailable() {
-      altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, _ in
-        self?.currentPressureKPa = data?.pressure.doubleValue
+      altimeter.startRelativeAltitudeUpdates(to: .main) { [weak self] data, error in
+        guard let self else { return }
+        if let error {
+          self.lastError = error.localizedDescription
+          return
+        }
+        guard let data else { return }
+        let now = Date()
+        let relativeAltitudeM = data.relativeAltitude.doubleValue
+        self.currentPressureKPa = data.pressure.doubleValue
+        self.currentRelativeAltitudeM = relativeAltitudeM
+        guard let latestLocation = self.latestLocation, self.spool != nil, !self.isPaused else {
+          return
+        }
+        let timeDue =
+          self.lastPersistedAltimeterAt.map {
+            now.timeIntervalSince($0) >= Self.altimeterPersistenceInterval
+          } ?? true
+        let altitudeDue =
+          self.lastPersistedRelativeAltitudeM.map {
+            abs(relativeAltitudeM - $0) >= Self.altimeterPersistenceDeltaM
+          } ?? true
+        guard timeDue || altitudeDue else { return }
+        self.lastPersistedAltimeterAt = now
+        self.lastPersistedRelativeAltitudeM = relativeAltitudeM
+        self.appendObservation(location: latestLocation, recordedAt: now)
       }
     }
+  }
+
+  private func stopSensors() {
+    locationManager.stopUpdatingLocation()
+    altimeter.stopRelativeAltitudeUpdates()
   }
 
   func requestAlwaysAuthorization() {
@@ -376,9 +525,12 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   func start(mode: OpenOutdoorTrackingMode, sessionID: UUID = UUID()) throws -> String {
     guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
     try requireAlwaysAuthorization()
+    latestLocation = nil
 
     sequence = 0
+    segment = 1
     lastError = nil
+    observedWeakGPS = false
     spool = try OpenOutdoorActiveSpool(sessionID: sessionID, mode: mode)
     currentSessionID = sessionID
     currentMode = mode
@@ -400,6 +552,10 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     return try OpenOutdoorActiveSpool.latestInspection()?.json()
   }
 
+  func readBatch(afterSequence: Int64) throws -> String? {
+    try OpenOutdoorActiveSpool.batchJSON(afterSequence: afterSequence)
+  }
+
   func inspectActiveFilePolicy() throws -> OpenOutdoorTrackingPolicyReport {
     guard isTracking else {
       throw OpenOutdoorTrackerError.notTracking
@@ -410,13 +566,16 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   func recover() throws -> String {
     guard spool == nil else { throw OpenOutdoorTrackerError.alreadyTracking }
     try requireAlwaysAuthorization()
+    latestLocation = nil
 
     let recovered = try OpenOutdoorActiveSpool.recover()
     spool = recovered.0
     sequence = recovered.1.highestSequence
+    segment = recovered.1.highestSegment + 1
     currentSessionID = UUID(uuidString: recovered.1.sessionId)
     currentMode = recovered.2
     lastError = nil
+    observedWeakGPS = false
     startSensors(mode: recovered.2)
     return try recovered.1.json()
   }
@@ -426,18 +585,42 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     return try OpenOutdoorActiveSpool.discardRecovery().json()
   }
 
+  func seal(sessionID: String, throughSequence: Int64) throws {
+    try OpenOutdoorActiveSpool.seal(sessionID: sessionID, throughSequence: throughSequence)
+  }
+
+  func pause() throws -> Int64 {
+    guard spool != nil else { throw OpenOutdoorTrackerError.notTracking }
+    guard !isPaused else { throw OpenOutdoorTrackerError.alreadyPaused }
+    stopSensors()
+    isPaused = true
+    return sequence
+  }
+
+  func resume() throws -> Int64 {
+    guard spool != nil, let currentMode else { throw OpenOutdoorTrackerError.notTracking }
+    guard isPaused else { throw OpenOutdoorTrackerError.notPaused }
+    segment += 1
+    startSensors(mode: currentMode)
+    return sequence
+  }
+
   func stop() throws -> Int64 {
     guard spool != nil else { throw OpenOutdoorTrackerError.notTracking }
-    locationManager.stopUpdatingLocation()
-    altimeter.stopRelativeAltitudeUpdates()
+    stopSensors()
     defer {
       spool = nil
       currentPressureKPa = nil
+      currentRelativeAltitudeM = nil
+      latestLocation = nil
+      lastPersistedAltimeterAt = nil
+      lastPersistedRelativeAltitudeM = nil
       currentSessionID = nil
       currentMode = nil
+      isPaused = false
     }
     do {
-      try spool?.close(clearManifest: true)
+      try spool?.close(clearManifest: false)
     } catch {
       lastError = error.localizedDescription
       throw error
@@ -445,30 +628,69 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
     return sequence
   }
 
+  private func appendObservation(location: CLLocation, recordedAt: Date) {
+    guard let spool else { return }
+    sequence += 1
+    let observation = OpenOutdoorSpoolObservation(
+      sequence: sequence,
+      recordedAt: recordedAt,
+      longitude: location.coordinate.longitude,
+      latitude: location.coordinate.latitude,
+      horizontalAccuracyM: location.horizontalAccuracy,
+      verticalAccuracyM: location.verticalAccuracy >= 0 ? location.verticalAccuracy : nil,
+      altitudeM: location.altitude,
+      pressureKPa: currentPressureKPa,
+      relativeAltitudeM: currentRelativeAltitudeM,
+      segment: segment,
+      paused: false
+    )
+    do {
+      try spool.append(observation)
+    } catch {
+      lastError = error.localizedDescription
+      stopSensors()
+      try? spool.close(clearManifest: false)
+      self.spool = nil
+      currentPressureKPa = nil
+      currentRelativeAltitudeM = nil
+      latestLocation = nil
+      currentSessionID = nil
+      currentMode = nil
+      isPaused = false
+    }
+  }
+
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     for location in locations where location.horizontalAccuracy >= 0 {
-      sequence += 1
-      let observation = OpenOutdoorSpoolObservation(
-        sequence: sequence,
-        recordedAt: location.timestamp,
-        longitude: location.coordinate.longitude,
-        latitude: location.coordinate.latitude,
-        horizontalAccuracyM: location.horizontalAccuracy,
-        altitudeM: location.altitude,
-        pressureKPa: currentPressureKPa
-      )
-      do {
-        try spool?.append(observation)
-      } catch {
-        lastError = error.localizedDescription
-        manager.stopUpdatingLocation()
-        altimeter.stopRelativeAltitudeUpdates()
-        try? spool?.close(clearManifest: false)
-        spool = nil
-        currentPressureKPa = nil
-        currentSessionID = nil
-        currentMode = nil
-      }
+      if location.horizontalAccuracy > 50 { observedWeakGPS = true }
+      latestLocation = location
+      appendObservation(location: location, recordedAt: location.timestamp)
     }
+  }
+
+  func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    guard isTracking else { return }
+    guard manager.authorizationStatus == .authorizedAlways else {
+      lastError = "Always location authorization was lost during recording"
+      stopSensors()
+      try? spool?.close(clearManifest: false)
+      spool = nil
+      currentPressureKPa = nil
+      currentRelativeAltitudeM = nil
+      latestLocation = nil
+      currentSessionID = nil
+      currentMode = nil
+      isPaused = false
+      return
+    }
+  }
+
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    lastError = error.localizedDescription
+    if let locationError = error as? CLError, locationError.code == .locationUnknown {
+      observedWeakGPS = true
+      return
+    }
+    stopSensors()
   }
 }

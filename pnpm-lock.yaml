@@ -32,6 +32,9 @@ importers:
 
   apps/browser-fixture:
     dependencies:
+      '@open-outdoor/map':
+        specifier: workspace:*
+        version: link:../../packages/map
       '@open-outdoor/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -45,6 +48,24 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@open-outdoor/import-export':
+        specifier: workspace:*
+        version: link:../../packages/import-export
+      '@open-outdoor/map':
+        specifier: workspace:*
+        version: link:../../packages/map
+      '@open-outdoor/recorder':
+        specifier: workspace:*
+        version: link:../../packages/recorder
+      '@open-outdoor/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      '@open-outdoor/storage':
+        specifier: workspace:*
+        version: link:../../packages/storage
+      '@open-outdoor/tracking':
+        specifier: workspace:*
+        version: link:../../packages/tracking
       '@open-outdoor/native-spikes':
         specifier: workspace:*
         version: link:../../packages/native-spikes
@@ -68,6 +89,12 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/backup:
+    dependencies:
+      '@open-outdoor/storage':
+        specifier: workspace:*
+        version: link:../storage
+
   packages/config: {}
 
   packages/data:
@@ -76,7 +103,14 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
-  packages/native-spikes: {}
+  packages/import-export:
+    dependencies:
+      '@open-outdoor/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@open-outdoor/tracking':
+        specifier: workspace:*
+        version: link:../tracking
 
   packages/map:
     dependencies:
@@ -84,11 +118,26 @@ importers:
         specifier: workspace:*
         version: link:../shared
 
+  packages/native-spikes: {}
+
   packages/privacy: {}
+
+  packages/recorder:
+    dependencies:
+      '@open-outdoor/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@open-outdoor/tracking':
+        specifier: workspace:*
+        version: link:../tracking
 
   packages/shared: {}
 
-  packages/storage: {}
+  packages/storage:
+    dependencies:
+      '@open-outdoor/shared':
+        specifier: workspace:*
+        version: link:../shared
 
   packages/tracking:
     dependencies:

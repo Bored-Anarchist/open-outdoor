@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/phase1-physical-report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "generatedAt",
+    "status",
+    "stage",
+    "deviceClass",
+    "deviceModelIdentifier",
+    "sourceCommit",
+    "systemName",
+    "systemVersion",
+    "bundleIdentifier",
+    "appVersion",
+    "buildNumber",
+    "startedAt",
+    "referenceClimbM",
+    "measuredAscentM",
+    "elevationAllowedErrorM",
+    "authorizationStatuses",
+    "maximumBackgroundSeconds",
+    "networkTransitions",
+    "accessibility",
+    "memory",
+    "results",
+    "events"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "profileId": { "const": "iphone14-ios26.6-phase1-v1" },
+    "generatedAt": { "$ref": "#/$defs/instant" },
+    "status": { "enum": ["not-started", "in-progress", "failed", "passed"] },
+    "stage": {
+      "enum": ["idle", "crash", "permission", "field", "elevation", "accessibility", "complete"]
+    },
+    "deviceClass": { "type": "string", "minLength": 1 },
+    "deviceModelIdentifier": { "const": "iPhone14,7" },
+    "sourceCommit": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+    "systemName": { "type": "string", "minLength": 1 },
+    "systemVersion": { "type": "string", "minLength": 1 },
+    "bundleIdentifier": { "type": "string", "minLength": 1 },
+    "appVersion": { "type": "string", "minLength": 1 },
+    "buildNumber": { "type": "string", "minLength": 1 },
+    "startedAt": { "anyOf": [{ "$ref": "#/$defs/instant" }, { "type": "null" }] },
+    "referenceClimbM": {
+      "anyOf": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "null" }]
+    },
+    "measuredAscentM": { "anyOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }] },
+    "elevationAllowedErrorM": {
+      "anyOf": [{ "type": "number", "minimum": 15 }, { "type": "null" }]
+    },
+    "authorizationStatuses": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "not-determined",
+          "restricted",
+          "denied",
+          "authorized-always",
+          "authorized-when-in-use",
+          "unknown"
+        ]
+      }
+    },
+    "maximumBackgroundSeconds": { "type": "number", "minimum": 0 },
+    "networkTransitions": { "type": "integer", "minimum": 0 },
+    "accessibility": { "$ref": "#/$defs/accessibility" },
+    "memory": { "anyOf": [{ "$ref": "#/$defs/memory" }, { "type": "null" }] },
+    "results": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trackerCorrectness", "memorySmoke", "voiceOver", "dynamicType", "elevation"],
+      "properties": {
+        "trackerCorrectness": { "$ref": "#/$defs/checkResult" },
+        "memorySmoke": { "$ref": "#/$defs/checkResult" },
+        "voiceOver": { "$ref": "#/$defs/checkResult" },
+        "dynamicType": { "$ref": "#/$defs/checkResult" },
+        "elevation": { "$ref": "#/$defs/checkResult" }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "recordedAt"],
+        "properties": {
+          "kind": { "type": "string", "minLength": 1 },
+          "recordedAt": { "$ref": "#/$defs/instant" },
+          "detail": { "type": ["string", "null"] }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "instant": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+    },
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "voiceOverRunning",
+        "preferredContentSizeCategory",
+        "largestAccessibilitySize",
+        "boldTextEnabled",
+        "increasedContrastEnabled",
+        "differentiateWithoutColorEnabled",
+        "reduceMotionEnabled",
+        "darkModeEnabled"
+      ],
+      "properties": {
+        "voiceOverRunning": { "type": "boolean" },
+        "preferredContentSizeCategory": { "type": "string", "minLength": 1 },
+        "largestAccessibilitySize": { "type": "boolean" },
+        "boldTextEnabled": { "type": "boolean" },
+        "increasedContrastEnabled": { "type": "boolean" },
+        "differentiateWithoutColorEnabled": { "type": "boolean" },
+        "reduceMotionEnabled": { "type": "boolean" },
+        "darkModeEnabled": { "type": "boolean" }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "elapsedSeconds",
+        "sampleCount",
+        "samplesBytes",
+        "p95ResidentBytes",
+        "maxResidentBytes",
+        "thresholdBytes",
+        "passed"
+      ],
+      "properties": {
+        "elapsedSeconds": { "type": "number", "minimum": 0 },
+        "sampleCount": { "type": "integer", "minimum": 0 },
+        "samplesBytes": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "maxItems": 10000
+        },
+        "p95ResidentBytes": { "type": "integer", "minimum": 0 },
+        "maxResidentBytes": { "type": "integer", "minimum": 0 },
+        "thresholdBytes": { "const": 157286400 },
+        "passed": { "type": "boolean" }
+      }
+    },
+    "checkResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "checks"],
+      "properties": {
+        "passed": { "type": "boolean" },
+        "checks": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "boolean" }
+        }
+      }
+    }
+  }
+}

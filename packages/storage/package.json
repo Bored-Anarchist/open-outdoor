@@ -3,5 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts"
+  "dependencies": {
+    "@open-outdoor/shared": "workspace:*"
+  },
+  "exports": {
+    "react-native": "./src/native.ts",
+    "default": "./src/index.ts"
+  }
 }

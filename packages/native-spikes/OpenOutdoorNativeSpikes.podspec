@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
   s.swift_version  = '5.9'
   s.source_files   = 'ios/**/*.{h,m,mm,swift}'
-  s.frameworks     = 'CoreLocation', 'CoreMotion', 'CryptoKit', 'UIKit'
+  s.frameworks     = 'CoreLocation', 'CoreMotion', 'CryptoKit', 'Network', 'UIKit'
   s.pod_target_xcconfig = { 'SWIFT_ACTIVE_COMPILATION_CONDITIONS' => '$(inherited) OPEN_OUTDOOR_PHASE0_DIAGNOSTICS' }
   s.libraries      = 'sqlite3'
   s.dependency 'ExpoModulesCore'

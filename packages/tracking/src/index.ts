@@ -16,8 +16,12 @@ export interface TrackingAdapter {
 export interface TrackObservation extends TrackPoint {
   readonly sequence: number;
   readonly horizontalAccuracyM: number;
+  readonly verticalAccuracyM?: number;
   readonly altitudeM?: number;
   readonly pressureKPa?: number;
+  readonly relativeAltitudeM?: number;
+  readonly segment?: number;
+  readonly paused?: boolean;
 }
 
 export interface TrackingBatch {
@@ -98,8 +102,12 @@ function observationsEqual(left: TrackObservation, right: TrackObservation): boo
     left.coordinate[1] === right.coordinate[1] &&
     left.recordedAt === right.recordedAt &&
     left.horizontalAccuracyM === right.horizontalAccuracyM &&
+    left.verticalAccuracyM === right.verticalAccuracyM &&
     left.altitudeM === right.altitudeM &&
-    left.pressureKPa === right.pressureKPa
+    left.pressureKPa === right.pressureKPa &&
+    left.relativeAltitudeM === right.relativeAltitudeM &&
+    left.segment === right.segment &&
+    left.paused === right.paused
   );
 }
 
@@ -182,3 +190,5 @@ export function replayTrackingBatches(
     highestCommittedSequence: ordered.at(-1)?.sequence ?? lastCommittedSequence,
   };
 }
+export * from './recorder';
+export * from './algorithms';

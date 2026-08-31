@@ -1,0 +1,10 @@
+{
+  "name": "@open-outdoor/backup",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@open-outdoor/storage": "workspace:*"
+  },
+  "exports": "./src/index.ts"
+}
