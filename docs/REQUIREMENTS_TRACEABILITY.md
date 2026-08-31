@@ -4,7 +4,7 @@
 
 **Rule:** IDs are permanent; implementation changes update this matrix and its change history in the same pull request
 
-**Metadata date:** 2026-08-30
+**Metadata date:** 2026-08-31
 
 ## 1. Controls and vocabulary
 
@@ -23,11 +23,11 @@
 | `REQ-MAP-001` | Browse the bundled basemap, land, trails, camping, services, and POIs offline | P0 | proposed | M4 | Product owner | 5, 9 | WP-108, WP-301, WP-304 | T-E2E-001 (`E`,`P`) | 2026-08-19 |
 | `REQ-MAP-002` | Local text/spatial search and filters operate without a network | P0 | proposed | M4 | Product owner | 9 | WP-304 | T-E2E-001 (`E`,`P`) | 2026-08-19 |
 | `REQ-MAP-003` | Map and non-map details show provenance, origin, coverage, freshness, closures, and uncertainty | P0 | proposed | M4 | Product owner | 5, 9, 20 | WP-304, WP-305, WP-501 | T-E2E-001, T-PHY-003 | 2026-08-19 |
-| `REQ-CAMP-001` | Derive the seven defined camping statuses through deterministic precedence | P0 | proposed | M3 | Data/safety owner | 5, 12.2 | WP-205 | T-UNIT-001 (`U`) | 2026-08-19 |
-| `REQ-CAMP-002` | Never infer camping legality from ownership alone and exclude inholdings | P0 | proposed | M3 | Data/safety owner | 10.6, 12.1 | WP-205, WP-206, WP-208 | T-UNIT-001, T-INT-003 | 2026-08-19 |
-| `REQ-CAMP-003` | Evaluate camping access separately from site eligibility | P0 | proposed | M3 | Data/safety owner | 10.6, 12.2 | WP-205, WP-207, WP-208 | T-UNIT-001, T-E2E-001 | 2026-08-19 |
-| `REQ-CAMP-004` | Stale or missing mandatory safety evidence blocks positive status and exposes the reason | P0 | proposed | M3 | Data/safety owner | 12.2 | WP-205, WP-208 | T-UNIT-001, T-E2E-001 | 2026-08-19 |
-| `REQ-TRL-001` | Discover and view reference trails with geometry, statistics, restrictions, and provenance | P0 | proposed | M4 | Product owner | 5, 12.1 | WP-207, WP-304 | T-INT-003, T-E2E-001 | 2026-08-19 |
+| `REQ-CAMP-001` | Derive the seven defined camping statuses through deterministic precedence | P0 | in-progress | M3 | Data/safety owner | 5, 12.2 | WP-205 | T-UNIT-001 (`U`) | 2026-08-31 |
+| `REQ-CAMP-002` | Never infer camping legality from ownership alone and exclude inholdings | P0 | in-progress | M3 | Data/safety owner | 10.6, 12.1 | WP-205, WP-206, WP-208 | T-UNIT-001, T-INT-003 | 2026-08-31 |
+| `REQ-CAMP-003` | Evaluate camping access separately from site eligibility | P0 | in-progress | M3 | Data/safety owner | 10.6, 12.2 | WP-205, WP-207, WP-208 | T-UNIT-001, T-E2E-001 | 2026-08-31 |
+| `REQ-CAMP-004` | Stale or missing mandatory safety evidence blocks positive status and exposes the reason | P0 | in-progress | M3 | Data/safety owner | 12.2 | WP-205, WP-208 | T-UNIT-001, T-E2E-001 | 2026-08-31 |
+| `REQ-TRL-001` | Discover and view reference trails with geometry, statistics, restrictions, and provenance | P0 | in-progress | M4 | Product owner | 5, 12.1 | WP-207, WP-304 | T-INT-003, T-E2E-001 | 2026-08-31 |
 | `REQ-TRL-002` | Match a completed activity or create/edit a reusable private `UserTrail` | P1 | proposed | M2 | iOS/tracking owner | 13.2 | WP-102, WP-105 | T-E2E-002 (`E`,`P`) | 2026-08-19 |
 | `REQ-POI-001` | Support the defined camping, service, amenity, condition, and restriction taxonomy | P1 | in-progress | M3 | Data/safety owner | 5, 12.1 | WP-203, WP-207 | T-INT-003 (`I`) | 2026-08-30 |
 | `REQ-TRK-001` | Start, pause, resume, finish, checkpoint, and recover an offline activity through an explicit state machine | P0 | in-progress | M2 | iOS/tracking owner | 13 | WP-007, WP-103, WP-105 | T-E2E-002, T-PHY-001 | 2026-08-21 |
@@ -57,7 +57,7 @@
 | `REQ-SRC-002` | Independent lifecycle, authorization, acquisition, class, rights, and distribution fields gate processing | P0 | in-progress | M3 | Privacy/rights owner | 10.1 | WP-201 | T-UNIT-004, T-INT-003 | 2026-08-30 |
 | `REQ-SRC-003` | Raw retention, parser limits, quarantine, and secret redaction protect ingestion | P0 | in-progress | M3 | Security owner | 11.1–11.2 | WP-202 | T-SEC-001 | 2026-08-30 |
 | `REQ-SRC-004` | Canonical processing preserves field provenance and reversible entity decisions | P0 | in-progress | M3 | Data/safety owner | 12.3 | WP-203, WP-204 | T-UNIT-003 | 2026-08-30 |
-| `REQ-SRC-005` | Initial New York build reports geometry, rule, access, POI, freshness, and status coverage separately | P0 | proposed | M3 | Product owner | 10.6 | WP-206–WP-210 | T-REL-002 | 2026-08-19 |
+| `REQ-SRC-005` | Initial New York build reports geometry, rule, access, POI, freshness, and status coverage separately | P0 | in-progress | M3 | Product owner | 10.6 | WP-206–WP-210 | T-REL-002 | 2026-08-31 |
 | `REQ-SRC-006` | iOverlander is limited to taxonomy/deep links/lawful user-selected private export import unless written permission changes | P0 | proposed | M5 | Privacy/rights owner | 10.5 | WP-403, WP-404 | T-UNIT-004, T-SEC-002 | 2026-08-19 |
 
 ## 4. Privacy, security, and open-source requirements

@@ -38,6 +38,7 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-040` | Phase 0 and Phase 1 defer measured battery/thermal acceptance to WP-307/WP-503 while retaining energy-conscious implementation constraints | Accepted | No current endurance claim or numeric energy gate; sensors run only during recording, High Accuracy is explicit, continuous polling is prohibited, and the adjacent memory smoke is 30 minutes |
 | `ADR-041` | Phase 0 verifies system-backup exclusion and the uninstall warning but does not implement or test encrypted restore | Accepted | Encrypted backup/container selection and all-or-nothing restore remain WP-107/WP-306 and T-BAK-001; WP-008 and T-PHY-005 stop at protection and backup-inventory inspection |
 | `ADR-023` | Use versioned deterministic entity-specific blocking, weighted scores, explicit review, and append-only reversible decisions for initial entity resolution | Accepted | Initial fixture precision/recall gates and thresholds are implemented by WP-204; each production source pair needs labelled evidence before activation |
+| `ADR-042` | Use a versioned deterministic camping evaluator with conservative negative precedence, independent access, and fail-closed mandatory safety evidence | Accepted | Ownership alone yields at most generally eligible; verified allowed requires a current affirmative unit rule; conflicts, inholdings, and stale mandatory inputs remain explainable |
 
 ## 2. Phase 0 implementation decisions
 

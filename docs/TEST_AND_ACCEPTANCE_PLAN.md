@@ -49,6 +49,20 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | `T-REL-003` | Catalog trust and channel | Missing/invalid/revoked/rotated key, wrong channel, replay, rollback, unsigned-development label, last-known-good retention |
 | `T-REL-004` | Contribution privacy and CI efficiency | Public-handle/noreply identity, PR attestation, PII fixture rejection, path skips, superseded-run cancellation, timeouts, minimal matrix, candidate-only expensive jobs, minute report |
 
+WP-205 through WP-208 assign these exact cases:
+
+- `T-UNIT-001-C01`: produce all seven camping statuses with the versioned precedence engine.
+- `T-UNIT-001-C02`: exclude private inholdings before public-land rules are considered.
+- `T-UNIT-001-C03`: enforce designated-site-only rules and fail safely on unknown membership.
+- `T-UNIT-001-C04`: block positive status for stale mandatory or missing safety evidence while retaining known prohibitions.
+- `T-UNIT-001-C05`: explain equal-authority conflicts and honor explicit supersession.
+- `T-UNIT-001-C06`: keep access status independent from camping eligibility.
+- `T-INT-003-C01`: validate every official New York source's active rights, attribution, endpoint, and test-fixture separation.
+- `T-INT-003-C02`: normalize public land, private inholdings, roads, access, and POI taxonomy.
+- `T-INT-003-C03`: enumerate every ArcGIS object ID, page deterministically, preserve partitions, and emit access/dedup candidates.
+- `T-INT-003-C04`: reject incomplete partition sets and report checksummed geometry/source freshness coverage.
+- `T-INT-003-C05`: emit rule directives only for exact checksum-pinned human-reviewed documents.
+
 ## 3. Required fixtures
 
 ### 3.1 Public synthetic fixtures

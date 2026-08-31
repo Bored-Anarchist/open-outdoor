@@ -9,6 +9,7 @@
     "catalog.json",
     "replay.gpx",
     "data-platform/fixture-manifest.json",
-    "data-platform/entity-resolution-labels.json"
+    "data-platform/entity-resolution-labels.json",
+    "data-platform/new-york-alpha.json"
   ]
 }

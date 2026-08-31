@@ -25,5 +25,9 @@
 | WP-202 | [Ingestion security and raw boundary](WP-202.md) | Implemented; local acceptance passed |
 | WP-203 | [Canonical schema and migrations](WP-203.md) | Implemented; local acceptance passed |
 | WP-204 | [Reversible entity resolution](WP-204.md) | Implemented; local acceptance passed |
+| WP-205 | [Camping-status evaluator](WP-205.md) | Implemented; local acceptance passed |
+| WP-206 | [New York boundary and land connectors](WP-206.md) | Implemented connector foundation; local acceptance passed |
+| WP-207 | [New York trail, road, and POI connectors](WP-207.md) | Implemented connector foundation; local acceptance passed |
+| WP-208 | [New York rules and restrictions](WP-208.md) | Implemented connector foundation; local acceptance passed |
 
 The authoritative machine-readable dispositions are `config/phase0-gate.json` and `config/phase1-gate.json`. A package implementation record does not convert a pending physical case into a pass. An accepted waiver closes only its explicitly scoped gate case and remains distinguishable from evidence-backed `passed` status.
