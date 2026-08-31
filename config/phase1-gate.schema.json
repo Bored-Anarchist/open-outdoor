@@ -10,14 +10,27 @@
     "gateStatus",
     "packages",
     "acceptance",
+    "waivers",
     "deferred"
   ],
   "properties": {
-    "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
-    "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
-    "profileId": { "type": "string", "minLength": 1 },
-    "gateStatus": { "enum": ["passed", "blocked"] },
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "asOf": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "profileId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gateStatus": {
+      "enum": ["passed", "blocked"]
+    },
     "packages": {
       "type": "object",
       "additionalProperties": false,
@@ -33,15 +46,33 @@
         "WP-109"
       ],
       "properties": {
-        "WP-101": { "$ref": "#/$defs/evidenceItem" },
-        "WP-102": { "$ref": "#/$defs/evidenceItem" },
-        "WP-103": { "$ref": "#/$defs/evidenceItem" },
-        "WP-104": { "$ref": "#/$defs/evidenceItem" },
-        "WP-105": { "$ref": "#/$defs/evidenceItem" },
-        "WP-106": { "$ref": "#/$defs/evidenceItem" },
-        "WP-107": { "$ref": "#/$defs/evidenceItem" },
-        "WP-108": { "$ref": "#/$defs/evidenceItem" },
-        "WP-109": { "$ref": "#/$defs/evidenceItem" }
+        "WP-101": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-102": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-103": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-104": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-105": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-106": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-107": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-108": {
+          "$ref": "#/$defs/evidenceItem"
+        },
+        "WP-109": {
+          "$ref": "#/$defs/evidenceItem"
+        }
       }
     },
     "acceptance": {
@@ -56,19 +87,41 @@
         "elevation"
       ],
       "properties": {
-        "automatedCore": { "$ref": "#/$defs/acceptanceItem" },
-        "trackerCorrectness": { "$ref": "#/$defs/acceptanceItem" },
-        "memorySmoke": { "$ref": "#/$defs/acceptanceItem" },
-        "voiceOver": { "$ref": "#/$defs/acceptanceItem" },
-        "dynamicType": { "$ref": "#/$defs/acceptanceItem" },
-        "elevation": { "$ref": "#/$defs/acceptanceItem" }
+        "automatedCore": {
+          "$ref": "#/$defs/acceptanceItem"
+        },
+        "trackerCorrectness": {
+          "$ref": "#/$defs/acceptanceItem"
+        },
+        "memorySmoke": {
+          "$ref": "#/$defs/acceptanceItem"
+        },
+        "voiceOver": {
+          "$ref": "#/$defs/acceptanceItem"
+        },
+        "dynamicType": {
+          "$ref": "#/$defs/acceptanceItem"
+        },
+        "elevation": {
+          "$ref": "#/$defs/acceptanceItem"
+        }
       }
     },
     "deferred": {
       "type": "object",
       "additionalProperties": false,
       "required": ["measuredEnergy"],
-      "properties": { "measuredEnergy": { "const": "WP-307/WP-503" } }
+      "properties": {
+        "measuredEnergy": {
+          "const": "WP-307/WP-503"
+        }
+      }
+    },
+    "waivers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/waiverItem"
+      }
     }
   },
   "$defs": {
@@ -77,8 +130,13 @@
       "additionalProperties": false,
       "required": ["status", "evidence"],
       "properties": {
-        "status": { "enum": ["implemented", "accepted", "passed", "physical-pending", "blocked"] },
-        "evidence": { "type": "string", "minLength": 1 }
+        "status": {
+          "enum": ["implemented", "accepted", "passed", "physical-pending", "blocked"]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "acceptanceItem": {
@@ -86,8 +144,51 @@
       "additionalProperties": false,
       "required": ["status", "evidence"],
       "properties": {
-        "status": { "enum": ["passed", "physical-pending", "blocked"] },
-        "evidence": { "type": "string", "minLength": 1 }
+        "status": {
+          "enum": ["passed", "waived", "physical-pending", "blocked"]
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "waiverItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "approvedAt", "approvedBy", "scope", "reason", "residualRisk"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "approved"
+        },
+        "approvedAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "approvedBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["trackerCorrectness", "memorySmoke", "voiceOver", "dynamicType", "elevation"]
+          }
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "residualRisk": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

@@ -11,6 +11,11 @@ const requiredAcceptance = [
 
 export function evaluatePhase1Gate(record) {
   const blockers = [];
+  const approvedWaiverScope = new Set(
+    (record?.waivers ?? [])
+      .filter((waiver) => waiver?.status === 'approved')
+      .flatMap((waiver) => waiver?.scope ?? []),
+  );
   if (record?.schemaVersion !== 1) blockers.push('phase1 gate schemaVersion must be 1');
   for (const packageId of requiredPackages) {
     const item = record?.packages?.[packageId];
@@ -18,7 +23,13 @@ export function evaluatePhase1Gate(record) {
   }
   for (const caseId of requiredAcceptance) {
     const item = record?.acceptance?.[caseId];
-    if (!passing.has(item?.status)) blockers.push(`${caseId}: ${item?.status ?? 'missing'}`);
+    if (item?.status === 'waived') {
+      if (!approvedWaiverScope.has(caseId)) {
+        blockers.push(`${caseId}: waived without an approved scoped waiver`);
+      }
+    } else if (!passing.has(item?.status)) {
+      blockers.push(`${caseId}: ${item?.status ?? 'missing'}`);
+    }
   }
   if (record?.deferred?.measuredEnergy !== 'WP-307/WP-503') {
     blockers.push('measured energy must remain explicitly deferred to WP-307/WP-503');
