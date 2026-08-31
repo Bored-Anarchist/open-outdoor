@@ -1,5 +1,10 @@
 import { assertCoordinate, type Coordinate } from '@open-outdoor/shared';
 
+export * from './canonical.js';
+export * from './connector.js';
+export * from './entity-resolution.js';
+export * from './ingestion.js';
+
 export interface CatalogPlace {
   readonly id: string;
   readonly name: string;

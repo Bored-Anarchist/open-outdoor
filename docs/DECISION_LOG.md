@@ -37,6 +37,7 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-039` | Hosted CI is local-first, path-filtered, superseded-run-cancelling, timeout-bounded, minimally matrixed, unscheduled by default, and candidate-gated for expensive work | Accepted | GitHub Actions minutes are treated as a constrained resource and reviewed by milestone |
 | `ADR-040` | Phase 0 and Phase 1 defer measured battery/thermal acceptance to WP-307/WP-503 while retaining energy-conscious implementation constraints | Accepted | No current endurance claim or numeric energy gate; sensors run only during recording, High Accuracy is explicit, continuous polling is prohibited, and the adjacent memory smoke is 30 minutes |
 | `ADR-041` | Phase 0 verifies system-backup exclusion and the uninstall warning but does not implement or test encrypted restore | Accepted | Encrypted backup/container selection and all-or-nothing restore remain WP-107/WP-306 and T-BAK-001; WP-008 and T-PHY-005 stop at protection and backup-inventory inspection |
+| `ADR-023` | Use versioned deterministic entity-specific blocking, weighted scores, explicit review, and append-only reversible decisions for initial entity resolution | Accepted | Initial fixture precision/recall gates and thresholds are implemented by WP-204; each production source pair needs labelled evidence before activation |
 
 ## 2. Phase 0 implementation decisions
 
@@ -44,7 +45,7 @@ Only ADR-012 through ADR-015 and ADR-036 block `WP-002`. Other decisions are mad
 
 | ID | Decision | Status | Evidence and follow-up |
 | --- | --- | --- | --- |
-| `ADR-016` | Spatial staging implementation remains open between PostgreSQL/PostGIS and a proven equivalent | Proposed | Decide in WP-201 using geometry, reproducibility, Windows setup, and scale evidence |
+| `ADR-016` | Use bundled SQLite with R-tree plus deterministic TypeScript geometry validation for initial spatial staging | Accepted | WP-203 executes the migration and a 10,000-record spatial fixture on the pinned Windows runtime without a service; complete New York scale remains a WP-206/WP-209 checkpoint |
 | `ADR-017` | Use native system SQLite3 behind the Swift storage coordinator; writable user storage uses WAL while catalog handles open with `SQLITE_OPEN_READONLY` | Accepted | WP-008 contract tests enforce capability separation; physical performance and production migrations continue in WP-102/WP-303 |
 | `ADR-018` | Use a versioned SQLite catalog with an MBTiles-compatible initial tile archive and atomic pointer activation | Accepted | WP-008 proves compatibility, integrity, space, activation, and rollback rules; reconsider PMTiles with WP-301 evidence |
 | `ADR-021` | Use an autolinked Expo Swift module with versioned, sequenced, idempotent native batches | Accepted for the spike | WP-007 proves replay/durability rules; WP-103 defines the production JS event surface and lifecycle integration |
@@ -54,7 +55,6 @@ Only ADR-012 through ADR-015 and ADR-036 block `WP-002`. Other decisions are mad
 
 | ID | Decision needed | Trigger |
 | --- | --- | --- |
-| `ADR-023` | Exact entity-resolution thresholds/models by entity/source pair | Labelled fixture corpus exists |
 | `ADR-024` | Basemap compiler/profile and detailed-area policy | New York source/size prototype exists |
 | `ADR-025` | Search/index implementation | Canonical catalog prototype and query benchmarks exist |
 | `ADR-026` | Production design tokens/brand direction | Phase 3 functional flows stabilize |

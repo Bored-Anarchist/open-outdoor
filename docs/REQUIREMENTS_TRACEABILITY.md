@@ -1,8 +1,10 @@
 # Requirements Traceability Matrix
 
-**Status:** In progress; Phase 0 implementation and evidence collection underway  
-**Rule:** IDs are permanent; implementation changes update this matrix and its change history in the same pull request  
-**Metadata date:** 2026-08-19
+**Status:** In progress; Phase 2 connector and canonical-data foundations implemented
+
+**Rule:** IDs are permanent; implementation changes update this matrix and its change history in the same pull request
+
+**Metadata date:** 2026-08-30
 
 ## 1. Controls and vocabulary
 
@@ -27,7 +29,7 @@
 | `REQ-CAMP-004` | Stale or missing mandatory safety evidence blocks positive status and exposes the reason | P0 | proposed | M3 | Data/safety owner | 12.2 | WP-205, WP-208 | T-UNIT-001, T-E2E-001 | 2026-08-19 |
 | `REQ-TRL-001` | Discover and view reference trails with geometry, statistics, restrictions, and provenance | P0 | proposed | M4 | Product owner | 5, 12.1 | WP-207, WP-304 | T-INT-003, T-E2E-001 | 2026-08-19 |
 | `REQ-TRL-002` | Match a completed activity or create/edit a reusable private `UserTrail` | P1 | proposed | M2 | iOS/tracking owner | 13.2 | WP-102, WP-105 | T-E2E-002 (`E`,`P`) | 2026-08-19 |
-| `REQ-POI-001` | Support the defined camping, service, amenity, condition, and restriction taxonomy | P1 | proposed | M3 | Data/safety owner | 5, 12.1 | WP-203, WP-207 | T-INT-003 (`I`) | 2026-08-19 |
+| `REQ-POI-001` | Support the defined camping, service, amenity, condition, and restriction taxonomy | P1 | in-progress | M3 | Data/safety owner | 5, 12.1 | WP-203, WP-207 | T-INT-003 (`I`) | 2026-08-30 |
 | `REQ-TRK-001` | Start, pause, resume, finish, checkpoint, and recover an offline activity through an explicit state machine | P0 | in-progress | M2 | iOS/tracking owner | 13 | WP-007, WP-103, WP-105 | T-E2E-002, T-PHY-001 | 2026-08-21 |
 | `REQ-TRK-002` | Background sensors operate only during explicit active recording and stop afterward | P0 | in-progress | M2 | iOS/tracking owner | 13, 14 | WP-103 | T-PHY-001 (`P`) | 2026-08-21 |
 | `REQ-TRK-003` | Preserve immutable observations and versioned distance/elevation revisions | P0 | proposed | M2 | iOS/tracking owner | 12.1, 13.1 | WP-102, WP-104 | T-UNIT-002, T-INT-001 | 2026-08-19 |
@@ -42,7 +44,7 @@
 
 | ID | Requirement | Priority | Status | Milestone | Accountable role | Scope | Work packages | Verification | Changed |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `REQ-DAT-001` | Every boundary follows the canonical CRS, axis, time, unit, ID, null/unknown, geometry, provenance, and evolution contract | P0 | proposed | M3 | Architecture owner | 12 | WP-201, WP-203 | T-INT-005 (`U`,`I`) | 2026-08-19 |
+| `REQ-DAT-001` | Every boundary follows the canonical CRS, axis, time, unit, ID, null/unknown, geometry, provenance, and evolution contract | P0 | in-progress | M3 | Architecture owner | 12 | WP-201, WP-203 | T-INT-005 (`U`,`I`) | 2026-08-30 |
 | `REQ-CAT-001` | Writable user data and read-only public/private catalogs use separate database files and write capabilities | P0 | in-progress | M1 | Storage/backup owner | 7, 8 | WP-008, WP-102 | T-INT-001 | 2026-08-21 |
 | `REQ-CAT-002` | Every catalog has a versioned manifest, checksum, app compatibility interval, classification, rights, size, and provenance | P0 | proposed | M3 | Data/safety owner | 8, 9 | WP-209, WP-302 | T-INT-002, T-REL-002 | 2026-08-19 |
 | `REQ-CAT-003` | Public/private/user query composition retains explicit record origin and rights | P0 | proposed | M4 | Storage/backup owner | 8 | WP-305 | T-E2E-003 | 2026-08-19 |
@@ -51,10 +53,10 @@
 | `REQ-CAT-006` | Production catalog activation requires a valid channel-bound signature, trusted non-revoked key, and non-replayed version | P0 | in-progress | M1 | Release/build owner | 8, 17, 19 | WP-010, WP-303, WP-504 | T-REL-003 (`I`,`A`) | 2026-08-21 |
 | `REQ-CAT-007` | Catalog staging, pointer activation, first-launch confirmation, and rollback are interruption-safe and do not roll back private data | P0 | in-progress | M4 | Storage/backup owner | 8, 9 | WP-008, WP-303 | T-INT-002 (`I`,`P`) | 2026-08-21 |
 | `REQ-CFG-002` | Production supports current plus one previous compatible major app/catalog/backup schema and rejects unsafe downgrade before mutation; WP-008 covers app/catalog and WP-107 adds backup | P0 | in-progress | M4 | Storage/backup owner | 8, 18, 19 | WP-008, WP-107, WP-303 | T-INT-006, T-BAK-001 | 2026-08-21 |
-| `REQ-SRC-001` | Each source is an isolated versioned connector implementing applicable common stages | P0 | proposed | M3 | Data/safety owner | 11 | WP-201, WP-401, WP-402 | T-INT-003 | 2026-08-19 |
-| `REQ-SRC-002` | Independent lifecycle, authorization, acquisition, class, rights, and distribution fields gate processing | P0 | proposed | M3 | Privacy/rights owner | 10.1 | WP-201 | T-UNIT-004, T-INT-003 | 2026-08-19 |
-| `REQ-SRC-003` | Raw retention, parser limits, quarantine, and secret redaction protect ingestion | P0 | proposed | M3 | Security owner | 11.1–11.2 | WP-202 | T-SEC-001 | 2026-08-19 |
-| `REQ-SRC-004` | Canonical processing preserves field provenance and reversible entity decisions | P0 | proposed | M3 | Data/safety owner | 12.3 | WP-203, WP-204 | T-UNIT-003 | 2026-08-19 |
+| `REQ-SRC-001` | Each source is an isolated versioned connector implementing applicable common stages | P0 | in-progress | M3 | Data/safety owner | 11 | WP-201, WP-401, WP-402 | T-INT-003 | 2026-08-30 |
+| `REQ-SRC-002` | Independent lifecycle, authorization, acquisition, class, rights, and distribution fields gate processing | P0 | in-progress | M3 | Privacy/rights owner | 10.1 | WP-201 | T-UNIT-004, T-INT-003 | 2026-08-30 |
+| `REQ-SRC-003` | Raw retention, parser limits, quarantine, and secret redaction protect ingestion | P0 | in-progress | M3 | Security owner | 11.1–11.2 | WP-202 | T-SEC-001 | 2026-08-30 |
+| `REQ-SRC-004` | Canonical processing preserves field provenance and reversible entity decisions | P0 | in-progress | M3 | Data/safety owner | 12.3 | WP-203, WP-204 | T-UNIT-003 | 2026-08-30 |
 | `REQ-SRC-005` | Initial New York build reports geometry, rule, access, POI, freshness, and status coverage separately | P0 | proposed | M3 | Product owner | 10.6 | WP-206–WP-210 | T-REL-002 | 2026-08-19 |
 | `REQ-SRC-006` | iOverlander is limited to taxonomy/deep links/lawful user-selected private export import unless written permission changes | P0 | proposed | M5 | Privacy/rights owner | 10.5 | WP-403, WP-404 | T-UNIT-004, T-SEC-002 | 2026-08-19 |
 
@@ -72,7 +74,7 @@
 | `REQ-IOS-002` | Active spool, sealed database, attachments, catalogs, diagnostics, and backups use the declared iOS protection class | P0 | in-progress | M1 | iOS/tracking owner | 8, 15, 18 | WP-007, WP-008 | T-PHY-005 (`P`) | 2026-08-21 |
 | `REQ-IOS-003` | Private state and regenerable catalogs are excluded from implicit iOS system backup and uninstall risk is explicit; encrypted recovery is deferred to REQ-BAK-001 | P0 | in-progress | M1 | iOS/tracking owner | 8, 18 | WP-008 | T-PHY-005 | 2026-08-21 |
 | `REQ-DIA-001` | Diagnostics remain local, bounded, short-lived, redacted, user-previewed, and explicitly exported | P0 | in-progress | M1 | Privacy/rights owner | 18 | WP-003 | T-DIA-001 (`I`,`R`) | 2026-08-19 |
-| `REQ-SEC-001` | Inputs are untrusted and bounded against traversal, bombs, entities, injection, and resource exhaustion | P0 | proposed | M3 | Security owner | 11.2 | WP-202 | T-SEC-001 | 2026-08-19 |
+| `REQ-SEC-001` | Inputs are untrusted and bounded against traversal, bombs, entities, injection, and resource exhaustion | P0 | in-progress | M3 | Security owner | 11.2 | WP-202 | T-SEC-001 | 2026-08-30 |
 | `REQ-SEC-002` | Private CI uses ephemeral isolated jobs, no untrusted privileged head execution, separate caches/artifacts, and least-privilege credentials | P0 | in-progress | M1 | Security owner | 6.3, 17 | WP-005 | T-SEC-003 (`E`,`R`) | 2026-08-19 |
 | `REQ-OSS-001` | Public project uses Apache-2.0, account-bound contribution attestation, governance/conduct/security files, and separate third-party notices | P0 | in-progress | M1 | Project owner | 16 | WP-001 | T-REL-001 (`A`) | 2026-08-19 |
 | `REQ-OSS-002` | Public CI uses least privilege, immutable action pins, no untrusted release secrets, and public-safe inputs | P0 | in-progress | M1 | Release/build owner | 17 | WP-001, WP-003, WP-504 | T-SEC-002, T-REL-002 | 2026-08-19 |

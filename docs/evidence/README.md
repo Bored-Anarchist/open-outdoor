@@ -21,5 +21,9 @@
 | WP-107 | [Encrypted backup foundation](WP-107.md) | Accepted |
 | WP-108 | [Offline map fixture](WP-108.md) | Accepted |
 | WP-109 | [Phase 1 gate](WP-109.md) | Accepted with explicit physical-test waivers |
+| WP-201 | [Connector SDK and manifest schema](WP-201.md) | Implemented; local acceptance passed |
+| WP-202 | [Ingestion security and raw boundary](WP-202.md) | Implemented; local acceptance passed |
+| WP-203 | [Canonical schema and migrations](WP-203.md) | Implemented; local acceptance passed |
+| WP-204 | [Reversible entity resolution](WP-204.md) | Implemented; local acceptance passed |
 
 The authoritative machine-readable dispositions are `config/phase0-gate.json` and `config/phase1-gate.json`. A package implementation record does not convert a pending physical case into a pass. An accepted waiver closes only its explicitly scoped gate case and remains distinguishable from evidence-backed `passed` status.
