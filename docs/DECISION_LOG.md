@@ -41,6 +41,7 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-042` | Use a versioned deterministic camping evaluator with conservative negative precedence, independent access, and fail-closed mandatory safety evidence | Accepted | Ownership alone yields at most generally eligible; verified allowed requires a current affirmative unit rule; conflicts, inholdings, and stale mandatory inputs remain explainable |
 | `ADR-043` | Public regional packs use deterministic SQLite plus a canonical manifest, embedded coverage/exclusions/DBOM, and fail-closed source rights gates | Accepted | Identical inputs are byte reproducible; existing or oversized outputs are not distributable |
 | `ADR-044` | RIDB, NPS, dated checksum-pinned Geofabrik OSM extracts, and USGS 3DEP are independent secondary public-source connectors | Accepted | Production uses official sources and preserves license/attribution/metadata; synthetic records are test fixtures only |
+| `ADR-045` | Phase 2 acceptance uses one non-interactive clean-commit run with capped live probes and separate reviewer approval | Accepted | Tester input is limited to required external API keys; offline, dirty, incomplete, or self-approved evidence cannot pass |
 
 ## 2. Phase 0 implementation decisions
 

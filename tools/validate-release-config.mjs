@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { evaluatePhase0Gate } from './phase0-gate-lib.mjs';
 import { evaluatePhase1Gate } from './phase1-gate-lib.mjs';
+import { evaluatePhase2Gate } from './phase2-gate-lib.mjs';
 import { summarizeHostedCiWindow } from './hosted-ci-window-lib.mjs';
 
 const root = new URL('../', import.meta.url);
@@ -20,6 +21,11 @@ const phase0 = await readJson('config/phase0-gate.json');
 const phase1Schema = await readJson('config/phase1-gate.schema.json');
 const phase1PhysicalReportSchema = await readJson('config/phase1-physical-report.schema.json');
 const phase1 = await readJson('config/phase1-gate.json');
+const phase2ProfileSchema = await readJson('config/phase2-acceptance-profile.schema.json');
+const phase2Profile = await readJson('config/phase2-acceptance-profile.json');
+const phase2ReportSchema = await readJson('config/phase2-guided-report.schema.json');
+const phase2GateSchema = await readJson('config/phase2-gate.schema.json');
+const phase2 = await readJson('config/phase2-gate.json');
 const hostedCiSchema = await readJson('config/hosted-ci-window.schema.json');
 const hostedCi = await readJson('config/hosted-ci-window.json');
 const ajv = new Ajv2020({ allErrors: true, strict: true });
@@ -28,6 +34,8 @@ const checks = [
   ['catalog trust configuration', trustSchema, trust],
   ['Phase 0 gate record', phase0Schema, phase0],
   ['Phase 1 gate record', phase1Schema, phase1],
+  ['Phase 2 acceptance profile', phase2ProfileSchema, phase2Profile],
+  ['Phase 2 gate record', phase2GateSchema, phase2],
   ['hosted CI clean-window ledger', hostedCiSchema, hostedCi],
 ];
 let failed = false;
@@ -47,6 +55,8 @@ ajv.compile(signatureSchema);
 console.log('catalog signature envelope schema is valid');
 ajv.compile(phase1PhysicalReportSchema);
 console.log('Phase 1 physical report schema is valid');
+ajv.compile(phase2ReportSchema);
+console.log('Phase 2 guided report schema is valid');
 
 for (const channel of ['public', 'local', 'private']) {
   if (release.channels[channel].trustRoot !== trust.channels[channel].trustRoot) {
@@ -100,6 +110,16 @@ if (phase1Result.status !== phase1.gateStatus) {
   failed = true;
 } else {
   console.log(`Phase 1 gate declaration is consistent: ${phase1Result.status}`);
+}
+
+const phase2Result = evaluatePhase2Gate(phase2);
+if (phase2Result.status !== phase2.gateStatus) {
+  console.error(
+    `declared Phase 2 gate status ${phase2.gateStatus} does not match computed ${phase2Result.status}`,
+  );
+  failed = true;
+} else {
+  console.log(`Phase 2 gate declaration is consistent: ${phase2Result.status}`);
 }
 
 if (failed) process.exitCode = 1;

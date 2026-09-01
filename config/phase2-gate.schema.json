@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/phase2-gate.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "asOf",
+    "profileId",
+    "gateStatus",
+    "packages",
+    "acceptance",
+    "review"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "asOf": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "profileId": { "const": "new-york-data-alpha-phase2-v1" },
+    "gateStatus": { "enum": ["passed", "blocked"] },
+    "packages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "WP-201",
+        "WP-202",
+        "WP-203",
+        "WP-204",
+        "WP-205",
+        "WP-206",
+        "WP-207",
+        "WP-208",
+        "WP-209",
+        "WP-210"
+      ],
+      "properties": {
+        "WP-201": { "$ref": "#/$defs/package" },
+        "WP-202": { "$ref": "#/$defs/package" },
+        "WP-203": { "$ref": "#/$defs/package" },
+        "WP-204": { "$ref": "#/$defs/package" },
+        "WP-205": { "$ref": "#/$defs/package" },
+        "WP-206": { "$ref": "#/$defs/package" },
+        "WP-207": { "$ref": "#/$defs/package" },
+        "WP-208": { "$ref": "#/$defs/package" },
+        "WP-209": { "$ref": "#/$defs/package" },
+        "WP-210": { "$ref": "#/$defs/package" }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonicalContracts",
+        "campingSafety",
+        "connectorContracts",
+        "entityResolution",
+        "hostileIngestion",
+        "liveSourceAvailability",
+        "publicPackReproducibility",
+        "publicationBoundary",
+        "rightsAndAttribution",
+        "coverageAndExclusions"
+      ],
+      "properties": {
+        "canonicalContracts": { "$ref": "#/$defs/acceptance" },
+        "campingSafety": { "$ref": "#/$defs/acceptance" },
+        "connectorContracts": { "$ref": "#/$defs/acceptance" },
+        "entityResolution": { "$ref": "#/$defs/acceptance" },
+        "hostileIngestion": { "$ref": "#/$defs/acceptance" },
+        "liveSourceAvailability": { "$ref": "#/$defs/acceptance" },
+        "publicPackReproducibility": { "$ref": "#/$defs/acceptance" },
+        "publicationBoundary": { "$ref": "#/$defs/acceptance" },
+        "rightsAndAttribution": { "$ref": "#/$defs/acceptance" },
+        "coverageAndExclusions": { "$ref": "#/$defs/acceptance" }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reportSha256", "acceptedAt", "acceptedBy", "residualRisk"],
+      "properties": {
+        "reportSha256": {
+          "anyOf": [{ "type": "string", "pattern": "^[0-9a-f]{64}$" }, { "type": "null" }]
+        },
+        "acceptedAt": {
+          "anyOf": [
+            { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+            { "type": "null" }
+          ]
+        },
+        "acceptedBy": { "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+        "residualRisk": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["implemented", "accepted", "passed", "blocked"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence"],
+      "properties": {
+        "status": { "enum": ["passed", "pending", "blocked"] },
+        "evidence": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

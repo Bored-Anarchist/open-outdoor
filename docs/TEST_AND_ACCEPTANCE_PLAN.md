@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** In progress; WP-007 physical evidence pending, WP-008 owner-accepted with residual risks
+**Status:** In progress; Phase 2 guided runner implemented and live reviewer acceptance pending
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
@@ -69,6 +69,10 @@ WP-205 through WP-210 assign these exact cases:
 - `T-REL-002-C01`: reproduce byte-identical public SQLite catalogs and manifests and audit their inventory, R-tree, coverage, exclusions, and DBOM.
 - `T-REL-002-C02`: reject requested sources with revoked/incomplete rights and reject catalog output over its byte ceiling.
 - `T-REL-002-C03`: report RIDB/NPS/OSM/3DEP family gaps, source freshness, geometry, and elevation-product coverage.
+
+### 2.1 Phase 2 guided run
+
+`pnpm phase2:acceptance` is the required M3 evidence workflow. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, and structurally valid live samples from all 17 official registrations. RIDB and NPS keys are supplied only through `RIDB_API_KEY` and `NPS_API_KEY`. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
 
 ## 3. Required fixtures
 

@@ -36,6 +36,10 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [iOS native spike procedure](IOS_NATIVE_SPIKE_PROCEDURE.md) | Windows candidate preparation and exact physical tracker/storage workoff | iOS/tracking owner |
 | [Phase 0 gate report](PHASE_0_GATE_REPORT.md) | WP-009 budget, risk, CI-usage, and phase-entry disposition | Project/release owner |
 | [Phase 0 acceptance-gap solutions](PHASE_0_ACCEPTANCE_GAP_SOLUTIONS.md) | Implemented workoff tooling and the remaining physical/CI completion steps | Technical lead |
+| [Phase 1 guided acceptance](PHASE_1_GUIDED_ACCEPTANCE.md) | Minimal physical recorder-alpha evidence workflow | Quality/iOS owner |
+| [Phase 1 gate report](PHASE_1_GATE_REPORT.md) | Recorder-alpha acceptance disposition | Project/release owner |
+| [Phase 2 guided acceptance](PHASE_2_GUIDED_ACCEPTANCE.md) | One-command New York data-alpha evidence workflow | Data/quality owner |
+| [Phase 2 gate report](PHASE_2_GATE_REPORT.md) | Data-alpha acceptance disposition | Project/release owner |
 | [Evidence index](evidence/README.md) | Work-package implementation and acceptance records | Quality lead |
 | [Diagnostics plan](DIAGNOSTICS_PLAN.md) | Local-only schema, redaction, retention, preview, export, and deletion | Privacy/quality owner |
 | [Public-boundary incident response](INCIDENT_RESPONSE.md) | Credential revocation, containment, private reporting, corrective action, and safe resumption | Security/privacy owner |
