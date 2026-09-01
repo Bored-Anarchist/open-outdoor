@@ -42,6 +42,7 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-043` | Public regional packs use deterministic SQLite plus a canonical manifest, embedded coverage/exclusions/DBOM, and fail-closed source rights gates | Accepted | Identical inputs are byte reproducible; existing or oversized outputs are not distributable |
 | `ADR-044` | RIDB, NPS, dated checksum-pinned Geofabrik OSM extracts, and USGS 3DEP are independent secondary public-source connectors | Accepted | Production uses official sources and preserves license/attribution/metadata; synthetic records are test fixtures only |
 | `ADR-045` | Phase 2 acceptance uses one non-interactive clean-commit run with capped live probes and separate reviewer approval | Accepted | Tester input is limited to required external API keys; offline, dirty, incomplete, or self-approved evidence cannot pass |
+| `ADR-046` | RIDB build-time ingestion and Phase 2 acceptance use Recreation.gov's official daily JSON bulk download instead of the authenticated live API | Accepted | No RIDB account or key is required by testers or shipped code; ingestion records the download URL, acquisition time, byte count, and SHA-256 digest, enforces a byte ceiling, validates the snapshot contract, and removes temporary raw data; this supersedes only the RIDB API/key portions of ADR-044 and ADR-045 |
 
 ## 2. Phase 0 implementation decisions
 

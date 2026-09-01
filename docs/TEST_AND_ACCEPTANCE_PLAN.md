@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** In progress; Phase 2 guided runner implemented and live reviewer acceptance pending
+**Status:** In progress; Phase 2 guided runner implemented, RIDB bulk-download migration pending, and live reviewer acceptance blocked until alignment
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
@@ -62,8 +62,8 @@ WP-205 through WP-210 assign these exact cases:
 - `T-INT-003-C03`: enumerate every ArcGIS object ID, page deterministically, preserve partitions, and emit access/dedup candidates.
 - `T-INT-003-C04`: reject incomplete partition sets and report checksummed geometry/source freshness coverage.
 - `T-INT-003-C05`: emit rule directives only for exact checksum-pinned human-reviewed documents.
-- `T-INT-003-C06`: validate every RIDB, NPS, OSM, and 3DEP registration independently for endpoint, lifecycle, rights, license, attribution, and external-secret declarations.
-- `T-INT-003-C07`: page RIDB deterministically while keeping its API key out of URLs and emitted data.
+- `T-INT-003-C06`: validate every RIDB, NPS, OSM, and 3DEP registration independently for endpoint, lifecycle, rights, license, attribution, and external-secret declarations; RIDB declares no secret.
+- `T-INT-003-C07`: acquire the official daily RIDB JSON download deterministically, enforce a byte ceiling, record the acquisition time and SHA-256 digest, validate its contract, and keep the temporary raw snapshot out of public output.
 - `T-INT-003-C08`: normalize NPS restrictions and retain 3DEP bounds, resolution, vertical datum, size, and freshness metadata.
 - `T-INT-003-C09`: reject latest/unpinned OSM input and normalize only a dated checksum-matching Geofabrik extract.
 - `T-REL-002-C01`: reproduce byte-identical public SQLite catalogs and manifests and audit their inventory, R-tree, coverage, exclusions, and DBOM.
@@ -72,7 +72,7 @@ WP-205 through WP-210 assign these exact cases:
 
 ### 2.1 Phase 2 guided run
 
-`pnpm phase2:acceptance` is the required M3 evidence workflow. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, and structurally valid live samples from all 17 official registrations. RIDB and NPS keys are supplied only through `RIDB_API_KEY` and `NPS_API_KEY`. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
+`pnpm phase2:acceptance` is the required M3 evidence workflow after its RIDB implementation is aligned with ADR-046. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, the official daily RIDB JSON download, and structurally valid samples from the other official registrations. The runner downloads RIDB without authentication and records the snapshot's acquisition time, byte count, and SHA-256 digest; it must not request or read `RIDB_API_KEY`. The only tester-supplied source credential is `NPS_API_KEY`. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
 
 ## 3. Required fixtures
 
