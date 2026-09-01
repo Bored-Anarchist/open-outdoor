@@ -65,12 +65,25 @@ describe('Phase 2 guided acceptance evidence', () => {
     expect(
       profile.sources.every((source) => !/(?:api[_-]?key|token|secret)=/i.test(source.url)),
     ).toBe(true);
+    expect(profile.sources.find((source) => source.sourceId === 'ridb-facilities-ny')).toEqual({
+      sourceId: 'ridb-facilities-ny',
+      family: 'ridb',
+      url: 'https://ridb.recreation.gov/downloads/RIDBFullExport_V1_JSON.zip',
+    });
     expect(profile.sources.filter((source) => source.secretName)).toEqual([
-      expect.objectContaining({ secretName: 'RIDB_API_KEY', secretHeader: 'apikey' }),
       expect.objectContaining({ secretName: 'NPS_API_KEY', secretHeader: 'X-Api-Key' }),
       expect.objectContaining({ secretName: 'NPS_API_KEY', secretHeader: 'X-Api-Key' }),
       expect.objectContaining({ secretName: 'NPS_API_KEY', secretHeader: 'X-Api-Key' }),
     ]);
+    const schema = JSON.parse(readFileSync('config/phase2-acceptance-profile.schema.json', 'utf8'));
+    const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema);
+    expect(validate(profile)).toBe(true);
+    const invalid = structuredClone(profile);
+    Object.assign(
+      invalid.sources.find((source) => source.sourceId === 'ridb-facilities-ny')!,
+      { secretName: 'NPS_API_KEY', secretHeader: 'X-Api-Key' },
+    );
+    expect(validate(invalid)).toBe(false);
   });
 
   it('accepts a complete clean live report and validates its public schema', () => {

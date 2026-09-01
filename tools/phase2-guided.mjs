@@ -40,7 +40,6 @@ function sanitizedExcerpt(value) {
 function runCommand(id, args) {
   const started = performance.now();
   const environment = { ...process.env, NO_COLOR: '1' };
-  delete environment.RIDB_API_KEY;
   delete environment.NPS_API_KEY;
   const result = spawnSync(node, args, {
     cwd: root,
@@ -82,7 +81,8 @@ async function readResponseSample(response, maximumBytes) {
   return sample;
 }
 
-function validateObservation(source, text, contentType) {
+function validateObservation(source, sample, contentType) {
+  const text = new TextDecoder().decode(sample);
   if (source.family === 'document') {
     return contentType.includes('text/html') || contentType.includes('application/pdf')
       ? 'document content type accepted'
@@ -104,10 +104,6 @@ function validateObservation(source, text, contentType) {
   }
   if (source.family === 'socrata') {
     return Array.isArray(parsed) ? `sample rows observed: ${parsed.length}` : null;
-  }
-  if (source.family === 'ridb') {
-    const count = Number(parsed?.METADATA?.RESULTS?.TOTAL_COUNT);
-    return Number.isSafeInteger(count) && count >= 0 ? `record count observed: ${count}` : null;
   }
   if (source.family === 'nps') {
     const count = Number(parsed?.total);
@@ -141,8 +137,16 @@ async function probeSource(source, profile, mode) {
     };
   }
   const headers = {
-    Accept: source.family === 'document' ? 'text/html,application/pdf' : 'application/json,*/*',
-    Range: `bytes=0-${profile.maximumSampleBytes - 1}`,
+    Accept:
+      source.family === 'ridb'
+        ? 'application/zip'
+        : source.family === 'document'
+          ? 'text/html,application/pdf'
+          : 'application/json,*/*',
+    Range:
+      source.family === 'ridb'
+        ? `bytes=-${profile.maximumSampleBytes}`
+        : `bytes=0-${profile.maximumSampleBytes - 1}`,
     'User-Agent': 'OpenOutdoor-Phase2-Acceptance/1.0',
   };
   if (source.secretName) {
@@ -170,11 +174,34 @@ async function probeSource(source, profile, mode) {
     });
     const sample = await readResponseSample(response, profile.maximumSampleBytes);
     const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
-    const observation = validateObservation(
-      source,
-      new TextDecoder().decode(sample),
-      contentType.toLowerCase(),
-    );
+    let observation;
+    if (source.family === 'ridb') {
+      const directory = new TextDecoder().decode(sample);
+      const requiredEntries = ['Facilities_API_v1.json', 'FacilityAddresses_API_v1.json'];
+      const hasEndRecord = sample.some(
+        (_value, index) =>
+          index + 3 < sample.byteLength &&
+          sample[index] === 0x50 &&
+          sample[index + 1] === 0x4b &&
+          sample[index + 2] === 0x05 &&
+          sample[index + 3] === 0x06,
+      );
+      const archiveBytes = /\/(\d+)$/.exec(response.headers.get('content-range') ?? '')?.[1];
+      observation =
+        response.status === 206 &&
+        contentType.toLowerCase().includes('application/zip') &&
+        requiredEntries.every((entry) => directory.includes(entry)) &&
+        hasEndRecord &&
+        archiveBytes
+          ? `RIDB ZIP directory observed; archiveBytes=${archiveBytes}; lastModified=${
+              response.headers.get('last-modified') ?? 'unknown'
+            }; etag=${response.headers.get('etag') ?? 'unknown'}; directorySampleSha256=${sha256(
+              sample,
+            )}`
+          : null;
+    } else {
+      observation = validateObservation(source, sample, contentType.toLowerCase());
+    }
     return {
       sourceId: source.sourceId,
       family: source.family,
@@ -220,7 +247,18 @@ const mode = hasArgument('--offline') ? 'offline' : 'live';
 const profile = JSON.parse(
   await readFile(new URL('../config/phase2-acceptance-profile.json', import.meta.url), 'utf8'),
 );
-if (profile.schemaVersion !== 1 || profile.profileId !== PHASE2_PROFILE_ID) {
+const profileSchema = JSON.parse(
+  await readFile(
+    new URL('../config/phase2-acceptance-profile.schema.json', import.meta.url),
+    'utf8',
+  ),
+);
+const validateProfile = new Ajv2020({ allErrors: true, strict: true }).compile(profileSchema);
+if (
+  !validateProfile(profile) ||
+  profile.schemaVersion !== 1 ||
+  profile.profileId !== PHASE2_PROFILE_ID
+) {
   console.error('Phase 2 acceptance profile is invalid');
   process.exit(2);
 }
@@ -261,6 +299,7 @@ const commands = [
     'tools/phase2-guided.mjs',
     'tools/phase2-guided-lib.mjs',
     'config/phase2-acceptance-profile.json',
+    'config/phase2-acceptance-profile.schema.json',
     'config/phase2-guided-report.schema.json',
     'docs/PHASE_2_GUIDED_ACCEPTANCE.md',
   ]),

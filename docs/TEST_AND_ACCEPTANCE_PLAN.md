@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** In progress; Phase 2 guided runner implemented, RIDB bulk-download migration pending, and live reviewer acceptance blocked until alignment
+**Status:** In progress; Phase 2 guided runner and RIDB bulk-download migration implemented, with live reviewer acceptance pending
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
@@ -72,7 +72,7 @@ WP-205 through WP-210 assign these exact cases:
 
 ### 2.1 Phase 2 guided run
 
-`pnpm phase2:acceptance` is the required M3 evidence workflow after its RIDB implementation is aligned with ADR-046. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, the official daily RIDB JSON download, and structurally valid samples from the other official registrations. The runner downloads RIDB without authentication and records the snapshot's acquisition time, byte count, and SHA-256 digest; it must not request or read `RIDB_API_KEY`. The only tester-supplied source credential is `NPS_API_KEY`. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
+`pnpm phase2:acceptance` is the required M3 evidence workflow. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, a bounded directory probe of the official daily RIDB JSON ZIP, and structurally valid samples from the other official registrations. The runner checks RIDB without authentication and records the archive byte count, last-modified value, ETag, and directory-sample SHA-256; it must not request or read `RIDB_API_KEY`. The connector contract separately proves bounded extraction of the facilities and facility-address JSON entries, checksummed raw storage, and deterministic New York filtering. The only tester-supplied source credential is `NPS_API_KEY`. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
 
 ## 3. Required fixtures
 

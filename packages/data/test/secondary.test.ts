@@ -37,6 +37,49 @@ function jsonResult(payload: unknown): SecondaryFetchResult {
   };
 }
 
+function storedZip(entries: Readonly<Record<string, Uint8Array>>): Uint8Array {
+  const localParts: Buffer[] = [];
+  const centralParts: Buffer[] = [];
+  let localOffset = 0;
+  for (const [name, value] of Object.entries(entries)) {
+    const nameBytes = Buffer.from(name, 'utf8');
+    const body = Buffer.from(value);
+    const local = Buffer.alloc(30);
+    local.writeUInt32LE(0x04034b50, 0);
+    local.writeUInt16LE(20, 4);
+    local.writeUInt16LE(0, 6);
+    local.writeUInt16LE(0, 8);
+    local.writeUInt32LE(body.byteLength, 18);
+    local.writeUInt32LE(body.byteLength, 22);
+    local.writeUInt16LE(nameBytes.byteLength, 26);
+    local.writeUInt16LE(0, 28);
+    localParts.push(local, nameBytes, body);
+
+    const central = Buffer.alloc(46);
+    central.writeUInt32LE(0x02014b50, 0);
+    central.writeUInt16LE(20, 4);
+    central.writeUInt16LE(20, 6);
+    central.writeUInt16LE(0, 8);
+    central.writeUInt16LE(0, 10);
+    central.writeUInt32LE(body.byteLength, 20);
+    central.writeUInt32LE(body.byteLength, 24);
+    central.writeUInt16LE(nameBytes.byteLength, 28);
+    central.writeUInt16LE(0, 30);
+    central.writeUInt16LE(0, 32);
+    central.writeUInt32LE(localOffset, 42);
+    centralParts.push(central, nameBytes);
+    localOffset += local.byteLength + nameBytes.byteLength + body.byteLength;
+  }
+  const central = Buffer.concat(centralParts);
+  const end = Buffer.alloc(22);
+  end.writeUInt32LE(0x06054b50, 0);
+  end.writeUInt16LE(Object.keys(entries).length, 8);
+  end.writeUInt16LE(Object.keys(entries).length, 10);
+  end.writeUInt32LE(central.byteLength, 12);
+  end.writeUInt32LE(localOffset, 16);
+  return new Uint8Array(Buffer.concat([...localParts, central, end]));
+}
+
 describe('WP-210 secondary official-source connectors', () => {
   it('T-INT-003-C06 independently registers reviewed public rights and external secrets', async () => {
     expect(SECONDARY_SOURCE_REGISTRY).toHaveLength(6);
@@ -56,7 +99,11 @@ describe('WP-210 secondary official-source connectors', () => {
       expect(source.licenseId).not.toBe('');
       expect(source.manifest.rights.attribution.length).toBeGreaterThan(0);
     }
-    expect(getSecondarySource('ridb-facilities-ny').manifest.secretNames).toEqual(['RIDB_API_KEY']);
+    expect(getSecondarySource('ridb-facilities-ny')).toMatchObject({
+      adapter: 'ridb-json-zip',
+      endpoint: 'https://ridb.recreation.gov/downloads/RIDBFullExport_V1_JSON.zip',
+      manifest: { secretNames: [] },
+    });
     expect(getSecondarySource('nps-parks-ny').manifest.secretNames).toEqual(['NPS_API_KEY']);
     const fixture = JSON.parse(
       await readFile(
@@ -72,10 +119,10 @@ describe('WP-210 secondary official-source connectors', () => {
     );
   });
 
-  it('T-INT-003-C07 pages RIDB deterministically and sends its API key only in headers', async () => {
-    const source = { ...getSecondarySource('ridb-facilities-ny'), pageSize: 2 };
+  it('T-INT-003-C07 range-fetches the RIDB bulk archive and deterministically selects New York facilities without a key', async () => {
+    const source = getSecondarySource('ridb-facilities-ny');
     const seen: { url: string; headers: Readonly<Record<string, string>> }[] = [];
-    const records = [1, 2, 3].map((id) => ({
+    const facilities = [3, 1, 2].map((id) => ({
       FacilityID: String(id),
       FacilityName: `Synthetic RIDB ${id}`,
       FacilityTypeDescription: 'Facility',
@@ -83,15 +130,38 @@ describe('WP-210 secondary official-source connectors', () => {
       FacilityLongitude: -74 - id / 100,
       LastUpdatedDate: now,
     }));
+    const archive = storedZip({
+      'Facilities_API_v1.json': encoder.encode(JSON.stringify({ RECDATA: facilities })),
+      'FacilityAddresses_API_v1.json': encoder.encode(
+        JSON.stringify({
+          RECDATA: [
+            { FacilityID: '1', AddressStateCode: 'NY' },
+            { FacilityID: '2', AddressStateCode: 'NJ' },
+            { FacilityID: '3', AddressStateCode: 'NY' },
+          ],
+        }),
+      ),
+    });
     const fetcher: SecondaryFetcher = async (url, headers) => {
       seen.push({ url, headers });
-      const parsed = new URL(url);
-      const limit = Number(parsed.searchParams.get('limit'));
-      const offset = Number(parsed.searchParams.get('offset'));
-      return jsonResult({
-        METADATA: { RESULTS: { TOTAL_COUNT: 3 } },
-        RECDATA: limit === 1 ? [] : records.slice(offset, offset + limit),
-      });
+      const range = headers.Range;
+      expect(range).toBeDefined();
+      let body: Uint8Array;
+      if (range === 'bytes=-65536') {
+        body = archive.slice(Math.max(0, archive.byteLength - 65_536));
+      } else {
+        const match = /^bytes=(\d+)-(\d+)$/.exec(range ?? '');
+        expect(match).not.toBeNull();
+        const start = Number(match?.[1]);
+        const end = Number(match?.[2]);
+        body = archive.slice(start, Math.min(end + 1, archive.byteLength));
+      }
+      return {
+        status: 206,
+        contentType: 'application/zip',
+        body,
+        redirectCount: 0,
+      };
     };
     const result = await runConnector(
       createSecondaryConnector({
@@ -99,20 +169,21 @@ describe('WP-210 secondary official-source connectors', () => {
         fetcher,
         rawStore: await rawStore(),
         ids: new CanonicalSourceIdRegistry(),
-        secrets: { RIDB_API_KEY: 'fixture-key' },
         now: () => now,
       }),
       'secondary-ridb',
       now,
     );
     expect(result.quarantine).toEqual([]);
-    expect(result.emitted.flatMap((batch) => batch.records)).toHaveLength(3);
-    expect(result.emitted.map((batch) => batch.records[0]?.source.sourcePartition)).toEqual([
-      'page-0000',
-      'page-0001',
-    ]);
-    expect(seen.every((request) => request.headers.apikey === 'fixture-key')).toBe(true);
-    expect(seen.every((request) => !request.url.includes('fixture-key'))).toBe(true);
+    const emitted = result.emitted.flatMap((batch) => batch.records);
+    expect(emitted.map((record) => record.source.externalId)).toEqual(['1', '3']);
+    expect(emitted.every((record) => record.source.sourcePartition === 'new-york-daily-json')).toBe(
+      true,
+    );
+    expect(seen).toHaveLength(4);
+    expect(seen.every((request) => request.url === source.endpoint)).toBe(true);
+    expect(seen.every((request) => request.headers.apikey === undefined)).toBe(true);
+    expect(seen.every((request) => request.headers.Range?.startsWith('bytes='))).toBe(true);
   });
 
   it('T-INT-003-C08 normalizes NPS alerts and USGS 3DEP product metadata', async () => {

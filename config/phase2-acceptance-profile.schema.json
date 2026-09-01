@@ -33,13 +33,31 @@
         "sourceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
         "family": { "enum": ["arcgis", "document", "socrata", "ridb", "nps", "checksum", "tnm"] },
         "url": { "type": "string", "pattern": "^https://" },
-        "secretName": { "enum": ["RIDB_API_KEY", "NPS_API_KEY"] },
-        "secretHeader": { "enum": ["apikey", "X-Api-Key"] }
+        "secretName": { "const": "NPS_API_KEY" },
+        "secretHeader": { "const": "X-Api-Key" }
       },
       "dependentRequired": {
         "secretName": ["secretHeader"],
         "secretHeader": ["secretName"]
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "family": { "const": "nps" } }, "required": ["family"] },
+          "then": {
+            "properties": {
+              "secretName": { "const": "NPS_API_KEY" },
+              "secretHeader": { "const": "X-Api-Key" }
+            },
+            "required": ["secretName", "secretHeader"]
+          },
+          "else": {
+            "properties": {
+              "secretName": false,
+              "secretHeader": false
+            }
+          }
+        }
+      ]
     }
   }
 }

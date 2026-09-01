@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { inflateRawSync } from 'node:zlib';
 import type {
   CanonicalGeometry,
   CanonicalRecord,
@@ -20,10 +21,10 @@ import type { RawArtifactStore } from './ingestion.js';
 import { CanonicalSourceIdRegistry, type GeoJsonSourceFeature } from './new-york.js';
 import type { PublicPackArtifact, PublicPackSourceRegistration } from './public-pack.js';
 
-export const SECONDARY_CONNECTOR_VERSION = '1.0.0' as const;
+export const SECONDARY_CONNECTOR_VERSION = '1.1.0' as const;
 export const SECONDARY_REGISTRY_REVIEWED_AT = '2026-08-31T00:00:00.000Z' as const;
 
-export type SecondarySourceAdapter = 'offset-json' | 'osm-pbf' | 'tnm-json';
+export type SecondarySourceAdapter = 'offset-json' | 'ridb-json-zip' | 'osm-pbf' | 'tnm-json';
 export type SecondarySourceFamily = 'ridb' | 'nps' | 'osm' | '3dep';
 
 export interface SecondarySourceDefinition {
@@ -132,16 +133,16 @@ export const SECONDARY_SOURCE_REGISTRY: readonly SecondarySourceDefinition[] = [
     id: 'ridb-facilities-ny',
     displayName: 'Recreation.gov RIDB facilities and recreation areas, New York',
     owner: 'Recreation.gov Recreation Information Database',
-    canonicalUrl: 'https://ridb.recreation.gov/',
-    endpoint: 'https://ridb.recreation.gov/api/v1/facilities',
-    adapter: 'offset-json',
+    canonicalUrl: 'https://ridb.recreation.gov/download',
+    endpoint: 'https://ridb.recreation.gov/downloads/RIDBFullExport_V1_JSON.zip',
+    adapter: 'ridb-json-zip',
     family: 'ridb',
     resource: 'facilities',
     licenseId: 'RIDB-API-Access-Agreement',
     disclaimer:
       'Federal providers remain responsible for source quality; coordinates may be incomplete.',
     attribution: ['Data source: ridb.recreation.gov'],
-    termsUrl: 'https://ridb.recreation.gov/',
+    termsUrl: 'https://ridb.recreation.gov/access-agreement-ridb',
     parsedFields: [
       'FacilityID',
       'FacilityName',
@@ -149,10 +150,11 @@ export const SECONDARY_SOURCE_REGISTRY: readonly SecondarySourceDefinition[] = [
       'FacilityLatitude',
       'FacilityLongitude',
       'LastUpdatedDate',
+      'AddressStateCode',
     ],
     allowedRecordTypes: ['place'],
-    secretNames: ['RIDB_API_KEY'],
     query: { state: 'NY' },
+    contentTypes: ['application/json'],
     staleAfterSeconds: 30 * 24 * 60 * 60,
   }),
   secondarySource({
@@ -368,12 +370,17 @@ interface ParsedSecondaryPayload {
 
 function headersFor(options: SecondaryConnectorOptions): Readonly<Record<string, string>> {
   const headers: Record<string, string> = {
-    Accept: options.source.family === 'osm' ? 'application/octet-stream' : 'application/json',
+    Accept:
+      options.source.adapter === 'ridb-json-zip'
+        ? 'application/zip'
+        : options.source.family === 'osm'
+          ? 'application/octet-stream'
+          : 'application/json',
   };
   for (const name of options.source.manifest.secretNames) {
     const secret = options.secrets?.[name];
     if (!secret) throw new Error(`${options.source.id} requires secret ${name}`);
-    headers[name === 'NPS_API_KEY' ? 'X-Api-Key' : 'apikey'] = secret;
+    headers['X-Api-Key'] = secret;
   }
   return headers;
 }
@@ -386,14 +393,9 @@ function withQuery(source: SecondarySourceDefinition, offset: number, limit: num
   return url.toString();
 }
 
-function jsonTotal(source: SecondarySourceDefinition, payload: unknown): number {
+function jsonTotal(payload: unknown): number {
   if (!payload || typeof payload !== 'object') return NaN;
   const object = payload as Record<string, unknown>;
-  if (source.family === 'ridb') {
-    const metadata = object.METADATA as Record<string, unknown> | undefined;
-    const results = metadata?.RESULTS as Record<string, unknown> | undefined;
-    return Number(results?.TOTAL_COUNT);
-  }
   return Number(object.total);
 }
 
@@ -416,6 +418,219 @@ function jsonItems(
     : [];
 }
 
+const RIDB_ZIP_DIRECTORY_BYTES = 64 * 1024;
+const RIDB_ZIP_ENTRY_PADDING_BYTES = 4096;
+const RIDB_REQUIRED_JSON_ENTRIES = [
+  'Facilities_API_v1.json',
+  'FacilityAddresses_API_v1.json',
+] as const;
+
+interface RidbZipEntry {
+  readonly name: string;
+  readonly flags: number;
+  readonly compressionMethod: number;
+  readonly compressedBytes: number;
+  readonly expandedBytes: number;
+  readonly localHeaderOffset: number;
+}
+
+function parseRidbZipDirectory(
+  payload: Uint8Array,
+  source: SecondarySourceDefinition,
+): ReadonlyMap<string, RidbZipEntry> {
+  const bytes = Buffer.from(payload.buffer, payload.byteOffset, payload.byteLength);
+  let end = -1;
+  for (let index = bytes.length - 22; index >= 0; index -= 1) {
+    if (bytes.readUInt32LE(index) === 0x06054b50) {
+      end = index;
+      break;
+    }
+  }
+  if (end < 0 || end + 22 > bytes.length) throw new Error('RIDB ZIP directory is missing EOCD');
+  const entryCount = bytes.readUInt16LE(end + 10);
+  const directoryBytes = bytes.readUInt32LE(end + 12);
+  const commentBytes = bytes.readUInt16LE(end + 20);
+  if (
+    entryCount === 0 ||
+    entryCount > source.manifest.limits.maxArchiveEntries ||
+    end + 22 + commentBytes > bytes.length
+  ) {
+    throw new Error('RIDB ZIP directory violates archive limits');
+  }
+  let offset = end - directoryBytes;
+  if (offset < 0) throw new Error('RIDB ZIP directory exceeds the bounded suffix probe');
+  const entries = new Map<string, RidbZipEntry>();
+  let expandedTotal = 0;
+  for (let index = 0; index < entryCount; index += 1) {
+    if (offset + 46 > end || bytes.readUInt32LE(offset) !== 0x02014b50) {
+      throw new Error('RIDB ZIP central directory is malformed');
+    }
+    const flags = bytes.readUInt16LE(offset + 8);
+    const compressionMethod = bytes.readUInt16LE(offset + 10);
+    const compressedBytes = bytes.readUInt32LE(offset + 20);
+    const expandedBytes = bytes.readUInt32LE(offset + 24);
+    const nameBytes = bytes.readUInt16LE(offset + 28);
+    const extraBytes = bytes.readUInt16LE(offset + 30);
+    const entryCommentBytes = bytes.readUInt16LE(offset + 32);
+    const localHeaderOffset = bytes.readUInt32LE(offset + 42);
+    const next = offset + 46 + nameBytes + extraBytes + entryCommentBytes;
+    if (next > end) throw new Error('RIDB ZIP entry metadata exceeds the central directory');
+    const name = bytes.subarray(offset + 46, offset + 46 + nameBytes).toString('utf8');
+    const selected = RIDB_REQUIRED_JSON_ENTRIES.includes(
+      name as (typeof RIDB_REQUIRED_JSON_ENTRIES)[number],
+    );
+    if (
+      name === '' ||
+      name.includes('/') ||
+      name.includes('\\') ||
+      name.includes('..') ||
+      entries.has(name) ||
+      (flags & 0x1) !== 0 ||
+      ![0, 8].includes(compressionMethod) ||
+      !Number.isSafeInteger(localHeaderOffset) ||
+      compressedBytes <= 0 ||
+      expandedBytes <= 0 ||
+      (selected &&
+        (expandedBytes > source.manifest.limits.maxExpandedBytes ||
+          expandedBytes / compressedBytes > source.manifest.limits.maxCompressionRatio))
+    ) {
+      throw new Error('RIDB ZIP entry violates archive policy');
+    }
+    if (selected) expandedTotal += expandedBytes;
+    if (
+      expandedTotal > source.manifest.limits.maxExpandedBytes ||
+      expandedTotal + 1024 > source.manifest.limits.maxPayloadBytes
+    ) {
+      throw new Error('RIDB ZIP expanded size exceeds its configured limit');
+    }
+    entries.set(name, {
+      name,
+      flags,
+      compressionMethod,
+      compressedBytes,
+      expandedBytes,
+      localHeaderOffset,
+    });
+    offset = next;
+  }
+  if (offset !== end) throw new Error('RIDB ZIP central directory has trailing metadata');
+  for (const required of RIDB_REQUIRED_JSON_ENTRIES) {
+    if (!entries.has(required)) throw new Error(`RIDB ZIP is missing ${required}`);
+  }
+  return entries;
+}
+
+async function loadRidbZipDirectory(
+  options: SecondaryConnectorOptions,
+  signal: AbortSignal,
+): Promise<ReadonlyMap<string, RidbZipEntry>> {
+  const headers = {
+    ...headersFor(options),
+    Range: `bytes=-${RIDB_ZIP_DIRECTORY_BYTES}`,
+  };
+  const response = await options.fetcher(options.source.endpoint, headers, signal);
+  if (
+    response.status !== 206 ||
+    !response.contentType.toLowerCase().includes('application/zip') ||
+    response.redirectCount !== 0 ||
+    response.body.byteLength > RIDB_ZIP_DIRECTORY_BYTES
+  ) {
+    throw new Error('RIDB ZIP directory probe failed its bounded range contract');
+  }
+  return parseRidbZipDirectory(response.body, options.source);
+}
+
+async function fetchRidbZipEntry(
+  options: SecondaryConnectorOptions,
+  entry: RidbZipEntry,
+  signal: AbortSignal,
+): Promise<Uint8Array> {
+  const inclusiveEnd =
+    entry.localHeaderOffset + entry.compressedBytes + RIDB_ZIP_ENTRY_PADDING_BYTES - 1;
+  const response = await options.fetcher(
+    options.source.endpoint,
+    {
+      ...headersFor(options),
+      Range: `bytes=${entry.localHeaderOffset}-${inclusiveEnd}`,
+    },
+    signal,
+  );
+  if (
+    response.status !== 206 ||
+    !response.contentType.toLowerCase().includes('application/zip') ||
+    response.redirectCount !== 0 ||
+    response.body.byteLength > entry.compressedBytes + RIDB_ZIP_ENTRY_PADDING_BYTES
+  ) {
+    throw new Error(`RIDB ZIP entry fetch failed for ${entry.name}`);
+  }
+  const bytes = Buffer.from(
+    response.body.buffer,
+    response.body.byteOffset,
+    response.body.byteLength,
+  );
+  if (bytes.length < 30 || bytes.readUInt32LE(0) !== 0x04034b50) {
+    throw new Error(`RIDB ZIP local header is invalid for ${entry.name}`);
+  }
+  const flags = bytes.readUInt16LE(6);
+  const compressionMethod = bytes.readUInt16LE(8);
+  const nameBytes = bytes.readUInt16LE(26);
+  const extraBytes = bytes.readUInt16LE(28);
+  const dataOffset = 30 + nameBytes + extraBytes;
+  const localName = bytes.subarray(30, 30 + nameBytes).toString('utf8');
+  if (
+    flags !== entry.flags ||
+    compressionMethod !== entry.compressionMethod ||
+    localName !== entry.name ||
+    dataOffset + entry.compressedBytes > bytes.length
+  ) {
+    throw new Error(`RIDB ZIP local metadata does not match ${entry.name}`);
+  }
+  const compressed = bytes.subarray(dataOffset, dataOffset + entry.compressedBytes);
+  const expanded =
+    compressionMethod === 0
+      ? Buffer.from(compressed)
+      : inflateRawSync(compressed, {
+          maxOutputLength: options.source.manifest.limits.maxExpandedBytes,
+        });
+  if (expanded.byteLength !== entry.expandedBytes) {
+    throw new Error(`RIDB ZIP expanded size does not match ${entry.name}`);
+  }
+  return new Uint8Array(expanded);
+}
+
+async function fetchRidbBulkPayload(
+  options: SecondaryConnectorOptions,
+  signal: AbortSignal,
+): Promise<Uint8Array> {
+  const entries = await loadRidbZipDirectory(options, signal);
+  const facilities = await fetchRidbZipEntry(
+    options,
+    entries.get('Facilities_API_v1.json')!,
+    signal,
+  );
+  const addresses = await fetchRidbZipEntry(
+    options,
+    entries.get('FacilityAddresses_API_v1.json')!,
+    signal,
+  );
+  const prefix = new TextEncoder().encode('{"facilities":');
+  const middle = new TextEncoder().encode(',"addresses":');
+  const suffix = new TextEncoder().encode('}');
+  const combined = new Uint8Array(
+    prefix.byteLength +
+      facilities.byteLength +
+      middle.byteLength +
+      addresses.byteLength +
+      suffix.byteLength,
+  );
+  let offset = 0;
+  for (const part of [prefix, facilities, middle, addresses, suffix]) {
+    combined.set(part, offset);
+    offset += part.byteLength;
+  }
+  return combined;
+}
+
 async function discoverSecondaryAssets(
   options: SecondaryConnectorOptions,
   signal: AbortSignal,
@@ -433,11 +648,21 @@ async function discoverSecondaryAssets(
     }
     return [{ externalId: 'dated-pbf', sourcePartition: 'new-york-pbf', locator }];
   }
+  if (source.adapter === 'ridb-json-zip') {
+    await loadRidbZipDirectory(options, signal);
+    return [
+      {
+        externalId: 'daily-json-facilities-and-addresses',
+        sourcePartition: 'new-york-daily-json',
+        locator: source.endpoint,
+      },
+    ];
+  }
   const response = await options.fetcher(withQuery(source, 0, 1), headersFor(options), signal);
   if (response.status !== 200) {
     throw new Error(`${source.id} discovery failed with ${response.status}`);
   }
-  const total = jsonTotal(source, JSON.parse(new TextDecoder().decode(response.body)) as unknown);
+  const total = jsonTotal(JSON.parse(new TextDecoder().decode(response.body)) as unknown);
   if (!Number.isSafeInteger(total) || total < 0) {
     throw new Error(`${source.id} returned invalid total`);
   }
@@ -817,25 +1042,39 @@ export function createSecondaryConnector(
     discover: ({ signal }) => discoverSecondaryAssets(options, signal),
     fetch: async (asset, { signal }) => {
       assertAllowedHost(source, asset.locator);
-      const response = await options.fetcher(asset.locator, headersFor(options), signal);
-      if (response.status !== 200) {
-        throw new Error(`${source.id} fetch failed with ${response.status}`);
-      }
-      if (!source.contentTypes.some((type) => response.contentType.toLowerCase().includes(type))) {
-        throw new Error(`${source.id} returned unexpected content type ${response.contentType}`);
-      }
-      if (
-        source.family === 'osm' &&
-        (!options.pinnedBulkChecksum || !checksumMatches(response.body, options.pinnedBulkChecksum))
-      ) {
-        throw new Error('OSM extract checksum does not match its pinned checksum');
+      let payload: Uint8Array;
+      let contentType: string;
+      let redirectCount = 0;
+      if (source.adapter === 'ridb-json-zip') {
+        payload = await fetchRidbBulkPayload(options, signal);
+        contentType = 'application/json';
+      } else {
+        const response = await options.fetcher(asset.locator, headersFor(options), signal);
+        if (response.status !== 200) {
+          throw new Error(`${source.id} fetch failed with ${response.status}`);
+        }
+        if (
+          !source.contentTypes.some((type) => response.contentType.toLowerCase().includes(type))
+        ) {
+          throw new Error(`${source.id} returned unexpected content type ${response.contentType}`);
+        }
+        if (
+          source.family === 'osm' &&
+          (!options.pinnedBulkChecksum ||
+            !checksumMatches(response.body, options.pinnedBulkChecksum))
+        ) {
+          throw new Error('OSM extract checksum does not match its pinned checksum');
+        }
+        payload = response.body;
+        contentType = response.contentType;
+        redirectCount = response.redirectCount;
       }
       return {
         ...asset,
-        payload: response.body,
-        contentType: response.contentType,
+        payload,
+        contentType,
         retrievedAt: (options.now ?? (() => new Date().toISOString()))(),
-        redirectCount: response.redirectCount,
+        redirectCount,
       };
     },
     storeRaw: (asset) =>
@@ -861,6 +1100,33 @@ export function createSecondaryConnector(
         };
       }
       const payload = JSON.parse(new TextDecoder().decode(asset.payload)) as unknown;
+      if (source.adapter === 'ridb-json-zip') {
+        if (!payload || typeof payload !== 'object') {
+          throw new Error('RIDB bulk payload is not an object');
+        }
+        const bulk = payload as Record<string, unknown>;
+        const facilities = jsonItems(source, bulk.facilities);
+        const addresses = jsonItems(source, bulk.addresses);
+        const state = source.query.state;
+        const facilityIds = new Set(
+          addresses
+            .filter((address) => text(address, ['AddressStateCode'], '') === state)
+            .map((address) => text(address, ['FacilityID'], ''))
+            .filter((id) => id !== ''),
+        );
+        const items = facilities
+          .filter((facility) => facilityIds.has(text(facility, ['FacilityID'], '')))
+          .sort((left, right) =>
+            text(left, ['FacilityID'], '').localeCompare(text(right, ['FacilityID'], ''), 'en-US'),
+          );
+        if (items.length === 0) throw new Error(`${source.id} bulk download contains no records`);
+        return {
+          partition: asset.sourcePartition,
+          retrievedAt: asset.retrievedAt,
+          items,
+          osmFeatures: [],
+        };
+      }
       const items = jsonItems(source, payload);
       if (items.length === 0) throw new Error(`${source.id} page contains no records`);
       return {
@@ -892,6 +1158,17 @@ export function createSecondaryConnector(
 
 export const defaultSecondaryFetcher: SecondaryFetcher = async (url, headers, signal) => {
   const response = await fetch(url, { headers, signal, redirect: 'manual' });
+  const requestedRange = Object.entries(headers).some(
+    ([name, value]) => name.toLowerCase() === 'range' && value !== '',
+  );
+  if (requestedRange && response.status !== 206) {
+    return {
+      status: response.status,
+      contentType: response.headers.get('content-type') ?? 'application/octet-stream',
+      body: new Uint8Array(),
+      redirectCount: 0,
+    };
+  }
   return {
     status: response.status,
     contentType: response.headers.get('content-type') ?? 'application/octet-stream',

@@ -59,9 +59,7 @@
     {
       "sourceId": "ridb-facilities-ny",
       "family": "ridb",
-      "url": "https://ridb.recreation.gov/api/v1/facilities?state=NY&limit=1&offset=0",
-      "secretName": "RIDB_API_KEY",
-      "secretHeader": "apikey"
+      "url": "https://ridb.recreation.gov/downloads/RIDBFullExport_V1_JSON.zip"
     },
     {
       "sourceId": "nps-parks-ny",
