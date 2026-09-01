@@ -6,6 +6,8 @@ export * from './connector.js';
 export * from './entity-resolution.js';
 export * from './ingestion.js';
 export * from './new-york.js';
+export * from './public-pack.js';
+export * from './secondary.js';
 
 export interface CatalogPlace {
   readonly id: string;

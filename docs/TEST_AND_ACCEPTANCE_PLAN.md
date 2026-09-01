@@ -49,7 +49,7 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | `T-REL-003` | Catalog trust and channel | Missing/invalid/revoked/rotated key, wrong channel, replay, rollback, unsigned-development label, last-known-good retention |
 | `T-REL-004` | Contribution privacy and CI efficiency | Public-handle/noreply identity, PR attestation, PII fixture rejection, path skips, superseded-run cancellation, timeouts, minimal matrix, candidate-only expensive jobs, minute report |
 
-WP-205 through WP-208 assign these exact cases:
+WP-205 through WP-210 assign these exact cases:
 
 - `T-UNIT-001-C01`: produce all seven camping statuses with the versioned precedence engine.
 - `T-UNIT-001-C02`: exclude private inholdings before public-land rules are considered.
@@ -62,6 +62,13 @@ WP-205 through WP-208 assign these exact cases:
 - `T-INT-003-C03`: enumerate every ArcGIS object ID, page deterministically, preserve partitions, and emit access/dedup candidates.
 - `T-INT-003-C04`: reject incomplete partition sets and report checksummed geometry/source freshness coverage.
 - `T-INT-003-C05`: emit rule directives only for exact checksum-pinned human-reviewed documents.
+- `T-INT-003-C06`: validate every RIDB, NPS, OSM, and 3DEP registration independently for endpoint, lifecycle, rights, license, attribution, and external-secret declarations.
+- `T-INT-003-C07`: page RIDB deterministically while keeping its API key out of URLs and emitted data.
+- `T-INT-003-C08`: normalize NPS restrictions and retain 3DEP bounds, resolution, vertical datum, size, and freshness metadata.
+- `T-INT-003-C09`: reject latest/unpinned OSM input and normalize only a dated checksum-matching Geofabrik extract.
+- `T-REL-002-C01`: reproduce byte-identical public SQLite catalogs and manifests and audit their inventory, R-tree, coverage, exclusions, and DBOM.
+- `T-REL-002-C02`: reject requested sources with revoked/incomplete rights and reject catalog output over its byte ceiling.
+- `T-REL-002-C03`: report RIDB/NPS/OSM/3DEP family gaps, source freshness, geometry, and elevation-product coverage.
 
 ## 3. Required fixtures
 

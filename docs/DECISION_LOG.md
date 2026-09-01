@@ -39,6 +39,8 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-041` | Phase 0 verifies system-backup exclusion and the uninstall warning but does not implement or test encrypted restore | Accepted | Encrypted backup/container selection and all-or-nothing restore remain WP-107/WP-306 and T-BAK-001; WP-008 and T-PHY-005 stop at protection and backup-inventory inspection |
 | `ADR-023` | Use versioned deterministic entity-specific blocking, weighted scores, explicit review, and append-only reversible decisions for initial entity resolution | Accepted | Initial fixture precision/recall gates and thresholds are implemented by WP-204; each production source pair needs labelled evidence before activation |
 | `ADR-042` | Use a versioned deterministic camping evaluator with conservative negative precedence, independent access, and fail-closed mandatory safety evidence | Accepted | Ownership alone yields at most generally eligible; verified allowed requires a current affirmative unit rule; conflicts, inholdings, and stale mandatory inputs remain explainable |
+| `ADR-043` | Public regional packs use deterministic SQLite plus a canonical manifest, embedded coverage/exclusions/DBOM, and fail-closed source rights gates | Accepted | Identical inputs are byte reproducible; existing or oversized outputs are not distributable |
+| `ADR-044` | RIDB, NPS, dated checksum-pinned Geofabrik OSM extracts, and USGS 3DEP are independent secondary public-source connectors | Accepted | Production uses official sources and preserves license/attribution/metadata; synthetic records are test fixtures only |
 
 ## 2. Phase 0 implementation decisions
 

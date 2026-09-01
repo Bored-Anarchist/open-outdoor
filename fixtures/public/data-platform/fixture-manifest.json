@@ -4,8 +4,8 @@
   "origin": "Invented New York-like records with no real person, route, or restricted source data",
   "license": "Apache-2.0",
   "generationMethod": "Deterministic programmatic records and manually labelled duplicate pairs",
-  "seed": "open-outdoor-wp-201-208-v1",
+  "seed": "open-outdoor-wp-201-210-v1",
   "retention": "indefinite",
   "allowedDestinations": ["public-source", "public-ci", "public-test-artifact"],
-  "files": ["entity-resolution-labels.json", "new-york-alpha.json"]
+  "files": ["entity-resolution-labels.json", "new-york-alpha.json", "secondary-alpha.json"]
 }

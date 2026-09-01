@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC_SYNTHETIC",
+  "origin": "Invented RIDB, NPS, OSM, and 3DEP-shaped records with no copied government records",
+  "purpose": "Connector contract, paging, normalization, checksum, and coverage tests",
+  "sourceFamilies": ["ridb", "nps", "osm", "3dep"],
+  "containsProductionData": false
+}

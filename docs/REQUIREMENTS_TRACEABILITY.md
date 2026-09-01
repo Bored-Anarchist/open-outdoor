@@ -46,7 +46,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `REQ-DAT-001` | Every boundary follows the canonical CRS, axis, time, unit, ID, null/unknown, geometry, provenance, and evolution contract | P0 | in-progress | M3 | Architecture owner | 12 | WP-201, WP-203 | T-INT-005 (`U`,`I`) | 2026-08-30 |
 | `REQ-CAT-001` | Writable user data and read-only public/private catalogs use separate database files and write capabilities | P0 | in-progress | M1 | Storage/backup owner | 7, 8 | WP-008, WP-102 | T-INT-001 | 2026-08-21 |
-| `REQ-CAT-002` | Every catalog has a versioned manifest, checksum, app compatibility interval, classification, rights, size, and provenance | P0 | proposed | M3 | Data/safety owner | 8, 9 | WP-209, WP-302 | T-INT-002, T-REL-002 | 2026-08-19 |
+| `REQ-CAT-002` | Every catalog has a versioned manifest, checksum, app compatibility interval, classification, rights, size, and provenance | P0 | in-progress | M3 | Data/safety owner | 8, 9 | WP-209, WP-302 | T-INT-002, T-REL-002 | 2026-08-31 |
 | `REQ-CAT-003` | Public/private/user query composition retains explicit record origin and rights | P0 | proposed | M4 | Storage/backup owner | 8 | WP-305 | T-E2E-003 | 2026-08-19 |
 | `REQ-CAT-004` | Private corrections, remaps, and promotion links are transactional and non-destructive | P0 | in-progress | M4 | Storage/backup owner | 8.1 | WP-008, WP-303, WP-305 | T-INT-002 | 2026-08-21 |
 | `REQ-CAT-005` | The combined public/private 3 GiB ceiling and exact free-space formula are enforced before staging | P0 | in-progress | M4 | Data/safety owner | 9 | WP-008, WP-302, WP-303 | T-INT-002, T-REL-002 | 2026-08-21 |
