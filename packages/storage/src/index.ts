@@ -354,3 +354,4 @@ export function phase0FixtureHashes(fixture: Phase0Fixture): Readonly<Record<str
   };
 }
 export * from './private';
+export * from './composition.js';

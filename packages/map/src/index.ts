@@ -2,6 +2,7 @@ import type { Coordinate } from '@open-outdoor/shared';
 
 export * from './basemap.js';
 export * from './offline-explore.js';
+export * from './field-readiness.js';
 
 export interface MapCamera {
   readonly center: Coordinate;

@@ -36,7 +36,7 @@
     }
   },
   "regions": ["US-NY"],
-  "schemas": { "catalog": 1, "backup": 1 },
+  "schemas": { "catalog": 1, "backup": 2 },
   "phase0": {
     "profileId": "iphone14-ios26.6-phase0-v1",
     "referenceDevice": { "model": "iPhone 14", "os": "iOS 26.6" },
@@ -61,6 +61,18 @@
       "minimumWorkspaceBytes": 1073741824,
       "postActivationReserveBytes": 2147483648
     }
+  },
+  "phase3": {
+    "fieldProfileId": "iphone14-ios26.6-phase3-v1",
+    "referenceDevice": { "model": "iPhone 14", "os": "iOS 26.6" },
+    "requiredRunsPerMode": 3,
+    "requiredModes": ["balanced", "endurance"],
+    "minimumDurationMinutes": 180,
+    "maximumBatteryPercentPerHour": { "balanced": 6, "endurance": 4 },
+    "maximumSeriousThermalSeconds": 0,
+    "maximumCriticalThermalSeconds": 0,
+    "maximumCheckpointGapSeconds": 30,
+    "maximumStorageGrowthMiBPerHour": 64
   },
   "budgets": {
     "diagnosticRetentionHours": 24,

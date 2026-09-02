@@ -1,6 +1,6 @@
 # Non-Functional Budgets and Objective Acceptance
 
-**Status:** Binding non-energy Phase 0 thresholds; physical acceptance remains pending and measured energy acceptance is deferred
+**Status:** Binding Phase 0 and Phase 3 thresholds; Phase 3 physical acceptance remains pending
 
 ## 1. Rules
 
@@ -50,9 +50,9 @@ Defaults are configurable downward by source; raising them requires a security/p
 | `BUD-ING-006` | Image decode | 50 megapixels and 200 MiB decoded buffer |
 | `BUD-ING-007` | Single connector partition | 15 min wall time before checkpoint/timeout unless manifest-approved |
 
-## 5. Deferred energy and thermal acceptance
+## 5. Phase 3 energy and thermal acceptance
 
-Phase 0 and Phase 1 make no numeric battery-life or thermal claim and require no physical energy runs. T-PHY-002 is reserved for WP-307/WP-503, which must approve a representative protocol and numeric thresholds before production. Current implementation constraints remain binding: sensors only during active recording, no continuous polling, explicit High Accuracy, 10 m Balanced and 25 m Endurance distance filters. Recording correctness, unintended sessions, stop behavior, and the 30-minute memory smoke remain independently testable.
+Phase 0 and Phase 1 made no numeric battery-life or thermal claim. WP-307 establishes the binding `iphone14-ios26.6-phase3-v1` T-PHY-002 profile: three independent 180-minute physical iPhone 14/iOS 26.6 runs in both Balanced and Endurance mode. Balanced battery use must be at most 6 percentage points/hour and Endurance at most 4; serious and critical thermal time must both be zero; checkpoint gaps must be at most 30 seconds; recording storage growth must be at most 64 MiB/hour; and sensors must have zero active seconds after recording stops. Every run also exercises offline browse/search, crash recovery, degraded GPS, and the native accessibility checklist. Replay and simulator runs can validate logic but cannot satisfy the physical gate. Current implementation constraints remain binding: sensors only during active recording, no continuous polling, explicit High Accuracy, 10 m Balanced and 25 m Endurance distance filters.
 
 ## 6. Elevation and camping correctness
 

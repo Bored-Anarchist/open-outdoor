@@ -12,6 +12,7 @@
     "regions",
     "schemas",
     "phase0",
+    "phase3",
     "budgets"
   ],
   "properties": {
@@ -145,6 +146,56 @@
             "postActivationReserveBytes": { "const": 2147483648 }
           }
         }
+      }
+    },
+    "phase3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fieldProfileId",
+        "referenceDevice",
+        "requiredRunsPerMode",
+        "requiredModes",
+        "minimumDurationMinutes",
+        "maximumBatteryPercentPerHour",
+        "maximumSeriousThermalSeconds",
+        "maximumCriticalThermalSeconds",
+        "maximumCheckpointGapSeconds",
+        "maximumStorageGrowthMiBPerHour"
+      ],
+      "properties": {
+        "fieldProfileId": { "const": "iphone14-ios26.6-phase3-v1" },
+        "referenceDevice": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["model", "os"],
+          "properties": {
+            "model": { "const": "iPhone 14" },
+            "os": { "const": "iOS 26.6" }
+          }
+        },
+        "requiredRunsPerMode": { "const": 3 },
+        "requiredModes": {
+          "type": "array",
+          "prefixItems": [{ "const": "balanced" }, { "const": "endurance" }],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "minimumDurationMinutes": { "const": 180 },
+        "maximumBatteryPercentPerHour": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["balanced", "endurance"],
+          "properties": {
+            "balanced": { "const": 6 },
+            "endurance": { "const": 4 }
+          }
+        },
+        "maximumSeriousThermalSeconds": { "const": 0 },
+        "maximumCriticalThermalSeconds": { "const": 0 },
+        "maximumCheckpointGapSeconds": { "const": 30 },
+        "maximumStorageGrowthMiBPerHour": { "const": 64 }
       }
     },
     "budgets": {
