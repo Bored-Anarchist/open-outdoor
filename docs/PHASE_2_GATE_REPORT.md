@@ -1,9 +1,9 @@
 # Phase 2 New York data-alpha gate
 
-**Status:** Guided runner implemented; live source run and reviewer acceptance pending
+**Status:** Accepted on 2026-09-01 by `Bored-Anarchist`
 
-WP-201 through WP-210 provide the connector/rights SDK, bounded ingestion, canonical model, reversible resolution, deterministic camping evaluator, official New York and secondary source definitions, and reproducible public-pack prototype. Their deterministic local acceptance cases pass, but implementation alone does not accept the phase.
+WP-201 through WP-210 provide the connector/rights SDK, bounded ingestion, canonical model, reversible resolution, deterministic camping evaluator, official New York and secondary source definitions, and reproducible public-pack prototype. The reviewer accepted the exact clean candidate `0081beae78343c1485704650e57395154958dc03` after the guided run passed all four commands, nine required test files, 18 named cases, 17 official-source probes, and ten acceptance criteria with zero blockers.
 
-Follow the [Phase 2 guided acceptance procedure](PHASE_2_GUIDED_ACCEPTANCE.md). The single command binds evidence to a clean commit, runs the local acceptance surface, probes all official registrations without bulk downloads, and prepares a reviewer-controlled proposal. The authoritative state is `config/phase2-gate.json`; it remains blocked until a passing live report is reviewed and explicitly recorded.
+The reviewed [guided report](evidence/artifacts/phase2-guided-report-0081bea.json) has SHA-256 `e25e49980e308aacf580cb227e3d159e73234f4926aea2800cf22dc3f2841d53`. The authoritative state is `config/phase2-gate.json`, which records the explicit reviewer approval and passes the reviewer-controlled gate validator.
 
-The gate does not permit waiving the Phase 2 stop conditions. Phase 3 still owns production basemap compilation, complete production-pack construction, offline explore/search, catalog activation, and field-beta behavior.
+No Phase 2 stop condition was waived. Official-source content and availability can change after the snapshot. Phase 3 still owns production basemap compilation, complete production-pack construction, offline explore/search, catalog activation, and field-beta behavior.

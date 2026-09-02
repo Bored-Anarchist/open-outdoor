@@ -5,17 +5,11 @@ import { evaluatePhase2Gate } from '../../../tools/phase2-gate-lib.mjs';
 const record = JSON.parse(readFileSync('config/phase2-gate.json', 'utf8'));
 
 describe('Phase 2 data-alpha gate', () => {
-  it('keeps the declared gate blocked until the guided live run and review pass', () => {
+  it('reflects the explicitly approved guided live run', () => {
     const result = evaluatePhase2Gate(record);
-    expect(result.status).toBe('blocked');
+    expect(result.status).toBe('passed');
     expect(record.gateStatus).toBe(result.status);
-    expect(result.blockers).toEqual(
-      expect.arrayContaining([
-        'WP-201: implemented',
-        'liveSourceAvailability: pending',
-        'review: explicit reviewer acceptance is missing',
-      ]),
-    );
+    expect(result.blockers).toEqual([]);
   });
 
   it('passes only accepted packages, acceptance criteria, and an explicit reviewed report', () => {
@@ -37,10 +31,12 @@ describe('Phase 2 data-alpha gate', () => {
 
   it('does not allow implementation or self-declared criteria to replace review evidence', () => {
     const candidate = structuredClone(record);
-    for (const item of Object.values(candidate.acceptance) as { status: string }[]) {
-      item.status = 'passed';
-    }
-    candidate.review.reportSha256 = 'b'.repeat(64);
-    expect(evaluatePhase2Gate(candidate).status).toBe('blocked');
+    candidate.packages['WP-201'].status = 'implemented';
+    candidate.review.acceptedAt = null;
+    candidate.review.acceptedBy = null;
+    expect(evaluatePhase2Gate(candidate)).toEqual({
+      status: 'blocked',
+      blockers: ['WP-201: implemented', 'review: explicit reviewer acceptance is missing'],
+    });
   });
 });

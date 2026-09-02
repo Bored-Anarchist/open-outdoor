@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** In progress; Phase 2 guided runner and RIDB bulk-download migration implemented, with live reviewer acceptance pending
+**Status:** In progress; Phase 2 accepted, with later phase and release acceptance pending
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.

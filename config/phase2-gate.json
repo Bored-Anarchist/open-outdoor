@@ -1,20 +1,20 @@
 {
   "$schema": "./phase2-gate.schema.json",
   "schemaVersion": 1,
-  "asOf": "2026-08-31",
+  "asOf": "2026-09-01",
   "profileId": "new-york-data-alpha-phase2-v1",
-  "gateStatus": "blocked",
+  "gateStatus": "passed",
   "packages": {
-    "WP-201": { "status": "implemented", "evidence": "docs/evidence/WP-201.md" },
-    "WP-202": { "status": "implemented", "evidence": "docs/evidence/WP-202.md" },
-    "WP-203": { "status": "implemented", "evidence": "docs/evidence/WP-203.md" },
-    "WP-204": { "status": "implemented", "evidence": "docs/evidence/WP-204.md" },
-    "WP-205": { "status": "implemented", "evidence": "docs/evidence/WP-205.md" },
-    "WP-206": { "status": "implemented", "evidence": "docs/evidence/WP-206.md" },
-    "WP-207": { "status": "implemented", "evidence": "docs/evidence/WP-207.md" },
-    "WP-208": { "status": "implemented", "evidence": "docs/evidence/WP-208.md" },
-    "WP-209": { "status": "implemented", "evidence": "docs/evidence/WP-209.md" },
-    "WP-210": { "status": "implemented", "evidence": "docs/evidence/WP-210.md" }
+    "WP-201": { "status": "accepted", "evidence": "docs/evidence/WP-201.md" },
+    "WP-202": { "status": "accepted", "evidence": "docs/evidence/WP-202.md" },
+    "WP-203": { "status": "accepted", "evidence": "docs/evidence/WP-203.md" },
+    "WP-204": { "status": "accepted", "evidence": "docs/evidence/WP-204.md" },
+    "WP-205": { "status": "accepted", "evidence": "docs/evidence/WP-205.md" },
+    "WP-206": { "status": "accepted", "evidence": "docs/evidence/WP-206.md" },
+    "WP-207": { "status": "accepted", "evidence": "docs/evidence/WP-207.md" },
+    "WP-208": { "status": "accepted", "evidence": "docs/evidence/WP-208.md" },
+    "WP-209": { "status": "accepted", "evidence": "docs/evidence/WP-209.md" },
+    "WP-210": { "status": "accepted", "evidence": "docs/evidence/WP-210.md" }
   },
   "acceptance": {
     "canonicalContracts": {
@@ -32,8 +32,8 @@
       "evidence": "packages/data/test/ingestion-security.test.ts"
     },
     "liveSourceAvailability": {
-      "status": "pending",
-      "evidence": "Run pnpm phase2:acceptance; bounded NPS probes use public DEMO_KEY with optional NPS_API_KEY override, and RIDB uses the official daily JSON ZIP without authentication"
+      "status": "passed",
+      "evidence": "docs/evidence/artifacts/phase2-guided-report-0081bea.json (17/17 official probes)"
     },
     "publicPackReproducibility": { "status": "passed", "evidence": "T-REL-002-C01 through C03" },
     "publicationBoundary": { "status": "passed", "evidence": "tools/public-boundary.mjs --scan ." },
@@ -47,9 +47,9 @@
     }
   },
   "review": {
-    "reportSha256": null,
-    "acceptedAt": null,
-    "acceptedBy": null,
-    "residualRisk": "Live official-source availability and explicit reviewer acceptance remain pending."
+    "reportSha256": "e25e49980e308aacf580cb227e3d159e73234f4926aea2800cf22dc3f2841d53",
+    "acceptedAt": "2026-09-01",
+    "acceptedBy": "Bored-Anarchist",
+    "residualRisk": "Official-source content and availability can change after the reviewed snapshot; Phase 3 must still prove production-pack construction, mobile catalog activation, offline UX, and physical-device behavior."
   }
 }
