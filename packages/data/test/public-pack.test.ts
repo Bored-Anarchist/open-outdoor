@@ -152,6 +152,11 @@ describe('WP-209 rights-aware reproducible public pack', () => {
       expect(database.prepare('SELECT count(*) AS count FROM record_bounds').get()).toEqual({
         count: 1,
       });
+      expect(
+        database
+          .prepare("SELECT id FROM record_search WHERE record_search MATCH 'synthetic'")
+          .get(),
+      ).toEqual({ id: record.id });
       expect(database.prepare('SELECT count(*) AS count FROM dbom').get()).toEqual({ count: 1 });
     } finally {
       database.close();
