@@ -32,7 +32,8 @@
     "phase2:acceptance": "node --use-system-ca tools/phase2-guided.mjs",
     "phase2:gate": "node tools/phase2-gate.mjs",
     "test:phase2": "vitest run packages/data packages/config/test/phase2-guided.test.ts packages/config/test/phase2-gate.test.ts",
-    "test:phase3": "vitest run packages/data/test/public-pack.test.ts packages/data/test/production-pack.test.ts packages/map packages/storage/test/catalog-activation.test.ts packages/storage/test/composition.test.ts packages/backup/test/backup.test.ts packages/tracking/test/field-hardening.test.ts",
+    "phase3:acceptance": "node tools/phase3-guided.mjs",
+    "test:phase3": "vitest run packages/data/test/public-pack.test.ts packages/data/test/production-pack.test.ts packages/map packages/storage/test/catalog-activation.test.ts packages/storage/test/composition.test.ts packages/backup/test/backup.test.ts packages/tracking/test/field-hardening.test.ts packages/config/test/phase3-guided.test.ts",
     "ci:window": "node tools/hosted-ci-window.mjs",
     "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs && node tools/validate-native-spikes.mjs",
     "python:test": "uv run --frozen python -m unittest discover -s python/tests"

@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/phase3-physical-report.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "generatedAt",
+    "sourceCommit",
+    "binarySha256",
+    "deviceModel",
+    "systemVersion",
+    "installationPassed",
+    "coordinateFree",
+    "containsPersonalData",
+    "performance",
+    "deviceFlows",
+    "accessibility",
+    "fieldRuns",
+    "attestation"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "profileId": { "const": "iphone14-ios26.6-phase3-v1" },
+    "generatedAt": { "$ref": "#/$defs/instant" },
+    "sourceCommit": { "$ref": "#/$defs/commit" },
+    "binarySha256": { "$ref": "#/$defs/hash" },
+    "deviceModel": { "const": "iPhone 14" },
+    "systemVersion": { "const": "iOS 26.6" },
+    "installationPassed": { "type": "boolean" },
+    "coordinateFree": { "type": "boolean" },
+    "containsPersonalData": { "type": "boolean" },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coldLaunchP50Ms",
+        "coldLaunchP95Ms",
+        "searchP50Ms",
+        "searchP95Ms",
+        "searchMaxMs",
+        "mapFrameRateP95",
+        "mainThreadStallMaxMs",
+        "catalogActivationSeconds",
+        "firstLaunchAfterSwitchSeconds",
+        "mapMemoryP95MiB"
+      ],
+      "properties": {
+        "coldLaunchP50Ms": { "$ref": "#/$defs/nonnegative" },
+        "coldLaunchP95Ms": { "$ref": "#/$defs/nonnegative" },
+        "searchP50Ms": { "$ref": "#/$defs/nonnegative" },
+        "searchP95Ms": { "$ref": "#/$defs/nonnegative" },
+        "searchMaxMs": { "$ref": "#/$defs/nonnegative" },
+        "mapFrameRateP95": { "$ref": "#/$defs/nonnegative" },
+        "mainThreadStallMaxMs": { "$ref": "#/$defs/nonnegative" },
+        "catalogActivationSeconds": { "$ref": "#/$defs/nonnegative" },
+        "firstLaunchAfterSwitchSeconds": { "$ref": "#/$defs/nonnegative" },
+        "mapMemoryP95MiB": { "$ref": "#/$defs/nonnegative" }
+      }
+    },
+    "deviceFlows": { "$ref": "#/$defs/deviceFlows" },
+    "accessibility": { "$ref": "#/$defs/accessibility" },
+    "fieldRuns": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/fieldRun" }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed", "tester", "notes"],
+      "properties": {
+        "completed": { "type": "boolean" },
+        "tester": { "type": "string" },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "instant": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+    },
+    "commit": { "type": "string", "pattern": "^[0-9a-fA-F]{40}$" },
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nonnegative": { "type": "number", "minimum": 0 },
+    "deviceFlows": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offlineExplore",
+        "catalogActivationAndRollback",
+        "composedOrigins",
+        "privateCatalogRemovalPreservedUserData",
+        "backupReinstallRestore",
+        "degradedAndErrorStates"
+      ],
+      "properties": {
+        "offlineExplore": { "type": "boolean" },
+        "catalogActivationAndRollback": { "type": "boolean" },
+        "composedOrigins": { "type": "boolean" },
+        "privateCatalogRemovalPreservedUserData": { "type": "boolean" },
+        "backupReinstallRestore": { "type": "boolean" },
+        "degradedAndErrorStates": { "type": "boolean" }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "voiceOver",
+        "dynamicType",
+        "boldText",
+        "increasedContrast",
+        "differentiateWithoutColor",
+        "reduceMotion",
+        "darkMode",
+        "touchTargets",
+        "oneHandedUse"
+      ],
+      "properties": {
+        "voiceOver": { "type": "boolean" },
+        "dynamicType": { "type": "boolean" },
+        "boldText": { "type": "boolean" },
+        "increasedContrast": { "type": "boolean" },
+        "differentiateWithoutColor": { "type": "boolean" },
+        "reduceMotion": { "type": "boolean" },
+        "darkMode": { "type": "boolean" },
+        "touchTargets": { "type": "boolean" },
+        "oneHandedUse": { "type": "boolean" }
+      }
+    },
+    "fieldRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment",
+        "profileId",
+        "runId",
+        "sourceCommit",
+        "deviceModel",
+        "systemVersion",
+        "mode",
+        "durationMinutes",
+        "batteryStartPercent",
+        "batteryEndPercent",
+        "seriousThermalSeconds",
+        "criticalThermalSeconds",
+        "maximumCheckpointGapSeconds",
+        "storageGrowthBytes",
+        "sensorsActiveWhileStoppedSeconds",
+        "offlineBrowsePassed",
+        "offlineSearchPassed",
+        "crashRecoveryPassed",
+        "degradedGpsStatePassed",
+        "accessibilityPassed"
+      ],
+      "properties": {
+        "environment": { "enum": ["physical-iphone", "simulator", "replay"] },
+        "profileId": { "const": "iphone14-ios26.6-phase3-v1" },
+        "runId": { "type": "string", "minLength": 1 },
+        "sourceCommit": { "$ref": "#/$defs/commit" },
+        "deviceModel": { "type": "string", "minLength": 1 },
+        "systemVersion": { "type": "string", "minLength": 1 },
+        "mode": { "enum": ["balanced", "endurance", "high-accuracy"] },
+        "durationMinutes": { "$ref": "#/$defs/nonnegative" },
+        "batteryStartPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "batteryEndPercent": { "type": "number", "minimum": 0, "maximum": 100 },
+        "seriousThermalSeconds": { "$ref": "#/$defs/nonnegative" },
+        "criticalThermalSeconds": { "$ref": "#/$defs/nonnegative" },
+        "maximumCheckpointGapSeconds": { "$ref": "#/$defs/nonnegative" },
+        "storageGrowthBytes": { "$ref": "#/$defs/nonnegative" },
+        "sensorsActiveWhileStoppedSeconds": { "$ref": "#/$defs/nonnegative" },
+        "offlineBrowsePassed": { "type": "boolean" },
+        "offlineSearchPassed": { "type": "boolean" },
+        "crashRecoveryPassed": { "type": "boolean" },
+        "degradedGpsStatePassed": { "type": "boolean" },
+        "accessibilityPassed": { "type": "boolean" }
+      }
+    }
+  }
+}
