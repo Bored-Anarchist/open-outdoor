@@ -43,6 +43,7 @@ These decisions are established by the consolidated scope. Implementation ADRs m
 | `ADR-044` | RIDB, NPS, dated checksum-pinned Geofabrik OSM extracts, and USGS 3DEP are independent secondary public-source connectors | Accepted | Production uses official sources and preserves license/attribution/metadata; synthetic records are test fixtures only |
 | `ADR-045` | Phase 2 acceptance uses one non-interactive clean-commit run with capped live probes and separate reviewer approval | Accepted | Tester input is limited to required external API keys; offline, dirty, incomplete, or self-approved evidence cannot pass |
 | `ADR-046` | RIDB build-time ingestion and Phase 2 acceptance use Recreation.gov's official daily JSON bulk download instead of the authenticated live API | Accepted | No RIDB account or key is required by testers or shipped code; ingestion range-fetches the facilities/address entries, records acquisition metadata plus the raw-artifact byte count and SHA-256, and enforces archive limits, while guided acceptance uses a bounded ZIP-directory probe; this supersedes only the RIDB API/key portions of ADR-044 and ADR-045 |
+| `ADR-047` | Phase 2 acceptance uses api.data.gov's public `DEMO_KEY` for its three bounded NPS probes | Accepted | The normal tester path needs no credential; `NPS_API_KEY` remains an optional header-only override if the shared demo quota is exhausted, while production ingestion still requires a managed key |
 
 ## 2. Phase 0 implementation decisions
 

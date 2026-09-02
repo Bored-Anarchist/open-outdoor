@@ -1,5 +1,15 @@
 export const PHASE2_PROFILE_ID = 'new-york-data-alpha-phase2-v1';
 
+export const API_DATA_GOV_DEMO_KEY = 'DEMO_KEY';
+
+export function resolveProbeCredential(source, environment = process.env) {
+  if (!source.secretName) return undefined;
+  if (source.secretName === 'NPS_API_KEY') {
+    return environment.NPS_API_KEY || API_DATA_GOV_DEMO_KEY;
+  }
+  return environment[source.secretName];
+}
+
 export const EXPECTED_PHASE2_CASE_IDS = [
   ...Array.from({ length: 6 }, (_, index) => `T-UNIT-001-C${String(index + 1).padStart(2, '0')}`),
   ...Array.from({ length: 9 }, (_, index) => `T-INT-003-C${String(index + 1).padStart(2, '0')}`),

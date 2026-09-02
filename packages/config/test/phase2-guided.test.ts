@@ -10,6 +10,7 @@ import {
   REQUIRED_PHASE2_TEST_FILES,
   createPhase2EvidenceProposal,
   evaluatePhase2GuidedReport,
+  resolveProbeCredential,
 } from '../../../tools/phase2-guided-lib.mjs';
 
 function passingReport() {
@@ -56,6 +57,13 @@ function passingReport() {
 }
 
 describe('Phase 2 guided acceptance evidence', () => {
+  it('uses the public api.data.gov demo key unless a tester supplies an NPS key', () => {
+    const source = { secretName: 'NPS_API_KEY' };
+    expect(resolveProbeCredential(source, {})).toBe('DEMO_KEY');
+    expect(resolveProbeCredential(source, { NPS_API_KEY: 'tester-key' })).toBe('tester-key');
+    expect(resolveProbeCredential({}, {})).toBeUndefined();
+  });
+
   it('pins exactly the required official probes and keeps credentials out of URLs', () => {
     const profile = JSON.parse(readFileSync('config/phase2-acceptance-profile.json', 'utf8')) as {
       sources: { sourceId: string; url: string; secretName?: string; secretHeader?: string }[];

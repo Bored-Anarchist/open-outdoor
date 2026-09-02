@@ -10,6 +10,7 @@ import {
   REQUIRED_PHASE2_TEST_FILES,
   createPhase2EvidenceProposal,
   evaluatePhase2GuidedReport,
+  resolveProbeCredential,
 } from './phase2-guided-lib.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -150,7 +151,7 @@ async function probeSource(source, profile, mode) {
     'User-Agent': 'OpenOutdoor-Phase2-Acceptance/1.0',
   };
   if (source.secretName) {
-    const secret = process.env[source.secretName];
+    const secret = resolveProbeCredential(source);
     if (!secret) {
       return {
         sourceId: source.sourceId,
@@ -301,6 +302,7 @@ const commands = [
     'config/phase2-acceptance-profile.json',
     'config/phase2-acceptance-profile.schema.json',
     'config/phase2-guided-report.schema.json',
+    'docs/PHASE_2_ACCEPTANCE_CHECKLIST.md',
     'docs/PHASE_2_GUIDED_ACCEPTANCE.md',
   ]),
   runCommand('publicBoundary', ['./tools/public-boundary.mjs', '--scan', '.']),

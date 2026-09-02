@@ -1,19 +1,18 @@
 # Phase 2 guided acceptance
 
-The Phase 2 runner reduces the New York data-alpha acceptance pass to one non-interactive command. It runs every local Phase 2 suite, checks all 17 official source registrations, validates the public boundary, and writes a schema-validated report plus a reviewer proposal. It never changes the gate record. ADR-046 is implemented: RIDB uses Recreation.gov's official daily JSON ZIP and does not require an API key.
+The Phase 2 runner reduces the New York data-alpha acceptance pass to one non-interactive command. It runs every local Phase 2 suite, checks all 17 official source registrations, validates the public boundary, and writes a schema-validated report plus a reviewer proposal. It never changes the gate record. Follow the [Phase 2 acceptance checklist](PHASE_2_ACCEPTANCE_CHECKLIST.md) for the exact tester and reviewer sequence. ADR-046 is implemented: RIDB uses Recreation.gov's official daily JSON ZIP and does not require an API key.
 
 ## Tester preparation
 
-Use a clean checkout of the exact candidate commit with the pinned Node.js 24.19.0 dependencies already bootstrapped. The only tester-provided value is the NPS API credential. Keep it in the process environment; do not place it in a repository file or command argument. RIDB needs no tester-provided credential or manually downloaded file: the runner checks the current official archive published through [RIDB Recreation Data](https://ridb.recreation.gov/download).
+Use a clean checkout of the exact candidate commit with the pinned Node.js 24.19.0 dependencies already bootstrapped. No credential is required for the normal acceptance run. The three bounded NPS probes use api.data.gov's public `DEMO_KEY`; RIDB needs no credential or manually downloaded file and is checked through the current official archive published via [RIDB Recreation Data](https://ridb.recreation.gov/download).
 
 ```powershell
-$env:NPS_API_KEY = '<NPS key>'
 pnpm phase2:acceptance
 ```
 
 The package command enables Node's operating-system CA store so Windows and managed networks can validate the same HTTPS sources without disabling TLS verification.
 
-No interactive questions, RIDB account, RIDB key, manual RIDB download, or manual result transcription are required. A missing NPS credential, unavailable source or RIDB snapshot, a dirty checkout, the wrong Node version, or a failed criterion produces a blocked report with the exact retry reason.
+No interactive questions, account, API key, manual download, or manual result transcription are required. An unavailable source or snapshot, an exhausted shared NPS demo quota, a dirty checkout, the wrong Node version, or a failed criterion produces a blocked report with the exact retry reason.
 
 ## What the command does
 
@@ -32,9 +31,16 @@ The runner reads at most 64 KiB per source. It does not download the 570 MB RIDB
 
 Run `pnpm phase2:acceptance --offline` to debug local failures without network calls. Offline mode always reports `blocked` and cannot be used as acceptance evidence.
 
-Transient source failures require only rerunning the same command on the same clean candidate. A changed commit or changed RIDB archive metadata/directory sample requires a fresh report. The NPS credential is sent only in its declared request header and is never placed in URLs, output, report fields, hashes, or failure excerpts. RIDB acquisition uses no credential.
+Transient source failures require only rerunning the same command on the same clean candidate. A changed commit or changed RIDB archive metadata/directory sample requires a fresh report. If the public NPS demo quota is exhausted, set a personal key for the retry only; it overrides `DEMO_KEY`:
 
-The local type, test, format, and boundary subprocesses run with `NPS_API_KEY` removed from their environments. Only the bounded NPS probe requests can access that value. `RIDB_API_KEY` is neither requested nor read.
+```powershell
+$env:NPS_API_KEY = '<personal NPS key>'
+pnpm phase2:acceptance
+```
+
+The NPS key is sent only in its declared request header and is never placed in URLs, output, report fields, hashes, or failure excerpts. RIDB acquisition uses no credential.
+
+The local type, test, format, and boundary subprocesses run with `NPS_API_KEY` removed from their environments. Only the three bounded NPS probe requests can access a personal override. `RIDB_API_KEY` is neither requested nor read.
 
 Custom generated-file destinations are optional:
 

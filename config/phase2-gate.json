@@ -33,7 +33,7 @@
     },
     "liveSourceAvailability": {
       "status": "pending",
-      "evidence": "Run pnpm phase2:acceptance with NPS_API_KEY; RIDB uses the official daily JSON ZIP without authentication"
+      "evidence": "Run pnpm phase2:acceptance; bounded NPS probes use public DEMO_KEY with optional NPS_API_KEY override, and RIDB uses the official daily JSON ZIP without authentication"
     },
     "publicPackReproducibility": { "status": "passed", "evidence": "T-REL-002-C01 through C03" },
     "publicationBoundary": { "status": "passed", "evidence": "tools/public-boundary.mjs --scan ." },
