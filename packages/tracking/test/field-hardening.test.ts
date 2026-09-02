@@ -31,7 +31,7 @@ function run(mode: 'balanced' | 'endurance', index: number): FieldRunEvidence {
   };
 }
 
-describe('WP-307 field acceptance protocol', () => {
+describe('WP-307/WP-503 endurance evidence protocol', () => {
   it('matches the binding machine-readable release profile', () => {
     const release = JSON.parse(
       readFileSync(new URL('../../../config/release.json', import.meta.url), 'utf8'),
@@ -50,6 +50,12 @@ describe('WP-307 field acceptance protocol', () => {
       maximumCriticalThermalSeconds: PHASE3_FIELD_PROFILE.maximumCriticalThermalSeconds,
       maximumCheckpointGapSeconds: PHASE3_FIELD_PROFILE.maximumCheckpointGapSeconds,
       maximumStorageGrowthMiBPerHour: PHASE3_FIELD_PROFILE.maximumStorageGrowthMiBPerHour,
+      enduranceDisposition: {
+        phase3: PHASE3_FIELD_PROFILE.phase3Disposition,
+        blockingPhase: PHASE3_FIELD_PROFILE.blockingPhase,
+        blockingWorkPackage: PHASE3_FIELD_PROFILE.blockingWorkPackage,
+        enduranceClaimsAllowed: false,
+      },
     });
   });
 

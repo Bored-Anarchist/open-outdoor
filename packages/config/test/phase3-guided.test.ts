@@ -7,6 +7,7 @@ import {
   REQUIRED_PHASE3_COMMANDS,
   REQUIRED_PHASE3_TEST_FILES,
   createPhase3EvidenceProposal,
+  evaluatePhase3EnduranceEvidence,
   evaluatePhase3GuidedReport,
   evaluatePhase3PhysicalReport,
 } from '../../../tools/phase3-guided-lib.mjs';
@@ -114,6 +115,12 @@ function guidedReport() {
     })),
     passedTestFiles: REQUIRED_PHASE3_TEST_FILES,
     physicalEvaluation: { status: 'passed', blockers: [] },
+    enduranceDisposition: {
+      status: 'conditionally-approved',
+      blockingPhase: 'Phase 5',
+      workPackage: 'WP-503',
+      findings: ['endurance evidence deferred'],
+    },
     acceptance: Object.fromEntries(
       REQUIRED_PHASE3_ACCEPTANCE.map((id) => [id, { passed: true, evidence: id }]),
     ),
@@ -145,6 +152,7 @@ describe('Phase 3 guided acceptance evidence', () => {
         maximumCriticalThermalSeconds: number;
         maximumCheckpointGapSeconds: number;
         maximumStorageGrowthMiBPerHour: number;
+        enduranceDisposition: Record<string, unknown>;
       };
     };
     expect(release.phase3).toMatchObject({
@@ -158,14 +166,19 @@ describe('Phase 3 guided acceptance evidence', () => {
       maximumCriticalThermalSeconds: 0,
       maximumCheckpointGapSeconds: 30,
       maximumStorageGrowthMiBPerHour: 64,
+      enduranceDisposition: {
+        phase3: 'conditionally-approved',
+        blockingPhase: 'Phase 5',
+        blockingWorkPackage: 'WP-503',
+        enduranceClaimsAllowed: false,
+      },
     });
   });
 
-  it('blocks replay, over-budget metrics, unsafe privacy, and commit mismatch', () => {
+  it('blocks over-budget required metrics, unsafe privacy, and commit mismatch', () => {
     const report = physicalReport();
     report.coordinateFree = false;
     report.performance.searchP95Ms = 501;
-    report.fieldRuns[0]!.environment = 'replay';
     const result = evaluatePhase3PhysicalReport(report, { sourceCommit: 'e'.repeat(40) });
     expect(result.status).toBe('blocked');
     expect(result.blockers).toEqual(
@@ -173,9 +186,36 @@ describe('Phase 3 guided acceptance evidence', () => {
         'physical report source commit does not match the candidate',
         'physical report privacy classification is unsafe',
         'search p95: physical budget did not pass',
-        'balanced-1: replay/simulator cannot satisfy physical acceptance',
       ]),
     );
+  });
+
+  it('conditionally approves missing or failing endurance evidence without blocking Phase 3', () => {
+    const withoutRuns = physicalReport();
+    withoutRuns.fieldRuns = [];
+    expect(evaluatePhase3PhysicalReport(withoutRuns, { sourceCommit: commit }).status).toBe(
+      'passed',
+    );
+    expect(evaluatePhase3EnduranceEvidence(withoutRuns)).toMatchObject({
+      status: 'conditionally-approved',
+      blockingPhase: 'Phase 5',
+      workPackage: 'WP-503',
+      findings: ['balanced: 3 physical run(s) deferred', 'endurance: 3 physical run(s) deferred'],
+    });
+
+    const failingRuns = physicalReport();
+    failingRuns.fieldRuns[0]!.environment = 'replay';
+    failingRuns.fieldRuns[1]!.batteryEndPercent = 40;
+    expect(evaluatePhase3PhysicalReport(failingRuns, { sourceCommit: commit }).status).toBe(
+      'passed',
+    );
+    expect(evaluatePhase3EnduranceEvidence(failingRuns)).toMatchObject({
+      status: 'conditionally-approved',
+      findings: expect.arrayContaining([
+        'balanced-1: replay/simulator is supplemental only',
+        'endurance-1: one or more field thresholds failed',
+      ]),
+    });
   });
 
   it('accepts a complete clean guided report and validates its public schema', () => {
@@ -194,14 +234,14 @@ describe('Phase 3 guided acceptance evidence', () => {
     report.commands[0]!.passed = false;
     report.passedTestFiles = report.passedTestFiles.slice(1);
     report.physicalEvaluation = { status: 'blocked', blockers: ['physical report is required'] };
-    report.acceptance.fieldHardening.passed = false;
+    report.acceptance.fieldReadiness.passed = false;
     expect(evaluatePhase3GuidedReport(report).blockers).toEqual(
       expect.arrayContaining([
         'candidate working tree was not clean',
         'phase3Types: command did not pass',
         `${REQUIRED_PHASE3_TEST_FILES[0]}: test file did not pass`,
         'physical report is required',
-        'fieldHardening: acceptance criterion did not pass',
+        'fieldReadiness: acceptance criterion did not pass',
       ]),
     );
   });
@@ -220,6 +260,12 @@ describe('Phase 3 guided acceptance evidence', () => {
       packageRecommendations: {
         'WP-301': 'accepted-after-review',
         'WP-307': 'accepted-after-review',
+      },
+      conditionalApprovals: {
+        fieldEndurance: {
+          status: 'conditionally-approved',
+          workPackage: 'WP-503',
+        },
       },
     });
   });

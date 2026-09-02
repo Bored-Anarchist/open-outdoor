@@ -28,7 +28,7 @@ export const REQUIRED_PHASE3_ACCEPTANCE = [
   'offlineProduct',
   'privateComposition',
   'backupRestore',
-  'fieldHardening',
+  'fieldReadiness',
   'accessibility',
   'installableIos',
   'privacyRights',
@@ -108,17 +108,25 @@ export function evaluatePhase3PhysicalReport(report, options = {}) {
       blockers.push(`${id}: accessibility check did not pass`);
   }
 
+  if (report?.attestation?.completed !== true || !report?.attestation?.tester) {
+    blockers.push('physical tester attestation is incomplete');
+  }
+  return { status: blockers.length === 0 ? 'passed' : 'blocked', blockers };
+}
+
+export function evaluatePhase3EnduranceEvidence(report) {
+  const findings = [];
   const runs = Array.isArray(report?.fieldRuns) ? report.fieldRuns : [];
   const runIds = new Set();
   for (const run of runs) {
-    if (runIds.has(run.runId)) blockers.push(`${run.runId}: duplicate field run identifier`);
+    if (runIds.has(run.runId)) findings.push(`${run.runId}: duplicate field run identifier`);
     runIds.add(run.runId);
     if (run.environment !== 'physical-iphone') {
-      blockers.push(`${run.runId}: replay/simulator cannot satisfy physical acceptance`);
+      findings.push(`${run.runId}: replay/simulator is supplemental only`);
       continue;
     }
     if (run.sourceCommit !== report.sourceCommit) {
-      blockers.push(`${run.runId}: source commit does not match the physical report`);
+      findings.push(`${run.runId}: source commit does not match the physical report`);
     }
     const hours = run.durationMinutes / 60;
     const batteryRate = (run.batteryStartPercent - run.batteryEndPercent) / hours;
@@ -145,18 +153,20 @@ export function evaluatePhase3PhysicalReport(report, options = {}) {
       run.crashRecoveryPassed === true &&
       run.degradedGpsStatePassed === true &&
       run.accessibilityPassed === true;
-    if (!passed) blockers.push(`${run.runId}: one or more field thresholds failed`);
+    if (!passed) findings.push(`${run.runId}: one or more field thresholds failed`);
   }
   for (const mode of ['balanced', 'endurance']) {
     const count = runs.filter(
       (run) => run.environment === 'physical-iphone' && run.mode === mode,
     ).length;
-    if (count < 3) blockers.push(`${mode}: ${3 - count} physical run(s) missing`);
+    if (count < 3) findings.push(`${mode}: ${3 - count} physical run(s) deferred`);
   }
-  if (report?.attestation?.completed !== true || !report?.attestation?.tester) {
-    blockers.push('physical tester attestation is incomplete');
-  }
-  return { status: blockers.length === 0 ? 'passed' : 'blocked', blockers };
+  return {
+    status: findings.length === 0 ? 'passed' : 'conditionally-approved',
+    blockingPhase: 'Phase 5',
+    workPackage: 'WP-503',
+    findings,
+  };
 }
 
 export function evaluatePhase3GuidedReport(report, options = {}) {
@@ -206,6 +216,9 @@ export function createPhase3EvidenceProposal(report, options) {
     reportSha256: options.reportSha256,
     reportPath: options.reportPath,
     evaluation,
+    conditionalApprovals: {
+      fieldEndurance: report.enduranceDisposition,
+    },
     packageRecommendations: accepted
       ? Object.fromEntries(
           Array.from({ length: 7 }, (_, index) => [`WP-${301 + index}`, 'accepted-after-review']),

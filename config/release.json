@@ -72,7 +72,13 @@
     "maximumSeriousThermalSeconds": 0,
     "maximumCriticalThermalSeconds": 0,
     "maximumCheckpointGapSeconds": 30,
-    "maximumStorageGrowthMiBPerHour": 64
+    "maximumStorageGrowthMiBPerHour": 64,
+    "enduranceDisposition": {
+      "phase3": "conditionally-approved",
+      "blockingPhase": "Phase 5",
+      "blockingWorkPackage": "WP-503",
+      "enduranceClaimsAllowed": false
+    }
   },
   "budgets": {
     "diagnosticRetentionHours": 24,

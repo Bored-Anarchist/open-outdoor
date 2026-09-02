@@ -8,6 +8,7 @@ import {
   PHASE3_PROFILE_ID,
   REQUIRED_PHASE3_TEST_FILES,
   createPhase3EvidenceProposal,
+  evaluatePhase3EnduranceEvidence,
   evaluatePhase3GuidedReport,
   evaluatePhase3PhysicalReport,
 } from './phase3-guided-lib.mjs';
@@ -65,31 +66,6 @@ function safeOutputPath(value) {
   return path;
 }
 
-function draftFieldRun(mode, index, sourceCommit) {
-  return {
-    environment: 'physical-iphone',
-    profileId: PHASE3_PROFILE_ID,
-    runId: `${mode}-${index}`,
-    sourceCommit,
-    deviceModel: 'iPhone 14',
-    systemVersion: 'iOS 26.6',
-    mode,
-    durationMinutes: 0,
-    batteryStartPercent: 0,
-    batteryEndPercent: 0,
-    seriousThermalSeconds: 0,
-    criticalThermalSeconds: 0,
-    maximumCheckpointGapSeconds: 0,
-    storageGrowthBytes: 0,
-    sensorsActiveWhileStoppedSeconds: 0,
-    offlineBrowsePassed: false,
-    offlineSearchPassed: false,
-    crashRecoveryPassed: false,
-    degradedGpsStatePassed: false,
-    accessibilityPassed: false,
-  };
-}
-
 function physicalTemplate(sourceCommit) {
   const falseChecks = (keys) => Object.fromEntries(keys.map((key) => [key, false]));
   return {
@@ -134,10 +110,7 @@ function physicalTemplate(sourceCommit) {
       'touchTargets',
       'oneHandedUse',
     ]),
-    fieldRuns: [1, 2, 3].flatMap((index) => [
-      draftFieldRun('balanced', index, sourceCommit),
-      draftFieldRun('endurance', index, sourceCommit),
-    ]),
+    fieldRuns: [],
     attestation: { completed: false, tester: '', notes: '' },
   };
 }
@@ -225,6 +198,12 @@ const validatePhysical = ajv.compile(physicalSchema);
 let physicalReport = null;
 let physicalReference = null;
 let physicalEvaluation = { status: 'blocked', blockers: ['physical report is required'] };
+let enduranceDisposition = {
+  status: 'conditionally-approved',
+  blockingPhase: 'Phase 5',
+  workPackage: 'WP-503',
+  findings: ['balanced: 3 physical run(s) deferred', 'endurance: 3 physical run(s) deferred'],
+};
 
 if (physicalPathArgument) {
   const physicalPath = resolve(physicalPathArgument);
@@ -247,6 +226,7 @@ if (physicalPathArgument) {
       };
     } else {
       physicalEvaluation = evaluatePhase3PhysicalReport(physicalReport, { sourceCommit });
+      enduranceDisposition = evaluatePhase3EnduranceEvidence(physicalReport);
     }
   }
 } else {
@@ -287,7 +267,7 @@ const acceptance = {
     passed: localTestsPassed && filePassed('packages/backup/test/backup.test.ts'),
     evidence: 'packages/backup/test/backup.test.ts',
   },
-  fieldHardening: {
+  fieldReadiness: {
     passed: physicalPassed && filePassed('packages/tracking/test/field-hardening.test.ts'),
     evidence: physicalReference?.path ?? 'physical report required',
   },
@@ -323,6 +303,7 @@ const baseReport = {
   commands,
   passedTestFiles,
   physicalEvaluation,
+  enduranceDisposition,
   acceptance,
 };
 const evaluation = evaluatePhase3GuidedReport(baseReport, { sourceCommit });

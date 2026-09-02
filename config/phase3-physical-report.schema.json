@@ -17,7 +17,6 @@
     "performance",
     "deviceFlows",
     "accessibility",
-    "fieldRuns",
     "attestation"
   ],
   "properties": {
@@ -63,7 +62,7 @@
     "accessibility": { "$ref": "#/$defs/accessibility" },
     "fieldRuns": {
       "type": "array",
-      "minItems": 6,
+      "minItems": 0,
       "maxItems": 20,
       "items": { "$ref": "#/$defs/fieldRun" }
     },

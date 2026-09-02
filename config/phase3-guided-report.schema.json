@@ -18,6 +18,7 @@
     "commands",
     "passedTestFiles",
     "physicalEvaluation",
+    "enduranceDisposition",
     "acceptance",
     "blockers"
   ],
@@ -58,6 +59,17 @@
       "items": { "type": "string", "minLength": 1 }
     },
     "physicalEvaluation": { "$ref": "#/$defs/evaluation" },
+    "enduranceDisposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "blockingPhase", "workPackage", "findings"],
+      "properties": {
+        "status": { "enum": ["passed", "conditionally-approved"] },
+        "blockingPhase": { "const": "Phase 5" },
+        "workPackage": { "const": "WP-503" },
+        "findings": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
     "acceptance": {
       "type": "object",
       "additionalProperties": false,
@@ -67,7 +79,7 @@
         "offlineProduct",
         "privateComposition",
         "backupRestore",
-        "fieldHardening",
+        "fieldReadiness",
         "accessibility",
         "installableIos",
         "privacyRights"
@@ -78,7 +90,7 @@
         "offlineProduct": { "$ref": "#/$defs/criterion" },
         "privateComposition": { "$ref": "#/$defs/criterion" },
         "backupRestore": { "$ref": "#/$defs/criterion" },
-        "fieldHardening": { "$ref": "#/$defs/criterion" },
+        "fieldReadiness": { "$ref": "#/$defs/criterion" },
         "accessibility": { "$ref": "#/$defs/criterion" },
         "installableIos": { "$ref": "#/$defs/criterion" },
         "privacyRights": { "$ref": "#/$defs/criterion" }

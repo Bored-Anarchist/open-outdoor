@@ -161,7 +161,8 @@
         "maximumSeriousThermalSeconds",
         "maximumCriticalThermalSeconds",
         "maximumCheckpointGapSeconds",
-        "maximumStorageGrowthMiBPerHour"
+        "maximumStorageGrowthMiBPerHour",
+        "enduranceDisposition"
       ],
       "properties": {
         "fieldProfileId": { "const": "iphone14-ios26.6-phase3-v1" },
@@ -195,7 +196,18 @@
         "maximumSeriousThermalSeconds": { "const": 0 },
         "maximumCriticalThermalSeconds": { "const": 0 },
         "maximumCheckpointGapSeconds": { "const": 30 },
-        "maximumStorageGrowthMiBPerHour": { "const": 64 }
+        "maximumStorageGrowthMiBPerHour": { "const": 64 },
+        "enduranceDisposition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["phase3", "blockingPhase", "blockingWorkPackage", "enduranceClaimsAllowed"],
+          "properties": {
+            "phase3": { "const": "conditionally-approved" },
+            "blockingPhase": { "const": "Phase 5" },
+            "blockingWorkPackage": { "const": "WP-503" },
+            "enduranceClaimsAllowed": { "const": false }
+          }
+        }
       }
     },
     "budgets": {

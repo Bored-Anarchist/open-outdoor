@@ -12,6 +12,9 @@ export const PHASE3_FIELD_PROFILE = {
   maximumCriticalThermalSeconds: 0,
   maximumCheckpointGapSeconds: 30,
   maximumStorageGrowthMiBPerHour: 64,
+  phase3Disposition: 'conditionally-approved',
+  blockingPhase: 'Phase 5',
+  blockingWorkPackage: 'WP-503',
 } as const;
 
 export interface FieldRunEvidence {

@@ -12,7 +12,7 @@
 2. Complete the performance and catalog-switch measurements using the binding budgets in `docs/NON_FUNCTIONAL_BUDGETS.md`.
 3. Complete offline, rollback, composed-origin, private-data-preservation, backup/reinstall/restore, and degraded-state flows.
 4. Complete all nine accessibility checks.
-5. Complete three 180-minute Balanced and three 180-minute Endurance field runs. Do not include coordinates, route traces, raw logs, photos, or identifiers in the report.
+5. Optionally add completed 180-minute Balanced/Endurance runs as supplemental WP-503 evidence. They are not required for Phase 3. Do not include coordinates, route traces, raw logs, photos, or identifiers in the report.
 6. Mark the attestation complete and retain the underlying evidence in approved private storage.
 
 ## Ingestion and review
@@ -22,4 +22,4 @@
 3. Review the report SHA-256, source commit, binary checksum, all local commands/files, and the private source evidence.
 4. Confirm the proposal remains `blocked-pending-reviewer`; it must not approve itself.
 
-Replay or simulator evidence, a dirty tree, a different commit, unsafe report classification, missing repetitions, an over-budget result, or an unchecked device/accessibility flow blocks the run.
+Replay, missing repetitions, or over-budget results in the optional endurance section are recorded as conditional findings and deferred to WP-503. A dirty tree, different commit, unsafe report classification, failed required performance budget, or unchecked device/accessibility flow still blocks Phase 3.

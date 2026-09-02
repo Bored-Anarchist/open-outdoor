@@ -1,6 +1,6 @@
 # Non-Functional Budgets and Objective Acceptance
 
-**Status:** Binding Phase 0 and Phase 3 thresholds; Phase 3 physical acceptance remains pending
+**Status:** Binding Phase 0 and Phase 3 thresholds; field endurance conditionally approved for Phase 3 and blocking at WP-503/Phase 5
 
 ## 1. Rules
 
@@ -50,9 +50,9 @@ Defaults are configurable downward by source; raising them requires a security/p
 | `BUD-ING-006` | Image decode | 50 megapixels and 200 MiB decoded buffer |
 | `BUD-ING-007` | Single connector partition | 15 min wall time before checkpoint/timeout unless manifest-approved |
 
-## 5. Phase 3 energy and thermal acceptance
+## 5. Conditional endurance acceptance
 
-Phase 0 and Phase 1 made no numeric battery-life or thermal claim. WP-307 establishes the binding `iphone14-ios26.6-phase3-v1` T-PHY-002 profile: three independent 180-minute physical iPhone 14/iOS 26.6 runs in both Balanced and Endurance mode. Balanced battery use must be at most 6 percentage points/hour and Endurance at most 4; serious and critical thermal time must both be zero; checkpoint gaps must be at most 30 seconds; recording storage growth must be at most 64 MiB/hour; and sensors must have zero active seconds after recording stops. Every run also exercises offline browse/search, crash recovery, degraded GPS, and the native accessibility checklist. Replay and simulator runs can validate logic but cannot satisfy the physical gate. Current implementation constraints remain binding: sensors only during active recording, no continuous polling, explicit High Accuracy, 10 m Balanced and 25 m Endurance distance filters.
+ADR-048 conditionally approves field endurance for Phase 3/M4 and moves its blocking acceptance to WP-503/Phase 5. Phase 3 therefore makes no battery-life, thermal-endurance, or multi-hour reliability claim and does not require T-PHY-002 field runs to pass. The existing `iphone14-ios26.6-phase3-v1` protocol remains the binding evidence target: three independent 180-minute physical iPhone 14/iOS 26.6 runs in both Balanced and Endurance mode; battery use at most 6 percentage points/hour and 4 respectively; no serious/critical thermal time; checkpoint gaps at most 30 seconds; storage growth at most 64 MiB/hour; and zero post-stop sensor activity. Submitted results remain visible as supplemental findings but cannot block Phase 3. They must pass before WP-503/Phase 5 acceptance or any endurance claim. Sensors-only-during-recording, no continuous polling, explicit High Accuracy, and 10 m/25 m distance filters remain binding implementation constraints.
 
 ## 6. Elevation and camping correctness
 

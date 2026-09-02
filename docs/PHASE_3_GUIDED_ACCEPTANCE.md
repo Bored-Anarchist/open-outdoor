@@ -22,8 +22,8 @@ For the same candidate and installed binary:
 2. Measure cold launch, local search, dense-map frame rate/stalls/memory, catalog activation, and first launch after switch.
 3. Exercise offline explore/search/details, interrupted activation/rollback, explicit composed origins, private-catalog removal, full backup/reinstall/restore, and every degraded/error state.
 4. Complete VoiceOver, Dynamic Type, bold text, increased contrast, differentiate-without-color, reduced motion, dark mode, touch-target, and one-handed checks.
-5. Perform three independent 180-minute Balanced runs and three independent 180-minute Endurance runs. Record only aggregate battery, thermal, checkpoint, storage, stopped-sensor, offline, recovery, degraded-GPS, and accessibility results.
-6. Set the tester attestation only after every recorded value was checked against the source evidence.
+5. Optionally attach any completed 180-minute Balanced/Endurance runs as supplemental evidence. ADR-048 conditionally approves this evidence for Phase 3 and defers the blocking endurance gate to WP-503/Phase 5.
+6. Set the tester attestation only after every required recorded value was checked against the source evidence.
 
 Run the final ingestion:
 
@@ -40,6 +40,6 @@ The runner writes:
 - `dist/phase3-guided-report.json`
 - `dist/phase3-evidence-proposal.json`
 
-Acceptance requires all seven local commands, all nine required test files, the physical schema, exact commit match, installability, six device flows, nine accessibility checks, ten performance budgets, and all six field runs. Any failure produces a blocker and a non-zero exit.
+Acceptance requires all seven local commands, all nine required test files, the physical schema, exact commit match, installability, six device flows, nine accessibility checks, and ten non-endurance performance budgets. Multi-hour field runs are optional for Phase 3: the report records missing or failing endurance evidence as `conditionally-approved` findings assigned to WP-503, without blocking M4. No endurance claim is allowed until that later gate passes. Any required failure still produces a blocker and a non-zero exit.
 
 The proposal recommends WP-301 through WP-307 only after a passing run. A separate reviewer must verify the report checksum, candidate/binary identity, private raw evidence, redaction, and residual risk before updating any authoritative milestone record.
