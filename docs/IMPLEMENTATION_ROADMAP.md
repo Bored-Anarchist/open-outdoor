@@ -30,7 +30,7 @@ The highest-risk work is deliberately early: public/private leakage prevention, 
 | `M0 Planning baseline` | Build work can begin from one traceable document set | Documentation package | Scope, WBS, RTM, risks, decisions approved |
 | `M1 Feasibility build` | A minimal app installs from Windows and records background points | WP-001–WP-010 | Phase 0 gate report |
 | `M2 Recorder alpha` | Record, recover, review, and export a private hike on an offline fixture map | WP-101–WP-109 | Recorder/elevation/accessibility report |
-| `M3 New York data alpha` | Generate an explainable public New York land/trail/POI catalog | WP-201–WP-210 | Rights, coverage, evaluator, dedup reports |
+| `M3 New York data alpha` | Generate an explainable public New York land/trail/POI catalog | WP-201–WP-210 | Passing Phase 2 guided report plus explicit reviewer gate acceptance |
 | `M4 Product MVP / offline field beta` | Explore/search bundled New York trails and camping evidence and record hikes with GPS, all without a network | WP-301–WP-307 | Offline matrix and field-test report; all MVP must-haves pass |
 | `M5 Extensible beta` | Add authorized sources/imports/private extensions through stable contracts | WP-401–WP-406 | Compatibility and connector-operations report |
 | `M6 Production candidate` | Polished, accessible, reproducible public release candidate | WP-501–WP-506 | Production acceptance audit |
@@ -72,6 +72,8 @@ Stop conditions: elevation thresholds are not viable, critical controls fail nat
 ### Phase 2 — authoritative data path
 
 Outcome: rights-aware source acquisition through canonical entities, reversible resolution, deterministic camping evaluation, and a reproducible New York catalog prototype.
+
+Acceptance uses the one-command [Phase 2 guided procedure](PHASE_2_GUIDED_ACCEPTANCE.md) and the reviewer-controlled [Phase 2 gate](PHASE_2_GATE_REPORT.md).
 
 Stop conditions: source authorization is ambiguous, public/private raw boundaries leak, positive statuses survive stale mandatory evidence, or provenance cannot explain canonical output.
 

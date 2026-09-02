@@ -5,5 +5,11 @@
   "synthetic": true,
   "approvedBy": "project-maintainer",
   "approvedAt": "2026-08-19T00:00:00Z",
-  "files": ["catalog.json", "replay.gpx"]
+  "files": [
+    "catalog.json",
+    "replay.gpx",
+    "data-platform/fixture-manifest.json",
+    "data-platform/entity-resolution-labels.json",
+    "data-platform/new-york-alpha.json"
+  ]
 }

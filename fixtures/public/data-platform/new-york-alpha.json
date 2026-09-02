@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC_SYNTHETIC",
+  "origin": "Invented New York-like geometries and rules; no copied government or private records",
+  "license": "Apache-2.0",
+  "generationMethod": "Deterministic hand-authored acceptance corpus",
+  "land": [
+    {
+      "id": "alpha-public-land",
+      "ownership": "public",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-75, 42],
+            [-73, 42],
+            [-73, 44],
+            [-75, 44],
+            [-75, 42]
+          ]
+        ]
+      }
+    },
+    {
+      "id": "alpha-private-inholding",
+      "ownership": "private",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-74.4, 43],
+            [-74.2, 43],
+            [-74.2, 43.2],
+            [-74.4, 43.2],
+            [-74.4, 43]
+          ]
+        ]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "id": "alpha-open-road",
+      "publicUse": "Yes",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-74.2, 43.2],
+          [-74.1, 43.3]
+        ]
+      }
+    },
+    {
+      "id": "alpha-seasonal-road",
+      "publicUse": "Yes",
+      "seasonal": "May 1 through December 1",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-74.3, 43.1],
+          [-74.2, 43.2]
+        ]
+      }
+    }
+  ],
+  "places": [
+    { "id": "alpha-site-1", "asset": "Primitive Campsite", "coordinate": [-74.2, 43.2] },
+    { "id": "alpha-site-2", "asset": "Lean-to", "coordinate": [-74.2001, 43.2001] }
+  ],
+  "statusScenarios": [
+    "generally-eligible",
+    "verified-allowed",
+    "restricted",
+    "permit-required",
+    "prohibited",
+    "temporary-closure",
+    "unknown"
+  ],
+  "edgeScenarios": [
+    "private-inholding",
+    "outside-designated-site",
+    "unknown-designated-site-membership",
+    "stale-mandatory-rule",
+    "equal-authority-conflict",
+    "superseded-rule",
+    "access-closed-eligibility-allowed"
+  ]
+}

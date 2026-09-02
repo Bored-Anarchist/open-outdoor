@@ -1,0 +1,96 @@
+{
+  "$schema": "./phase2-acceptance-profile.schema.json",
+  "schemaVersion": 1,
+  "profileId": "new-york-data-alpha-phase2-v1",
+  "timeoutMilliseconds": 20000,
+  "maximumSampleBytes": 65536,
+  "sources": [
+    {
+      "sourceId": "nys-its-state-boundary",
+      "family": "arcgis",
+      "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0/query?where=1%3D1&returnCountOnly=true&f=json"
+    },
+    {
+      "sourceId": "usgs-padus-ny",
+      "family": "document",
+      "url": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download"
+    },
+    {
+      "sourceId": "nys-dec-lands",
+      "family": "arcgis",
+      "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2/query?where=1%3D1&returnCountOnly=true&f=json"
+    },
+    {
+      "sourceId": "usfs-surface-ownership-ny",
+      "family": "arcgis",
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_SurfaceOwnership_01/MapServer/0/query?where=1%3D1&returnCountOnly=true&f=json"
+    },
+    {
+      "sourceId": "nys-dec-roads",
+      "family": "arcgis",
+      "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/0/query?where=1%3D1&returnCountOnly=true&f=json"
+    },
+    {
+      "sourceId": "nys-dec-trails",
+      "family": "arcgis",
+      "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/2/query?where=1%3D1&returnCountOnly=true&f=json"
+    },
+    {
+      "sourceId": "nys-dec-poi",
+      "family": "socrata",
+      "url": "https://data.ny.gov/resource/yvkb-z58x.json?$limit=1"
+    },
+    {
+      "sourceId": "usfs-mvum-roads-ny",
+      "family": "arcgis",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/1/query?where=1%3D1&returnCountOnly=true&f=json"
+    },
+    {
+      "sourceId": "nys-dec-statewide-camping-rules",
+      "family": "document",
+      "url": "https://dec.ny.gov/things-to-do/camping/primitive"
+    },
+    { "sourceId": "nys-dec-unit-rules", "family": "document", "url": "https://dec.ny.gov/places" },
+    {
+      "sourceId": "usfs-gmfl-restrictions",
+      "family": "document",
+      "url": "https://www.fs.usda.gov/r09/gmfl/alerts"
+    },
+    {
+      "sourceId": "ridb-facilities-ny",
+      "family": "ridb",
+      "url": "https://ridb.recreation.gov/downloads/RIDBFullExport_V1_JSON.zip"
+    },
+    {
+      "sourceId": "nps-parks-ny",
+      "family": "nps",
+      "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY&limit=1&start=0",
+      "secretName": "NPS_API_KEY",
+      "secretHeader": "X-Api-Key"
+    },
+    {
+      "sourceId": "nps-campgrounds-ny",
+      "family": "nps",
+      "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY&limit=1&start=0",
+      "secretName": "NPS_API_KEY",
+      "secretHeader": "X-Api-Key"
+    },
+    {
+      "sourceId": "nps-alerts-ny",
+      "family": "nps",
+      "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY&limit=1&start=0",
+      "secretName": "NPS_API_KEY",
+      "secretHeader": "X-Api-Key"
+    },
+    {
+      "sourceId": "osm-geofabrik-ny",
+      "family": "checksum",
+      "url": "https://download.geofabrik.de/north-america/us/new-york-latest.osm.pbf.md5"
+    },
+    {
+      "sourceId": "usgs-3dep-ny",
+      "family": "tnm",
+      "url": "https://tnmaccess.nationalmap.gov/api/v1/products?bbox=-79.7624%2C40.4774%2C-71.7517%2C45.0159&datasets=Digital%20Elevation%20Model%20%28DEM%29%201%20meter&prodFormats=GeoTIFF&max=1&offset=0"
+    }
+  ]
+}

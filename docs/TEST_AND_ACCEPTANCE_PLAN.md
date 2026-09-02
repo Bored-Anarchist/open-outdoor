@@ -1,6 +1,6 @@
 # Test and Acceptance Plan
 
-**Status:** In progress; WP-007 physical evidence pending, WP-008 owner-accepted with residual risks
+**Status:** In progress; Phase 2 accepted, with later phase and release acceptance pending
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
@@ -48,6 +48,31 @@ Numeric limits, reference hardware, repetitions, formulas, and evidence fields a
 | `T-REL-002` | Release artifact | Rights/attribution, size, checksum, SBOM/DBOM, coverage, provenance, signature, reproducibility |
 | `T-REL-003` | Catalog trust and channel | Missing/invalid/revoked/rotated key, wrong channel, replay, rollback, unsigned-development label, last-known-good retention |
 | `T-REL-004` | Contribution privacy and CI efficiency | Public-handle/noreply identity, PR attestation, PII fixture rejection, path skips, superseded-run cancellation, timeouts, minimal matrix, candidate-only expensive jobs, minute report |
+
+WP-205 through WP-210 assign these exact cases:
+
+- `T-UNIT-001-C01`: produce all seven camping statuses with the versioned precedence engine.
+- `T-UNIT-001-C02`: exclude private inholdings before public-land rules are considered.
+- `T-UNIT-001-C03`: enforce designated-site-only rules and fail safely on unknown membership.
+- `T-UNIT-001-C04`: block positive status for stale mandatory or missing safety evidence while retaining known prohibitions.
+- `T-UNIT-001-C05`: explain equal-authority conflicts and honor explicit supersession.
+- `T-UNIT-001-C06`: keep access status independent from camping eligibility.
+- `T-INT-003-C01`: validate every official New York source's active rights, attribution, endpoint, and test-fixture separation.
+- `T-INT-003-C02`: normalize public land, private inholdings, roads, access, and POI taxonomy.
+- `T-INT-003-C03`: enumerate every ArcGIS object ID, page deterministically, preserve partitions, and emit access/dedup candidates.
+- `T-INT-003-C04`: reject incomplete partition sets and report checksummed geometry/source freshness coverage.
+- `T-INT-003-C05`: emit rule directives only for exact checksum-pinned human-reviewed documents.
+- `T-INT-003-C06`: validate every RIDB, NPS, OSM, and 3DEP registration independently for endpoint, lifecycle, rights, license, attribution, and external-secret declarations; RIDB declares no secret.
+- `T-INT-003-C07`: acquire the official daily RIDB JSON download deterministically, enforce a byte ceiling, record the acquisition time and SHA-256 digest, validate its contract, and keep the temporary raw snapshot out of public output.
+- `T-INT-003-C08`: normalize NPS restrictions and retain 3DEP bounds, resolution, vertical datum, size, and freshness metadata.
+- `T-INT-003-C09`: reject latest/unpinned OSM input and normalize only a dated checksum-matching Geofabrik extract.
+- `T-REL-002-C01`: reproduce byte-identical public SQLite catalogs and manifests and audit their inventory, R-tree, coverage, exclusions, and DBOM.
+- `T-REL-002-C02`: reject requested sources with revoked/incomplete rights and reject catalog output over its byte ceiling.
+- `T-REL-002-C03`: report RIDB/NPS/OSM/3DEP family gaps, source freshness, geometry, and elevation-product coverage.
+
+### 2.1 Phase 2 guided run
+
+`pnpm phase2:acceptance` is the required M3 evidence workflow. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, a bounded directory probe of the official daily RIDB JSON ZIP, and structurally valid samples from the other official registrations. The runner checks RIDB without authentication and records the archive byte count, last-modified value, ETag, and directory-sample SHA-256; it must not request or read `RIDB_API_KEY`. The connector contract separately proves bounded extraction of the facilities and facility-address JSON entries, checksummed raw storage, and deterministic New York filtering. The normal run needs no tester-supplied credential: its three bounded NPS probes use api.data.gov's public `DEMO_KEY`, with `NPS_API_KEY` accepted only as a personal override when the shared demo quota is exhausted. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
 
 ## 3. Required fixtures
 

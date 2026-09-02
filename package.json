@@ -29,6 +29,9 @@
     "phase0:gate": "node tools/phase0-gate.mjs",
     "phase1:gate": "node tools/phase1-gate.mjs",
     "phase1:evidence": "node tools/phase1-evidence.mjs",
+    "phase2:acceptance": "node --use-system-ca tools/phase2-guided.mjs",
+    "phase2:gate": "node tools/phase2-gate.mjs",
+    "test:phase2": "vitest run packages/data packages/config/test/phase2-guided.test.ts packages/config/test/phase2-gate.test.ts",
     "ci:window": "node tools/hosted-ci-window.mjs",
     "release:verify": "node tools/validate-release-config.mjs && node tools/validate-workflows.mjs && node tools/validate-native-spikes.mjs",
     "python:test": "uv run --frozen python -m unittest discover -s python/tests"

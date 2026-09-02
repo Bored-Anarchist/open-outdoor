@@ -1,0 +1,329 @@
+{
+  "schemaVersion": 1,
+  "profileId": "new-york-data-alpha-phase2-v1",
+  "generatedAt": "2026-09-02T02:02:52.867Z",
+  "startedAt": "2026-09-02T02:02:46.696Z",
+  "completedAt": "2026-09-02T02:02:52.867Z",
+  "sourceCommit": "0081beae78343c1485704650e57395154958dc03",
+  "workingTreeClean": true,
+  "nodeVersion": "v24.19.0",
+  "platform": "win32",
+  "mode": "live",
+  "requiredSourceIds": [
+    "nys-its-state-boundary",
+    "usgs-padus-ny",
+    "nys-dec-lands",
+    "usfs-surface-ownership-ny",
+    "nys-dec-roads",
+    "nys-dec-trails",
+    "nys-dec-poi",
+    "usfs-mvum-roads-ny",
+    "nys-dec-statewide-camping-rules",
+    "nys-dec-unit-rules",
+    "usfs-gmfl-restrictions",
+    "ridb-facilities-ny",
+    "nps-parks-ny",
+    "nps-campgrounds-ny",
+    "nps-alerts-ny",
+    "osm-geofabrik-ny",
+    "usgs-3dep-ny"
+  ],
+  "observedCaseIds": [
+    "T-INT-003-C01",
+    "T-INT-003-C02",
+    "T-INT-003-C03",
+    "T-INT-003-C04",
+    "T-INT-003-C05",
+    "T-INT-003-C06",
+    "T-INT-003-C07",
+    "T-INT-003-C08",
+    "T-INT-003-C09",
+    "T-REL-002-C01",
+    "T-REL-002-C02",
+    "T-REL-002-C03",
+    "T-UNIT-001-C01",
+    "T-UNIT-001-C02",
+    "T-UNIT-001-C03",
+    "T-UNIT-001-C04",
+    "T-UNIT-001-C05",
+    "T-UNIT-001-C06"
+  ],
+  "passedTestFiles": [
+    "packages/data/test/camping.test.ts",
+    "packages/data/test/canonical.test.ts",
+    "packages/data/test/catalog.test.ts",
+    "packages/data/test/connector.test.ts",
+    "packages/data/test/entity-resolution.test.ts",
+    "packages/data/test/ingestion-security.test.ts",
+    "packages/data/test/new-york.test.ts",
+    "packages/data/test/public-pack.test.ts",
+    "packages/data/test/secondary.test.ts"
+  ],
+  "commands": [
+    {
+      "id": "dataTypes",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 157,
+      "outputSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "failureExcerpt": null
+    },
+    {
+      "id": "dataTests",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 2300,
+      "outputSha256": "79ecbcdb30cebdc6367a09120e8128be517d7dda74e8528663799c7d1562e04a",
+      "failureExcerpt": null
+    },
+    {
+      "id": "phase2Format",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 1178,
+      "outputSha256": "6d83a3564f7f607a548332e41eaafbcd07cb5356c80db107b0460bd253c93ea0",
+      "failureExcerpt": null
+    },
+    {
+      "id": "publicBoundary",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 259,
+      "outputSha256": "b766b77ee90f43dfb4d5631fdc3ee098eaaba6552c6d419ca9a4d12100e952aa",
+      "failureExcerpt": null
+    }
+  ],
+  "sourceProbes": [
+    {
+      "sourceId": "nys-its-state-boundary",
+      "family": "arcgis",
+      "hostname": "gisservices.its.ny.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json;charset=UTF-8",
+      "sampledBytes": 11,
+      "durationMilliseconds": 314,
+      "observation": "record count observed: 1"
+    },
+    {
+      "sourceId": "usgs-padus-ny",
+      "family": "document",
+      "hostname": "www.usgs.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "text/html; charset=UTF-8",
+      "sampledBytes": 65536,
+      "durationMilliseconds": 1979,
+      "observation": "document content type accepted"
+    },
+    {
+      "sourceId": "nys-dec-lands",
+      "family": "arcgis",
+      "hostname": "gisservices.dec.ny.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json;charset=UTF-8",
+      "sampledBytes": 14,
+      "durationMilliseconds": 203,
+      "observation": "record count observed: 3297"
+    },
+    {
+      "sourceId": "usfs-surface-ownership-ny",
+      "family": "arcgis",
+      "hostname": "apps.fs.usda.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json; charset=UTF-8",
+      "sampledBytes": 16,
+      "durationMilliseconds": 596,
+      "observation": "record count observed: 117414"
+    },
+    {
+      "sourceId": "nys-dec-roads",
+      "family": "arcgis",
+      "hostname": "gisservices.dec.ny.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json;charset=UTF-8",
+      "sampledBytes": 14,
+      "durationMilliseconds": 210,
+      "observation": "record count observed: 1308"
+    },
+    {
+      "sourceId": "nys-dec-trails",
+      "family": "arcgis",
+      "hostname": "gisservices.dec.ny.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json;charset=UTF-8",
+      "sampledBytes": 14,
+      "durationMilliseconds": 208,
+      "observation": "record count observed: 5289"
+    },
+    {
+      "sourceId": "nys-dec-poi",
+      "family": "socrata",
+      "hostname": "data.ny.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json;charset=utf-8",
+      "sampledBytes": 382,
+      "durationMilliseconds": 198,
+      "observation": "sample rows observed: 1"
+    },
+    {
+      "sourceId": "usfs-mvum-roads-ny",
+      "family": "arcgis",
+      "hostname": "apps.fs.usda.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json; charset=UTF-8",
+      "sampledBytes": 16,
+      "durationMilliseconds": 367,
+      "observation": "record count observed: 150777"
+    },
+    {
+      "sourceId": "nys-dec-statewide-camping-rules",
+      "family": "document",
+      "hostname": "dec.ny.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "text/html; charset=UTF-8",
+      "sampledBytes": 65536,
+      "durationMilliseconds": 142,
+      "observation": "document content type accepted"
+    },
+    {
+      "sourceId": "nys-dec-unit-rules",
+      "family": "document",
+      "hostname": "dec.ny.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "text/html; charset=UTF-8",
+      "sampledBytes": 65536,
+      "durationMilliseconds": 123,
+      "observation": "document content type accepted"
+    },
+    {
+      "sourceId": "usfs-gmfl-restrictions",
+      "family": "document",
+      "hostname": "www.fs.usda.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "text/html; charset=UTF-8",
+      "sampledBytes": 65536,
+      "durationMilliseconds": 1008,
+      "observation": "document content type accepted"
+    },
+    {
+      "sourceId": "ridb-facilities-ny",
+      "family": "ridb",
+      "hostname": "ridb.recreation.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "application/zip",
+      "sampledBytes": 65536,
+      "durationMilliseconds": 289,
+      "observation": "RIDB ZIP directory observed; archiveBytes=570051381; lastModified=Tue, 01 Sep 2026 18:46:55 GMT; etag=\"d36a286be4b79cb83c21bc485d2cb7ee\"; directorySampleSha256=135006390d6e4399b97c3fdf79d612e00cf24420ab6ee0d6fd8e2a7277e6f33b"
+    },
+    {
+      "sourceId": "nps-parks-ny",
+      "family": "nps",
+      "hostname": "developer.nps.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "application/json;charset=utf-8",
+      "sampledBytes": 6697,
+      "durationMilliseconds": 678,
+      "observation": "record count observed: 32"
+    },
+    {
+      "sourceId": "nps-campgrounds-ny",
+      "family": "nps",
+      "hostname": "developer.nps.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "application/json;charset=utf-8",
+      "sampledBytes": 3084,
+      "durationMilliseconds": 702,
+      "observation": "record count observed: 4"
+    },
+    {
+      "sourceId": "nps-alerts-ny",
+      "family": "nps",
+      "hostname": "developer.nps.gov",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "application/json;charset=utf-8",
+      "sampledBytes": 456,
+      "durationMilliseconds": 571,
+      "observation": "record count observed: 29"
+    },
+    {
+      "sourceId": "osm-geofabrik-ny",
+      "family": "checksum",
+      "hostname": "download.geofabrik.de",
+      "passed": true,
+      "statusCode": 206,
+      "contentType": "text/plain",
+      "sampledBytes": 58,
+      "durationMilliseconds": 464,
+      "observation": "published MD5 observed"
+    },
+    {
+      "sourceId": "usgs-3dep-ny",
+      "family": "tnm",
+      "hostname": "tnmaccess.nationalmap.gov",
+      "passed": true,
+      "statusCode": 200,
+      "contentType": "application/json",
+      "sampledBytes": 4547,
+      "durationMilliseconds": 508,
+      "observation": "record count observed: 5581"
+    }
+  ],
+  "acceptance": {
+    "canonicalContracts": {
+      "passed": true,
+      "evidence": "packages/data/test/canonical.test.ts"
+    },
+    "campingSafety": {
+      "passed": true,
+      "evidence": "T-UNIT-001-C01 through C06"
+    },
+    "connectorContracts": {
+      "passed": true,
+      "evidence": "T-INT-003-C01 through C09"
+    },
+    "entityResolution": {
+      "passed": true,
+      "evidence": "packages/data/test/entity-resolution.test.ts"
+    },
+    "hostileIngestion": {
+      "passed": true,
+      "evidence": "packages/data/test/ingestion-security.test.ts"
+    },
+    "liveSourceAvailability": {
+      "passed": true,
+      "evidence": "17/17 official probes"
+    },
+    "publicPackReproducibility": {
+      "passed": true,
+      "evidence": "T-REL-002-C01 through C03"
+    },
+    "publicationBoundary": {
+      "passed": true,
+      "evidence": "tools/public-boundary.mjs --scan ."
+    },
+    "rightsAndAttribution": {
+      "passed": true,
+      "evidence": "connector manifests, rights gates, source inventories, and attribution assertions"
+    },
+    "coverageAndExclusions": {
+      "passed": true,
+      "evidence": "coverage, exclusion, freshness, geometry, and elevation assertions"
+    }
+  },
+  "status": "passed",
+  "blockers": []
+}

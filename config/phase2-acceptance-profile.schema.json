@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-outdoor.invalid/schemas/phase2-acceptance-profile.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "profileId",
+    "timeoutMilliseconds",
+    "maximumSampleBytes",
+    "sources"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "profileId": { "const": "new-york-data-alpha-phase2-v1" },
+    "timeoutMilliseconds": { "type": "integer", "minimum": 1000, "maximum": 60000 },
+    "maximumSampleBytes": { "type": "integer", "minimum": 1024, "maximum": 65536 },
+    "sources": {
+      "type": "array",
+      "minItems": 17,
+      "maxItems": 17,
+      "items": { "$ref": "#/$defs/source" }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "family", "url"],
+      "properties": {
+        "sourceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "family": { "enum": ["arcgis", "document", "socrata", "ridb", "nps", "checksum", "tnm"] },
+        "url": { "type": "string", "pattern": "^https://" },
+        "secretName": { "const": "NPS_API_KEY" },
+        "secretHeader": { "const": "X-Api-Key" }
+      },
+      "dependentRequired": {
+        "secretName": ["secretHeader"],
+        "secretHeader": ["secretName"]
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "family": { "const": "nps" } }, "required": ["family"] },
+          "then": {
+            "properties": {
+              "secretName": { "const": "NPS_API_KEY" },
+              "secretHeader": { "const": "X-Api-Key" }
+            },
+            "required": ["secretName", "secretHeader"]
+          },
+          "else": {
+            "properties": {
+              "secretName": false,
+              "secretHeader": false
+            }
+          }
+        }
+      ]
+    }
+  }
+}
