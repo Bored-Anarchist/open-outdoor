@@ -2,6 +2,8 @@
 
 The Phase 3 runner combines the Product MVP's deterministic repository checks with the required physical iPhone evidence. It binds every result to one clean commit, validates a coordinate-free device report, and writes a schema-validated acceptance report plus a reviewer proposal. It never edits a gate record or treats replay/simulator output as physical evidence.
 
+The diagnostics build also contains **Guided Phase 3 acceptance** under Physical acceptance evidence. It persists progress with complete file protection, verifies the embedded commit plus the iPhone 14/iOS 26.6 profile, walks all required device-flow and accessibility observations, collects the ten required measured performance values, and shares `phase3-physical-report.json`. Human Pass/Fail choices remain explicit; the app does not convert fixture output into physical evidence. Field endurance is shown as conditionally approved and exports as an empty optional `fieldRuns` list unless later Phase 5 evidence is supplied.
+
 ## Prepare the candidate
 
 Use a clean checkout at the exact candidate commit with Node.js 24.19.0 and locked dependencies installed. Build and install that commit's local/public iOS candidate on the declared iPhone 14 running iOS 26.6. Record the installed binary SHA-256.

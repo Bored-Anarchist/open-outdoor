@@ -24,10 +24,14 @@ const privateStore = await text('packages/native-spikes/ios/OpenOutdoorPrivateSt
 const phase1Acceptance = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase1AcceptanceCoordinator.swift',
 );
+const phase3Acceptance = await text(
+  'packages/native-spikes/ios/OpenOutdoorPhase3AcceptanceStore.swift',
+);
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const phase1Runner = await text('apps/mobile/Phase1AcceptanceRunner.tsx');
+const phase3Runner = await text('apps/mobile/Phase3AcceptanceRunner.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -125,6 +129,16 @@ for (const functionName of [
 ]) {
   requireText(nativeModule, `AsyncFunction("${functionName}")`, 'native module');
   requireText(mobileBinding, `readonly ${functionName}`, 'mobile native binding');
+}
+for (const functionName of [
+  'phase3AcceptanceEnvironment',
+  'loadPhase3AcceptanceState',
+  'savePhase3AcceptanceState',
+  'resetPhase3AcceptanceState',
+  'sharePhase3AcceptanceReport',
+]) {
+  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'Phase 3 acceptance module');
+  requireText(mobileBinding, `readonly ${functionName}`, 'Phase 3 acceptance binding');
 }
 for (const functionName of [
   'recordAcknowledgementBenchmark',
@@ -244,6 +258,32 @@ for (const token of [
 ]) {
   requireText(phase1Runner, token, 'guided Phase 1 acceptance UI');
 }
+for (const token of [
+  'Guided Phase 3 acceptance',
+  'Begin Phase 3 guided acceptance',
+  'Offline explore, search, and details',
+  'Catalog activation and rollback',
+  'Encrypted backup, reinstall, and restore',
+  'Cold launch p95',
+  'VoiceOver',
+  'Complete tester attestation',
+  'Export Phase 3 physical report',
+  'Field endurance is conditionally approved',
+  'coordinateFree: true',
+  'containsPersonalData: false',
+]) {
+  requireText(phase3Runner, token, 'guided Phase 3 acceptance UI');
+}
+for (const token of [
+  'guided-state.json',
+  '.completeFileProtection',
+  'phase3-physical-report.json',
+  'UIActivityViewController',
+  'OpenOutdoorSourceCommit',
+]) {
+  requireText(phase3Acceptance, token, 'guided Phase 3 acceptance store');
+}
+requireText(mobileApp, 'Phase3AcceptanceRunner', 'mobile Phase 3 acceptance integration');
 for (const token of [
   'Start recording',
   'Pause recording',

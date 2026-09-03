@@ -147,6 +147,12 @@ export interface Phase1AcceptanceReport {
   }[];
 }
 
+export interface Phase3AcceptanceEnvironment {
+  readonly sourceCommit: string;
+  readonly deviceModelIdentifier: string;
+  readonly systemVersion: string;
+}
+
 interface OpenOutdoorNativeSpikesModule {
   readonly policyVersion: number;
   readonly phase0DiagnosticsEnabled: boolean;
@@ -196,6 +202,11 @@ interface OpenOutdoorNativeSpikesModule {
   readonly confirmPhase1Accessibility: (usable: boolean) => Promise<string>;
   readonly resetPhase1Acceptance: () => Promise<string>;
   readonly sharePhase1AcceptanceReport: () => Promise<string>;
+  readonly phase3AcceptanceEnvironment: () => Promise<string>;
+  readonly loadPhase3AcceptanceState: () => Promise<string | null>;
+  readonly savePhase3AcceptanceState: (stateJson: string) => Promise<string>;
+  readonly resetPhase3AcceptanceState: () => Promise<void>;
+  readonly sharePhase3AcceptanceReport: (reportJson: string) => Promise<string>;
 }
 
 function parseJson<T>(value: string): T {
@@ -310,4 +321,13 @@ export const nativeSpikes = {
     parseJson<Phase1AcceptanceReport>(await requiredModule().resetPhase1Acceptance()),
   sharePhase1AcceptanceReport: (): Promise<string> =>
     requiredModule().sharePhase1AcceptanceReport(),
+  phase3AcceptanceEnvironment: async (): Promise<Phase3AcceptanceEnvironment> =>
+    parseJson<Phase3AcceptanceEnvironment>(await requiredModule().phase3AcceptanceEnvironment()),
+  loadPhase3AcceptanceState: (): Promise<string | null> =>
+    requiredModule().loadPhase3AcceptanceState(),
+  savePhase3AcceptanceState: (stateJson: string): Promise<string> =>
+    requiredModule().savePhase3AcceptanceState(stateJson),
+  resetPhase3AcceptanceState: (): Promise<void> => requiredModule().resetPhase3AcceptanceState(),
+  sharePhase3AcceptanceReport: (reportJson: string): Promise<string> =>
+    requiredModule().sharePhase3AcceptanceReport(reportJson),
 };

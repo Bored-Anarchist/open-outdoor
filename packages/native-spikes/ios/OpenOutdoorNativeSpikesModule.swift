@@ -8,6 +8,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
   private var phase1AcceptanceInstance: OpenOutdoorPhase1AcceptanceCoordinator?
+  private var phase3AcceptanceInstance: OpenOutdoorPhase3AcceptanceStore?
 
   private func phase0Diagnostics() throws -> OpenOutdoorPhase0Diagnostics {
     if let phase0DiagnosticsInstance { return phase0DiagnosticsInstance }
@@ -31,6 +32,13 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     let coordinator = try OpenOutdoorPhase1AcceptanceCoordinator(tracker: tracker)
     phase1AcceptanceInstance = coordinator
     return coordinator
+  }
+
+  private func phase3Acceptance() throws -> OpenOutdoorPhase3AcceptanceStore {
+    if let phase3AcceptanceInstance { return phase3AcceptanceInstance }
+    let store = try OpenOutdoorPhase3AcceptanceStore()
+    phase3AcceptanceInstance = store
+    return store
   }
 #endif
 
@@ -242,6 +250,26 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
     AsyncFunction("sharePhase1AcceptanceReport") { () -> String in
       try self.phase1Acceptance().shareCurrentReport()
+    }.runOnQueue(.main)
+
+    AsyncFunction("phase3AcceptanceEnvironment") { () -> String in
+      try self.phase3Acceptance().environmentJSON()
+    }.runOnQueue(.main)
+
+    AsyncFunction("loadPhase3AcceptanceState") { () -> String? in
+      try self.phase3Acceptance().loadState()
+    }.runOnQueue(.main)
+
+    AsyncFunction("savePhase3AcceptanceState") { (stateJSON: String) -> String in
+      try self.phase3Acceptance().saveState(stateJSON)
+    }.runOnQueue(.main)
+
+    AsyncFunction("resetPhase3AcceptanceState") {
+      try self.phase3Acceptance().reset()
+    }.runOnQueue(.main)
+
+    AsyncFunction("sharePhase3AcceptanceReport") { (reportJSON: String) -> String in
+      try self.phase3Acceptance().shareReport(reportJSON)
     }.runOnQueue(.main)
 #endif
   }
