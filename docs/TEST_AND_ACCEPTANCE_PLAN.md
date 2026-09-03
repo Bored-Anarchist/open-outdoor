@@ -74,6 +74,10 @@ WP-205 through WP-210 assign these exact cases:
 
 `pnpm phase2:acceptance` is the required M3 evidence workflow. It requires a clean exact candidate, the pinned Node runtime, all Phase 2 data tests and named cases, the public-boundary scan, a bounded directory probe of the official daily RIDB JSON ZIP, and structurally valid samples from the other official registrations. The runner checks RIDB without authentication and records the archive byte count, last-modified value, ETag, and directory-sample SHA-256; it must not request or read `RIDB_API_KEY`. The connector contract separately proves bounded extraction of the facilities and facility-address JSON entries, checksummed raw storage, and deterministic New York filtering. The normal run needs no tester-supplied credential: its three bounded NPS probes use api.data.gov's public `DEMO_KEY`, with `NPS_API_KEY` accepted only as a personal override when the shared demo quota is exhausted. Offline mode is diagnostic and always blocked. The generated proposal requires separate reviewer acceptance through `config/phase2-gate.json`.
 
+### 2.2 Phase 3 guided run
+
+`pnpm phase3:acceptance` is the required M4 evidence workflow. It binds local production-pack, basemap, catalog activation, offline explore, composition, backup, field-state, and field-budget suites to a clean commit. Without `--physical-report`, it writes a coordinate-free draft template and reports the exact physical blockers. With a completed report, it validates the schema, candidate and binary hashes, iPhone 14/iOS 26.6 identity, installation and device flows, non-endurance performance budgets, and accessibility matrix. Multi-hour Balanced/Endurance reports are optional supplemental evidence under ADR-048: missing, replayed, or over-budget endurance results are recorded but do not block Phase 3. Personal/coordinate data, required threshold failures, dirty candidates, or commit mismatches still block acceptance. The generated proposal remains reviewer-controlled and never changes a milestone gate.
+
 ## 3. Required fixtures
 
 ### 3.1 Public synthetic fixtures

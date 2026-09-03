@@ -44,7 +44,7 @@ WP-007 now passes its required physical tracker evidence. WP-008 is owner-accept
 
 - `R-001` remains open pending the full same-identity A→B refresh, data-retention, and expiry workoff; encrypted restore is a later WP-107/WP-306 control.
 - `R-002` and `R-021` remain open for owner-accepted WP-008 locked/pre-first-unlock residuals and later production evidence; historical iOS 26.2 launch evidence remains recorded. They no longer block Phase 0.
-- `R-003` remains score 20 and open. Its measurement is accepted as deferred for Phase 0/Phase 1, but it blocks battery/endurance claims and production until WP-307/WP-503 evidence exists.
+- `R-003` remains score 20 and open. ADR-048 conditionally accepts it for Phase 3/M4, prohibits battery/endurance claims, and makes complete WP-503/Phase 5 evidence the blocking acceptance point.
 - `R-009` and `R-024` now have deterministic activation, rollback, private-digest, and compatibility prechecks, but remain open pending native/device integration.
 - `R-029` is controlled by a bounded ledger whose first 20 applicable post-baseline runs passed with zero avoidable failures. Candidate-only macOS execution, local-first checks, and explicit reasons for exclusions remain required for subsequent work.
 - WP-009 completed the review and published a `BLOCKED` Phase 0 result; acceptance cannot be inferred from implementation or contract tests alone.

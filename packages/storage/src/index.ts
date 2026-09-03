@@ -66,6 +66,9 @@ export class StorageBoundaryError extends Error {
       | 'CHECKSUM_INVALID'
       | 'COMPATIBILITY_REJECTED'
       | 'FREE_SPACE_INSUFFICIENT'
+      | 'ACTIVATION_STATE_INVALID'
+      | 'PRIVATE_DATA_CHANGED'
+      | 'TRUST_REJECTED'
       | 'VERSION_STATE_INVALID',
     message: string,
   ) {
@@ -229,6 +232,8 @@ export function simulateCatalogActivation(
   };
 }
 
+export * from './catalog-activation';
+
 export interface Phase0ActivityFixture {
   readonly id: string;
   readonly name: string;
@@ -349,3 +354,4 @@ export function phase0FixtureHashes(fixture: Phase0Fixture): Readonly<Record<str
   };
 }
 export * from './private';
+export * from './composition';

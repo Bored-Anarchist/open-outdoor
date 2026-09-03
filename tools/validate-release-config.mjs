@@ -24,6 +24,8 @@ const phase1 = await readJson('config/phase1-gate.json');
 const phase2ProfileSchema = await readJson('config/phase2-acceptance-profile.schema.json');
 const phase2Profile = await readJson('config/phase2-acceptance-profile.json');
 const phase2ReportSchema = await readJson('config/phase2-guided-report.schema.json');
+const phase3PhysicalReportSchema = await readJson('config/phase3-physical-report.schema.json');
+const phase3GuidedReportSchema = await readJson('config/phase3-guided-report.schema.json');
 const phase2GateSchema = await readJson('config/phase2-gate.schema.json');
 const phase2 = await readJson('config/phase2-gate.json');
 const hostedCiSchema = await readJson('config/hosted-ci-window.schema.json');
@@ -57,6 +59,10 @@ ajv.compile(phase1PhysicalReportSchema);
 console.log('Phase 1 physical report schema is valid');
 ajv.compile(phase2ReportSchema);
 console.log('Phase 2 guided report schema is valid');
+ajv.compile(phase3PhysicalReportSchema);
+console.log('Phase 3 physical report schema is valid');
+ajv.compile(phase3GuidedReportSchema);
+console.log('Phase 3 guided report schema is valid');
 
 for (const channel of ['public', 'local', 'private']) {
   if (release.channels[channel].trustRoot !== trust.channels[channel].trustRoot) {
