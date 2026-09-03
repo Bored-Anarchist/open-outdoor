@@ -192,4 +192,4 @@ export function replayTrackingBatches(
 }
 export * from './recorder';
 export * from './algorithms';
-export * from './field-hardening.js';
+export * from './field-hardening';

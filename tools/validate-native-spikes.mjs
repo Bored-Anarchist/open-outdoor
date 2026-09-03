@@ -16,6 +16,12 @@ const moduleConfig = JSON.parse(await text('packages/native-spikes/expo-module.c
 const podspec = await text('packages/native-spikes/OpenOutdoorNativeSpikes.podspec');
 const iosBuildScript = await text('scripts/Build-IosUnsigned.ps1');
 const tracker = await text('packages/native-spikes/ios/OpenOutdoorTrackerSpike.swift');
+const trackingIndex = await text('packages/tracking/src/index.ts');
+const mapIndex = await text('packages/map/src/index.ts');
+const storageIndex = await text('packages/storage/src/index.ts');
+const catalogActivation = await text('packages/storage/src/catalog-activation.ts');
+const composition = await text('packages/storage/src/composition.ts');
+const fieldHardening = await text('packages/tracking/src/field-hardening.ts');
 const diagnostics = await text('packages/native-spikes/ios/OpenOutdoorPhase0Diagnostics.swift');
 const performanceDiagnostics = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase0PerformanceDiagnostics.swift',
@@ -75,6 +81,20 @@ requireText(tracker, 'relativeAltitudeM', 'Phase 1 barometer bridge');
 requireText(tracker, 'altimeterPersistenceInterval', 'Phase 1 barometer persistence');
 requireText(tracker, 'appendObservation(location:', 'Phase 1 barometer persistence');
 requireText(tracker, 'verticalAccuracyM', 'Phase 1 native batch bridge');
+requireText(trackingIndex, "export * from './field-hardening';", 'mobile Metro module resolution');
+for (const token of [
+  "export * from './basemap';",
+  "export * from './offline-explore';",
+  "export * from './field-readiness';",
+]) {
+  requireText(mapIndex, token, 'mobile Metro module resolution');
+}
+for (const token of ["export * from './catalog-activation';", "export * from './composition';"]) {
+  requireText(storageIndex, token, 'mobile Metro module resolution');
+}
+requireText(catalogActivation, "from './index';", 'mobile Metro module resolution');
+requireText(composition, "from './private';", 'mobile Metro module resolution');
+requireText(fieldHardening, "from './index';", 'mobile Metro module resolution');
 requireText(tracker, 'batchJSON(afterSequence:', 'Phase 1 native batch bridge');
 requireText(tracker, 'OpenOutdoorTrackingBatchPayload', 'Phase 1 native batch bridge');
 for (const token of [

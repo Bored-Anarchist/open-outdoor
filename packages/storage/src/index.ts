@@ -232,7 +232,7 @@ export function simulateCatalogActivation(
   };
 }
 
-export * from './catalog-activation.js';
+export * from './catalog-activation';
 
 export interface Phase0ActivityFixture {
   readonly id: string;
@@ -354,4 +354,4 @@ export function phase0FixtureHashes(fixture: Phase0Fixture): Readonly<Record<str
   };
 }
 export * from './private';
-export * from './composition.js';
+export * from './composition';

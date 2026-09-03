@@ -1,8 +1,8 @@
 import type { Coordinate } from '@open-outdoor/shared';
 
-export * from './basemap.js';
-export * from './offline-explore.js';
-export * from './field-readiness.js';
+export * from './basemap';
+export * from './offline-explore';
+export * from './field-readiness';
 
 export interface MapCamera {
   readonly center: Coordinate;

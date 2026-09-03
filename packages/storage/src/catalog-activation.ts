@@ -5,7 +5,7 @@ import {
   type ActivationCheckpoint,
   type SupportedVersions,
   type VersionCandidate,
-} from './index.js';
+} from './index';
 
 export interface CatalogActivationCandidate {
   readonly catalogId: string;

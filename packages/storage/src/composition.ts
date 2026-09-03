@@ -1,5 +1,5 @@
 import { assertCoordinate, type Coordinate } from '@open-outdoor/shared';
-import type { PrivateDatabaseSnapshot, PrivateOverlay, TrailAssociation } from './private.js';
+import type { PrivateDatabaseSnapshot, PrivateOverlay, TrailAssociation } from './private';
 
 export type CatalogOrigin = 'public-catalog' | 'private-catalog';
 export type ComposedOrigin = CatalogOrigin | 'private-user';

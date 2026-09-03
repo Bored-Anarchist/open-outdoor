@@ -1,4 +1,4 @@
-import type { TrackingMode } from './index.js';
+import type { TrackingMode } from './index';
 
 export const PHASE3_FIELD_PROFILE = {
   id: 'iphone14-ios26.6-phase3-v1',
