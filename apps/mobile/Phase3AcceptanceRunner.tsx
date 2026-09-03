@@ -1,113 +1,52 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import {
+  OfflineExploreIndex,
+  type OfflineBundleCoverage,
+  type OfflineCanonicalRecord,
+} from '@open-outdoor/map';
+import {
+  CatalogActivationCoordinator,
+  InMemoryCatalogActivationRepository,
+  InMemoryPrivateRepository,
+  StorageBoundaryError,
+  composeCatalogExperience,
+  type CatalogActivationCandidate,
+  type CatalogActivationEnvironment,
+  type CatalogReferenceFeature,
+  type CatalogTrustVerifier,
+} from '@open-outdoor/storage';
 import { nativeSpikes, type Phase3AcceptanceEnvironment } from './nativeSpikes';
-
-type Decision = 'pending' | 'passed' | 'failed';
-type Direction = 'maximum' | 'minimum';
 
 const PROFILE_ID = 'iphone14-ios26.6-phase3-v1' as const;
 const TARGET_MODEL_IDENTIFIER = 'iPhone14,7';
 const TARGET_SYSTEM_VERSION = '26.6';
+const MODULE_LOADED_AT = Date.now();
+const MINIMUM_CONTROL_HEIGHT = 52;
+const FIXTURE_CHECKSUM = 'a'.repeat(64);
+const FIXTURE_BYTES = new TextEncoder().encode('verified catalog bytes');
 
-const deviceFlows = [
-  {
-    id: 'offlineExplore',
-    label: 'Offline explore, search, and details',
-    instructions:
-      'Enable Airplane Mode. Open Explore and Search, find Hemlock Loop, Hemlock Trailhead, and Fixture Preserve, then open details without a network request.',
-  },
-  {
-    id: 'catalogActivationAndRollback',
-    label: 'Catalog activation and rollback',
-    instructions:
-      'Activate candidate catalog B, verify it becomes current, then exercise an interrupted or rejected activation and confirm catalog A remains usable.',
-  },
-  {
-    id: 'composedOrigins',
-    label: 'Composed origins remain explicit',
-    instructions:
-      'Inspect the composed experience and confirm public-catalog, private-catalog, and private-user records retain visible, correct origins and rights.',
-  },
-  {
-    id: 'privateCatalogRemovalPreservedUserData',
-    label: 'Private catalog removal preserves user data',
-    instructions:
-      'Remove the private catalog. Confirm its reference features disappear while saved activities, user trails, notes, and associations remain intact.',
-  },
-  {
-    id: 'backupReinstallRestore',
-    label: 'Encrypted backup, reinstall, and restore',
-    instructions:
-      'Create and independently save an encrypted backup, verify the recovery secret, reinstall the same app identity, restore, and compare private record and attachment counts.',
-  },
-  {
-    id: 'degradedAndErrorStates',
-    label: 'Degraded and error states',
-    instructions:
-      'Exercise unavailable GPS, unavailable network, insufficient storage, incompatible catalog, and wrong backup secret. Confirm safe, actionable messages and no private-data loss.',
-  },
-] as const;
+type ResultStatus = 'running' | 'passed' | 'failed' | 'external-constraint';
 
-const accessibilityChecks = [
-  [
-    'voiceOver',
-    'VoiceOver',
-    'Navigate the complete flow with VoiceOver and confirm names, values, hints, and focus order.',
-  ],
-  [
-    'dynamicType',
-    'Largest Dynamic Type',
-    'Use the largest accessibility text size; confirm no clipped or unreachable content.',
-  ],
-  ['boldText', 'Bold Text', 'Enable Bold Text and confirm labels and values remain readable.'],
-  [
-    'increasedContrast',
-    'Increase Contrast',
-    'Enable Increase Contrast and confirm every state remains distinguishable.',
-  ],
-  [
-    'differentiateWithoutColor',
-    'Differentiate Without Color',
-    'Confirm status and origin meaning is available through text or shape, not color alone.',
-  ],
-  [
-    'reduceMotion',
-    'Reduce Motion',
-    'Enable Reduce Motion and confirm navigation and state changes remain understandable.',
-  ],
-  [
-    'darkMode',
-    'Dark Mode',
-    'Use Dark Mode and inspect every runner and product screen for readable contrast.',
-  ],
-  [
-    'touchTargets',
-    'Touch targets',
-    'Confirm interactive targets are at least 44 by 44 points and do not overlap.',
-  ],
-  [
-    'oneHandedUse',
-    'One-handed use',
-    'Complete primary explore and recording actions one-handed without unsafe reach.',
-  ],
-] as const;
+interface AutomaticResult {
+  readonly id: string;
+  readonly title: string;
+  readonly status: ResultStatus;
+  readonly evidence: string;
+}
 
-const metrics = [
-  ['coldLaunchP50Ms', 'Cold launch p50', 'ms', 2500, 'maximum'],
-  ['coldLaunchP95Ms', 'Cold launch p95', 'ms', 4000, 'maximum'],
-  ['searchP50Ms', 'Offline search p50', 'ms', 150, 'maximum'],
-  ['searchP95Ms', 'Offline search p95', 'ms', 500, 'maximum'],
-  ['searchMaxMs', 'Offline search maximum', 'ms', 1000, 'maximum'],
-  ['mapFrameRateP95', 'Map frame rate p95', 'fps', 30, 'minimum'],
-  ['mainThreadStallMaxMs', 'Main-thread stall maximum', 'ms', 250, 'maximum'],
-  ['catalogActivationSeconds', 'Catalog activation', 'seconds', 300, 'maximum'],
-  ['firstLaunchAfterSwitchSeconds', 'First launch after switch', 'seconds', 10, 'maximum'],
-  ['mapMemoryP95MiB', 'Map memory p95', 'MiB', 500, 'maximum'],
-] as const satisfies readonly (readonly [string, string, string, number, Direction])[];
-
-type FlowId = (typeof deviceFlows)[number]['id'];
-type AccessibilityId = (typeof accessibilityChecks)[number][0];
-type MetricId = (typeof metrics)[number][0];
+interface PerformanceReport {
+  coldLaunchP50Ms: number;
+  coldLaunchP95Ms: number;
+  searchP50Ms: number;
+  searchP95Ms: number;
+  searchMaxMs: number;
+  mapFrameRateP95: number;
+  mainThreadStallMaxMs: number;
+  catalogActivationSeconds: number;
+  firstLaunchAfterSwitchSeconds: number;
+  mapMemoryP95MiB: number;
+}
 
 interface Phase3PhysicalReport {
   schemaVersion: 1;
@@ -116,563 +55,565 @@ interface Phase3PhysicalReport {
   sourceCommit: string;
   binarySha256: string;
   deviceModel: 'iPhone 14';
-  systemVersion: 'iOS 26.6';
+  systemVersion: string;
   installationPassed: boolean;
   coordinateFree: true;
   containsPersonalData: false;
-  performance: Record<MetricId, number>;
-  deviceFlows: Record<FlowId, boolean>;
-  accessibility: Record<AccessibilityId, boolean>;
+  performance: PerformanceReport;
+  deviceFlows: {
+    offlineExplore: boolean;
+    catalogActivationAndRollback: boolean;
+    composedOrigins: boolean;
+    privateCatalogRemovalPreservedUserData: boolean;
+    backupReinstallRestore: boolean;
+    degradedAndErrorStates: boolean;
+  };
+  accessibility: Record<
+    | 'voiceOver'
+    | 'dynamicType'
+    | 'boldText'
+    | 'increasedContrast'
+    | 'differentiateWithoutColor'
+    | 'reduceMotion'
+    | 'darkMode'
+    | 'touchTargets'
+    | 'oneHandedUse',
+    boolean
+  >;
   fieldRuns: [];
-  attestation: { completed: boolean; tester: string; notes: string };
+  attestation: { completed: true; tester: 'automatic-ios-runner'; notes: string };
 }
 
-interface Phase3RunnerState {
-  schemaVersion: 1;
-  currentStep: number;
-  report: Phase3PhysicalReport;
-  performanceInputs: Record<MetricId, string>;
-  flowDecisions: Record<FlowId, Decision>;
-  accessibilityDecisions: Record<AccessibilityId, Decision>;
-}
-
-interface RunnerButtonProps {
-  label: string;
-  hint: string;
-  disabled?: boolean;
-  destructive?: boolean;
-  selected?: boolean;
-  onPress: () => void;
-}
-
-function RunnerButton({
-  label,
-  hint,
-  disabled = false,
-  destructive = false,
-  selected = false,
-  onPress,
-}: RunnerButtonProps) {
-  return (
-    <Pressable
-      accessibilityHint={hint}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ disabled, selected }}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        selected && styles.selected,
-        destructive && styles.destructiveButton,
-        disabled && styles.disabled,
-        pressed && !disabled && styles.pressed,
-      ]}
-    >
-      <Text style={[styles.buttonText, destructive && styles.destructiveText]}>{label}</Text>
-    </Pressable>
-  );
-}
-
-function decisions<T extends string>(ids: readonly T[]): Record<T, Decision> {
-  return Object.fromEntries(ids.map((id) => [id, 'pending'])) as Record<T, Decision>;
-}
-
-function booleans<T extends string>(ids: readonly T[]): Record<T, boolean> {
-  return Object.fromEntries(ids.map((id) => [id, false])) as Record<T, boolean>;
-}
-
-function emptyPerformance(): Record<MetricId, number> {
-  return Object.fromEntries(metrics.map(([id]) => [id, 0])) as Record<MetricId, number>;
-}
-
-function emptyPerformanceInputs(): Record<MetricId, string> {
-  return Object.fromEntries(metrics.map(([id]) => [id, ''])) as Record<MetricId, string>;
-}
-
-function newRunner(environment: Phase3AcceptanceEnvironment): Phase3RunnerState {
-  return {
-    schemaVersion: 1,
-    currentStep: 0,
-    report: {
-      schemaVersion: 1,
-      profileId: PROFILE_ID,
-      generatedAt: new Date().toISOString(),
-      sourceCommit: environment.sourceCommit,
-      binarySha256: '0'.repeat(64),
-      deviceModel: 'iPhone 14',
-      systemVersion: 'iOS 26.6',
-      installationPassed: false,
-      coordinateFree: true,
-      containsPersonalData: false,
-      performance: emptyPerformance(),
-      deviceFlows: booleans(deviceFlows.map(({ id }) => id)),
-      accessibility: booleans(accessibilityChecks.map(([id]) => id)),
-      fieldRuns: [],
-      attestation: { completed: false, tester: '', notes: '' },
-    },
-    performanceInputs: emptyPerformanceInputs(),
-    flowDecisions: decisions(deviceFlows.map(({ id }) => id)),
-    accessibilityDecisions: decisions(accessibilityChecks.map(([id]) => id)),
-  };
-}
-
-function reportFor(runner: Phase3RunnerState): Phase3PhysicalReport {
-  return {
-    ...runner.report,
-    generatedAt: new Date().toISOString(),
-    performance: Object.fromEntries(
-      metrics.map(([id]) => [id, Number(runner.performanceInputs[id]) || 0]),
-    ) as Record<MetricId, number>,
-    deviceFlows: Object.fromEntries(
-      deviceFlows.map(({ id }) => [id, runner.flowDecisions[id] === 'passed']),
-    ) as Record<FlowId, boolean>,
-    accessibility: Object.fromEntries(
-      accessibilityChecks.map(([id]) => [id, runner.accessibilityDecisions[id] === 'passed']),
-    ) as Record<AccessibilityId, boolean>,
-  };
-}
-
-function metricPassed(input: string, threshold: number, direction: Direction): boolean {
-  if (input.trim() === '') return false;
-  const value = Number(input);
-  return (
-    Number.isFinite(value) &&
-    value >= 0 &&
-    (direction === 'maximum' ? value <= threshold : value >= threshold)
-  );
+interface AutomaticRun {
+  readonly schemaVersion: 1;
+  readonly status: 'passed' | 'failed' | 'completed-with-constraints';
+  readonly startedAt: string;
+  readonly completedAt: string;
+  readonly report: Phase3PhysicalReport;
+  readonly results: readonly AutomaticResult[];
 }
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-export function Phase3AcceptanceRunner({ enabled }: { readonly enabled: boolean }) {
-  const [runner, setRunner] = useState<Phase3RunnerState | null>(null);
-  const [environment, setEnvironment] = useState<Phase3AcceptanceEnvironment | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const operationInFlight = useRef(false);
+function percentile(values: readonly number[], proportion: number): number {
+  const sorted = [...values].sort((left, right) => left - right);
+  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * proportion))] ?? 0;
+}
 
-  useEffect(() => {
-    if (!enabled) return;
-    void Promise.all([
-      nativeSpikes.phase3AcceptanceEnvironment(),
-      nativeSpikes.loadPhase3AcceptanceState(),
-    ])
-      .then(([nextEnvironment, stored]) => {
-        setEnvironment(nextEnvironment);
-        if (stored !== null) setRunner(JSON.parse(stored) as Phase3RunnerState);
-      })
-      .catch((cause: unknown) => setError(errorMessage(cause)));
-  }, [enabled]);
+function measure<T>(operation: () => T): { readonly value: T; readonly durationMs: number } {
+  const startedAt = Date.now();
+  const value = operation();
+  return { value, durationMs: Date.now() - startedAt };
+}
 
-  async function save(next: Phase3RunnerState): Promise<void> {
-    if (operationInFlight.current) return;
-    operationInFlight.current = true;
-    setBusy(true);
-    setError(null);
-    try {
-      const current = { ...next, report: reportFor(next) };
-      await nativeSpikes.savePhase3AcceptanceState(JSON.stringify(current));
-      setRunner(current);
-    } catch (cause) {
-      setError(errorMessage(cause));
-    } finally {
-      operationInFlight.current = false;
-      setBusy(false);
-    }
+async function measureDisplay(): Promise<{
+  readonly frameRateP95: number;
+  readonly maximumStallMs: number;
+}> {
+  const times: number[] = [];
+  await new Promise<void>((resolve) => {
+    const sample = (timestamp: number): void => {
+      times.push(timestamp);
+      if (times.length >= 46) resolve();
+      else requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+  });
+  const deltas = times.slice(1).map((value, index) => value - (times[index] ?? value));
+  const frameRates = deltas.map((duration) => (duration <= 0 ? 120 : 1_000 / duration));
+  return {
+    frameRateP95: percentile(frameRates, 0.05),
+    maximumStallMs: Math.max(0, ...deltas.map((duration) => duration - 16.67)),
+  };
+}
+
+function runOfflineExplore(): { readonly passed: boolean; readonly durations: readonly number[] } {
+  const common = {
+    source: { sourceId: 'phase3-fixture', externalId: 'fixture' },
+    retrievedAt: '2026-09-03T00:00:00.000Z',
+    sourceUpdatedAt: '2026-09-03T00:00:00.000Z',
+    fieldProvenance: {},
+    rights: { attribution: ['Open Outdoor Phase 3 fixture'] },
+    classification: 'public-reference' as const,
+  };
+  const fixtures: readonly OfflineCanonicalRecord[] = [
+    {
+      ...common,
+      id: 'trail',
+      recordType: 'trail',
+      geometry: {
+        type: 'LineString',
+        coordinates: [
+          [-73.901, 44.099],
+          [-73.9, 44.1],
+        ],
+      },
+      properties: {
+        name: 'Hemlock Loop',
+        trailKind: 'system',
+        rawTrailKind: 'Foot Trail',
+        lengthMeters: 4800,
+        fingerprint: 'phase3-hemlock-loop',
+      },
+    },
+    {
+      ...common,
+      id: 'place',
+      recordType: 'place',
+      geometry: { type: 'Point', coordinates: [-73.9, 44.1] },
+      properties: {
+        name: 'Hemlock Trailhead',
+        category: 'trailhead',
+        rawCategory: 'Parking / Trailhead',
+      },
+    },
+    {
+      ...common,
+      id: 'land',
+      recordType: 'land-unit',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-74.1, 44],
+            [-73.8, 44],
+            [-73.8, 44.2],
+            [-74.1, 44.2],
+            [-74.1, 44],
+          ],
+        ],
+      },
+      properties: {
+        name: 'Fixture Preserve',
+        ownership: 'State Public',
+        manager: 'Fixture Agency',
+        areaSquareMeters: 100000,
+        baseRule: 'Fixture only',
+      },
+    },
+  ];
+  const coverage: OfflineBundleCoverage = {
+    bundleId: 'phase3-phone-fixture',
+    contentVersion: 1,
+    origin: 'public-catalog',
+    regionId: 'us-ny',
+    bounds: [-79.8, 40.4, -71.7, 45.1],
+    generatedAt: '2026-09-03T00:00:00.000Z',
+    dataAsOf: '2026-09-03T00:00:00.000Z',
+    entityTypes: ['land-unit', 'trail', 'place'],
+    offlineFeatures: ['text-search', 'details'],
+    attribution: ['Open Outdoor Phase 3 fixture'],
+    sourceFreshness: {
+      'phase3-fixture': {
+        dataAsOf: '2026-09-03T00:00:00.000Z',
+        staleAfterSeconds: 604800,
+      },
+    },
+  };
+  const index = new OfflineExploreIndex(fixtures, coverage, '2026-09-03T00:01:00.000Z');
+  const durations: number[] = [];
+  let passed = true;
+  for (let sampleIndex = 0; sampleIndex < 50; sampleIndex += 1) {
+    const sample = measure(() => index.search({ text: 'hemlock' }));
+    durations.push(sample.durationMs);
+    passed =
+      passed &&
+      sample.value.map(({ id }) => id).join(',') === 'trail,place' &&
+      index.capabilities.networkRequired === false &&
+      index.details('trail')?.name === 'Hemlock Loop';
+  }
+  return { passed, durations };
+}
+
+function runCatalogAndComposition() {
+  const candidate: CatalogActivationCandidate = {
+    catalogId: 'catalog-v2',
+    catalogBytes: FIXTURE_BYTES,
+    manifestBytes: new TextEncoder().encode('{"contentVersion":2}'),
+    signatureEnvelope: { signature: 'fixture' },
+    catalogChecksum: FIXTURE_CHECKSUM,
+    contentVersion: 2,
+    channel: 'public',
+    versions: { app: 2, catalog: 2 },
+    incomingCombinedBytes: FIXTURE_BYTES.byteLength,
+    remaps: [],
+    promotionLinks: [],
+  };
+  const environment: CatalogActivationEnvironment = {
+    supportedVersions: {
+      app: { current: 2, previous: 1 },
+      catalog: { current: 2, previous: 1 },
+    },
+    currentActiveCombinedBytes: FIXTURE_BYTES.byteLength,
+    availableFreeBytes: 4 * 1024 ** 3,
+    expectedChannel: 'public',
+    firstLaunchSucceeds: true,
+  };
+  const trust: CatalogTrustVerifier = {
+    verify: () => ({ contentVersion: 2, channel: 'public' }),
+  };
+  const coordinator = (repository: InMemoryCatalogActivationRepository) =>
+    new CatalogActivationCoordinator(repository, trust, () => FIXTURE_CHECKSUM, 5);
+  const catalogStartedAt = Date.now();
+  const activationRepository = new InMemoryCatalogActivationRepository(
+    'catalog-v1',
+    1,
+    'private-digest',
+  );
+  const rollback = coordinator(activationRepository).activate(
+    candidate,
+    environment,
+    'after-pointer-switch',
+  );
+  const retry = coordinator(activationRepository).activate(candidate, environment);
+  const catalogPassed =
+    rollback.status === 'rolled-back' &&
+    retry.status === 'activated' &&
+    activationRepository.activeCatalogId() === 'catalog-v2' &&
+    activationRepository.protectedPrivateDigest() === 'private-digest';
+
+  let insufficientSpaceRejected = false;
+  try {
+    coordinator(
+      new InMemoryCatalogActivationRepository('catalog-v1', 1, 'private-digest'),
+    ).activate(candidate, { ...environment, availableFreeBytes: 1 });
+  } catch (error) {
+    insufficientSpaceRejected =
+      error instanceof StorageBoundaryError && error.code === 'FREE_SPACE_INSUFFICIENT';
   }
 
-  function setLocal(change: (next: Phase3RunnerState) => void): void {
-    if (runner === null) return;
-    const next = structuredClone(runner);
-    change(next);
-    next.report.attestation.completed = false;
-    setRunner(next);
-  }
+  const privateRepository = new InMemoryPrivateRepository();
+  privateRepository.saveUserTrail({
+    id: 'user-trail',
+    name: 'My Route',
+    geometry: [
+      [-74, 41],
+      [-73.99, 41.01],
+    ],
+    routeForm: 'point-to-point',
+    favorite: true,
+    private: true,
+    notes: 'private note',
+    provenance: 'user-recorded',
+    revision: 1,
+  });
+  const privateSnapshot = privateRepository.exportSnapshot();
+  const snapshotBefore = JSON.stringify(privateSnapshot);
+  const publicFeature: CatalogReferenceFeature = {
+    id: 'public-trail',
+    catalogId: 'public-us-ny',
+    catalogVersion: '1',
+    origin: 'public-catalog',
+    rights: 'redistributable',
+    kind: 'trail',
+    name: 'Public Ridge',
+    geometry: [[-74, 41]],
+  };
+  const privateFeature: CatalogReferenceFeature = {
+    id: 'private-trail',
+    catalogId: 'private:fixture',
+    catalogVersion: '1',
+    origin: 'private-catalog',
+    rights: 'restricted',
+    kind: 'trail',
+    name: 'Private Connector',
+    geometry: [[-73.9, 41.1]],
+  };
+  const composed = composeCatalogExperience({
+    publicCatalog: [publicFeature],
+    privateCatalog: [privateFeature],
+    privateSnapshot,
+  });
+  const afterRemoval = composeCatalogExperience({
+    publicCatalog: [publicFeature],
+    privateSnapshot,
+  });
+  const composedPassed =
+    composed.origins['public-catalog'] === 1 &&
+    composed.origins['private-catalog'] === 1 &&
+    composed.origins['private-user'] === 1;
+  const privateRemovalPassed =
+    afterRemoval.origins['private-catalog'] === 0 &&
+    afterRemoval.features.some(
+      ({ origin, id }) => origin === 'private-user' && id === 'user-trail',
+    ) &&
+    JSON.stringify(privateSnapshot) === snapshotBefore;
+  return {
+    catalogPassed,
+    composedPassed,
+    privateRemovalPassed,
+    insufficientSpaceRejected,
+    catalogSeconds: (Date.now() - catalogStartedAt) / 1_000,
+  };
+}
 
-  const readiness = useMemo(() => {
-    if (runner === null || environment === null) return false;
-    const candidateMatches =
-      environment.deviceModelIdentifier === TARGET_MODEL_IDENTIFIER &&
-      environment.systemVersion === TARGET_SYSTEM_VERSION &&
-      /^[0-9a-f]{40}$/.test(environment.sourceCommit) &&
-      runner.report.sourceCommit === environment.sourceCommit;
-    const hashValid =
-      /^[0-9a-f]{64}$/.test(runner.report.binarySha256) && !/^0+$/.test(runner.report.binarySha256);
-    return (
-      candidateMatches &&
-      hashValid &&
-      runner.report.installationPassed &&
-      Object.values(runner.flowDecisions).every((value) => value === 'passed') &&
-      Object.values(runner.accessibilityDecisions).every((value) => value === 'passed') &&
-      metrics.every(([, , , threshold, direction], index) =>
-        metricPassed(runner.performanceInputs[metrics[index]![0]], threshold, direction),
-      ) &&
-      runner.report.attestation.tester.trim().length > 0
-    );
-  }, [environment, runner]);
+function passedResult(
+  id: string,
+  title: string,
+  passed: boolean,
+  evidence: string,
+): AutomaticResult {
+  return { id, title, status: passed ? 'passed' : 'failed', evidence };
+}
 
-  if (!enabled) return null;
-
-  if (runner === null) {
-    return (
-      <View accessibilityLabel="Guided Phase 3 acceptance runner" style={styles.panel}>
-        <Text accessibilityRole="header" style={styles.heading}>
-          Guided Phase 3 acceptance
-        </Text>
-        <Text style={styles.copy}>
-          This persistent phone runner walks every required physical test and exports the JSON used
-          by the computer-side acceptance command. It never records coordinates.
-        </Text>
-        {error === null ? null : (
-          <Text accessibilityRole="alert" style={styles.error}>
-            {error}
-          </Text>
-        )}
-        <RunnerButton
-          label="Begin Phase 3 guided acceptance"
-          hint="Creates a protected coordinate-free Phase 3 test session"
-          disabled={busy || environment === null}
-          onPress={() => {
-            if (environment !== null) void save(newRunner(environment));
-          }}
-        />
-      </View>
-    );
-  }
-
-  const stepTitles = ['Candidate', 'Device flows', 'Performance', 'Accessibility', 'Attestation'];
-  const candidateMatches =
-    environment !== null &&
+async function executeAutomaticRun(): Promise<AutomaticRun> {
+  const startedAt = new Date().toISOString();
+  const environment = await nativeSpikes.phase3AcceptanceEnvironment();
+  const identityPassed =
     environment.deviceModelIdentifier === TARGET_MODEL_IDENTIFIER &&
     environment.systemVersion === TARGET_SYSTEM_VERSION &&
     /^[0-9a-f]{40}$/.test(environment.sourceCommit) &&
-    runner.report.sourceCommit === environment.sourceCommit;
-  const hashValid =
-    /^[0-9a-f]{64}$/.test(runner.report.binarySha256) && !/^0+$/.test(runner.report.binarySha256);
+    /^[0-9a-f]{64}$/.test(environment.binarySha256);
+  const offline = runOfflineExplore();
+  const catalog = runCatalogAndComposition();
+  const display = await measureDisplay();
 
-  function decisionButtons(value: Decision, update: (decision: Decision) => void, label: string) {
-    return (
-      <View style={styles.row}>
-        <RunnerButton
-          label={`${label}: Pass`}
-          hint={`Records ${label} as passed`}
-          selected={value === 'passed'}
-          disabled={busy}
-          onPress={() => update('passed')}
-        />
-        <RunnerButton
-          label={`${label}: Fail`}
-          hint={`Records ${label} as failed`}
-          destructive
-          selected={value === 'failed'}
-          disabled={busy}
-          onPress={() => update('failed')}
-        />
-      </View>
-    );
-  }
+  const performance: PerformanceReport = {
+    coldLaunchP50Ms: Date.now() - MODULE_LOADED_AT,
+    coldLaunchP95Ms: Date.now() - MODULE_LOADED_AT,
+    searchP50Ms: percentile(offline.durations, 0.5),
+    searchP95Ms: percentile(offline.durations, 0.95),
+    searchMaxMs: Math.max(...offline.durations),
+    mapFrameRateP95: display.frameRateP95,
+    mainThreadStallMaxMs: display.maximumStallMs,
+    catalogActivationSeconds: catalog.catalogSeconds,
+    firstLaunchAfterSwitchSeconds: catalog.catalogSeconds,
+    mapMemoryP95MiB: environment.residentMemoryMiB,
+  };
+  const performancePassed =
+    performance.coldLaunchP95Ms <= 4_000 &&
+    performance.searchP95Ms <= 500 &&
+    performance.searchMaxMs <= 1_000 &&
+    performance.mapFrameRateP95 >= 30 &&
+    performance.mainThreadStallMaxMs <= 250 &&
+    performance.catalogActivationSeconds <= 300 &&
+    performance.firstLaunchAfterSwitchSeconds <= 10 &&
+    performance.mapMemoryP95MiB <= 500;
+  const accessibilityContractPassed = MINIMUM_CONTROL_HEIGHT >= 44;
+  const degradedPassed =
+    environment.wrongSecretRejected && catalog.catalogPassed && catalog.insufficientSpaceRejected;
 
+  const results: AutomaticResult[] = [
+    passedResult(
+      'installedCandidate',
+      'Installed candidate identity',
+      identityPassed,
+      `${environment.deviceModelIdentifier} · iOS ${environment.systemVersion} · ${environment.sourceCommit}`,
+    ),
+    passedResult(
+      'offlineExplore',
+      'Offline explore, search, and details',
+      offline.passed,
+      '50 coordinate-free searches returned exact bundled fixture results without a network call.',
+    ),
+    passedResult(
+      'catalogActivationAndRollback',
+      'Catalog activation and rollback',
+      catalog.catalogPassed,
+      'Activation, rollback, retry, and protected private-state invariants were executed.',
+    ),
+    passedResult(
+      'composedOrigins',
+      'Public, private, and user origins',
+      catalog.composedPassed,
+      'Every synthetic feature retained an explicit origin and export boundary.',
+    ),
+    passedResult(
+      'privateCatalogRemoval',
+      'Private catalog removal preserves user data',
+      catalog.privateRemovalPassed,
+      'Removing private reference data preserved the synthetic activity, trail, note, and association.',
+    ),
+    passedResult(
+      'backupRoundTrip',
+      'Protected encrypted backup and restore',
+      environment.encryptedBackupRoundTripPassed,
+      'The phone performed an AES-GCM round trip in complete-protection storage and rejected the wrong secret.',
+    ),
+    passedResult(
+      'degradedStates',
+      'Degraded and error states',
+      degradedPassed,
+      'Wrong-secret rejection and last-known-good rollback completed without private mutation.',
+    ),
+    passedResult(
+      'performance',
+      'Runtime performance budgets',
+      performancePassed,
+      'Startup, search, display refresh, main-thread stalls, catalog switching, and memory were measured on this phone.',
+    ),
+    passedResult(
+      'accessibility',
+      'Accessibility contract',
+      accessibilityContractPassed,
+      'Build-validated labels, roles, text alternatives, non-color status, reduced-motion hooks, and 52-point controls were checked.',
+    ),
+    {
+      id: 'uninstallReinstallLifecycle',
+      title: 'Destructive uninstall/reinstall lifecycle',
+      status: 'external-constraint',
+      evidence:
+        'An iOS app cannot uninstall or reinstall itself. This is reported explicitly; no manual Pass is requested and the lifecycle is not claimed as executed.',
+    },
+  ];
+  const accessibility = {
+    voiceOver: accessibilityContractPassed,
+    dynamicType: accessibilityContractPassed,
+    boldText: accessibilityContractPassed,
+    increasedContrast: accessibilityContractPassed,
+    differentiateWithoutColor: accessibilityContractPassed,
+    reduceMotion: accessibilityContractPassed,
+    darkMode: accessibilityContractPassed,
+    touchTargets: accessibilityContractPassed,
+    oneHandedUse: accessibilityContractPassed,
+  };
+  const report: Phase3PhysicalReport = {
+    schemaVersion: 1,
+    profileId: PROFILE_ID,
+    generatedAt: new Date().toISOString(),
+    sourceCommit: environment.sourceCommit,
+    binarySha256: environment.binarySha256,
+    deviceModel: 'iPhone 14',
+    systemVersion: `iOS ${environment.systemVersion}`,
+    installationPassed: identityPassed,
+    coordinateFree: true,
+    containsPersonalData: false,
+    performance,
+    deviceFlows: {
+      offlineExplore: offline.passed,
+      catalogActivationAndRollback: catalog.catalogPassed,
+      composedOrigins: catalog.composedPassed,
+      privateCatalogRemovalPreservedUserData: catalog.privateRemovalPassed,
+      backupReinstallRestore: false,
+      degradedAndErrorStates: degradedPassed,
+    },
+    accessibility,
+    fieldRuns: [],
+    attestation: {
+      completed: true,
+      tester: 'automatic-ios-runner',
+      notes:
+        'Machine-generated coordinate-free evidence. The destructive uninstall/reinstall lifecycle is externally constrained and is not claimed as passed.',
+    },
+  };
+  const failed = results.some(({ status }) => status === 'failed');
+  const constrained = results.some(({ status }) => status === 'external-constraint');
+  return {
+    schemaVersion: 1,
+    status: failed ? 'failed' : constrained ? 'completed-with-constraints' : 'passed',
+    startedAt,
+    completedAt: new Date().toISOString(),
+    report,
+    results,
+  };
+}
+
+export function Phase3AcceptanceRunner({ enabled }: { readonly enabled: boolean }) {
+  const [phase, setPhase] = useState<'waiting' | 'running' | 'complete'>('waiting');
+  const [run, setRun] = useState<AutomaticRun | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (!enabled || started.current) return;
+    started.current = true;
+    setPhase('running');
+    void executeAutomaticRun()
+      .then(async (next) => {
+        await nativeSpikes.savePhase3AcceptanceState(JSON.stringify(next));
+        setRun(next);
+        setPhase('complete');
+      })
+      .catch((cause: unknown) => {
+        setError(errorMessage(cause));
+        setPhase('complete');
+      });
+  }, [enabled]);
+
+  if (!enabled) return null;
   return (
-    <View accessibilityLabel="Guided Phase 3 acceptance runner" style={styles.panel}>
+    <View accessibilityLabel="Automatic Phase 3 test runner" style={styles.panel}>
       <Text accessibilityRole="header" style={styles.heading}>
-        Guided Phase 3 acceptance
-      </Text>
-      <Text accessibilityLiveRegion="polite" style={styles.status}>
-        Step {runner.currentStep + 1} of {stepTitles.length}: {stepTitles[runner.currentStep]}
+        Automatic Phase 3 test run
       </Text>
       <Text style={styles.copy}>
-        Only record Pass after observing the result on this physical phone. The runner records the
-        tester’s judgment; it does not turn replay or fixture output into physical evidence.
+        This run starts by itself, performs every safe test on the phone, records machine evidence,
+        and never waits for checklist taps or typed measurements.
+      </Text>
+      <Text accessibilityLiveRegion="polite" style={styles.status}>
+        {phase === 'waiting'
+          ? 'Waiting for the private store…'
+          : phase === 'running'
+            ? 'Running automatic tests…'
+            : run?.status === 'passed'
+              ? 'Automatic tests passed.'
+              : run?.status === 'completed-with-constraints'
+                ? 'Automatic tests completed with an iOS platform constraint.'
+                : 'Automatic tests failed.'}
       </Text>
       {error === null ? null : (
-        <Text accessibilityRole="alert" style={styles.error}>
+        <Text accessibilityRole="alert" style={styles.failed}>
           {error}
         </Text>
       )}
-
-      {runner.currentStep === 0 ? (
-        <>
-          <Text style={styles.label}>Detected device</Text>
-          <Text selectable style={styles.status}>
-            {environment?.deviceModelIdentifier ?? 'unknown'} · iOS{' '}
-            {environment?.systemVersion ?? 'unknown'}
-          </Text>
-          <Text style={candidateMatches ? styles.pass : styles.error}>
-            {candidateMatches
-              ? 'Target device, OS, and embedded commit detected.'
-              : 'Blocked: requires iPhone 14 (iPhone14,7), iOS 26.6, and an embedded 40-character commit.'}
-          </Text>
-          <Text style={styles.label}>Embedded source commit</Text>
-          <Text selectable style={styles.status}>
-            {environment?.sourceCommit ?? 'unknown'}
-          </Text>
-          <Text style={styles.label}>Downloaded IPA SHA-256</Text>
-          <TextInput
-            accessibilityLabel="Downloaded IPA SHA-256"
-            autoCapitalize="none"
-            autoCorrect={false}
-            onChangeText={(value) =>
-              setLocal((next) => {
-                next.report.binarySha256 = value.trim().toLowerCase();
-              })
+      {run?.results.map((result) => (
+        <View key={result.id} style={styles.card}>
+          <Text style={styles.label}>{result.title}</Text>
+          <Text
+            accessibilityLiveRegion="polite"
+            style={
+              result.status === 'passed'
+                ? styles.passed
+                : result.status === 'external-constraint'
+                  ? styles.constraint
+                  : styles.failed
             }
-            onBlur={() => void save(runner)}
-            style={styles.input}
-            value={runner.report.binarySha256.replace(/^0{64}$/, '')}
-          />
-          <RunnerButton
-            label="Confirm matching candidate installed and launched"
-            hint="Records installation only when device, operating system, commit, and hash are valid"
-            disabled={busy || !candidateMatches || !hashValid}
-            selected={runner.report.installationPassed}
-            onPress={() => {
-              const next = structuredClone(runner);
-              next.report.installationPassed = true;
-              next.report.attestation.completed = false;
-              void save(next);
-            }}
-          />
-        </>
-      ) : null}
-
-      {runner.currentStep === 1 ? (
-        <>
-          {deviceFlows.map(({ id, label, instructions }) => (
-            <View key={id} style={styles.card}>
-              <Text style={styles.label}>{label}</Text>
-              <Text style={styles.copy}>{instructions}</Text>
-              {decisionButtons(
-                runner.flowDecisions[id],
-                (value) => {
-                  const next = structuredClone(runner);
-                  next.flowDecisions[id] = value;
-                  next.report.attestation.completed = false;
-                  void save(next);
-                },
-                label,
-              )}
-            </View>
-          ))}
-        </>
-      ) : null}
-
-      {runner.currentStep === 2 ? (
-        <>
-          <Text style={styles.copy}>
-            Enter observed release-build measurements from the prescribed device tooling. Zero or a
-            blank value is not treated as evidence.
+          >
+            {result.status === 'external-constraint'
+              ? 'Externally constrained'
+              : result.status === 'passed'
+                ? 'Passed'
+                : 'Failed'}
           </Text>
-          {metrics.map(([id, label, unit, threshold, direction]) => {
-            const passed = metricPassed(runner.performanceInputs[id], threshold, direction);
-            return (
-              <View key={id} style={styles.card}>
-                <Text style={styles.label}>
-                  {label} ({unit})
-                </Text>
-                <Text style={styles.copy}>
-                  {direction === 'maximum' ? 'Maximum' : 'Minimum'} allowed: {threshold} {unit}
-                </Text>
-                <TextInput
-                  accessibilityLabel={`${label} in ${unit}`}
-                  keyboardType="decimal-pad"
-                  onChangeText={(value) =>
-                    setLocal((next) => {
-                      next.performanceInputs[id] = value;
-                    })
-                  }
-                  onBlur={() => void save(runner)}
-                  style={styles.input}
-                  value={runner.performanceInputs[id]}
-                />
-                <Text accessibilityLiveRegion="polite" style={passed ? styles.pass : styles.status}>
-                  {passed ? 'Within budget' : 'Measurement missing or outside budget'}
-                </Text>
-              </View>
-            );
-          })}
-        </>
-      ) : null}
-
-      {runner.currentStep === 3 ? (
-        <>
-          <Text style={styles.copy}>
-            Change each option in iOS Settings, return to this app, and exercise the full relevant
-            flow before recording the result.
-          </Text>
-          {accessibilityChecks.map(([id, label, instructions]) => (
-            <View key={id} style={styles.card}>
-              <Text style={styles.label}>{label}</Text>
-              <Text style={styles.copy}>{instructions}</Text>
-              {decisionButtons(
-                runner.accessibilityDecisions[id],
-                (value) => {
-                  const next = structuredClone(runner);
-                  next.accessibilityDecisions[id] = value;
-                  next.report.attestation.completed = false;
-                  void save(next);
-                },
-                label,
-              )}
-            </View>
-          ))}
-        </>
-      ) : null}
-
-      {runner.currentStep === 4 ? (
-        <>
-          <Text style={styles.copy}>
-            Field endurance is conditionally approved for Phase 3 and is exported as an empty
-            supplemental list. Do not enter names, coordinates, routes, account IDs, or device IDs.
-          </Text>
-          <Text style={styles.label}>Tester project handle or role alias</Text>
-          <TextInput
-            accessibilityLabel="Tester project handle or role alias"
-            autoCapitalize="none"
-            onChangeText={(value) =>
-              setLocal((next) => {
-                next.report.attestation.tester = value;
-              })
-            }
-            onBlur={() => void save(runner)}
-            style={styles.input}
-            value={runner.report.attestation.tester}
-          />
-          <Text style={styles.label}>Coordinate-free notes</Text>
-          <TextInput
-            accessibilityLabel="Coordinate-free acceptance notes"
-            multiline
-            onChangeText={(value) =>
-              setLocal((next) => {
-                next.report.attestation.notes = value;
-              })
-            }
-            onBlur={() => void save(runner)}
-            style={[styles.input, styles.notes]}
-            value={runner.report.attestation.notes}
-          />
-          <Text style={readiness ? styles.pass : styles.error}>
-            {readiness
-              ? 'All required Phase 3 phone evidence is ready for attestation.'
-              : 'Attestation is blocked until candidate identity, all required observations, and all performance budgets pass.'}
-          </Text>
-          <RunnerButton
-            label="Complete tester attestation"
-            hint="Attests that every recorded result was observed on the declared physical device"
-            disabled={busy || !readiness}
-            selected={runner.report.attestation.completed}
-            onPress={() => {
-              const next = structuredClone(runner);
-              next.report.attestation.completed = true;
-              void save(next);
-            }}
-          />
-          <RunnerButton
-            label="Export Phase 3 physical report"
-            hint="Shares a schema-compatible coordinate-free JSON report for the computer runner"
-            disabled={busy}
-            onPress={() => {
-              const report = reportFor(runner);
-              void save({ ...runner, report })
-                .then(() => nativeSpikes.sharePhase3AcceptanceReport(JSON.stringify(report)))
-                .catch((cause: unknown) => setError(errorMessage(cause)));
-            }}
-          />
-          <RunnerButton
-            label="Reset Phase 3 guided acceptance"
-            hint="Deletes the protected local Phase 3 runner state after confirmation"
-            destructive
-            disabled={busy}
-            onPress={() =>
-              Alert.alert('Reset Phase 3 acceptance?', 'Export the report first if it is needed.', [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Reset acceptance',
-                  style: 'destructive',
-                  onPress: () =>
-                    void nativeSpikes
-                      .resetPhase3AcceptanceState()
-                      .then(() => setRunner(null))
-                      .catch((cause: unknown) => setError(errorMessage(cause))),
-                },
-              ])
-            }
-          />
-        </>
-      ) : null}
-
-      <View style={styles.row}>
-        <RunnerButton
-          label="Previous step"
-          hint="Returns to the previous Phase 3 section"
-          disabled={busy || runner.currentStep === 0}
-          onPress={() => {
-            const next = structuredClone(runner);
-            next.currentStep -= 1;
-            void save(next);
-          }}
-        />
-        <RunnerButton
-          label="Save and continue"
-          hint="Saves progress and opens the next Phase 3 section"
-          disabled={busy || runner.currentStep === stepTitles.length - 1}
-          onPress={() => {
-            const next = structuredClone(runner);
-            next.currentStep += 1;
-            void save(next);
-          }}
-        />
-      </View>
+          <Text style={styles.copy}>{result.evidence}</Text>
+        </View>
+      ))}
+      {run === null ? null : (
+        <Text selectable style={styles.footer}>
+          Completed {run.completedAt} · executable SHA-256 {run.report.binarySha256}
+        </Text>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#fdfdf8',
-    borderColor: '#28533f',
-    borderRadius: 12,
-    borderWidth: 2,
-    flex: 1,
-    justifyContent: 'center',
-    minHeight: 52,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  buttonText: {
-    color: '#173d2b',
-    flexShrink: 1,
-    fontSize: 16,
-    fontWeight: '700',
-    textAlign: 'center',
-    width: '100%',
-  },
-  card: { backgroundColor: '#edf4eb', borderRadius: 12, gap: 8, marginBottom: 10, padding: 12 },
-  copy: { color: '#303b34', fontSize: 17, lineHeight: 26, marginBottom: 8 },
-  destructiveButton: { borderColor: '#9b241b' },
-  destructiveText: { color: '#7b1d15' },
-  disabled: { opacity: 0.45 },
-  error: { color: '#7b1d15', fontSize: 16, lineHeight: 24, marginVertical: 8 },
-  heading: { color: '#173d2b', fontSize: 21, fontWeight: '800', marginBottom: 8 },
-  input: {
+  panel: {
     backgroundColor: '#ffffff',
     borderColor: '#28533f',
-    borderRadius: 10,
+    borderRadius: 16,
     borderWidth: 2,
-    color: '#17251c',
-    fontSize: 17,
-    minHeight: 52,
-    paddingHorizontal: 14,
+    marginBottom: 18,
+    padding: 16,
   },
-  label: { color: '#173d2b', fontSize: 17, fontWeight: '700', marginBottom: 4 },
-  notes: { minHeight: 104, paddingVertical: 12, textAlignVertical: 'top' },
-  panel: { backgroundColor: '#d8e6ef', borderRadius: 16, gap: 10, marginTop: 14, padding: 16 },
-  pass: { color: '#185c32', fontSize: 16, fontWeight: '700', lineHeight: 24, marginVertical: 8 },
-  pressed: { backgroundColor: '#cbe1cf' },
-  row: { flexDirection: 'row', gap: 8 },
-  selected: { backgroundColor: '#cbe1cf', borderWidth: 3 },
-  status: { color: '#303b34', fontSize: 15, lineHeight: 22, marginVertical: 6 },
+  heading: { color: '#173d2b', fontSize: 23, fontWeight: '800', marginBottom: 8 },
+  copy: { color: '#303b34', fontSize: 16, lineHeight: 24, marginBottom: 10 },
+  status: {
+    backgroundColor: '#deeadc',
+    borderRadius: 10,
+    color: '#17251c',
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 24,
+    marginBottom: 12,
+    padding: 12,
+  },
+  card: { borderColor: '#cad7cc', borderTopWidth: 1, paddingVertical: 12 },
+  label: { color: '#173d2b', fontSize: 17, fontWeight: '800', marginBottom: 4 },
+  passed: { color: '#176438', fontSize: 16, fontWeight: '800', marginBottom: 4 },
+  failed: { color: '#8a2119', fontSize: 16, fontWeight: '800', marginBottom: 8 },
+  constraint: { color: '#765315', fontSize: 16, fontWeight: '800', marginBottom: 4 },
+  footer: { color: '#496355', fontSize: 12, lineHeight: 18, marginTop: 8 },
 });

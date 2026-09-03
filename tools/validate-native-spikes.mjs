@@ -10,6 +10,10 @@ function requireText(source, token, label) {
   if (!source.includes(token)) throw new Error(`${label} is missing required token: ${token}`);
 }
 
+function rejectText(source, token, label) {
+  if (source.includes(token)) throw new Error(`${label} contains forbidden token: ${token}`);
+}
+
 const app = JSON.parse(await text('apps/mobile/app.json'));
 const mobilePackage = JSON.parse(await text('apps/mobile/package.json'));
 const moduleConfig = JSON.parse(await text('packages/native-spikes/expo-module.config.json'));
@@ -279,20 +283,30 @@ for (const token of [
   requireText(phase1Runner, token, 'guided Phase 1 acceptance UI');
 }
 for (const token of [
-  'Guided Phase 3 acceptance',
-  'Begin Phase 3 guided acceptance',
+  'Automatic Phase 3 test run',
+  'This run starts by itself',
+  'Running automatic tests',
   'Offline explore, search, and details',
   'Catalog activation and rollback',
-  'Encrypted backup, reinstall, and restore',
-  'Cold launch p95',
-  'VoiceOver',
-  'Complete tester attestation',
-  'Export Phase 3 physical report',
-  'Field endurance is conditionally approved',
+  'Protected encrypted backup and restore',
+  'Runtime performance budgets',
+  'Accessibility contract',
+  'automatic-ios-runner',
+  'external-constraint',
+  'requestAnimationFrame',
   'coordinateFree: true',
   'containsPersonalData: false',
 ]) {
-  requireText(phase3Runner, token, 'guided Phase 3 acceptance UI');
+  requireText(phase3Runner, token, 'automatic Phase 3 acceptance UI');
+}
+for (const token of [
+  'Begin Phase 3 guided acceptance',
+  'decisionButtons',
+  'Complete tester attestation',
+  'Downloaded IPA SHA-256',
+  'TextInput',
+]) {
+  rejectText(phase3Runner, token, 'automatic Phase 3 acceptance UI');
 }
 for (const token of [
   'guided-state.json',
@@ -300,8 +314,12 @@ for (const token of [
   'phase3-physical-report.json',
   'UIActivityViewController',
   'OpenOutdoorSourceCommit',
+  'executableSHA256',
+  'encryptedRoundTrip',
+  'wrongSecretRejected',
+  'residentMemoryMiB',
 ]) {
-  requireText(phase3Acceptance, token, 'guided Phase 3 acceptance store');
+  requireText(phase3Acceptance, token, 'automatic Phase 3 acceptance store');
 }
 requireText(mobileApp, 'Phase3AcceptanceRunner', 'mobile Phase 3 acceptance integration');
 for (const token of [

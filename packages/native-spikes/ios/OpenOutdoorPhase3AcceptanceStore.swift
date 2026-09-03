@@ -1,4 +1,6 @@
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
+import CryptoKit
+import Darwin
 import Foundation
 import UIKit
 
@@ -6,6 +8,10 @@ private struct OpenOutdoorPhase3Environment: Codable {
   let sourceCommit: String
   let deviceModelIdentifier: String
   let systemVersion: String
+  let binarySha256: String
+  let residentMemoryMiB: Double
+  let encryptedBackupRoundTripPassed: Bool
+  let wrongSecretRejected: Bool
 }
 
 internal final class OpenOutdoorPhase3AcceptanceStore {
@@ -37,12 +43,80 @@ internal final class OpenOutdoorPhase3AcceptanceStore {
     }
   }
 
+  private func executableSHA256() throws -> String {
+    guard let url = Bundle.main.executableURL else {
+      throw NSError(
+        domain: "OpenOutdoorPhase3Acceptance",
+        code: 5,
+        userInfo: [NSLocalizedDescriptionKey: "The installed executable is unavailable"]
+      )
+    }
+    let handle = try FileHandle(forReadingFrom: url)
+    defer { try? handle.close() }
+    var digest = SHA256()
+    while true {
+      let data = try handle.read(upToCount: 1_048_576) ?? Data()
+      if data.isEmpty { break }
+      digest.update(data: data)
+    }
+    return digest.finalize().map { String(format: "%02x", $0) }.joined()
+  }
+
+  private func residentMemoryMiB() throws -> Double {
+    var info = mach_task_basic_info()
+    var count = mach_msg_type_number_t(
+      MemoryLayout<mach_task_basic_info>.size / MemoryLayout<natural_t>.size
+    )
+    let result = withUnsafeMutablePointer(to: &info) { pointer in
+      pointer.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { rebound in
+        task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), rebound, &count)
+      }
+    }
+    guard result == KERN_SUCCESS else {
+      throw NSError(domain: "OpenOutdoorPhase3Acceptance", code: 6)
+    }
+    return Double(info.resident_size) / 1_048_576
+  }
+
+  private func encryptedRoundTrip() throws -> (restored: Bool, wrongSecretRejected: Bool) {
+    let payload = Data("phase3-coordinate-free-backup".utf8)
+    let key = SymmetricKey(data: SHA256.hash(data: Data("phase3-automatic-secret".utf8)))
+    let wrongKey = SymmetricKey(data: SHA256.hash(data: Data("phase3-wrong-secret".utf8)))
+    guard let sealed = try AES.GCM.seal(payload, using: key).combined else {
+      return (false, false)
+    }
+    let url = stateURL.deletingLastPathComponent()
+      .appendingPathComponent("automatic-backup-roundtrip.bin")
+    defer { try? FileManager.default.removeItem(at: url) }
+    try sealed.write(to: url, options: [.atomic, .completeFileProtection])
+    try OpenOutdoorFilePolicy.apply(url, protection: .complete)
+    let values = try url.resourceValues(forKeys: [.fileProtectionKey, .isExcludedFromBackupKey])
+    let box = try AES.GCM.SealedBox(combined: Data(contentsOf: url))
+    let restored =
+      try AES.GCM.open(box, using: key) == payload
+      && values.fileProtection == .complete
+      && values.isExcludedFromBackup == true
+    let wrongSecretRejected: Bool
+    do {
+      _ = try AES.GCM.open(box, using: wrongKey)
+      wrongSecretRejected = false
+    } catch {
+      wrongSecretRejected = true
+    }
+    return (restored, wrongSecretRejected)
+  }
+
   func environmentJSON() throws -> String {
+    let backup = try encryptedRoundTrip()
     let environment = OpenOutdoorPhase3Environment(
       sourceCommit: Bundle.main.object(forInfoDictionaryKey: "OpenOutdoorSourceCommit") as? String
         ?? "unknown",
       deviceModelIdentifier: modelIdentifier(),
-      systemVersion: UIDevice.current.systemVersion
+      systemVersion: UIDevice.current.systemVersion,
+      binarySha256: try executableSHA256(),
+      residentMemoryMiB: try residentMemoryMiB(),
+      encryptedBackupRoundTripPassed: backup.restored,
+      wrongSecretRejected: backup.wrongSecretRejected
     )
     let encoder = JSONEncoder()
     encoder.outputFormatting = [.sortedKeys]

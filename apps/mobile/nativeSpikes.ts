@@ -151,6 +151,10 @@ export interface Phase3AcceptanceEnvironment {
   readonly sourceCommit: string;
   readonly deviceModelIdentifier: string;
   readonly systemVersion: string;
+  readonly binarySha256: string;
+  readonly residentMemoryMiB: number;
+  readonly encryptedBackupRoundTripPassed: boolean;
+  readonly wrongSecretRejected: boolean;
 }
 
 interface OpenOutdoorNativeSpikesModule {
