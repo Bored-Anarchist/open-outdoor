@@ -1,0 +1,20 @@
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { expect, it } from 'vitest';
+import { RawArtifactStore, runConnector } from '__SDK__';
+import { createConnector, parseSource } from './connector.js';
+
+it('__SOURCE_ID__ passes the complete synthetic connector contract', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'connector-contract-'));
+  try {
+    const checkpoints: string[] = [];
+    const connector = await createConnector(new RawArtifactStore({root, boundary: 'public'}), '2026-09-09T00:00:00.000Z',
+      async asset => {checkpoints.push(asset.checksum);});
+    const result = await runConnector(connector, 'synthetic-contract', '2026-09-09T00:00:00.000Z');
+    expect(result.quarantine).toEqual([]);
+    expect(result.emitted).toEqual([{id: 'synthetic-one', name: 'Synthetic example', coordinate: [-74,41], synthetic: true}]);
+    expect(checkpoints).toHaveLength(1);
+    expect(() => parseSource(new TextEncoder().encode('{"synthetic":false}'))).toThrow();
+  } finally { await rm(root, {recursive: true, force: true}); }
+});

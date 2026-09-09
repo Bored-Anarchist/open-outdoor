@@ -29,6 +29,7 @@ Private composition is optional and must point outside this checkout. The iOS fe
 - [Test and acceptance plan](docs/TEST_AND_ACCEPTANCE_PLAN.md)
 - [Data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md)
 - [Private extension guide](docs/PRIVATE_EXTENSION_GUIDE.md)
+- [Connector scaffolding, acquisition, and private imports](docs/CONNECTOR_ECOSYSTEM.md)
 
 ## Core product areas
 

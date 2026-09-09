@@ -36,7 +36,7 @@
 | `REQ-TRK-004` | Provide Balanced, Endurance, and explicit High Accuracy modes with explainable changes | P1 | in-progress | M2 | iOS/tracking owner | 14 | WP-103, WP-105 | T-PHY-001, configuration/source review | 2026-08-21 |
 | `REQ-USR-001` | Store activities, user trails/places, favorites, notes, photos, settings, and overlays privately | P0 | proposed | M2 | Privacy/rights owner | 5, 8, 12 | WP-102, WP-105 | T-INT-001 (`I`) | 2026-08-19 |
 | `REQ-USR-002` | Catalog updates or removal never delete or rewrite private user records | P0 | in-progress | M1 | Storage/backup owner | 8.1 | WP-008, WP-303, WP-305 | T-INT-002 (`I`,`P`) | 2026-08-21 |
-| `REQ-IMP-001` | Import supported user-selected GPX/GeoJSON/KML/CSV/FIT files where applicable | P2 | proposed | M5 | Product owner | 5, 10.4 | WP-106, WP-403 | T-INT-004 (`I`) | 2026-08-19 |
+| `REQ-IMP-001` | Import supported user-selected GPX/GeoJSON/KML/CSV/FIT files where applicable | P2 | in-progress | M5 | Product owner | 5, 10.4 | WP-106, WP-403 | T-INT-004-C01 (`I`) | 2026-09-09 |
 | `REQ-EXP-001` | Explicit GPX/GeoJSON/share export supports endpoint and metadata privacy controls | P1 | proposed | M2 | Privacy/rights owner | 5, 13.2, 18 | WP-106 | T-INT-004, T-E2E-002 | 2026-08-19 |
 | `REQ-BAK-001` | Encrypted backup and all-or-nothing restore preserve private data across reinstall | P0 | proposed | M4 | Storage/backup owner | 18 | WP-107, WP-306 | T-BAK-001 (`I`,`P`) | 2026-08-19 |
 
@@ -53,12 +53,12 @@
 | `REQ-CAT-006` | Production catalog activation requires a valid channel-bound signature, trusted non-revoked key, and non-replayed version | P0 | in-progress | M1 | Release/build owner | 8, 17, 19 | WP-010, WP-303, WP-504 | T-REL-003 (`I`,`A`) | 2026-08-21 |
 | `REQ-CAT-007` | Catalog staging, pointer activation, first-launch confirmation, and rollback are interruption-safe and do not roll back private data | P0 | in-progress | M4 | Storage/backup owner | 8, 9 | WP-008, WP-303 | T-INT-002 (`I`,`P`) | 2026-08-21 |
 | `REQ-CFG-002` | Production supports current plus one previous compatible major app/catalog/backup schema and rejects unsafe downgrade before mutation; WP-008 covers app/catalog and WP-107 adds backup | P0 | in-progress | M4 | Storage/backup owner | 8, 18, 19 | WP-008, WP-107, WP-303 | T-INT-006, T-BAK-001 | 2026-08-21 |
-| `REQ-SRC-001` | Each source is an isolated versioned connector implementing applicable common stages | P0 | in-progress | M3 | Data/safety owner | 11 | WP-201, WP-401, WP-402 | T-INT-003 | 2026-08-30 |
+| `REQ-SRC-001` | Each source is an isolated versioned connector implementing applicable common stages | P0 | in-progress | M3 | Data/safety owner | 11 | WP-201, WP-401, WP-402 | T-INT-003-C10–C11 | 2026-09-09 |
 | `REQ-SRC-002` | Independent lifecycle, authorization, acquisition, class, rights, and distribution fields gate processing | P0 | in-progress | M3 | Privacy/rights owner | 10.1 | WP-201 | T-UNIT-004, T-INT-003 | 2026-08-30 |
 | `REQ-SRC-003` | Raw retention, parser limits, quarantine, and secret redaction protect ingestion | P0 | in-progress | M3 | Security owner | 11.1–11.2 | WP-202 | T-SEC-001 | 2026-08-30 |
 | `REQ-SRC-004` | Canonical processing preserves field provenance and reversible entity decisions | P0 | in-progress | M3 | Data/safety owner | 12.3 | WP-203, WP-204 | T-UNIT-003 | 2026-08-30 |
 | `REQ-SRC-005` | Initial New York build reports geometry, rule, access, POI, freshness, and status coverage separately | P0 | in-progress | M3 | Product owner | 10.6 | WP-206–WP-210 | T-REL-002 | 2026-08-31 |
-| `REQ-SRC-006` | iOverlander is limited to taxonomy/deep links/lawful user-selected private export import unless written permission changes | P0 | proposed | M5 | Privacy/rights owner | 10.5 | WP-403, WP-404 | T-UNIT-004, T-SEC-002 | 2026-08-19 |
+| `REQ-SRC-006` | iOverlander is limited to taxonomy/deep links/lawful user-selected private export import unless written permission changes | P0 | in-progress | M5 | Privacy/rights owner | 10.5 | WP-403, WP-404 | T-INT-004-C01, T-UNIT-004, T-SEC-002 | 2026-09-09 |
 
 ## 4. Privacy, security, and open-source requirements
 
@@ -120,3 +120,4 @@
 | 2026-08-21 | Implemented the WP-010 signature envelope, external channel-trust contract, replay/revocation controls, unsigned-development label, fixtures, and T-REL-003-C01–C08 | REQ-CAT-006, REQ-CFG-001; foundation for REQ-REL-001 | Repository-owner implementation request; protected-CI acceptance pending |
 | 2026-08-31 | Added the one-command Phase 2 guided runner, strict report/gate schemas, 17 official-source live probes, and explicit reviewer-controlled acceptance | REQ-DAT-001, REQ-CAT-002, REQ-CAMP-001–004, REQ-SRC-001–005, REQ-SEC-001 | Implementation complete; live credentialed run and reviewer acceptance pending |
 | 2026-09-02 | Conditionally approved multi-hour field endurance for Phase 3 and moved its blocking acceptance to WP-503/Phase 5 without permitting interim endurance claims | REQ-ENE-001, REQ-NFR-001, REQ-IOS-001 | ADR-048; Phase 3 runner records endurance as supplemental findings |
+| 2026-09-09 | Implemented WP-401–WP-403 connector generation, bounded acquisition adapters, and private selected-file import/staging | REQ-SRC-001, REQ-SRC-003, REQ-SRC-006, REQ-IMP-001 | Automated API acceptance passed; native selection and later ecosystem packages retain their own gates |

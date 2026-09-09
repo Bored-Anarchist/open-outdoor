@@ -10,7 +10,7 @@ export interface ImportedRoute {
   readonly name: string | null;
   readonly coordinates: readonly Coordinate[];
   readonly timestamps: readonly (string | null)[];
-  readonly sourceFormat: 'gpx' | 'geojson';
+  readonly sourceFormat: 'gpx' | 'geojson' | 'kml' | 'csv' | 'fit';
   readonly private: true;
 }
 
@@ -70,7 +70,7 @@ function xmlDecode(value: string): string {
 
 export function importGpx(
   input: string,
-  limits: Partial<typeof DEFAULT_IMPORT_LIMITS> = {},
+  limits: Partial<{ maximumBytes: number; maximumPoints: number }> = {},
 ): ImportedRoute {
   const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
   const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
@@ -132,7 +132,7 @@ function asCoordinate(value: unknown): Coordinate {
 
 export function importGeoJson(
   input: string,
-  limits: Partial<typeof DEFAULT_IMPORT_LIMITS> = {},
+  limits: Partial<{ maximumBytes: number; maximumPoints: number }> = {},
 ): ImportedRoute {
   const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
   const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
@@ -403,3 +403,6 @@ export function removePhotoMetadata(
     removedMetadata: true,
   };
 }
+
+export * from './selected-import.js';
+export * from './fit.js';

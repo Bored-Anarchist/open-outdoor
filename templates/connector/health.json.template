@@ -1,0 +1,1 @@
+{"sourceId":"__SOURCE_ID__","requiredFields":["id","name","coordinate"],"expectedFixtureRecords":1,"maximumFailureFraction":0,"staleAfterSeconds":86400}

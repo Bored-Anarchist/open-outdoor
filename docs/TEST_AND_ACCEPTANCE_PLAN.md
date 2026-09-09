@@ -78,6 +78,14 @@ WP-205 through WP-210 assign these exact cases:
 
 `pnpm phase3:acceptance` is the required M4 evidence workflow. It binds local production-pack, basemap, catalog activation, offline explore, composition, backup, field-state, and field-budget suites to a clean commit. Without `--physical-report`, it writes a coordinate-free draft template and reports the exact physical blockers. With a completed report, it validates the schema, candidate and binary hashes, iPhone 14/iOS 26.6 identity, installation and device flows, non-endurance performance budgets, and accessibility matrix. Multi-hour Balanced/Endurance reports are optional supplemental evidence under ADR-048: missing, replayed, or over-budget endurance results are recorded but do not block Phase 3. Personal/coordinate data, required threshold failures, dirty candidates, or commit mismatches still block acceptance. The generated proposal remains reviewer-controlled and never changes a milestone gate.
 
+### 2.3 Connector ecosystem acceptance
+
+- `T-INT-003-C10`: generate a new synthetic connector and execute its complete SDK contract without core registration edits; reject overwrite and unsafe identifiers (WP-401).
+- `T-INT-003-C11`: exercise every shared acquisition family, rights/URL/content/byte/time/concurrency limits, transient retries, conditional requests, and durable checkpoint interruption/resume (WP-402).
+- `T-INT-004-C01`: import synthetic GPX/KML/GeoJSON/CSV/FIT with format validation, segment boundaries, private provenance, lawful account mappings, source SHA-256, and atomic private staging; reject hostile/malformed/oversized inputs and public destinations (WP-403).
+
+These are shared API and laptop-worker cases. Native file-picker UI, third-party service authorization, and physical-device claims remain separately reviewed. Evidence: [WP-401](evidence/WP-401.md), [WP-402](evidence/WP-402.md), [WP-403](evidence/WP-403.md).
+
 ## 3. Required fixtures
 
 ### 3.1 Public synthetic fixtures

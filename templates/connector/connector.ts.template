@@ -1,0 +1,28 @@
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { normalizePlace, validateConnectorManifest, type Connector, type RawArtifactStore, type StoredRawAsset } from '__SDK__';
+import type { SourceRecord } from './model.js';
+
+export function parseSource(bytes: Uint8Array): SourceRecord {
+  const value = JSON.parse(new TextDecoder('utf-8', {fatal: true}).decode(bytes)) as SourceRecord;
+  if (!value || typeof value.id !== 'string' || !value.id.trim() || typeof value.name !== 'string' || !value.name.trim() || value.synthetic !== true) throw new Error('synthetic record required');
+  return {...normalizePlace(value), synthetic: true};
+}
+export async function createConnector(store: RawArtifactStore, now: string,
+  saveCheckpoint: (asset: StoredRawAsset) => Promise<void>): Promise<Connector<SourceRecord, SourceRecord, SourceRecord>> {
+  const manifest = validateConnectorManifest(JSON.parse(await readFile(new URL('./manifest.json', import.meta.url), 'utf8')));
+  return {
+    manifest,
+    discover: async () => [{externalId: 'synthetic-one', sourcePartition: 'synthetic', locator: new URL('./fixture.json', import.meta.url).href}],
+    fetch: async (asset, {signal}) => {signal.throwIfAborted(); return {...asset, payload: new Uint8Array(await readFile(new URL(asset.locator))), contentType: 'application/json', retrievedAt: now};},
+    storeRaw: async asset => store.put(asset.payload, {sourceId: manifest.sourceId, externalId: asset.externalId,
+      sourcePartition: asset.sourcePartition, retrievedAt: asset.retrievedAt, contentType: asset.contentType,
+      classification: manifest.classification, retention: manifest.rights.rawRetention ?? ''}),
+    parse: async asset => parseSource(asset.payload),
+    normalize: async value => ({...normalizePlace(value), synthetic: true}),
+    validate: async value => { parseSource(new TextEncoder().encode(JSON.stringify(value))); },
+    checkpoint: saveCheckpoint,
+    emit: async value => value,
+  };
+}
+export const fixtureChecksum = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
