@@ -77,3 +77,7 @@ Repeated failures open a persisted circuit. Diagnose the source and request `rec
 ## WP-404–WP-406 validation and provenance
 
 All code, templates, and synthetic fixtures are original AI-assisted project contributions under Apache-2.0. No private package or source account was accessed. Local validation on 2026-09-09 passed all 270 tests in 42 files, including 34 new tests, the generated monitored connector contract, compatibility CLI, copied example, nested drift, persisted circuits, failed source isolation, and last-good recovery. Type, formatting, release/workflow, privacy, downstream-sync, and public-build checks are recorded in the work-package evidence. Production/private-host and physical-device acceptance are not inferred from synthetic tests.
+
+### Automated Phase 4 acceptance
+
+Run `pnpm phase4:acceptance` to execute the full machine acceptance workflow for WP-401 through WP-406. [The runner guide](PHASE_4_GUIDED_ACCEPTANCE.md) describes clean-candidate evidence and reviewer disposition. The runner and its decision tests are original AI-assisted repository contributions using synthetic fixtures and existing dependencies.

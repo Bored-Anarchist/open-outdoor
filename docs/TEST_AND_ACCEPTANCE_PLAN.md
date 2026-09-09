@@ -256,3 +256,5 @@ Each accepted suite records:
 - Browser/simulator success cannot waive a physical test.
 - A release candidate is accepted only at the exact commit/artifact checksum reviewed.
 - Product MVP acceptance occurs only at M4/Phase 3 and requires all must-haves in the [product release definition](PRODUCT_RELEASE_DEFINITION.md); no earlier alpha may be relabelled as MVP.
+
+Phase 4 automated evidence: run `pnpm phase4:acceptance` on a clean candidate. See [Phase 4 guided acceptance](PHASE_4_GUIDED_ACCEPTANCE.md) for automated checks, commit-bound reports, and reviewer acceptance.
