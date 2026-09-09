@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "acceptedAt": "2026-09-08",
+  "acceptedBy": "Bored-Anarchist",
+  "candidateCommit": "ef6d3bee48a0057f0e94a9fb08fae3257dd33c23",
+  "ipa": {
+    "sha256": "a4e208e8fb23d50e2303bdfdf20fb9f02eb53e037a3ca95d0472db8d1df1189c",
+    "buildRun": "https://github.com/Bored-Anarchist/open-outdoor/actions/runs/33714447752"
+  },
+  "profile": {
+    "id": "iphone14-ios26.6-phase3-v1",
+    "deviceModel": "iPhone 14",
+    "deviceModelIdentifier": "iPhone14,7",
+    "systemVersion": "iOS 26.6"
+  },
+  "operatorObservation": {
+    "completionMessage": "Automatic tests completed with an iOS platform constraint",
+    "failedCardsObserved": 0
+  },
+  "passedResults": [
+    "installedCandidate",
+    "offlineExplore",
+    "catalogActivationAndRollback",
+    "composedOrigins",
+    "privateCatalogRemoval",
+    "backupRoundTrip",
+    "degradedStates",
+    "performance",
+    "accessibility"
+  ],
+  "acceptedConstraints": [
+    {
+      "id": "uninstallReinstallLifecycle",
+      "disposition": "accepted-residual-risk",
+      "reason": "An installed iOS application cannot uninstall and reinstall itself. The protected encrypted backup/restore round trip passed; the destructive operating-system lifecycle was not executed and is not claimed as a test pass."
+    },
+    {
+      "id": "fieldEndurance",
+      "disposition": "conditionally-approved",
+      "blockingPhase": "Phase 5",
+      "workPackage": "WP-503",
+      "reason": "ADR-048 defers measured multi-hour endurance acceptance and prohibits an endurance claim until the later gate passes."
+    }
+  ],
+  "privacy": {
+    "coordinateFree": true,
+    "containsPersonalData": false
+  }
+}

@@ -35,5 +35,8 @@
 | WP-302 | [Production pack builder](WP-302.md) | Implemented; local acceptance passed |
 | WP-303 | [Catalog activation and rollback](WP-303.md) | Implemented; local acceptance passed |
 | WP-304 | [Offline explore/search/details](WP-304.md) | Implemented; local acceptance passed |
+| WP-305 | [Composed public/private/user experience](WP-305.md) | Accepted in the Phase 3 test disposition |
+| WP-306 | [Complete encrypted backup/restore](WP-306.md) | Accepted in the Phase 3 test disposition |
+| WP-307 | [Field hardening](WP-307.md) | Phase 3 tests accepted; endurance conditionally approved for Phase 5 |
 
 The authoritative machine-readable dispositions are `config/phase0-gate.json` and `config/phase1-gate.json`. A package implementation record does not convert a pending physical case into a pass. An accepted waiver closes only its explicitly scoped gate case and remains distinguishable from evidence-backed `passed` status.
