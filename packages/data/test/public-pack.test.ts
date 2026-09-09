@@ -161,7 +161,8 @@ describe('WP-209 rights-aware reproducible public pack', () => {
     } finally {
       database.close();
     }
-  });
+    // Two durable SQLite builds can exceed the unit-test default on hosted Windows disks.
+  }, 15_000);
 
   it('T-REL-002-C02 hard-fails revoked rights and size ceilings before distribution', async () => {
     const root = await mkdtemp(join(tmpdir(), 'open-outdoor-pack-deny-'));
