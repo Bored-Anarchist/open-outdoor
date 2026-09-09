@@ -243,6 +243,50 @@ function geometryBounds(
   );
 }
 
+function recordSearchDocument(record: CanonicalRecord): {
+  readonly name: string;
+  readonly keywords: string;
+} {
+  switch (record.recordType) {
+    case 'land-unit':
+      return {
+        name: record.properties.name,
+        keywords: [
+          record.properties.ownership,
+          record.properties.manager,
+          record.properties.baseRule,
+        ].join(' '),
+      };
+    case 'trail':
+      return {
+        name: record.properties.name,
+        keywords: [record.properties.trailKind, record.properties.rawTrailKind ?? ''].join(' '),
+      };
+    case 'place':
+      return {
+        name: record.properties.name,
+        keywords: [record.properties.category, record.properties.rawCategory ?? ''].join(' '),
+      };
+    case 'condition':
+    case 'restriction':
+      return {
+        name: record.properties.name,
+        keywords: [record.properties.authority, record.properties.scope].join(' '),
+      };
+    case 'observation':
+      return {
+        name: record.properties.field,
+        keywords: [record.properties.assertion, record.properties.rawValue ?? ''].join(' '),
+      };
+    case 'review':
+      return { name: '', keywords: record.properties.body ?? '' };
+    case 'check-in':
+      return { name: '', keywords: record.properties.occurredAt };
+    case 'media-asset':
+      return { name: '', keywords: record.properties.mediaType };
+  }
+}
+
 function sourceDataAsOf(
   records: readonly CanonicalRecord[],
   artifacts: readonly PublicPackArtifact[],
@@ -292,6 +336,12 @@ function createCatalog(path: string): DatabaseSync {
       record_json TEXT NOT NULL
     ) STRICT;
     CREATE VIRTUAL TABLE record_bounds USING rtree(rowid, west, east, south, north);
+    CREATE VIRTUAL TABLE record_search USING fts5(
+      id UNINDEXED,
+      name,
+      keywords,
+      tokenize = 'unicode61 remove_diacritics 2'
+    );
     CREATE TABLE artifacts(
       id TEXT PRIMARY KEY,
       source_id TEXT NOT NULL REFERENCES sources(source_id),
@@ -470,6 +520,7 @@ export async function buildPublicPack(input: BuildPublicPackInput): Promise<Buil
       coverage: 1,
       exclusions: exclusions.length,
       records: includedRecords.length,
+      recordSearch: includedRecords.length,
       sources: sourceInventory.length,
     },
     sourceIds: sourceInventory.map((source) => source.sourceId),
@@ -519,6 +570,9 @@ export async function buildPublicPack(input: BuildPublicPackInput): Promise<Buil
     const insertBounds = database.prepare(
       'INSERT INTO record_bounds(rowid, west, east, south, north) VALUES (?, ?, ?, ?, ?)',
     );
+    const insertSearch = database.prepare(
+      'INSERT INTO record_search(id, name, keywords) VALUES (?, ?, ?)',
+    );
     includedRecords.forEach((record, index) => {
       insertRecord.run(
         record.id,
@@ -533,6 +587,8 @@ export async function buildPublicPack(input: BuildPublicPackInput): Promise<Buil
       );
       const bounds = geometryBounds(record.geometry);
       if (bounds) insertBounds.run(index + 1, bounds[0], bounds[2], bounds[1], bounds[3]);
+      const search = recordSearchDocument(record);
+      insertSearch.run(record.id, search.name, search.keywords);
     });
     const insertArtifact = database.prepare(
       'INSERT INTO artifacts(id, source_id, kind, locator, content_checksum, byte_length, artifact_json) VALUES (?, ?, ?, ?, ?, ?, ?)',

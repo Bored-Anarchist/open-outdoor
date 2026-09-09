@@ -83,7 +83,7 @@ Outcome: offline New York explore/search/details, self-generated basemap, atomic
 
 This is the first milestone named Product MVP. The exact must-haves and non-goals are controlled by the [product release definition](PRODUCT_RELEASE_DEFINITION.md); recorder-only and catalog-only milestones are alphas.
 
-Stop conditions: catalog interruption can damage private data, size/free-space limits are impractical, or field energy/reliability misses release budgets.
+Stop conditions: catalog interruption can damage private data, size/free-space limits are impractical, or required core field reliability fails. Multi-hour field endurance is conditionally approved for this phase and becomes blocking at WP-503/Phase 5; no interim endurance claim is allowed.
 
 ### Phase 4 — extensibility
 

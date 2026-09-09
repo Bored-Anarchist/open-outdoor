@@ -1,6 +1,6 @@
 # Non-Functional Budgets and Objective Acceptance
 
-**Status:** Binding non-energy Phase 0 thresholds; physical acceptance remains pending and measured energy acceptance is deferred
+**Status:** Binding Phase 0 and Phase 3 thresholds; field endurance conditionally approved for Phase 3 and blocking at WP-503/Phase 5
 
 ## 1. Rules
 
@@ -50,9 +50,9 @@ Defaults are configurable downward by source; raising them requires a security/p
 | `BUD-ING-006` | Image decode | 50 megapixels and 200 MiB decoded buffer |
 | `BUD-ING-007` | Single connector partition | 15 min wall time before checkpoint/timeout unless manifest-approved |
 
-## 5. Deferred energy and thermal acceptance
+## 5. Conditional endurance acceptance
 
-Phase 0 and Phase 1 make no numeric battery-life or thermal claim and require no physical energy runs. T-PHY-002 is reserved for WP-307/WP-503, which must approve a representative protocol and numeric thresholds before production. Current implementation constraints remain binding: sensors only during active recording, no continuous polling, explicit High Accuracy, 10 m Balanced and 25 m Endurance distance filters. Recording correctness, unintended sessions, stop behavior, and the 30-minute memory smoke remain independently testable.
+ADR-048 conditionally approves field endurance for Phase 3/M4 and moves its blocking acceptance to WP-503/Phase 5. Phase 3 therefore makes no battery-life, thermal-endurance, or multi-hour reliability claim and does not require T-PHY-002 field runs to pass. The existing `iphone14-ios26.6-phase3-v1` protocol remains the binding evidence target: three independent 180-minute physical iPhone 14/iOS 26.6 runs in both Balanced and Endurance mode; battery use at most 6 percentage points/hour and 4 respectively; no serious/critical thermal time; checkpoint gaps at most 30 seconds; storage growth at most 64 MiB/hour; and zero post-stop sensor activity. Submitted results remain visible as supplemental findings but cannot block Phase 3. They must pass before WP-503/Phase 5 acceptance or any endurance claim. Sensors-only-during-recording, no continuous polling, explicit High Accuracy, and 10 m/25 m distance filters remain binding implementation constraints.
 
 ## 6. Elevation and camping correctness
 

@@ -40,6 +40,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Phase 1 gate report](PHASE_1_GATE_REPORT.md) | Recorder-alpha acceptance disposition | Project/release owner |
 | [Phase 2 guided acceptance](PHASE_2_GUIDED_ACCEPTANCE.md) | One-command New York data-alpha evidence workflow | Data/quality owner |
 | [Phase 2 gate report](PHASE_2_GATE_REPORT.md) | Data-alpha acceptance disposition | Project/release owner |
+| [Phase 3 guided acceptance](PHASE_3_GUIDED_ACCEPTANCE.md) | Product MVP local and physical evidence workflow | Quality/iOS owner |
 | [Evidence index](evidence/README.md) | Work-package implementation and acceptance records | Quality lead |
 | [Diagnostics plan](DIAGNOSTICS_PLAN.md) | Local-only schema, redaction, retention, preview, export, and deletion | Privacy/quality owner |
 | [Public-boundary incident response](INCIDENT_RESPONSE.md) | Credential revocation, containment, private reporting, corrective action, and safe resumption | Security/privacy owner |

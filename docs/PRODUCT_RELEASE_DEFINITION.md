@@ -47,7 +47,7 @@ No earlier milestone may be described publicly as the product MVP.
 - Favorites, notes, personal places, and private corrections.
 - GPX/GeoJSON import/export baseline with endpoint/metadata privacy controls.
 - Separate public/private/user stores, atomic catalog activation/rollback, and encrypted explicit backup/restore.
-- MVP accessibility, energy, storage, privacy, rights, and physical-device acceptance.
+- MVP accessibility, storage, privacy, rights, and required physical-device acceptance. Multi-hour energy/thermal endurance is conditionally approved for M4, cannot support an endurance claim, and becomes blocking at WP-503/Phase 5.
 
 ## 6. MVP non-goals
 

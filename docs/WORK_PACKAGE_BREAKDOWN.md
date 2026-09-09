@@ -92,7 +92,7 @@ WP-109 execution uses a diagnostics-only persistent guided runner, a combined 30
 | `WP-304` | Offline explore/search/details | XL | WP-301–WP-303 | Spatial/text search, filters, land/trail/place details, provenance/freshness | Offline capability matrix passes for bundled coverage |
 | `WP-305` | Composed public/private/user experience | L | WP-004, WP-005, WP-303, WP-304 | Origin labels, composed queries, private overlays, export filtering | Removing a private catalog cannot remove private user records |
 | `WP-306` | Complete encrypted backup/restore | L | WP-107, WP-303 | Attachment manifests, migrations, pre-uninstall flow | Full backup acceptance suite passes |
-| `WP-307` | Field hardening | XL | WP-304–WP-306 | Outdoor/degraded/error states, storage/energy profiling, field evidence | Repeated real/replay field sessions meet reliability and energy budgets |
+| `WP-307` | Field hardening | XL | WP-304–WP-306 | Outdoor/degraded/error states, storage/energy protocol, field evidence tooling | Core field states and reliability pass; endurance is conditionally approved for Phase 3 and deferred as a blocking gate to WP-503 |
 
 ## 7. Phase 4 — connector scale and private ecosystem
 
