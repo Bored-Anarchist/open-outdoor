@@ -41,5 +41,8 @@
 | WP-401 | [Connector scaffolding CLI](WP-401.md) | Implemented; automated acceptance passed |
 | WP-402 | [Reusable acquisition adapters](WP-402.md) | Implemented; automated acceptance passed |
 | WP-403 | [User-controlled import ecosystem](WP-403.md) | Implemented; automated acceptance passed |
+| WP-404 | [Permission-gated adapter shells](WP-404.md) | Implemented; automated acceptance passed |
+| WP-405 | [Private extension compatibility](WP-405.md) | Implemented; automated acceptance passed |
+| WP-406 | [Connector operations](WP-406.md) | Implemented; automated acceptance passed |
 
 The authoritative machine-readable dispositions are `config/phase0-gate.json` and `config/phase1-gate.json`. A package implementation record does not convert a pending physical case into a pass. An accepted waiver closes only its explicitly scoped gate case and remains distinguishable from evidence-backed `passed` status.

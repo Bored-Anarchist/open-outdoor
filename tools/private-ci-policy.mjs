@@ -21,6 +21,14 @@ if (!/permissions:\s*\n\s+contents:\s+read/.test(workflow))
 if (!/OPEN_OUTDOOR_EPHEMERAL:\s*1/.test(workflow))
   failures.push('missing ephemeral boundary assertion');
 
+if (!workflow.includes('node tools/private-compatibility.mjs --proposed-core'))
+  failures.push('missing package compatibility verification');
+if (!workflow.includes('env -u OUTDOOR_PRIVATE_ROOT pnpm quality'))
+  failures.push('missing isolated public quality check');
+if (!workflow.includes('merge-base --is-ancestor "$PUBLIC_REF" origin/main'))
+  failures.push('missing protected public ancestry check');
+if (/\$\{\{\s*inputs\.public_ref\s*\}\}/.test(workflow.split('steps:')[1] ?? ''))
+  failures.push('workflow input interpolated directly into shell code');
 if (failures.length) {
   console.error(`private workflow policy failed:\n- ${failures.join('\n- ')}`);
   process.exitCode = 1;

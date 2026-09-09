@@ -53,12 +53,12 @@
 | `REQ-CAT-006` | Production catalog activation requires a valid channel-bound signature, trusted non-revoked key, and non-replayed version | P0 | in-progress | M1 | Release/build owner | 8, 17, 19 | WP-010, WP-303, WP-504 | T-REL-003 (`I`,`A`) | 2026-08-21 |
 | `REQ-CAT-007` | Catalog staging, pointer activation, first-launch confirmation, and rollback are interruption-safe and do not roll back private data | P0 | in-progress | M4 | Storage/backup owner | 8, 9 | WP-008, WP-303 | T-INT-002 (`I`,`P`) | 2026-08-21 |
 | `REQ-CFG-002` | Production supports current plus one previous compatible major app/catalog/backup schema and rejects unsafe downgrade before mutation; WP-008 covers app/catalog and WP-107 adds backup | P0 | in-progress | M4 | Storage/backup owner | 8, 18, 19 | WP-008, WP-107, WP-303 | T-INT-006, T-BAK-001 | 2026-08-21 |
-| `REQ-SRC-001` | Each source is an isolated versioned connector implementing applicable common stages | P0 | in-progress | M3 | Data/safety owner | 11 | WP-201, WP-401, WP-402 | T-INT-003-C10–C11 | 2026-09-09 |
+| `REQ-SRC-001` | Each source is an isolated versioned connector implementing applicable common stages | P0 | in-progress | M3 | Data/safety owner | 11 | WP-201, WP-401, WP-402, WP-406 | T-INT-003-C10–C13 | 2026-09-09 |
 | `REQ-SRC-002` | Independent lifecycle, authorization, acquisition, class, rights, and distribution fields gate processing | P0 | in-progress | M3 | Privacy/rights owner | 10.1 | WP-201 | T-UNIT-004, T-INT-003 | 2026-08-30 |
 | `REQ-SRC-003` | Raw retention, parser limits, quarantine, and secret redaction protect ingestion | P0 | in-progress | M3 | Security owner | 11.1–11.2 | WP-202 | T-SEC-001 | 2026-08-30 |
 | `REQ-SRC-004` | Canonical processing preserves field provenance and reversible entity decisions | P0 | in-progress | M3 | Data/safety owner | 12.3 | WP-203, WP-204 | T-UNIT-003 | 2026-08-30 |
 | `REQ-SRC-005` | Initial New York build reports geometry, rule, access, POI, freshness, and status coverage separately | P0 | in-progress | M3 | Product owner | 10.6 | WP-206–WP-210 | T-REL-002 | 2026-08-31 |
-| `REQ-SRC-006` | iOverlander is limited to taxonomy/deep links/lawful user-selected private export import unless written permission changes | P0 | in-progress | M5 | Privacy/rights owner | 10.5 | WP-403, WP-404 | T-INT-004-C01, T-UNIT-004, T-SEC-002 | 2026-09-09 |
+| `REQ-SRC-006` | iOverlander is limited to taxonomy/deep links/lawful user-selected private export import unless written permission changes | P0 | in-progress | M5 | Privacy/rights owner | 10.5 | WP-403, WP-404 | T-INT-003-C12, T-INT-004-C01, T-UNIT-004, T-SEC-002 | 2026-09-09 |
 
 ## 4. Privacy, security, and open-source requirements
 
@@ -66,9 +66,9 @@
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `REQ-PRV-001` | Personal, restricted, secret, and operational-private data never enter public GitHub, CI, or releases | P0 | in-progress | M1 | Privacy/rights owner | 6 | WP-003 | T-SEC-002 (`R`,`A`) | 2026-08-19 |
 | `REQ-PRV-002` | A Windows private root resolves outside the public checkout and is always explicit | P0 | in-progress | M1 | Architecture owner | 6.2 | WP-004 | T-E2E-003 | 2026-08-19 |
-| `REQ-PRV-003` | Private downstream sync uses a private repository and never a public fork or public workflow carrying private payloads | P0 | in-progress | M1 | Architecture owner | 6.3 | WP-005, WP-405 | T-E2E-003, T-SEC-003 | 2026-08-19 |
+| `REQ-PRV-003` | Private downstream sync uses a private repository and never a public fork or public workflow carrying private payloads | P0 | in-progress | M1 | Architecture owner | 6.3 | WP-005, WP-405 | T-E2E-003-C01, T-SEC-003 | 2026-09-09 |
 | `REQ-PRV-004` | Secrets and signing/recovery keys remain outside Git, including private Git | P0 | in-progress | M1 | Security owner | 6, 18, 19 | WP-003, WP-006, WP-107 | T-SEC-002 | 2026-08-19 |
-| `REQ-PRV-005` | Removing private extensions leaves a complete passing public build | P0 | in-progress | M1 | Architecture owner | 6.4 | WP-004, WP-405 | T-E2E-003 | 2026-08-19 |
+| `REQ-PRV-005` | Removing private extensions leaves a complete passing public build | P0 | in-progress | M1 | Architecture owner | 6.4 | WP-004, WP-405 | T-E2E-003-C01 | 2026-09-09 |
 | `REQ-PRV-006` | No private record is automatically promoted to a public catalog | P0 | proposed | M4 | Privacy/rights owner | 8.1, 18 | WP-305 | T-E2E-003, T-SEC-002 | 2026-08-19 |
 | `REQ-PRV-007` | Only data whose policy permits indefinite versioned retention may enter private Git; expiring/revocable/deletion-bound data remains external | P0 | in-progress | M1 | Privacy/rights owner | 6.3, 18 | WP-003, WP-005 | T-SEC-002, T-SEC-003 | 2026-08-19 |
 | `REQ-IOS-002` | Active spool, sealed database, attachments, catalogs, diagnostics, and backups use the declared iOS protection class | P0 | in-progress | M1 | iOS/tracking owner | 8, 15, 18 | WP-007, WP-008 | T-PHY-005 (`P`) | 2026-08-21 |
@@ -121,3 +121,4 @@
 | 2026-08-31 | Added the one-command Phase 2 guided runner, strict report/gate schemas, 17 official-source live probes, and explicit reviewer-controlled acceptance | REQ-DAT-001, REQ-CAT-002, REQ-CAMP-001–004, REQ-SRC-001–005, REQ-SEC-001 | Implementation complete; live credentialed run and reviewer acceptance pending |
 | 2026-09-02 | Conditionally approved multi-hour field endurance for Phase 3 and moved its blocking acceptance to WP-503/Phase 5 without permitting interim endurance claims | REQ-ENE-001, REQ-NFR-001, REQ-IOS-001 | ADR-048; Phase 3 runner records endurance as supplemental findings |
 | 2026-09-09 | Implemented WP-401–WP-403 connector generation, bounded acquisition adapters, and private selected-file import/staging | REQ-SRC-001, REQ-SRC-003, REQ-SRC-006, REQ-IMP-001 | Automated API acceptance passed; native selection and later ecosystem packages retain their own gates |
+| 2026-09-09 | Implemented WP-404–WP-406 disabled source shells, private compatibility/locks/provenance, and isolated connector health/recovery | REQ-SRC-001, REQ-SRC-003, REQ-SRC-006, REQ-PRV-003, REQ-PRV-005 | Automated acceptance passed; no source authorization or private-host/device gate implied |

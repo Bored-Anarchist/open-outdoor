@@ -1,6 +1,6 @@
 # Private Extension Guide
 
-**Status:** Phase 0 composition and isolation spike implemented
+**Status:** Version-2 compatibility and package verification implemented; legacy composition retained
 
 Set `OUTDOOR_PRIVATE_ROOT` to an absolute directory outside the public checkout containing `open-outdoor.private.json`; run `pnpm catalog:private`. Validate the composition boundary with `pnpm test:private-root` and the isolated downstream template with `pnpm test:private-downstream`. The repository-local example is inert and deliberately rejected as an active private root.
 
@@ -146,3 +146,7 @@ Never open a public pull request from a branch containing private commits, fixtu
 - Public publication target rejects a private-classified artifact.
 - Removing private catalog retains user data and shows explicit unavailable-origin state.
 - A selected private correction can be reviewed privately without including unrelated personal records.
+
+## 11. Implemented version-2 workflow
+
+Run `pnpm private:compatibility` with an explicitly selected external root. Use `--proposed-core <contract.json>` for upstream compatibility checks. The [connector ecosystem guide](CONNECTOR_ECOSYSTEM.md) documents exact version intervals, package pin/provenance checks, returned verified bytes, private diagnostics, and the complete downstream template. Start with the [synthetic version-2 example](../fixtures/private-root-template/v2/README.md). The verifier does not execute private code or register it with public builds; legacy version-1 manifests remain a separate synthetic composition path.

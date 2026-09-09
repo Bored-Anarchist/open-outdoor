@@ -9,6 +9,7 @@
   },
   "scripts": {
     "source": "node tools/source.mjs",
+    "private:compatibility": "node tools/private-compatibility.mjs",
     "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Bootstrap.ps1",
     "quality": "pnpm quality:types && pnpm quality:format && pnpm release:verify && pnpm test",
     "quality:types": "tsc -b packages/shared packages/data packages/privacy packages/config packages/tracking packages/storage packages/map packages/import-export packages/backup packages/recorder apps/browser-fixture apps/mobile",

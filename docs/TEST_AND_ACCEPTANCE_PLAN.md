@@ -84,7 +84,11 @@ WP-205 through WP-210 assign these exact cases:
 - `T-INT-003-C11`: exercise every shared acquisition family, rights/URL/content/byte/time/concurrency limits, transient retries, conditional requests, and durable checkpoint interruption/resume (WP-402).
 - `T-INT-004-C01`: import synthetic GPX/KML/GeoJSON/CSV/FIT with format validation, segment boundaries, private provenance, lawful account mappings, source SHA-256, and atomic private staging; reject hostile/malformed/oversized inputs and public destinations (WP-403).
 
-These are shared API and laptop-worker cases. Native file-picker UI, third-party service authorization, and physical-device claims remain separately reviewed. Evidence: [WP-401](evidence/WP-401.md), [WP-402](evidence/WP-402.md), [WP-403](evidence/WP-403.md).
+- `T-INT-003-C12`: deny all permission-shell stages, preserve separate taxonomy/implementation/authorization/inclusion flags, and validate safe deep links without source contact (WP-404).
+- `T-E2E-003-C01`: verify private package pins/provenance, reject incompatible core/SDK/schema/capabilities and escaped paths, and retain a working private connector across declared compatible public updates (WP-405).
+- `T-INT-003-C13`: measure health, reject field/schema/volume drift, preserve last-good output across failure/restart, inspect freshness without fetching, recover through explicit probes/review, and isolate failed sources and private reports (WP-406).
+
+These are shared API and laptop-worker cases. Native file-picker UI, third-party service authorization, and physical-device claims remain separately reviewed. Evidence: [WP-401](evidence/WP-401.md), [WP-402](evidence/WP-402.md), [WP-403](evidence/WP-403.md), [WP-404](evidence/WP-404.md), [WP-405](evidence/WP-405.md), [WP-406](evidence/WP-406.md).
 
 ## 3. Required fixtures
 

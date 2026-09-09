@@ -1,8 +1,8 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
-import { RawArtifactStore, runConnector } from '__SDK__';
+import { RawArtifactStore, runConnector, runMonitoredConnector, FileConnectorOperationsStore } from '__SDK__';
 import { createConnector, parseSource } from './connector.js';
 
 it('__SOURCE_ID__ passes the complete synthetic connector contract', async () => {
@@ -15,6 +15,10 @@ it('__SOURCE_ID__ passes the complete synthetic connector contract', async () =>
     expect(result.quarantine).toEqual([]);
     expect(result.emitted).toEqual([{id: 'synthetic-one', name: 'Synthetic example', coordinate: [-74,41], synthetic: true}]);
     expect(checkpoints).toHaveLength(1);
+    const health = JSON.parse(await readFile(new URL('./health.json',import.meta.url),'utf8'));
+    const report = await runMonitoredConnector(connector, health, new FileConnectorOperationsStore(join(root,'health'),'public',process.cwd()),
+      'synthetic-health', '2026-09-09T00:00:00.000Z', value => [value]);
+    expect(report.status).toBe('healthy');
     expect(() => parseSource(new TextEncoder().encode('{"synthetic":false}'))).toThrow();
   } finally { await rm(root, {recursive: true, force: true}); }
 });

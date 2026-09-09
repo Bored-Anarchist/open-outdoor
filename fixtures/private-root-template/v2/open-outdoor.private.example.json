@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 2,
+  "extensionId": "synthetic-extension",
+  "extensionVersion": "1.0.0",
+  "classification": "PRIVATE_USER",
+  "core": { "minimum": "0.1.0", "before": "0.2.0" },
+  "connectorSdk": { "minimum": "1.0.0", "before": "2.0.0" },
+  "canonicalVersion": "1.0.0",
+  "capabilities": ["connector"],
+  "secretNames": [],
+  "packages": [{ "id": "synthetic-connector", "version": "1.0.0", "entry": "index.mjs" }],
+  "lockFile": "private-packages.lock.json"
+}

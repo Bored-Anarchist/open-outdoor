@@ -27,3 +27,6 @@ export function normalizePlace(place: CatalogPlace): CatalogPlace {
 }
 export * from './acquisition.js';
 export * from './acquisition-adapters.js';
+export * from './permission-shells.js';
+export * from './private-extension.js';
+export * from './connector-operations.js';
