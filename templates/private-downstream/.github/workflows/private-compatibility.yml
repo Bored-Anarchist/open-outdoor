@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       public_ref:
-        description: Public commit to test
+        description: Exact public commit SHA to test (must be on public main)
         required: true
         type: string
 
@@ -23,29 +23,48 @@ jobs:
       OPEN_OUTDOOR_EPHEMERAL: 1
       PNPM_HOME: ${{ runner.temp }}/pnpm
       OUTDOOR_PRIVATE_ROOT: ${{ runner.temp }}/private-root
+      PUBLIC_CHECKOUT: ${{ runner.temp }}/public-core
+      PUBLIC_REF: ${{ inputs.public_ref }}
     steps:
       - name: Check out private downstream
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Fetch selected public commit without publishing private content
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: 24.19.0
+      - name: Prepare pinned public core and external private packages
         shell: bash
         run: |
           set -euo pipefail
           test "$OPEN_OUTDOOR_EPHEMERAL" = 1
-          git remote add public https://github.com/Bored-Anarchist/open-outdoor.git
-          git fetch --no-tags --depth=1 public "${{ inputs.public_ref }}"
-          git merge-base --is-ancestor FETCH_HEAD HEAD || git diff --check FETCH_HEAD...HEAD
-      - name: Run private compatibility in runner-temporary storage
+          [[ "$PUBLIC_REF" =~ ^[a-f0-9]{40}$ ]]
+          git clone --quiet --no-tags https://github.com/Bored-Anarchist/open-outdoor.git "$PUBLIC_CHECKOUT"
+          git -C "$PUBLIC_CHECKOUT" cat-file -e "${PUBLIC_REF}^{commit}"
+          git -C "$PUBLIC_CHECKOUT" merge-base --is-ancestor "$PUBLIC_REF" origin/main
+          git -C "$PUBLIC_CHECKOUT" checkout --quiet --detach "$PUBLIC_REF"
+          test -d private-extension
+          mkdir -p "$OUTDOOR_PRIVATE_ROOT"
+          cp -R private-extension/. "$OUTDOOR_PRIVATE_ROOT/"
+      - name: Verify current and proposed contracts without executing private packages
         shell: bash
         run: |
           set -euo pipefail
-          test "${OUTDOOR_PRIVATE_ROOT#${RUNNER_TEMP}/}" != "$OUTDOOR_PRIVATE_ROOT"
-          test ! -e .open-outdoor-private-output
-          echo "Private build command belongs here; never upload outputs from this job."
+          node tools/private-compatibility.mjs --proposed-core "$PUBLIC_CHECKOUT/config/extension-api.json"
+      - name: Run clean public build with private extensions disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --global pnpm@11.20.0
+          cd "$PUBLIC_CHECKOUT"
+          env -u OUTDOOR_PRIVATE_ROOT pnpm install --frozen-lockfile
+          env -u OUTDOOR_PRIVATE_ROOT pnpm quality
+          env -u OUTDOOR_PRIVATE_ROOT pnpm build:web
       - name: Destroy temporary private material
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf -- "$OUTDOOR_PRIVATE_ROOT" "$PNPM_HOME"
+          for target in "$OUTDOOR_PRIVATE_ROOT" "$PNPM_HOME" "$PUBLIC_CHECKOUT"; do
+            case "$target" in "$RUNNER_TEMP"/*) rm -rf -- "$target" ;; *) exit 1 ;; esac
+          done

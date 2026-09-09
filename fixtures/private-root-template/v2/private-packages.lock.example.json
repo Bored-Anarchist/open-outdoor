@@ -1,0 +1,21 @@
+{
+  "extensionVersion": "1.0.0",
+  "schemaVersion": 1,
+  "extensionId": "synthetic-extension",
+  "classification": "PRIVATE_USER",
+  "packages": [
+    {
+      "files": {
+        "index.mjs": "f1a19cd5400681679f4d1d1121af10fca8c86168e09766686021722be65c6fda"
+      },
+      "version": "1.0.0",
+      "provenance": {
+        "licenseOrPermission": "Apache-2.0 synthetic example; no external records",
+        "origin": "https://example.invalid/synthetic-private-code",
+        "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "root": "packages/synthetic",
+      "id": "synthetic-connector"
+    }
+  ]
+}

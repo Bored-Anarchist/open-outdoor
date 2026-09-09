@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "profileId": "connector-ecosystem-phase4-v1",
+  "sourceCommit": "9f2e25c6483d914bc22324ba7cbc433f669a3888",
+  "completedCommit": "9f2e25c6483d914bc22324ba7cbc433f669a3888",
+  "cleanBefore": true,
+  "cleanAfter": true,
+  "startedAt": "2026-09-09T23:52:58.166Z",
+  "completedAt": "2026-09-09T23:53:16.045Z",
+  "nodeVersion": "v24.19.0",
+  "platform": "win32",
+  "inputHashes": {
+    "package.json": "aadad69d7b76480871d962eab3924a131168cc310022a7910e93a87992f0f596",
+    "pnpm-lock.yaml": "1ca9530c0d3398d5edc2375931dc5ba7f3062d278bd3932287a49cb8e312dcf5",
+    "config/release.json": "4388ebdcc32bb43a092163b3112089447940b11a627904d7c0ee1e89e08c011c",
+    "config/extension-api.json": "4a453e06926893a16137e9bb9a6d36b895acc6e81535a1d4256a61934cff1e3d"
+  },
+  "commands": [
+    {
+      "id": "types",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 1974,
+      "outputSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "id": "tests",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 5529,
+      "outputSha256": "c6c14376227049a6ea680a99b7ec236fc3f683d58ae5fb417284a90f8fbd8878"
+    },
+    {
+      "id": "format",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 2916,
+      "outputSha256": "6d83a3564f7f607a548332e41eaafbcd07cb5356c80db107b0460bd253c93ea0"
+    },
+    {
+      "id": "release",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 397,
+      "outputSha256": "12eb214a2f761becf06fea033e4d54886eda2cfc553abcef1315b3318cf11325"
+    },
+    {
+      "id": "workflows",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 208,
+      "outputSha256": "1eb42cd7d6b94c8012bf7394fc0e70009baaebb92643b0ecd8a3149d9ed3f6b1"
+    },
+    {
+      "id": "nativeContract",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 91,
+      "outputSha256": "d68ef92798ae51c4064154401e115647e70a6b280971e6f1ebc6effe0231f645"
+    },
+    {
+      "id": "privatePolicy",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 87,
+      "outputSha256": "67d18a8fe900472abbffc66df8feb9099222e130ea071ca06469a60981b6f1dd"
+    },
+    {
+      "id": "privateDownstream",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 5783,
+      "outputSha256": "be0c31f56cbc79744bf350596302b9452c2d59be8e3a7b1a7eba7798b70738d8"
+    },
+    {
+      "id": "publicBuild",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 375,
+      "outputSha256": "e34071a146f1684a9506460063d0e5294c835c90c5fd87fd6444abad85dd1b7b"
+    },
+    {
+      "id": "publicBoundary",
+      "passed": true,
+      "exitCode": 0,
+      "durationMilliseconds": 261,
+      "outputSha256": "b766b77ee90f43dfb4d5631fdc3ee098eaaba6552c6d419ca9a4d12100e952aa"
+    }
+  ],
+  "testsPassed": 293,
+  "testsFailed": 0,
+  "testsPending": 0,
+  "passedTestFiles": [
+    "packages/backup/test/backup.test.ts",
+    "packages/config/test/catalog-trust.test.ts",
+    "packages/config/test/phase0-gate.test.ts",
+    "packages/config/test/phase1-evidence.test.ts",
+    "packages/config/test/phase1-gate.test.ts",
+    "packages/config/test/phase2-gate.test.ts",
+    "packages/config/test/phase2-guided.test.ts",
+    "packages/config/test/phase3-guided.test.ts",
+    "packages/config/test/phase4-guided.test.ts",
+    "packages/data/test/acquisition.test.ts",
+    "packages/data/test/camping.test.ts",
+    "packages/data/test/canonical.test.ts",
+    "packages/data/test/catalog.test.ts",
+    "packages/data/test/connector-operations.test.ts",
+    "packages/data/test/connector.test.ts",
+    "packages/data/test/entity-resolution.test.ts",
+    "packages/data/test/ingestion-security.test.ts",
+    "packages/data/test/new-york.test.ts",
+    "packages/data/test/permission-shells.test.ts",
+    "packages/data/test/private-extension.test.ts",
+    "packages/data/test/production-pack.test.ts",
+    "packages/data/test/public-pack.test.ts",
+    "packages/data/test/secondary.test.ts",
+    "packages/data/test/source-scaffold.test.ts",
+    "packages/import-export/test/import-export.test.ts",
+    "packages/import-export/test/selected-import.test.ts",
+    "packages/map/test/basemap.test.ts",
+    "packages/map/test/field-readiness.test.ts",
+    "packages/map/test/map.test.ts",
+    "packages/map/test/offline-explore.test.ts",
+    "packages/privacy/test/diagnostics.test.ts",
+    "packages/privacy/test/private-root.test.ts",
+    "packages/privacy/test/public-boundary.test.ts",
+    "packages/recorder/test/recorder.test.ts",
+    "packages/shared/test/application-shell.test.ts",
+    "packages/shared/test/coordinate.test.ts",
+    "packages/storage/test/catalog-activation.test.ts",
+    "packages/storage/test/composition.test.ts",
+    "packages/storage/test/private.test.ts",
+    "packages/storage/test/storage.test.ts",
+    "packages/tracking/test/field-hardening.test.ts",
+    "packages/tracking/test/phase1.test.ts",
+    "packages/tracking/test/tracking.test.ts"
+  ],
+  "status": "passed",
+  "blockers": []
+}

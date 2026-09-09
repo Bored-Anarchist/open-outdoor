@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     coverage: { enabled: false },
     environment: 'node',
-    include: ['packages/*/test/**/*.test.ts'],
+    include: ['packages/*/test/**/*.test.ts', 'packages/data/connectors/**/*.test.ts'],
   },
 });

@@ -29,6 +29,7 @@ Private composition is optional and must point outside this checkout. The iOS fe
 - [Test and acceptance plan](docs/TEST_AND_ACCEPTANCE_PLAN.md)
 - [Data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md)
 - [Private extension guide](docs/PRIVATE_EXTENSION_GUIDE.md)
+- [Connector scaffolding, acquisition, and private imports](docs/CONNECTOR_ECOSYSTEM.md)
 
 ## Core product areas
 
@@ -54,3 +55,5 @@ Implementation begins with Phase 0 in the [work-package breakdown](docs/WORK_PAC
 - [Public repository controls](docs/REPOSITORY_CONTROLS.md)
 
 Public contributions use project handles, privacy-protected commit addresses, and an account-bound rights attestation—no additional personal identifying details. Hosted CI is local-first and path/gate-filtered to minimize GitHub Actions minutes.
+
+Phase 4 connector acceptance: `pnpm phase4:acceptance`. See [the runner guide](docs/PHASE_4_GUIDED_ACCEPTANCE.md).

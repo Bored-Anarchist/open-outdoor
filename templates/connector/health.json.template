@@ -1,0 +1,1 @@
+{"requiredFields":{"id":"string","name":"string","coordinate":"array","synthetic":"boolean"},"minimumRecords":1,"maximumRecords":10000,"maximumFailureFraction":0,"maximumVolumeChangeFraction":1,"maximumConsecutiveFailures":3,"staleAfterSeconds":86400,"rightsReviewWarningSeconds":604800}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0.0", "connectorVersion": "0.1.0", "sourceId": "__SOURCE_ID__",
+  "lifecycle": "experimental", "authorization": "authorized", "acquisitionMode": "manual-import",
+  "sourceClass": "current", "classification": "PUBLIC_SYNTHETIC", "allowedTransports": ["file"],
+  "allowedHosts": [], "secretNames": [],
+  "rights": {
+    "rawRetention": "P1D", "parsedFields": ["id", "name", "coordinate", "synthetic"],
+    "media": false, "derivedData": true, "offlineStorage": true,
+    "distribution": {"public": true, "private-user": true, "private-organization": true},
+    "attribution": ["Open Outdoor synthetic fixture"], "termsUrl": "https://example.invalid/synthetic-only",
+    "evidenceReviewedAt": "2026-09-09T00:00:00.000Z", "reviewExpiresAt": null
+  },
+  "limits": {"maxPayloadBytes": 65536, "maxArchiveEntries": 10, "maxExpandedBytes": 65536,
+    "maxCompressionRatio": 10, "maxParserMilliseconds": 5000, "maxRedirects": 0, "maxConcurrency": 1},
+  "requiredFreshnessSeconds": null
+}

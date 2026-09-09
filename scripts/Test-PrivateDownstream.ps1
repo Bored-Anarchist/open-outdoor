@@ -26,9 +26,10 @@ try {
     git -C $publicClone add synthetic-public-update.txt
     git -C $publicClone commit --quiet -m 'Synthetic public update'
 
-    git -C $privateCheckout fetch --quiet origin main
+    $publicBranch = (git -C $publicClone branch --show-current).Trim()
+    git -C $privateCheckout fetch --quiet origin $publicBranch
     if ($LASTEXITCODE -ne 0) { throw 'Private checkout could not fetch the public update.' }
-    git -C $privateCheckout merge --quiet --no-edit origin/main
+    git -C $privateCheckout merge --quiet --no-edit "origin/$publicBranch"
     if ($LASTEXITCODE -ne 0) { throw 'Private checkout could not incorporate the public update.' }
 
     $publicTree = git -C $publicClone ls-tree -r --name-only HEAD

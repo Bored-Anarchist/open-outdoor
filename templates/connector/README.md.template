@@ -1,0 +1,5 @@
+# __SOURCE_ID__
+
+This runnable SDK example reads only its local synthetic fixture. Run `pnpm exec vitest run packages/data/connectors/__SOURCE_ID__/contract.test.ts` from the repository root. Public fixtures must remain synthetic or independently redistributable.
+
+Extend the typed model, parser, and normalizer for a reviewed source. Use AcquisitionSession for network acquisition, RawArtifactStore for authorized raw storage, and a durable checkpoint callback. Update the manifest, attribution, health definition, and contract cases together. Validate canonical envelopes before emitting real entity records. No core registration edit is required.

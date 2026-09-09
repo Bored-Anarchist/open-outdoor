@@ -1,0 +1,2 @@
+import type { CatalogPlace } from '__SDK__';
+export interface SourceRecord extends CatalogPlace { readonly synthetic: true; }
