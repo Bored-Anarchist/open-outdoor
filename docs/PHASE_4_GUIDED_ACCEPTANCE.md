@@ -17,3 +17,5 @@ Only synthetic fixtures are used. Private-root variables, credential variables a
 Review `report.json` and its proposal together, verify the report hash and candidate, then record reviewer identity/date and disposition in the normal evidence workflow. The runner does not change milestone gates or claim service authorization, native file-picker UI, real private-data validation, or physical-device acceptance. No additional device session is needed to execute these shared API and laptop-worker cases. A passed machine run is ready for reviewer acceptance, not an automatic milestone approval.
 
 Exit codes: `0` automated checks passed, `1` acceptance blocked, `2` runner/prerequisite failure. `pnpm phase4:acceptance --help` shows usage. Runner decision coverage is in `packages/config/test/phase4-guided.test.ts`.
+
+The owner-approved candidate and verified evidence are recorded in [the Phase 4 acceptance disposition](PHASE_4_GATE_REPORT.md).

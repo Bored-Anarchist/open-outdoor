@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "profileId": "connector-ecosystem-phase4-v1",
+  "sourceCommit": "9f2e25c6483d914bc22324ba7cbc433f669a3888",
+  "reportSha256": "d27d5aa0363163b8f537af6a1116b5e102c915e40335d3598664d58638940d6e",
+  "evaluation": {
+    "status": "passed",
+    "blockers": []
+  },
+  "packageRecommendations": {
+    "WP-401": {
+      "testId": "T-INT-003-C10",
+      "status": "accepted-after-review"
+    },
+    "WP-402": {
+      "testId": "T-INT-003-C11",
+      "status": "accepted-after-review"
+    },
+    "WP-403": {
+      "testId": "T-INT-004-C01",
+      "status": "accepted-after-review"
+    },
+    "WP-404": {
+      "testId": "T-INT-003-C12",
+      "status": "accepted-after-review"
+    },
+    "WP-405": {
+      "testId": "T-E2E-003-C01",
+      "status": "accepted-after-review"
+    },
+    "WP-406": {
+      "testId": "T-INT-003-C13",
+      "status": "accepted-after-review"
+    }
+  },
+  "gateStatusRecommendation": "blocked-pending-reviewer",
+  "reviewerActionRequired": true,
+  "review": {
+    "accepted": true,
+    "reviewer": "Bored-Anarchist",
+    "date": "2026-09-09",
+    "notes": "Owner reviewed the verified report and explicitly approved in the task: I reviewed and I approve."
+  },
+  "scope": "Synthetic shared API and laptop-worker evidence; no service authorization or physical-device claims.",
+  "disposition": "accepted",
+  "reportPath": "phase4-acceptance-9f2e25c.json"
+}
