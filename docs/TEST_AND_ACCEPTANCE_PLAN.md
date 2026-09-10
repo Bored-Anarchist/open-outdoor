@@ -262,3 +262,7 @@ Phase 4 automated evidence: run `pnpm phase4:acceptance` on a clean candidate. S
 ## WP-501 automated design coverage
 
 `T-E2E-001-D01` validates appearance contrast, complete field-state/icon coverage, target tokens, motion/haptic policy and untrusted detail escaping. `T-E2E-001-D02` validates local-only map styles, canonical input preservation, clustering, seven camping statuses and safety/track/location hierarchy. `T-E2E-001-D03` runs the browser keyboard, state, layout and reduced-motion matrix with synthetic screenshots via `pnpm test:design:browser`. These support REQ-UX-001, REQ-MAP-003 and the automated portion of REQ-A11Y-001. Physical T-PHY-003 and WP-502/WP-503 gates remain separate. See [Product design system](PRODUCT_DESIGN_SYSTEM.md).
+
+## WP-502/WP-503 acceptance timing
+
+Per owner-approved ADR-049, physical tests run at the end of Phase 5; WP-502/WP-503 implementation completion uses automated evidence. `T-PHY-003-P01` covers the 99-case final accessibility matrix; `T-PHY-002-P01` covers candidate-bound repeated performance/endurance evidence. `T-INT-001-P01` covers foreground scheduling and persistence retry/serialization; `T-E2E-001-P01` covers browser WCAG scans with a negative control. See [production quality](PRODUCTION_QUALITY.md). No physical case is marked passed by automation.

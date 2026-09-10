@@ -21,3 +21,5 @@ The project scope names candidate technologies and data sources, but naming a ca
 ## WP-501 assets
 
 The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) inventories the original, AI-assisted Open Outdoor tokens, icon geometry and map styles under Apache-2.0. No third-party visual assets or fonts were added. Playwright 1.62.1 (Apache-2.0) is a pinned development-only browser acceptance dependency; it is not shipped in the mobile application.
+
+WP-502/WP-503 add axe-core 4.13.0 (MPL-2.0) and React/React Test Renderer 19.2.3 (MIT) as pinned development-only audit/test dependencies. No third-party visuals or native runtime dependencies were added. New implementation and test fixtures are project-authored with AI assistance under Apache-2.0; physical evidence remains deferred under ADR-049.

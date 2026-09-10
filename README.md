@@ -59,3 +59,5 @@ Public contributions use project handles, privacy-protected commit addresses, an
 Phase 4 connector acceptance: `pnpm phase4:acceptance`. See [the runner guide](docs/PHASE_4_GUIDED_ACCEPTANCE.md).
 
 The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) documents WP-501 tokens, components, states and map appearances. Run `pnpm test:design:browser` for the synthetic browser acceptance matrix.
+
+Run `pnpm phase5:quality` for WP-502/WP-503 automated accessibility and performance review. [Production quality](docs/PRODUCTION_QUALITY.md) documents the owner-approved deferral of physical testing to Phase 5 end.

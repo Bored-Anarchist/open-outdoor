@@ -1,5 +1,6 @@
-import { createContext, useContext, type ReactNode } from 'react';
-import { Pressable, Text, View, type ViewStyle } from 'react-native';
+import { ProductText as Text, useAnnouncement } from './accessibility';
+import { createContext, useContext, useState, useRef, type ReactNode } from 'react';
+import { Pressable, View, type ViewStyle } from 'react-native';
 import {
   designTokens as t,
   palettes,
@@ -68,7 +69,8 @@ export interface ProductButtonProps {
   readonly destructive?: boolean;
   readonly busy?: boolean;
   readonly icon?: IconName;
-  readonly onPress: () => void;
+  readonly onPress: () => void | Promise<unknown>;
+  readonly expanded?: boolean;
 }
 export function ProductButton({
   label,
@@ -78,24 +80,45 @@ export function ProductButton({
   destructive = false,
   busy = false,
   icon,
+  expanded,
   onPress,
 }: ProductButtonProps) {
   const p = usePalette();
+  const [focused, setFocused] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState('');
+  useAnnouncement(error);
+  const inFlight = useRef(false);
+  const unavailable = disabled || busy || pending;
   const color = destructive ? p.danger : p.text;
   return (
     <Pressable
       accessibilityHint={hint}
       accessibilityLabel={label}
       accessibilityRole="button"
-      accessibilityState={{ disabled: disabled || busy, selected, busy }}
-      disabled={disabled || busy}
-      onPress={onPress}
+      accessibilityState={{ disabled: unavailable, selected, busy: busy || pending, expanded }}
+      disabled={unavailable}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onPress={() => {
+        if (inFlight.current || unavailable) return;
+        inFlight.current = true;
+        setPending(true);
+        setError('');
+        void Promise.resolve()
+          .then(onPress)
+          .catch(() => setError('Action could not complete. Please try again.'))
+          .finally(() => {
+            inFlight.current = false;
+            setPending(false);
+          });
+      }}
       style={({ pressed }) => ({
         minHeight: t.target.minimum,
         minWidth: t.target.minimum,
         borderRadius: t.radius.control,
-        borderWidth: selected ? t.border.selected : t.border.normal,
-        borderColor: destructive ? p.danger : p.border,
+        borderWidth: selected || focused ? t.border.selected : t.border.normal,
+        borderColor: focused ? p.focus : destructive ? p.danger : p.border,
         backgroundColor: pressed || selected ? p.selected : p.surface,
         paddingHorizontal: t.space.lg,
         paddingVertical: t.space.md,
@@ -103,7 +126,7 @@ export function ProductButton({
         alignItems: 'center',
         justifyContent: 'center',
         gap: t.space.sm,
-        opacity: disabled || busy ? 0.6 : 1,
+        opacity: unavailable ? 0.6 : 1,
       })}
     >
       {icon ? <ProductIcon name={icon} color={color} /> : null}
@@ -116,7 +139,13 @@ export function ProductButton({
           textAlign: 'center',
         }}
       >
-        {busy ? `${label}…` : selected ? `${label} · Selected` : label}
+        {error
+          ? `${label}. ${error}`
+          : busy || pending
+            ? `${label}…`
+            : selected
+              ? `${label} · Selected`
+              : label}
       </Text>
     </Pressable>
   );
@@ -159,6 +188,8 @@ export function FieldNotice({ state, detail }: { state: FieldState; detail?: str
   const color = toneColor(p, notice.tone);
   return (
     <View
+      accessible
+      accessibilityLabel={`${notice.title}. ${detail ?? notice.message}`}
       accessibilityRole={notice.tone === 'danger' ? 'alert' : undefined}
       accessibilityLiveRegion="polite"
       style={{

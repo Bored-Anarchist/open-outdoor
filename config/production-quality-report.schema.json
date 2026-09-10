@@ -1,0 +1,727 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "sourceCommit",
+    "binarySha256",
+    "environment",
+    "deviceModel",
+    "systemVersion",
+    "coordinateFree",
+    "containsPersonalData",
+    "accessibility",
+    "performance",
+    "fieldRuns",
+    "defects",
+    "attestation"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "profileId": {
+      "type": "string"
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "binarySha256": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "environment": {
+      "enum": ["physical-iphone", "simulator", "browser"]
+    },
+    "deviceModel": {
+      "type": "string",
+      "maxLength": 30
+    },
+    "systemVersion": {
+      "type": "string",
+      "maxLength": 30
+    },
+    "coordinateFree": {
+      "const": true
+    },
+    "containsPersonalData": {
+      "const": false
+    },
+    "accessibility": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status", "evidenceSha256"],
+        "properties": {
+          "id": {
+            "enum": [
+              "permission/voiceover",
+              "permission/largest-dynamic-type",
+              "permission/bold-text",
+              "permission/increased-contrast",
+              "permission/differentiate-without-color",
+              "permission/reduced-motion",
+              "permission/dark-appearance",
+              "permission/touch-one-handed",
+              "permission/outdoor-readability",
+              "start-pause-resume-finish/voiceover",
+              "start-pause-resume-finish/largest-dynamic-type",
+              "start-pause-resume-finish/bold-text",
+              "start-pause-resume-finish/increased-contrast",
+              "start-pause-resume-finish/differentiate-without-color",
+              "start-pause-resume-finish/reduced-motion",
+              "start-pause-resume-finish/dark-appearance",
+              "start-pause-resume-finish/touch-one-handed",
+              "start-pause-resume-finish/outdoor-readability",
+              "recover-discard/voiceover",
+              "recover-discard/largest-dynamic-type",
+              "recover-discard/bold-text",
+              "recover-discard/increased-contrast",
+              "recover-discard/differentiate-without-color",
+              "recover-discard/reduced-motion",
+              "recover-discard/dark-appearance",
+              "recover-discard/touch-one-handed",
+              "recover-discard/outdoor-readability",
+              "offline-search-detail/voiceover",
+              "offline-search-detail/largest-dynamic-type",
+              "offline-search-detail/bold-text",
+              "offline-search-detail/increased-contrast",
+              "offline-search-detail/differentiate-without-color",
+              "offline-search-detail/reduced-motion",
+              "offline-search-detail/dark-appearance",
+              "offline-search-detail/touch-one-handed",
+              "offline-search-detail/outdoor-readability",
+              "map-legend-alternative/voiceover",
+              "map-legend-alternative/largest-dynamic-type",
+              "map-legend-alternative/bold-text",
+              "map-legend-alternative/increased-contrast",
+              "map-legend-alternative/differentiate-without-color",
+              "map-legend-alternative/reduced-motion",
+              "map-legend-alternative/dark-appearance",
+              "map-legend-alternative/touch-one-handed",
+              "map-legend-alternative/outdoor-readability",
+              "catalog-rollback-space/voiceover",
+              "catalog-rollback-space/largest-dynamic-type",
+              "catalog-rollback-space/bold-text",
+              "catalog-rollback-space/increased-contrast",
+              "catalog-rollback-space/differentiate-without-color",
+              "catalog-rollback-space/reduced-motion",
+              "catalog-rollback-space/dark-appearance",
+              "catalog-rollback-space/touch-one-handed",
+              "catalog-rollback-space/outdoor-readability",
+              "import-export/voiceover",
+              "import-export/largest-dynamic-type",
+              "import-export/bold-text",
+              "import-export/increased-contrast",
+              "import-export/differentiate-without-color",
+              "import-export/reduced-motion",
+              "import-export/dark-appearance",
+              "import-export/touch-one-handed",
+              "import-export/outdoor-readability",
+              "backup-restore-delete/voiceover",
+              "backup-restore-delete/largest-dynamic-type",
+              "backup-restore-delete/bold-text",
+              "backup-restore-delete/increased-contrast",
+              "backup-restore-delete/differentiate-without-color",
+              "backup-restore-delete/reduced-motion",
+              "backup-restore-delete/dark-appearance",
+              "backup-restore-delete/touch-one-handed",
+              "backup-restore-delete/outdoor-readability",
+              "private-origin-unavailable/voiceover",
+              "private-origin-unavailable/largest-dynamic-type",
+              "private-origin-unavailable/bold-text",
+              "private-origin-unavailable/increased-contrast",
+              "private-origin-unavailable/differentiate-without-color",
+              "private-origin-unavailable/reduced-motion",
+              "private-origin-unavailable/dark-appearance",
+              "private-origin-unavailable/touch-one-handed",
+              "private-origin-unavailable/outdoor-readability",
+              "closure-conflict-unknown/voiceover",
+              "closure-conflict-unknown/largest-dynamic-type",
+              "closure-conflict-unknown/bold-text",
+              "closure-conflict-unknown/increased-contrast",
+              "closure-conflict-unknown/differentiate-without-color",
+              "closure-conflict-unknown/reduced-motion",
+              "closure-conflict-unknown/dark-appearance",
+              "closure-conflict-unknown/touch-one-handed",
+              "closure-conflict-unknown/outdoor-readability",
+              "gps-battery-checkpoint/voiceover",
+              "gps-battery-checkpoint/largest-dynamic-type",
+              "gps-battery-checkpoint/bold-text",
+              "gps-battery-checkpoint/increased-contrast",
+              "gps-battery-checkpoint/differentiate-without-color",
+              "gps-battery-checkpoint/reduced-motion",
+              "gps-battery-checkpoint/dark-appearance",
+              "gps-battery-checkpoint/touch-one-handed",
+              "gps-battery-checkpoint/outdoor-readability"
+            ]
+          },
+          "status": {
+            "enum": ["passed", "failed", "unexecuted"]
+          },
+          "evidenceSha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coldLaunchMs",
+        "searchMs",
+        "mapFrameMs",
+        "scrollFrameMs",
+        "mapMemoryMiB",
+        "trackerMemoryMiB",
+        "startAckMs",
+        "stopAckMs"
+      ],
+      "properties": {
+        "coldLaunchMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "searchMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "mapFrameMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "scrollFrameMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "mapMemoryMiB": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "trackerMemoryMiB": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "startAckMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "stopAckMs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["samples", "durationSeconds", "fixtureSha256", "evidenceSha256"],
+          "properties": {
+            "samples": {
+              "type": "array",
+              "maxItems": 100000,
+              "items": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "durationSeconds": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "fixtureSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "evidenceSha256": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "fieldRuns": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "runId",
+          "sourceCommit",
+          "binarySha256",
+          "evidenceSha256",
+          "mode",
+          "startedAt",
+          "endedAt",
+          "durationMinutes",
+          "batteryStartPercent",
+          "batteryEndPercent",
+          "chargingDuringRun",
+          "seriousThermalSeconds",
+          "criticalThermalSeconds",
+          "maximumCheckpointGapSeconds",
+          "storageGrowthBytes",
+          "sensorsActiveWhileStoppedSeconds",
+          "offlineBrowsePassed",
+          "offlineSearchPassed",
+          "crashRecoveryPassed",
+          "degradedGpsStatePassed",
+          "accessibilityPassed"
+        ],
+        "properties": {
+          "runId": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]{1,64}$"
+          },
+          "sourceCommit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "binarySha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidenceSha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mode": {
+            "enum": ["balanced", "endurance"]
+          },
+          "startedAt": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T.*Z$"
+          },
+          "endedAt": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T.*Z$"
+          },
+          "durationMinutes": {
+            "type": "number",
+            "minimum": 180,
+            "maximum": 1440
+          },
+          "batteryStartPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "batteryEndPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "chargingDuringRun": {
+            "type": "boolean"
+          },
+          "seriousThermalSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "criticalThermalSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "maximumCheckpointGapSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "storageGrowthBytes": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sensorsActiveWhileStoppedSeconds": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "offlineBrowsePassed": {
+            "type": "boolean"
+          },
+          "offlineSearchPassed": {
+            "type": "boolean"
+          },
+          "crashRecoveryPassed": {
+            "type": "boolean"
+          },
+          "degradedGpsStatePassed": {
+            "type": "boolean"
+          },
+          "accessibilityPassed": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "defects": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9-]{1,40}$"
+          },
+          "severity": {
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "status": {
+            "enum": ["open", "resolved"]
+          }
+        }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed", "reviewer", "evidenceSha256"],
+      "properties": {
+        "completed": {
+          "type": "boolean"
+        },
+        "reviewer": {
+          "type": "string",
+          "maxLength": 39
+        },
+        "evidenceSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

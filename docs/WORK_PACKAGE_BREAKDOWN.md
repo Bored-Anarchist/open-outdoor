@@ -129,3 +129,7 @@ Every completed package records:
 - acceptance date and approver.
 
 The Product MVP is achieved only after `WP-301` through `WP-307` pass the M4 gate; finishing Phase 1 or Phase 2 is not an MVP claim. Platform, feature, and release names are controlled by the [product release definition](PRODUCT_RELEASE_DEFINITION.md).
+
+## ADR-049 completion timing (2026-09-10)
+
+The owner deferred WP-502/WP-503 physical testing to the end of Phase 5. These packages complete implementation and automated verification now; physical VoiceOver/Dynamic Type/contrast/outdoor, performance/memory and endurance acceptance remains mandatory for WP-506. Numeric budgets are unchanged, and no unexecuted case is reported as passed. See [production quality](PRODUCTION_QUALITY.md) and [ADR-049](DECISION_LOG.md).

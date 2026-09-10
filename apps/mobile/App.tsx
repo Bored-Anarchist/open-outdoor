@@ -1,7 +1,16 @@
+import {
+  AccessibilityContext,
+  ProductText as Text,
+  useDeviceAccessibility,
+  useAnnouncement,
+} from './accessibility';
 import { campingLegend, phase1OfflineMapFixture } from '@open-outdoor/map';
 import { StatusBar } from 'expo-status-bar';
 import {
   appearances,
+  accessibleAppearance,
+  ForegroundTask,
+  boundedDisplayPoints,
   designTokens as t,
   type Appearance,
   type Palette,
@@ -18,8 +27,16 @@ import {
   usePalette,
 } from './ProductComponents';
 import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
-import { useEffect, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, TextInput, useColorScheme, View } from 'react-native';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Alert,
+  AppState,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  useColorScheme,
+  View,
+} from 'react-native';
 import {
   nativeSpikes,
   type NativeTrackingInspection,
@@ -45,11 +62,18 @@ function errorMessage(error: unknown): string {
 export default function App() {
   const systemAppearance = useColorScheme();
   const [override, setOverride] = useState<Appearance | null>(null);
-  const appearance = override ?? (systemAppearance === 'dark' ? 'dark' : 'light');
+  const accessibility = useDeviceAccessibility();
+  const appearance = accessibleAppearance(
+    systemAppearance,
+    override,
+    accessibility.increasedContrast,
+  );
   return (
-    <AppearanceContext.Provider value={appearance}>
-      <AppContent appearance={appearance} onAppearance={setOverride} />
-    </AppearanceContext.Provider>
+    <AccessibilityContext.Provider value={accessibility}>
+      <AppearanceContext.Provider value={appearance}>
+        <AppContent appearance={appearance} onAppearance={setOverride} />
+      </AppearanceContext.Provider>
+    </AccessibilityContext.Provider>
   );
 }
 
@@ -61,7 +85,8 @@ function AppContent({
   onAppearance: (value: Appearance | null) => void;
 }) {
   const palette = usePalette();
-  const styles = createStyles(palette);
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const lastRenderedCheckpoint = useRef('');
   const [query, setQuery] = useState('');
   const [selectedPlace, setSelectedPlace] = useState('Hemlock Loop');
   const [legendOpen, setLegendOpen] = useState(false);
@@ -87,6 +112,8 @@ function AppContent({
       ? 'Ready to record offline.'
       : 'Native capability unavailable: ' + nativeSpikes.loadError,
   );
+
+  useAnnouncement(status);
 
   useEffect(() => {
     if (!nativeSpikes.available) return;
@@ -114,12 +141,19 @@ function AppContent({
     const synchronize = async (): Promise<void> => {
       try {
         await application.recorder.synchronize();
-        if (cancelled) return;
+        if (cancelled || AppState.currentState !== 'active') return;
+        const state = application.recorder.stateMachine.state;
+        if (state.kind !== 'recording') return;
+        const revision = state.sessionId + ':' + state.highestCommittedSequence;
+        if (lastRenderedCheckpoint.current === revision) return;
         const observations = application.recorder.stateMachine.committedObservations;
         const distance = calculateDistanceRevision(observations);
         const elevation = calculateElevationRevision(observations);
         const accuracy = observations.at(-1)?.horizontalAccuracyM;
-        application.map.setActiveTrack(observations.map(({ coordinate }) => coordinate));
+        application.map.setActiveTrack(
+          boundedDisplayPoints(observations).map(({ coordinate }) => coordinate),
+        );
+        lastRenderedCheckpoint.current = revision;
         setLiveStats({
           sequence: observations.at(-1)?.sequence ?? 0,
           distanceM: distance.distanceM,
@@ -137,11 +171,15 @@ function AppContent({
         if (!cancelled) setStatus('Checkpoint failed: ' + errorMessage(error));
       }
     };
-    void synchronize();
-    const timer = setInterval(() => void synchronize(), 5_000);
+    const refresh = new ForegroundTask({ run: synchronize, onError: () => {}, intervalMs: 5_000 });
+    refresh.setEligible(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (value) =>
+      refresh.setEligible(value === 'active'),
+    );
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      refresh.dispose();
+      subscription.remove();
     };
   }, [application, recorderState]);
 
@@ -435,7 +473,7 @@ function AppContent({
           <AccessibleButton
             label="Land and camping legend"
             hint="Expand or collapse status explanations"
-            selected={legendOpen}
+            expanded={legendOpen}
             onPress={() => setLegendOpen(!legendOpen)}
           />
           {legendOpen ? (
@@ -525,37 +563,37 @@ function AppContent({
               label="Request Always Location"
               hint="Opens the iOS location permission prompt"
               disabled={!nativeSpikes.available || active}
-              onPress={() => void requestPermission()}
+              onPress={requestPermission}
             />
             <AccessibleButton
               label="Start recording"
               hint="Starts offline location and elevation recording"
-              disabled={!nativeSpikes.available || recorderState !== 'idle'}
-              onPress={() => void start()}
+              disabled={application === null || recorderState !== 'idle'}
+              onPress={start}
             />
             <AccessibleButton
               label="Pause recording"
               hint="Stops sensors and excludes paused distance and elevation"
               disabled={recorderState !== 'recording'}
-              onPress={() => void pause()}
+              onPress={pause}
             />
             <AccessibleButton
               label="Resume recording"
               hint="Restarts sensors in a new activity segment"
               disabled={recorderState !== 'paused'}
-              onPress={() => void resume()}
+              onPress={resume}
             />
             <AccessibleButton
               label="Finish and save recording"
               hint="Stops sensors and saves the private activity"
               disabled={!active}
-              onPress={() => void finish()}
+              onPress={finish}
             />
             <AccessibleButton
               label="Recover interrupted recording"
               hint="Continues from the last durable checkpoint"
               disabled={recorderState !== 'recoverable' || recovery === null}
-              onPress={() => void recover()}
+              onPress={() => recover()}
             />
             <AccessibleButton
               label="Discard interrupted recording"

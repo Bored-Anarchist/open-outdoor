@@ -1,3 +1,5 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 /** Synthetic browser acceptance. No external services or device data. */
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -124,6 +126,61 @@ try {
   );
   report.cases.push(
     'keyboard skip/focus, search/filter/selection/empty, detail provenance, native capability, private origin, field transitions, disabled/busy, reduced motion',
+  );
+  const accessibilityScans = [];
+  for (const appearance of ['light', 'dark', 'high-contrast']) {
+    await page.goto(base);
+    await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
+    await page.locator('#appearance').selectOption(appearance);
+    for (const section of ['Explore', 'Search', 'Track', 'Saved']) {
+      await page.getByRole('button', { name: section, exact: true }).click();
+      await page.evaluate(() => {
+        document.querySelectorAll('details').forEach((element) => {
+          element.open = true;
+        });
+      });
+      const result = await page.evaluate(async () =>
+        window.axe.run(document, {
+          runOnly: {
+            type: 'tag',
+            values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'],
+          },
+        }),
+      );
+      assert.deepEqual(
+        result.violations.map((item) => ({
+          id: item.id,
+          impact: item.impact,
+          targets: item.nodes.map((node) => node.target),
+        })),
+        [],
+        appearance + '/' + section,
+      );
+      accessibilityScans.push({
+        appearance,
+        section,
+        violations: 0,
+        rulesPassed: result.passes.length,
+        incompleteRules: result.incomplete.map((item) => item.id),
+      });
+    }
+  }
+  // Verify the audit actually detects an introduced missing accessible name.
+  await page.evaluate(() => {
+    const button = document.createElement('button');
+    button.id = 'audit-negative-control';
+    document.body.append(button);
+  });
+  const negative = await page.evaluate(async () =>
+    window.axe.run(document, { runOnly: ['button-name'] }),
+  );
+  assert(negative.violations.some((item) => item.id === 'button-name'));
+  await page.locator('#audit-negative-control').evaluate((element) => element.remove());
+  report.accessibilityScans = accessibilityScans;
+  report.manualReviewRequired =
+    'Native VoiceOver, Dynamic Type, Bold Text, outdoor and device performance remain deferred to Phase 5 end under ADR-049. Axe incomplete checks require manual review.';
+  report.cases.push(
+    'WP-502: twelve axe WCAG scans with all component states expanded; negative control detects missing button name',
   );
   assert.deepEqual(errors, []);
   assert.deepEqual(externalRequests, []);

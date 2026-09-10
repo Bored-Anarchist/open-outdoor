@@ -100,3 +100,13 @@ Related scope / requirements / work packages / risks:
 - Accepted ADRs are immutable history; changes create a superseding ADR.
 - A decision cannot silently weaken scope, privacy, rights, or phase gates.
 - Tool selections remain open until their ADR is accepted; planning documents describe contracts rather than claiming commands/libraries already exist.
+
+## ADR-049 — Defer WP-502/WP-503 physical testing to the end of Phase 5
+
+Status: accepted. Date: 2026-09-10. Authority: explicit repository-owner instruction during WP-502/WP-503 implementation: “Physical testing will be deferred to the end of Phase 5.”
+
+This supersedes only the package-completion timing in ADR-048 and the WP-502/WP-503 exit criteria. WP-502 and WP-503 may complete implementation and automated validation without a physical run. All physical accessibility, launch/map/scroll/memory, thermal and battery tests remain mandatory at the end of Phase 5, before WP-506 release acceptance. Missing evidence is deferred, never passed. No performance, accessibility-conformance or endurance claim may be inferred from a browser, simulator or mock-host test.
+
+The existing iPhone 14/iOS 26.6 reference and numeric budgets remain unchanged. Six independent three-hour field runs (three Balanced, three Endurance) remain required. The production-quality profile specifies repeat counts and evidence collection for the existing budgets, including a conservative map p95 frame-time check equivalent to a lower-tail 30 fps floor. Scroll profiling uses the existing 250 ms main-thread stall ceiling; no separate scroll throughput claim is introduced.
+
+The release configuration records this deferral, and `phase5:quality --verify-physical` fails closed until candidate-bound device evidence and reviewer attestation pass. No data migration or source-rights change. Related: WP-502, WP-503, WP-506; REQ-A11Y-001, REQ-NFR-001, REQ-ENE-001; R-003, R-013, R-017. Validation is documented in [production quality](PRODUCTION_QUALITY.md).
