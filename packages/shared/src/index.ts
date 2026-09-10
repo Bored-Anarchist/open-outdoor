@@ -133,3 +133,5 @@ export function assertCoordinate(value: Coordinate): Coordinate {
   }
   return value;
 }
+
+export * from './design-system';

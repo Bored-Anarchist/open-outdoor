@@ -73,3 +73,7 @@ A risk is closed only when the underlying condition is eliminated or accepted by
 ## WP-404–WP-406 mitigation evidence (2026-09-09)
 
 R-004/R-005: disabled permission shells cannot fetch or grant redistribution; private package/state verification keeps private content and diagnostics out of public outputs. R-010: bounded package inventory, digest verification, path/junction rejection, and bounded connector stages reduce extension/input exposure. R-012: field/schema/volume metrics quarantine drift and preserve last-good snapshots; recovery needs an explicit probe and, for schema changes, the reviewed fingerprint. R-015: exact stable version intervals, package locks/provenance, and public-upstream compatibility tests reject unsupported upgrades before execution. These implemented controls do not retire the risks or replace source-rights/code review. See the [connector ecosystem guide](CONNECTOR_ECOSYSTEM.md) and WP-404–WP-406 evidence records.
+
+## WP-501 design evidence (2026-09-09)
+
+R-017/R-019: shared original tokens and icons, exhaustive field-state catalog, contrast/semantic/layout tests and an explicit asset inventory reduce inconsistent styling and provenance risk. R-006: source dates, uncertainty, restrictions and private origin remain explicit in details and the camping legend. Physical appearance, VoiceOver, outdoor readability and performance risks remain open for WP-502/WP-503; a browser fixture cannot close them. See [Product design system](PRODUCT_DESIGN_SYSTEM.md).

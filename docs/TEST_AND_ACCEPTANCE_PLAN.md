@@ -258,3 +258,7 @@ Each accepted suite records:
 - Product MVP acceptance occurs only at M4/Phase 3 and requires all must-haves in the [product release definition](PRODUCT_RELEASE_DEFINITION.md); no earlier alpha may be relabelled as MVP.
 
 Phase 4 automated evidence: run `pnpm phase4:acceptance` on a clean candidate. See [Phase 4 guided acceptance](PHASE_4_GUIDED_ACCEPTANCE.md) for automated checks, commit-bound reports, and reviewer acceptance.
+
+## WP-501 automated design coverage
+
+`T-E2E-001-D01` validates appearance contrast, complete field-state/icon coverage, target tokens, motion/haptic policy and untrusted detail escaping. `T-E2E-001-D02` validates local-only map styles, canonical input preservation, clustering, seven camping statuses and safety/track/location hierarchy. `T-E2E-001-D03` runs the browser keyboard, state, layout and reduced-motion matrix with synthetic screenshots via `pnpm test:design:browser`. These support REQ-UX-001, REQ-MAP-003 and the automated portion of REQ-A11Y-001. Physical T-PHY-003 and WP-502/WP-503 gates remain separate. See [Product design system](PRODUCT_DESIGN_SYSTEM.md).

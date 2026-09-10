@@ -196,3 +196,5 @@ export class FixtureMapAdapter implements MapAdapter {
     );
   }
 }
+
+export * from './product-style';

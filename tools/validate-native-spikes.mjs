@@ -1,3 +1,4 @@
+import { designTokens } from '../packages/shared/src/design-system.ts';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
@@ -330,12 +331,26 @@ for (const token of [
   'Recover interrupted recording',
   'Discard interrupted recording',
   'Alert.alert',
-  'minHeight: 52',
-  'useWindowDimensions',
+  'ProductButton as AccessibleButton',
+  'AppearanceContext.Provider',
   'no turn instructions, rerouting, or',
 ]) {
   requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
 }
+const productComponents = await text('apps/mobile/ProductComponents.tsx');
+for (const token of [
+  'minHeight: t.target.minimum',
+  'minWidth: t.target.minimum',
+  'accessibilityRole="button"',
+  'accessibilityState=',
+  'flexShrink: 1',
+]) {
+  requireText(productComponents, token, 'shared native product components');
+}
+if (designTokens.target.minimum < 44)
+  throw new Error('Product touch targets must be at least 44 points');
+rejectText(productComponents, 'allowFontScaling={false}', 'native Dynamic Type support');
+rejectText(productComponents, 'numberOfLines=', 'native text reflow');
 requireText(nativeModule, 'OpenOutdoorPhase0DiagnosticsEnabled', 'native diagnostics gate');
 for (const token of [
   '#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS',
