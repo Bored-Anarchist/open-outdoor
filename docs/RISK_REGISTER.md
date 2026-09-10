@@ -81,3 +81,7 @@ R-017/R-019: shared original tokens and icons, exhaustive field-state catalog, c
 ## WP-502/WP-503 residual risks (2026-09-10)
 
 R-003: foreground-only serialized UI refresh and empty-write elimination remove unnecessary work, while full-snapshot writes and accumulated metric calculations still require final long-track device profiling. R-013/R-017: physical accessibility and performance evidence is explicitly deferred to Phase 5 end by ADR-049; mock/native-policy/browser tests cannot establish device acceptance. The strict production evidence gate retains missing cases and rejects mismatched/reused field runs. R-004: report schema excludes free-form diagnostics and private paths, with only redacted numeric evidence/digests admitted. See [production quality](PRODUCTION_QUALITY.md).
+
+## WP-504/WP-505 residual risks (2026-09-10)
+
+External trust-policy compromise or an authorized signer attesting false inputs cannot be detected from signatures alone. Protected-commit review, complete native/Python/tool inventories, independent reproducibility and WP-506 rights/privacy/device evidence remain mandatory. The sole owner is a capacity and independent-review bottleneck; governance records it explicitly and makes LTS conditional on staffing. No production key, release or expanded maintainer roster was created. See [release security](RELEASE_SECURITY.md).

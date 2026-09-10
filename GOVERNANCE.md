@@ -44,3 +44,25 @@ A reviewer discloses personal, employment, financial, source-owner, or authorshi
 ## 7. Policy changes
 
 Governance changes use a public pull request, rationale, impact assessment, and at least seven calendar days for comment once the project has external active contributors. Changes cannot retroactively revoke accepted contribution rights.
+
+## 8. Current responsibility record (2026-09-10)
+
+The repository contributor API reports one account, `Bored-Anarchist` (10 contributions at this observation). This is a snapshot, not proof of review quality or an appointment. The repository owner currently retains core maintenance, release management, security response and privacy/rights accountability. No additional appointed maintainers or independent reviewers are recorded. Automation and AI agents are not voting members or independent approvers. The sustained external-contribution prerequisite for expanding governance has not yet occurred.
+
+Before each production release, record active maintainers, assigned release manager, authors, conflicts, required specialists and approvals against the exact candidate. Check the roster quarterly and on every access/appointment change. Appointments are owner-approved public records of handle, area, permissions, date and next review; private security access details remain private. Lack of a required independent specialist blocks the applicable gate, including during the single-maintainer stage.
+
+| Active appointed maintainers | Production approval requirement |
+| --- | --- |
+| One (current) | Owner approval plus every independently reviewed evidence item required by scope; record unavailable independent general code review explicitly |
+| Two | Both maintainers approve, with one release manager and one non-author, conflict-free reviewer |
+| Three or more | At least two approve, including release manager and a different non-author, conflict-free reviewer |
+
+This table completes the two-maintainer case in section 5. If authorship or conflicts leave no eligible reviewer, obtain an owner-appointed independent reviewer or wait; do not count one person twice. New changes invalidate candidate approvals. Once a second independent maintainer is active, update branch rules to require at least one external approval as described in REPOSITORY_CONTROLS.md. Emergency containment may stop distribution immediately; it does not waive required independent evidence for a subsequent production release.
+
+## 9. Support and LTS
+
+There is no production release or LTS line yet. Development builds receive best-effort fixes on the current main branch and have no maintenance or compatibility guarantee. Do not designate a development candidate as supported production.
+
+The first production release must publish a support table with app version, catalog schema/channel, backup schema and private-extension compatibility range, release date, security owner and end-of-support date. The default maintenance target is the latest stable minor line. Publish at least 90 days' notice before ending a supported line; explain migration/backup/restore and catalog rollback compatibility. A replacement release does not silently end an existing published commitment.
+
+LTS is opt-in through an owner-approved proposal naming at least two committed maintainers, scope, funded/available capacity, backport process and an explicit end date. No LTS claim is made before those conditions are recorded. Security fixes on supported lines follow SECURITY.md; unsupported backports require an explicit owner decision and do not reopen general support. If maintainers leave, record the capacity risk, recruit or announce a support transition rather than promise unstaffed maintenance.

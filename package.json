@@ -11,7 +11,7 @@
     "source": "node tools/source.mjs",
     "private:compatibility": "node tools/private-compatibility.mjs",
     "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Bootstrap.ps1",
-    "quality": "pnpm quality:types && pnpm quality:format && pnpm release:verify && pnpm test",
+    "quality": "pnpm quality:types && pnpm quality:format && pnpm release:verify && pnpm test && pnpm test:release",
     "quality:types": "tsc -b packages/shared packages/data packages/privacy packages/config packages/tracking packages/storage packages/map packages/import-export packages/backup packages/recorder apps/browser-fixture apps/mobile",
     "quality:format": "prettier --check .",
     "test": "vitest run",
@@ -42,7 +42,10 @@
     "python:test": "uv run --frozen python -m unittest discover -s python/tests",
     "test:design:browser": "node tools/design-browser-qa.mjs",
     "phase5:quality": "node tools/production-quality.mjs",
-    "profile:desktop": "node tools/production-benchmark.mjs"
+    "profile:desktop": "node tools/production-benchmark.mjs",
+    "test:release": "node --test tools/release-artifacts.test.mjs",
+    "release:artifacts": "node tools/release-artifacts.mjs",
+    "release:sbom": "node tools/release-sbom.mjs"
   },
   "devDependencies": {
     "@types/node": "24.10.1",
