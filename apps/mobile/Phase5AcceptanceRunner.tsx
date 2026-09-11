@@ -101,7 +101,6 @@ export function Phase5AcceptanceRunner({ enabled }: { enabled: boolean }) {
       <Text accessibilityLiveRegion="polite">{message}</Text>
       <ProductButton
         busy={working}
-        busy={working}
         label="Begin or resume Phase 5 guide"
         hint="Runs safe native preflight and restores observations for this exact build"
         onPress={() => run(() => begin())}
