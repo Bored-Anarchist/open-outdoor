@@ -53,3 +53,5 @@ pnpm phase5:audit BUNDLE RELEASE_POLICY.json AUDIT_POLICY.json audit.json app.ip
 The CLI first verifies WP-504 signatures and all inventory bytes, requires the public channel and the exact installed artifact, then evaluates all criteria, reviews, reproduction and physical evidence. Missing/invalid/tampered inputs exit 1. Only complete validated evidence exits zero. Reports contain controlled blocker codes rather than untrusted input/log contents. They are derived outputs outside the signed input bundle to avoid circular signatures; archive the report with its candidate and policy hashes through the release review process. Never rewrite evidence in an already sealed bundle.
 
 No release, tag, merge, private key or production approval is created by this command.
+
+For the coordinated Windows command and persistent iOS guide, use [guided production acceptance](GUIDED_PRODUCTION_ACCEPTANCE.md). It collects observations and prepares this audit; it does not waive the signed evidence, numeric measurement or independent review requirements.

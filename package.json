@@ -46,7 +46,8 @@
     "test:release": "node --test tools/release-artifacts.test.mjs tools/release-audit.test.mjs",
     "release:artifacts": "node tools/release-artifacts.mjs",
     "release:sbom": "node tools/release-sbom.mjs",
-    "phase5:audit": "node tools/release-audit.mjs"
+    "phase5:audit": "node tools/release-audit.mjs",
+    "phase5:acceptance": "node tools/phase5-guided.mjs"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

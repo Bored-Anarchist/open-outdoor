@@ -44,6 +44,7 @@ import {
 } from './nativeSpikes';
 import { createMobileApplication, type MobileApplication } from './application';
 import { Phase1AcceptanceRunner } from './Phase1AcceptanceRunner';
+import { Phase5AcceptanceRunner } from './Phase5AcceptanceRunner';
 import { Phase3AcceptanceRunner } from './Phase3AcceptanceRunner';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
@@ -613,6 +614,7 @@ function AppContent({
                 Diagnostic JSON contains timings, memory sizes, and file policy only—never
                 coordinates.
               </Text>
+              <Phase5AcceptanceRunner enabled={application !== null} />
               <Phase3AcceptanceRunner enabled={application !== null} />
               <Phase1AcceptanceRunner
                 enabled={application !== null}

@@ -16,8 +16,12 @@ private struct OpenOutdoorPhase3Environment: Codable {
 
 internal final class OpenOutdoorPhase3AcceptanceStore {
   private let stateURL: URL
+  private let namespace: String
+  private let reportProfile: String
 
-  init() throws {
+  init(namespace: String = "Phase3Acceptance", reportProfile: String = "iphone14-ios26.6-phase3-v1") throws {
+    self.namespace = namespace
+    self.reportProfile = reportProfile
     let applicationSupport = try FileManager.default.url(
       for: .applicationSupportDirectory,
       in: .userDomainMask,
@@ -25,7 +29,7 @@ internal final class OpenOutdoorPhase3AcceptanceStore {
       create: true
     )
     let directory = applicationSupport.appendingPathComponent(
-      "Diagnostics/Phase3Acceptance",
+      "Diagnostics/\(namespace)",
       isDirectory: true
     )
     try OpenOutdoorFilePolicy.prepareDirectory(directory, protection: .complete)
@@ -162,7 +166,8 @@ internal final class OpenOutdoorPhase3AcceptanceStore {
       let bytes = reportJSON.data(using: .utf8),
       let root = try JSONSerialization.jsonObject(with: bytes) as? [String: Any],
       root["schemaVersion"] as? Int == 1,
-      root["profileId"] as? String == "iphone14-ios26.6-phase3-v1"
+      root["profileId"] as? String == reportProfile,
+      bytes.count <= 1_000_000
     else {
       throw NSError(
         domain: "OpenOutdoorPhase3Acceptance",
@@ -171,11 +176,12 @@ internal final class OpenOutdoorPhase3AcceptanceStore {
       )
     }
     let exportDirectory = FileManager.default.temporaryDirectory.appendingPathComponent(
-      "Phase3AcceptanceExport",
+      "\(namespace)Export",
       isDirectory: true
     )
     try OpenOutdoorFilePolicy.prepareDirectory(exportDirectory, protection: .complete)
-    let reportURL = exportDirectory.appendingPathComponent("phase3-physical-report.json")
+    let reportName = namespace == "Phase3Acceptance" ? "phase3-physical-report.json" : "phase5-guided-observations.json"
+    let reportURL = exportDirectory.appendingPathComponent(reportName)
     try bytes.write(to: reportURL, options: [.atomic, .completeFileProtection])
     try OpenOutdoorFilePolicy.apply(reportURL, protection: .complete)
 

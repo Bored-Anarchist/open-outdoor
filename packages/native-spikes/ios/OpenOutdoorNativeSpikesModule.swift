@@ -8,6 +8,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
   private var phase1AcceptanceInstance: OpenOutdoorPhase1AcceptanceCoordinator?
+  private var phase5AcceptanceInstance: OpenOutdoorPhase3AcceptanceStore?
   private var phase3AcceptanceInstance: OpenOutdoorPhase3AcceptanceStore?
 
   private func phase0Diagnostics() throws -> OpenOutdoorPhase0Diagnostics {
@@ -32,6 +33,13 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     let coordinator = try OpenOutdoorPhase1AcceptanceCoordinator(tracker: tracker)
     phase1AcceptanceInstance = coordinator
     return coordinator
+  }
+
+  private func phase5Acceptance() throws -> OpenOutdoorPhase3AcceptanceStore {
+    if let phase5AcceptanceInstance { return phase5AcceptanceInstance }
+    let store = try OpenOutdoorPhase3AcceptanceStore(namespace: "Phase5Acceptance", reportProfile: "iphone14-ios26.6-production-guided-v1")
+    phase5AcceptanceInstance = store
+    return store
   }
 
   private func phase3Acceptance() throws -> OpenOutdoorPhase3AcceptanceStore {
@@ -254,6 +262,18 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
     AsyncFunction("phase3AcceptanceEnvironment") { () -> String in
       try self.phase3Acceptance().environmentJSON()
+    }.runOnQueue(.main)
+
+    AsyncFunction("loadPhase5AcceptanceState") { () -> String? in
+      try self.phase5Acceptance().loadState()
+    }.runOnQueue(.main)
+
+    AsyncFunction("savePhase5AcceptanceState") { (stateJSON: String) -> String in
+      try self.phase5Acceptance().saveState(stateJSON)
+    }.runOnQueue(.main)
+
+    AsyncFunction("sharePhase5AcceptanceReport") { (reportJSON: String) -> String in
+      try self.phase5Acceptance().shareReport(reportJSON)
     }.runOnQueue(.main)
 
     AsyncFunction("loadPhase3AcceptanceState") { () -> String? in

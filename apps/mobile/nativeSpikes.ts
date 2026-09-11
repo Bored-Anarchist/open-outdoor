@@ -207,6 +207,9 @@ interface OpenOutdoorNativeSpikesModule {
   readonly resetPhase1Acceptance: () => Promise<string>;
   readonly sharePhase1AcceptanceReport: () => Promise<string>;
   readonly phase3AcceptanceEnvironment: () => Promise<string>;
+  readonly loadPhase5AcceptanceState: () => Promise<string | null>;
+  readonly savePhase5AcceptanceState: (stateJson: string) => Promise<string>;
+  readonly sharePhase5AcceptanceReport: (reportJson: string) => Promise<string>;
   readonly loadPhase3AcceptanceState: () => Promise<string | null>;
   readonly savePhase3AcceptanceState: (stateJson: string) => Promise<string>;
   readonly resetPhase3AcceptanceState: () => Promise<void>;
@@ -327,6 +330,12 @@ export const nativeSpikes = {
     requiredModule().sharePhase1AcceptanceReport(),
   phase3AcceptanceEnvironment: async (): Promise<Phase3AcceptanceEnvironment> =>
     parseJson<Phase3AcceptanceEnvironment>(await requiredModule().phase3AcceptanceEnvironment()),
+  loadPhase5AcceptanceState: (): Promise<string | null> =>
+    requiredModule().loadPhase5AcceptanceState(),
+  savePhase5AcceptanceState: (stateJson: string): Promise<string> =>
+    requiredModule().savePhase5AcceptanceState(stateJson),
+  sharePhase5AcceptanceReport: (reportJson: string): Promise<string> =>
+    requiredModule().sharePhase5AcceptanceReport(reportJson),
   loadPhase3AcceptanceState: (): Promise<string | null> =>
     requiredModule().loadPhase3AcceptanceState(),
   savePhase3AcceptanceState: (stateJson: string): Promise<string> =>
