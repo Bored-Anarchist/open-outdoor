@@ -85,3 +85,7 @@ R-003: foreground-only serialized UI refresh and empty-write elimination remove 
 ## WP-504/WP-505 residual risks (2026-09-10)
 
 External trust-policy compromise or an authorized signer attesting false inputs cannot be detected from signatures alone. Protected-commit review, complete native/Python/tool inventories, independent reproducibility and WP-506 rights/privacy/device evidence remain mandatory. The sole owner is a capacity and independent-review bottleneck; governance records it explicitly and makes LTS conditional on staffing. No production key, release or expanded maintainer roster was created. See [release security](RELEASE_SECURITY.md).
+
+## WP-506 residual gates (2026-09-10)
+
+All existing physical, privacy/rights, native reproducibility and single-maintainer independence risks remain open. ADR-050 moves final execution after WP-506 implementation without accepting them. Signed evidence and role allowlists prevent accidental substitutions but cannot establish truth of human assertions or host isolation; independent source/host review remains necessary. Windows shared clean-checkout evidence is supplemental. See [production release audit](PRODUCTION_RELEASE_AUDIT.md).

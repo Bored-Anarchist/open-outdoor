@@ -43,9 +43,10 @@
     "test:design:browser": "node tools/design-browser-qa.mjs",
     "phase5:quality": "node tools/production-quality.mjs",
     "profile:desktop": "node tools/production-benchmark.mjs",
-    "test:release": "node --test tools/release-artifacts.test.mjs",
+    "test:release": "node --test tools/release-artifacts.test.mjs tools/release-audit.test.mjs",
     "release:artifacts": "node tools/release-artifacts.mjs",
-    "release:sbom": "node tools/release-sbom.mjs"
+    "release:sbom": "node tools/release-sbom.mjs",
+    "phase5:audit": "node tools/release-audit.mjs"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

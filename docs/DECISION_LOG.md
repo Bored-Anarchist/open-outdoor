@@ -110,3 +110,11 @@ This supersedes only the package-completion timing in ADR-048 and the WP-502/WP-
 The existing iPhone 14/iOS 26.6 reference and numeric budgets remain unchanged. Six independent three-hour field runs (three Balanced, three Endurance) remain required. The production-quality profile specifies repeat counts and evidence collection for the existing budgets, including a conservative map p95 frame-time check equivalent to a lower-tail 30 fps floor. Scroll profiling uses the existing 250 ms main-thread stall ceiling; no separate scroll throughput claim is introduced.
 
 The release configuration records this deferral, and `phase5:quality --verify-physical` fails closed until candidate-bound device evidence and reviewer attestation pass. No data migration or source-rights change. Related: WP-502, WP-503, WP-506; REQ-A11Y-001, REQ-NFR-001, REQ-ENE-001; R-003, R-013, R-017. Validation is documented in [production quality](PRODUCTION_QUALITY.md).
+
+## ADR-050 — Execute final physical tests after WP-506 implementation
+
+Status: accepted. Date: 2026-09-10. Authority: explicit owner instruction during WP-506 implementation: “Tests happen after WP-506”.
+
+This supersedes ADR-049 only in package-completion timing. WP-506 completes audit tooling, procedures and automated validation before physical test and independent review execution. Those outstanding activities occur after WP-506 and still block production release acceptance. No missing result is marked passed, no numeric budget changes, and no physical accessibility/performance/endurance or release-readiness claim is permitted from automated evidence.
+
+The audit report separates implementation completion from production acceptance. All 26 project criteria, independently reviewed privacy/rights evidence, clean-room reproduction, existing physical-device gates and the WP-502/WP-503 six-run endurance matrix remain required. Existing profile text describing Phase 5 end remains historical context; this decision controls execution timing. See [production release audit](PRODUCTION_RELEASE_AUDIT.md) and [WP-506 evidence](evidence/WP-506.md).
