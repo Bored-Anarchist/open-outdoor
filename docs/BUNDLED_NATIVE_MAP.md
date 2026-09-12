@@ -4,6 +4,10 @@ The iOS app opens Explore with MapLibre Native and a bundled geographic snapshot
 
 The snapshot contains 9,895 features: one New York boundary, 3,297 DEC land features, 1,308 DEC road features and 5,289 DEC hiking-trail features. Its approximately 10 MB GeoJSON is bundled in the JavaScript application, so first launch does not download maps. No API key, tile server, external fonts or location permission is needed to browse. Geometry is simplified to approximately three metres and is display-only.
 
+The public map adapter is constructed synchronously and renders independently of the private
+recorder store and tracking module. A recorder initialization or native-tracking failure disables
+recording and reports its own diagnostic, but must not leave Explore at “Loading local map…”.
+
 This is partial basemap coverage. It does not include a full street network, terrain, comprehensive trail coverage, surveyed property lines, verified access or camping authorization. The statewide MBTiles compiler integration from WP-301 remains separate work. WP-304's full catalog facets and camping evidence are not substituted by this name-search interface.
 
 ## Reproduce and verify

@@ -142,7 +142,18 @@ export interface MobileApplication {
   readonly map: OutdoorMapAdapter;
 }
 
-export async function createMobileApplication(): Promise<MobileApplication> {
+/**
+ * The offline map is available without private storage or tracking capabilities.
+ * Keeping this construction synchronous prevents recorder startup failures from
+ * hiding the bundled public geography.
+ */
+export function createOutdoorMapAdapter(): OutdoorMapAdapter {
+  return new OutdoorMapAdapter(bundled as unknown as OutdoorCollection);
+}
+
+export async function createMobileApplication(
+  map: OutdoorMapAdapter = createOutdoorMapAdapter(),
+): Promise<MobileApplication> {
   const stored = await nativeSpikes.loadPrivateSnapshot();
   const snapshot =
     stored === null
@@ -164,6 +175,5 @@ export async function createMobileApplication(): Promise<MobileApplication> {
     },
   };
   const recorder = new RecorderCoordinator(new NativeTrackerAdapter(), repository, persistence);
-  const map = new OutdoorMapAdapter(bundled as unknown as OutdoorCollection);
   return { repository, recorder, library: new ActivityLibrary(repository), map };
 }

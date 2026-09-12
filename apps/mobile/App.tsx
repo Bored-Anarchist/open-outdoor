@@ -33,7 +33,11 @@ import {
   type NativeTrackingInspection,
   type NativeTrackingMode,
 } from './nativeSpikes';
-import { createMobileApplication, type MobileApplication } from './application';
+import {
+  createMobileApplication,
+  createOutdoorMapAdapter,
+  type MobileApplication,
+} from './application';
 import { Phase1AcceptanceRunner } from './Phase1AcceptanceRunner';
 import { OutdoorMap } from './OutdoorMap';
 import { Phase5AcceptanceRunner } from './Phase5AcceptanceRunner';
@@ -79,6 +83,7 @@ function AppContent({
 }) {
   const palette = usePalette();
   const styles = useMemo(() => createStyles(palette), [palette]);
+  const map = useMemo(createOutdoorMapAdapter, []);
   const lastRenderedCheckpoint = useRef('');
   const [legendOpen, setLegendOpen] = useState(false);
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
@@ -108,7 +113,7 @@ function AppContent({
 
   useEffect(() => {
     if (!nativeSpikes.available) return;
-    void createMobileApplication()
+    void createMobileApplication(map)
       .then(async (nextApplication) => {
         setApplication(nextApplication);
         setSavedActivities(
@@ -125,7 +130,7 @@ function AppContent({
         }
       })
       .catch((error: unknown) => setStatus('Private store startup failed: ' + errorMessage(error)));
-  }, []);
+  }, [map]);
   useEffect(() => {
     if (application === null || recorderState !== 'recording') return;
     let cancelled = false;
@@ -411,7 +416,7 @@ function AppContent({
       {section === 'explore' || section === 'search' ? (
         <>
           <Text>Display only: there are no turn instructions, rerouting, or off-route alerts.</Text>
-          {application ? <OutdoorMap adapter={application.map} /> : <Text>Loading local map…</Text>}
+          <OutdoorMap adapter={map} />
           <AccessibleButton
             label="Land and camping legend"
             hint="Expand or collapse status explanations"

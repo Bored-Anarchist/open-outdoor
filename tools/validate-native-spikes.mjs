@@ -41,6 +41,7 @@ const phase3Acceptance = await text(
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
+const mobileApplication = await text('apps/mobile/application.ts');
 const phase1Runner = await text('apps/mobile/Phase1AcceptanceRunner.tsx');
 const phase3Runner = await text('apps/mobile/Phase3AcceptanceRunner.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
@@ -233,6 +234,20 @@ requireText(mobileBinding, 'module !== null', 'startup-safe mobile native bindin
 requireText(mobileBinding, 'requiredModule()', 'startup-safe mobile native binding');
 requireText(mobileApp, 'Native capability unavailable', 'mobile startup diagnostic UI');
 requireText(mobileApp, 'disabled={!nativeSpikes.available ||', 'mobile startup diagnostic UI');
+for (const token of [
+  'export function createOutdoorMapAdapter()',
+  'map: OutdoorMapAdapter = createOutdoorMapAdapter()',
+]) {
+  requireText(mobileApplication, token, 'recorder-independent offline map startup');
+}
+for (const token of [
+  'const map = useMemo(createOutdoorMapAdapter, []);',
+  'createMobileApplication(map)',
+  '<OutdoorMap adapter={map} />',
+]) {
+  requireText(mobileApp, token, 'recorder-independent offline map startup');
+}
+rejectText(mobileApp, 'application ? <OutdoorMap', 'recorder-independent offline map startup');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
