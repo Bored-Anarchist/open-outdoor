@@ -1,6 +1,7 @@
 import licenses from './map-licenses.json';
+import offlineMapLicenses from './offline-map-licenses.json';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { TextInput, View } from 'react-native';
+import { Alert, TextInput, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import {
   Map as NativeMap,
@@ -13,6 +14,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 import {
   createOutdoorMapStyle,
+  createOfflineVectorBasemapStyle,
   searchOutdoorFeatureIndex,
   segmentedTrack,
   type OutdoorBaseMapStyle,
@@ -20,28 +22,48 @@ import {
   type OutdoorFeatureSummary,
   type OutdoorMapAdapter,
 } from '@open-outdoor/map';
+import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 import { ProductText as Text } from './accessibility';
 import { ProductButton, ProductCard, usePalette } from './ProductComponents';
-import basemap from '../../packages/map/src/assets/openfreemap-liberty.json';
-import basemapManifest from '../../packages/map/src/assets/openfreemap-liberty.manifest.json';
+import { useOfflineBasemap } from './useOfflineBasemap';
+import offlineOverviewAsset from '../../packages/map/src/assets/new-york-overview-z9.pmtiles';
+import offlineBasemapManifest from '../../packages/map/src/assets/new-york-basemap.manifest.json';
+import offlineFontAsset from '../../packages/map/src/assets/NotoSans-Variable.ttf';
 import outdoorDataAsset from '../../packages/map/src/assets/new-york-outdoors.geojson';
 import bundledIndex from '../../packages/map/src/assets/new-york-outdoors.index.json';
 import manifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
 const featureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
-const connectedBasemap = basemap as unknown as OutdoorBaseMapStyle;
+const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light'), {
+  lang: 'en',
+}) as unknown as OutdoorBaseMapStyle['layers'];
 export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
   const camera = useRef<CameraRef>(null);
   const mapView = useRef<MapRef>(null);
   const palette = usePalette();
-  const [assets, assetError] = useAssets(outdoorDataAsset);
+  const [assets, assetError] = useAssets([
+    outdoorDataAsset,
+    offlineOverviewAsset,
+    offlineFontAsset,
+  ]);
   const outdoorDataUri = assets?.[0]?.localUri ?? assets?.[0]?.uri;
+  const offlineOverviewUri = assets?.[1]?.localUri ?? assets?.[1]?.uri;
+  const offlineFontUri = assets?.[2]?.localUri ?? assets?.[2]?.uri;
+  const basemap = useOfflineBasemap(offlineOverviewUri);
   const mapStyle = useMemo(
     () =>
-      outdoorDataUri
-        ? (createOutdoorMapStyle(outdoorDataUri, connectedBasemap) as unknown as StyleSpecification)
+      outdoorDataUri && basemap.source && offlineFontUri
+        ? (createOutdoorMapStyle(
+            outdoorDataUri,
+            createOfflineVectorBasemapStyle(
+              basemap.source.uri,
+              offlineFontUri,
+              offlineCartography,
+              basemap.source.manifest.maximumZoom,
+            ),
+          ) as unknown as StyleSpecification)
         : null,
-    [outdoorDataUri],
+    [basemap.source, offlineFontUri, outdoorDataUri],
   );
   const [query, setQuery] = useState('');
   const [showLicenses, setShowLicenses] = useState(false);
@@ -77,6 +99,10 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   useEffect(() => {
     camera.current?.jumpTo({ center: [...state.camera.center], zoom: state.camera.zoom });
   }, [state.camera]);
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+  }, [basemap.source?.uri]);
   function select(feature: OutdoorFeatureSummary) {
     setSelected(feature);
     const [west, south, east, north] = feature.bounds;
@@ -98,13 +124,17 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         New York outdoor map
       </Text>
       <Text>
-        Stored overlay · {manifest.featureCount.toLocaleString()} DEC geographic features · acquired{' '}
-        {manifest.acquiredAt.slice(0, 10)}
+        Stored map · {manifest.featureCount.toLocaleString()} DEC geographic features ·{' '}
+        {basemap.source?.kind === 'installed' ? 'detailed basemap' : 'overview basemap'} ·{' '}
+        {basemap.source?.kind === 'installed'
+          ? basemap.detailedSizeMiB
+          : offlineBasemapManifest.archive.megabytes}{' '}
+        MB
       </Text>
       <Text>
-        Roads, towns, water, land cover and labels appear from OpenStreetMap when connected. DEC
-        lands, roads, hiking trails and recreation points remain stored on this phone. Mapped land
-        or a campsite marker is not current permission to camp or enter.
+        Roads, towns, water, land cover, labels, DEC lands, hiking trails and recreation points are
+        stored on this phone and work in airplane mode. Mapped land or a campsite marker is not
+        current permission to camp or enter.
       </Text>
       <TextInput
         accessibilityLabel="Search New York lands, trails and campsites"
@@ -140,6 +170,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
       >
         {mapStyle ? (
           <NativeMap
+            key={basemap.source?.uri}
             ref={mapView}
             style={{ flex: 1 }}
             mapStyle={mapStyle}
@@ -222,10 +253,51 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         {failed || assetError
           ? 'Map could not render. Search and geographic details remain available.'
           : loaded
-            ? 'Full map ready. Basemap uses a connection; DEC overlays are stored. Pinch to zoom; drag to pan.'
-            : 'Loading the full basemap and stored DEC overlays…'}
+            ? basemap.source?.kind === 'installed'
+              ? 'Detailed offline map ready. Pinch to zoom; drag to pan.'
+              : 'Offline overview ready. Pinch to zoom; drag to pan.'
+            : basemap.checking
+              ? 'Verifying the installed basemap while the overview remains available…'
+              : 'Loading the stored basemap and DEC overlays…'}
         {outside ? ' Outside bundled New York coverage.' : ''}
       </Text>
+      {basemap.error && <Text accessibilityLiveRegion="polite">{basemap.error}</Text>}
+      {basemap.source?.kind !== 'installed' && (
+        <>
+          <Text>
+            The bundled overview stays compact. For road and terrain detail when zoomed in, copy the
+            approved {basemap.detailedSizeMiB} MB New York .pmtiles pack to Files, then import it
+            here. The app verifies and stores it locally; it never downloads or streams map data.
+          </Text>
+          <ProductButton
+            label={basemap.importing ? 'Importing detailed map…' : 'Import detailed New York map'}
+            hint="Choose the approved offline New York PMTiles file from Files"
+            disabled={!basemap.importAvailable || basemap.importing}
+            onPress={() => void basemap.importDetailed()}
+          />
+        </>
+      )}
+      {basemap.source?.kind === 'installed' && (
+        <ProductButton
+          label={basemap.removing ? 'Removing detailed map…' : 'Remove detailed map'}
+          hint="Free the detailed basemap storage and return to the bundled overview"
+          disabled={basemap.removing}
+          onPress={() =>
+            Alert.alert(
+              'Remove detailed map?',
+              `This removes the app's ${basemap.detailedSizeMiB} MB copy. The bundled offline overview remains available.`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Remove',
+                  style: 'destructive',
+                  onPress: () => void basemap.removeDetailed(),
+                },
+              ],
+            )
+          }
+        />
+      )}
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <ProductButton
           label="Zoom in"
@@ -281,17 +353,27 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         </ProductCard>
       )}
       <Text>
-        Basemap: {basemapManifest.attribution}. Overlay: NYS ITS Geospatial Services and New York
-        State Department of Environmental Conservation. Geometry simplified for display. MapLibre
-        Native renderer. Public-use GIS data is provided without warranty; boundaries are not legal
-        surveys.
+        Basemap: {offlineBasemapManifest.attribution}. Overlay: NYS ITS Geospatial Services and New
+        York State Department of Environmental Conservation. Geometry simplified for display.
+        MapLibre Native renderer. Public-use GIS data is provided without warranty; boundaries are
+        not legal surveys.
       </Text>
       <ProductButton
         label="Map renderer licenses"
         hint="Show the complete license notices"
         onPress={() => setShowLicenses(!showLicenses)}
       />
-      {showLicenses && <Text>{licenses.reactNative + '\n\n' + licenses.native}</Text>}
+      {showLicenses && (
+        <Text>
+          {licenses.reactNative +
+            '\n\n' +
+            licenses.native +
+            '\n\n' +
+            offlineMapLicenses.basemap +
+            '\n\n' +
+            offlineMapLicenses.font}
+        </Text>
+      )}
     </View>
   );
 }

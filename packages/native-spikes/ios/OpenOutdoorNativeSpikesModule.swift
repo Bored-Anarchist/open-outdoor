@@ -4,6 +4,8 @@ import Foundation
 public final class OpenOutdoorNativeSpikesModule: Module {
   private lazy var tracker = OpenOutdoorTrackerSpike()
   private lazy var privateStore = try? OpenOutdoorStorageCoordinatorSpike()
+  private lazy var basemapStore = try? OpenOutdoorBasemapPackStore()
+  private let basemapQueue = DispatchQueue(label: "org.openoutdoor.basemap-pack")
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -167,6 +169,27 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       }
       return try store.trackingCheckpoint(sessionID: sessionID)
     }.runOnQueue(.main)
+
+    AsyncFunction("activeBasemapPack") { () -> String? in
+      guard let store = self.basemapStore else {
+        throw NSError(domain: "OpenOutdoorBasemap", code: 1)
+      }
+      return try store.activePackJSON()
+    }.runOnQueue(basemapQueue)
+
+    AsyncFunction("importBasemapPack") { (sourceURI: String, manifestJSON: String) -> String in
+      guard let store = self.basemapStore else {
+        throw NSError(domain: "OpenOutdoorBasemap", code: 1)
+      }
+      return try store.importPack(sourceURI: sourceURI, manifestJSON: manifestJSON)
+    }.runOnQueue(basemapQueue)
+
+    AsyncFunction("removeActiveBasemapPack") {
+      guard let store = self.basemapStore else {
+        throw NSError(domain: "OpenOutdoorBasemap", code: 1)
+      }
+      try store.removeActivePack()
+    }.runOnQueue(basemapQueue)
 
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
     AsyncFunction("seedPhase0FixtureA") { () -> String in

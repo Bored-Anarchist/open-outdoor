@@ -39,6 +39,30 @@ try {
     if ($appBundles.Count -ne 1) {
         throw "Expected one built app bundle, found $($appBundles.Count)."
     }
+    $offlineOverview = Resolve-Path '../../../packages/map/src/assets/new-york-overview-z9.pmtiles'
+    $offlineOverviewFile = Get-Item -LiteralPath $offlineOverview
+    $offlineOverviewHash = (Get-FileHash -LiteralPath $offlineOverview -Algorithm SHA256).Hash
+    $bundledArchives = @(
+        Get-ChildItem -Path $appBundles[0].FullName -File -Recurse |
+            Where-Object { $_.Length -eq $offlineOverviewFile.Length }
+    )
+    $matchingArchives = @(
+        $bundledArchives |
+            Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $offlineOverviewHash }
+    )
+    if ($matchingArchives.Count -ne 1) {
+        throw "Expected the bundled offline overview archive in the application bundle, found $($matchingArchives.Count)."
+    }
+    Write-Host "Verified offline overview '$($matchingArchives[0].FullName)' ($($matchingArchives[0].Length) bytes)."
+    $fullArchiveBytes = 134642224
+    $unexpectedFullArchives = @(
+        Get-ChildItem -Path $appBundles[0].FullName -File -Recurse |
+            Where-Object { $_.Length -eq $fullArchiveBytes }
+    )
+    if ($unexpectedFullArchives.Count -ne 0) {
+        throw "The optional 128.4 MiB New York detailed basemap must not be bundled in the application."
+    }
+    Write-Host 'Verified that the optional New York detailed basemap is absent from the application bundle.'
     $builtInfoPlist = Join-Path $appBundles[0].FullName 'Info.plist'
     $diagnosticsOptIn = & /usr/libexec/PlistBuddy -c 'Print :OpenOutdoorPhase0DiagnosticsEnabled' $builtInfoPlist
     if ($LASTEXITCODE -ne 0 -or $diagnosticsOptIn -ne 'true') {

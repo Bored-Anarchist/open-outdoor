@@ -1,5 +1,6 @@
 import type { Coordinate } from '@open-outdoor/shared';
 import type { MapAdapter, MapCamera, MapFeature, MapRoute } from './index';
+import { isLocalFileUri } from './offline-basemap-source';
 export interface OutdoorFeatureProperties {
   id: string;
   kind: 'boundary' | 'land' | 'road' | 'trail' | 'poi';
@@ -297,6 +298,52 @@ export interface OutdoorBaseMapStyle {
   readonly layers: readonly (Readonly<{ id: string; type: string }> &
     Readonly<Record<string, unknown>>)[];
   readonly [key: string]: unknown;
+}
+
+/**
+ * Builds a native-only basemap style whose archive and font are both local
+ * files. MapLibre Native 6.10+ reads PMTiles directly, and 6.18+ supports local
+ * TTF font faces, so the resulting style has no network resources at any zoom
+ * level.
+ */
+export function createOfflineVectorBasemapStyle(
+  archiveUri: string,
+  fontUri: string,
+  sourceLayers: OutdoorBaseMapStyle['layers'],
+  maximumZoom = 12,
+): OutdoorBaseMapStyle {
+  if (!isLocalFileUri(archiveUri) || !isLocalFileUri(fontUri)) {
+    throw new Error('offline basemap archive and font must be local file URLs');
+  }
+  if (!Number.isInteger(maximumZoom) || maximumZoom < 0 || maximumZoom > 22) {
+    throw new Error('offline basemap maximum zoom must be an integer from 0 through 22');
+  }
+  const layers = sourceLayers.flatMap((sourceLayer) => {
+    if (sourceLayer.type !== 'symbol') return [{ ...sourceLayer }];
+    const layout = { ...((sourceLayer.layout as Readonly<Record<string, unknown>>) ?? {}) };
+    for (const key of Object.keys(layout)) {
+      if (key.startsWith('icon-')) delete layout[key];
+    }
+    if (!Object.hasOwn(layout, 'text-field')) return [];
+    layout['text-font'] = ['Open Outdoor Noto Sans'];
+    return [{ ...sourceLayer, layout }];
+  });
+  return {
+    version: 8,
+    sources: {
+      'offline-basemap': {
+        type: 'vector',
+        url: `pmtiles://${archiveUri}`,
+        minzoom: 0,
+        maxzoom: maximumZoom,
+        attribution: 'Protomaps © OpenStreetMap contributors',
+      },
+    },
+    'font-faces': {
+      'Open Outdoor Noto Sans': fontUri,
+    },
+    layers,
+  };
 }
 
 export function createOutdoorMapStyle(

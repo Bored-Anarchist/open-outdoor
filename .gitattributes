@@ -3,6 +3,7 @@
 *.css text eol=lf
 *.html text eol=lf
 *.json text eol=lf
+*.geojson text eol=lf
 *.js text eol=lf
 *.mjs text eol=lf
 *.py text eol=lf
@@ -19,3 +20,4 @@ pnpm-lock.yaml text eol=lf
 *.jpg binary
 *.zip binary
 *.ipa binary
+*.pmtiles binary

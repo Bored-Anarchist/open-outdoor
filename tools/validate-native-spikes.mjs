@@ -20,6 +20,8 @@ const mobilePackage = JSON.parse(await text('apps/mobile/package.json'));
 const moduleConfig = JSON.parse(await text('packages/native-spikes/expo-module.config.json'));
 const podspec = await text('packages/native-spikes/OpenOutdoorNativeSpikes.podspec');
 const iosBuildScript = await text('scripts/Build-IosUnsigned.ps1');
+const iosBuildWorkflow = await text('.github/workflows/ios-feasibility.yml');
+const gitAttributes = await text('.gitattributes');
 const tracker = await text('packages/native-spikes/ios/OpenOutdoorTrackerSpike.swift');
 const trackingIndex = await text('packages/tracking/src/index.ts');
 const mapIndex = await text('packages/map/src/index.ts');
@@ -39,7 +41,10 @@ const phase3Acceptance = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase3AcceptanceStore.swift',
 );
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
+const basemapStore = await text('packages/native-spikes/ios/OpenOutdoorBasemapPackStore.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
+const basemapBinding = await text('apps/mobile/basemapPacks.ts');
+const basemapHook = await text('apps/mobile/useOfflineBasemap.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const mobileApplication = await text('apps/mobile/application.ts');
 const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
@@ -76,6 +81,16 @@ requireText(
   'Print :OpenOutdoorPhase0DiagnosticsEnabled',
   'iOS build diagnostics gate',
 );
+requireText(iosBuildScript, 'new-york-overview-z9.pmtiles', 'bundled offline overview build gate');
+requireText(
+  iosBuildScript,
+  'The optional 128.4 MiB New York detailed basemap must not be bundled',
+  'optional detailed basemap exclusion gate',
+);
+rejectText(iosBuildScript, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion gate');
+rejectText(iosBuildWorkflow, 'lfs: true', 'ordinary Git overview checkout');
+requireText(gitAttributes, '*.pmtiles binary', 'ordinary Git overview asset');
+rejectText(gitAttributes, 'filter=lfs', 'ordinary Git overview asset');
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
 requireText(podspec, "'CoreLocation', 'CoreMotion'", 'podspec');
 requireText(podspec, "'Network'", 'podspec');
@@ -250,8 +265,44 @@ for (const token of [
 }
 rejectText(mobileApp, 'application ? <OutdoorMap', 'recorder-independent offline map startup');
 requireText(mobileMap, 'mapStyle={mapStyle}', 'complete native map style');
-requireText(mobileMap, 'useAssets(outdoorDataAsset)', 'native-file outdoor overlay');
-requireText(mobileMap, 'openfreemap-liberty.json', 'complete connected basemap');
+for (const token of [
+  'outdoorDataAsset',
+  'new-york-overview-z9.pmtiles',
+  'offlineFontAsset',
+  'createOfflineVectorBasemapStyle(',
+]) {
+  requireText(mobileMap, token, 'complete offline native map');
+}
+rejectText(mobileMap, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion');
+rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
+for (const token of ['activeBasemapPack', 'importBasemapPack', 'removeActiveBasemapPack']) {
+  requireText(nativeModule, token, 'offline basemap native bridge');
+  requireText(basemapBinding, token, 'offline basemap TypeScript bridge');
+}
+for (const token of [
+  'source.isFileURL',
+  'SHA256()',
+  'read(upToCount: 1024 * 1024)',
+  'digest == manifest.sha256',
+  'Data("PMTiles".utf8)',
+  'options: .atomic',
+  'completeUntilFirstUserAuthentication',
+]) {
+  requireText(basemapStore, token, 'verified local basemap activation');
+}
+for (const token of [
+  'File.pickFileAsync',
+  'resolveOfflineBasemapSource',
+  'basemapPacks.import',
+  'basemapPacks.removeActive',
+]) {
+  requireText(basemapHook, token, 'offline basemap import and fallback');
+}
+for (const source of [basemapStore, basemapBinding, basemapHook]) {
+  rejectText(source, 'fetch(', 'offline-only basemap path');
+  rejectText(source, 'http://', 'offline-only basemap path');
+  rejectText(source, 'https://', 'offline-only basemap path');
+}
 requireText(
   mobileMap,
   'onDidFinishRenderingMapFully={() => setLoaded(true)}',

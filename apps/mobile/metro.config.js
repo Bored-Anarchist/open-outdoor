@@ -1,8 +1,10 @@
 const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
-if (!config.resolver.assetExts.includes('geojson')) {
-  config.resolver.assetExts.push('geojson');
+for (const extension of ['geojson', 'pmtiles']) {
+  if (!config.resolver.assetExts.includes(extension)) {
+    config.resolver.assetExts.push(extension);
+  }
 }
 
 module.exports = config;

@@ -12,6 +12,8 @@ apps/mobile/android
 pnpm-lock.yaml
 uv.lock
 *.md
+*.pmtiles
+*.ttf
 .github/ISSUE_TEMPLATE
 .github/rulesets
 

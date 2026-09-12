@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import {
   OutdoorMapAdapter,
+  createOfflineVectorBasemapStyle,
   createOutdoorMapStyle,
   featureBounds,
   geometryPositions,
@@ -24,6 +25,11 @@ const basemapBytes = readFileSync('packages/map/src/assets/openfreemap-liberty.j
 const basemap = JSON.parse(basemapBytes.toString()) as OutdoorBaseMapStyle;
 const basemapManifest = JSON.parse(
   readFileSync('packages/map/src/assets/openfreemap-liberty.manifest.json', 'utf8'),
+);
+const offlineBasemapBytes = readFileSync('packages/map/src/assets/new-york-overview-z9.pmtiles');
+const offlineFontBytes = readFileSync('packages/map/src/assets/NotoSans-Variable.ttf');
+const offlineBasemapManifest = JSON.parse(
+  readFileSync('packages/map/src/assets/new-york-basemap.manifest.json', 'utf8'),
 );
 describe('real offline New York map', () => {
   it('ships the complete checksum-pinned source inventories with rights/attribution', () => {
@@ -63,7 +69,7 @@ describe('real offline New York map', () => {
       expect(s).toBeGreaterThan(40);
       expect(n).toBeLessThan(46);
     }
-  });
+  }, 15_000);
   it('finds real named trails without synthetic preserve substitution', () => {
     expect(searchOutdoorFeatures(collection, 'Slide').length).toBeGreaterThan(0);
     expect(
@@ -121,6 +127,55 @@ describe('real offline New York map', () => {
         ),
       ).length,
     ).toBeGreaterThan(2500);
+  });
+  it('ships a checksum-pinned statewide overview and local font with no network resources', () => {
+    expect(offlineBasemapBytes.length).toBe(offlineBasemapManifest.archive.bytes);
+    expect(createHash('sha256').update(offlineBasemapBytes).digest('hex')).toBe(
+      offlineBasemapManifest.archive.sha256,
+    );
+    expect(createHash('sha256').update(offlineFontBytes).digest('hex')).toBe(
+      offlineBasemapManifest.font.sha256,
+    );
+    expect(offlineBasemapManifest.maximumZoom).toBe(9);
+    expect(offlineBasemapManifest.offline).toBe(true);
+    const localBasemap = createOfflineVectorBasemapStyle(
+      'file:///bundle/new-york-overview-z9.pmtiles',
+      'file:///bundle/NotoSans-Variable.ttf',
+      [
+        { id: 'background', type: 'background' },
+        {
+          id: 'place-label',
+          type: 'symbol',
+          source: 'offline-basemap',
+          layout: { 'text-field': ['get', 'name'], 'icon-image': 'marker' },
+        },
+        {
+          id: 'icon-only',
+          type: 'symbol',
+          source: 'offline-basemap',
+          layout: { 'icon-image': 'arrow' },
+        },
+      ],
+      offlineBasemapManifest.maximumZoom,
+    );
+    const serialized = JSON.stringify(localBasemap);
+    expect(serialized).not.toMatch(/https?:\/\//);
+    expect(localBasemap.sources['offline-basemap']?.url).toBe(
+      'pmtiles://file:///bundle/new-york-overview-z9.pmtiles',
+    );
+    expect(localBasemap.sources['offline-basemap']?.maxzoom).toBe(9);
+    expect(localBasemap['font-faces']).toEqual({
+      'Open Outdoor Noto Sans': 'file:///bundle/NotoSans-Variable.ttf',
+    });
+    expect(localBasemap.layers.map(({ id }) => id)).toEqual(['background', 'place-label']);
+    expect(localBasemap.layers[1]?.layout).not.toHaveProperty('icon-image');
+    expect(() =>
+      createOfflineVectorBasemapStyle(
+        'https://example.invalid/map.pmtiles',
+        'file:///font.ttf',
+        [],
+      ),
+    ).toThrow(/local file URLs/);
   });
   it('keeps camera and selection across remounts, without update loops', () => {
     const adapter = new OutdoorMapAdapter();

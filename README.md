@@ -2,7 +2,7 @@
 
 Open Outdoor is a planned open-source, offline-first iOS application for trail discovery, camping information, and GPS hike recording. The initial reference implementation targets New York, an iPhone 14, and a Windows-first contributor workflow. The browser is a QA harness; Android and turn-by-turn navigation are not in the initial scope.
 
-The repository contains an iOS candidate with recording, guided acceptance tooling and a [native geographic map](docs/BUNDLED_NATIVE_MAP.md). Explore combines a connected OpenStreetMap/OpenFreeMap vector basemap with bundled NYS DEC lands, roads and hiking trails. The complete offline MBTiles release artifact, physical acceptance and independent release review remain pending.
+The repository contains an iOS candidate with recording, guided acceptance tooling and a [native geographic map](docs/BUNDLED_NATIVE_MAP.md). Explore combines a bundled New York OpenStreetMap/Protomaps overview with bundled NYS DEC lands, roads, hiking trails and recreation points. The app never streams maps: optional detailed basemaps are imported from local files and every installation retains the bundled overview as an offline fallback. Physical acceptance and independent release review remain pending.
 
 ## Phase 0 developer bootstrap
 
