@@ -8,6 +8,7 @@ import {
   Camera,
   GeoJSONSource,
   Layer,
+  NativeUserLocation,
   type CameraRef,
   type MapRef,
   type StyleSpecification,
@@ -87,6 +88,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const [outside, setOutside] = useState(false);
+  const [followUser, setFollowUser] = useState(false);
   const [zoom, setZoom] = useState(state.camera.zoom);
   const results = useMemo(() => searchOutdoorFeatureIndex(featureIndex, query), [query]);
   const track = useMemo(
@@ -110,8 +112,10 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
     [last],
   );
   useEffect(() => {
-    camera.current?.jumpTo({ center: [...state.camera.center], zoom: state.camera.zoom });
-  }, [state.camera]);
+    if (!followUser) {
+      camera.current?.jumpTo({ center: [...state.camera.center], zoom: state.camera.zoom });
+    }
+  }, [followUser, state.camera]);
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
@@ -215,7 +219,12 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
             <Camera
               ref={camera}
               initialViewState={{ center: [...state.camera.center], zoom: state.camera.zoom }}
+              trackUserLocation={followUser ? 'default' : undefined}
+              onTrackUserLocationChange={(event) =>
+                setFollowUser(event.nativeEvent.trackUserLocation !== null)
+              }
             />
+            <NativeUserLocation mode="default" />
             <Layer
               id="selection-outline"
               type="line"
@@ -337,6 +346,20 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         }
       />
       <ProductButton
+        label={followUser ? 'Stop following my location' : 'Center on my location'}
+        hint={
+          followUser
+            ? 'Keep the live GPS dot visible without moving the map automatically'
+            : 'Center the map on the live GPS dot and follow your movement'
+        }
+        onPress={() => setFollowUser(!followUser)}
+      />
+      <Text accessibilityLiveRegion="polite">
+        {followUser
+          ? 'Following your live GPS position. Drag the map to stop following.'
+          : 'Your live position appears as a blue GPS dot when location access is allowed.'}
+      </Text>
+      <ProductButton
         label="Show last recorded position"
         hint="Uses only the most recent recording point; does not start location access"
         disabled={!last}
@@ -347,7 +370,8 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
       <Text>
         Map key: green areas — DEC lands; blue lines — hiking trails; orange dots — DEC campsites
         and lean-tos; gray dots — other DEC recreation points; brown lines — DEC roads; pink —
-        recorded route. Tap a feature or search its name for text details.
+        recorded route; blue GPS dot — current position. Tap a feature or search its name for text
+        details.
       </Text>
       {selected && (
         <ProductCard title={selected.properties.name}>

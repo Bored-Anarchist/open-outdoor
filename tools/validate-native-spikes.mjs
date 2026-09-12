@@ -291,6 +291,14 @@ for (const token of [
 ]) {
   requireText(mobileMap, token, 'complete offline native map');
 }
+for (const token of [
+  'NativeUserLocation',
+  'trackUserLocation={followUser',
+  'Center on my location',
+  'blue GPS dot',
+]) {
+  requireText(mobileMap, token, 'live offline GPS map position');
+}
 rejectText(mobileMap, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion');
 rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
 for (const token of ['activeBasemapPack', 'importBasemapPack', 'removeActiveBasemapPack']) {
@@ -486,6 +494,9 @@ for (const key of [
   if (typeof info[key] !== 'string' || info[key].length === 0) {
     throw new Error(`iOS Info.plist is missing ${key}`);
   }
+}
+if (!info.NSLocationWhenInUseUsageDescription.includes('GPS dot')) {
+  throw new Error('iOS location purpose must explain the live map GPS dot');
 }
 if (!info.UIBackgroundModes.includes('location')) {
   throw new Error('iOS background location mode is not declared');
