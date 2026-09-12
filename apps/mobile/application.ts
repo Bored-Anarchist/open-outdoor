@@ -3,8 +3,7 @@ import {
   RecorderCoordinator,
   type RecorderPersistence,
 } from '@open-outdoor/recorder';
-import bundled from '../../packages/map/src/assets/new-york-outdoors.json';
-import { type OutdoorCollection, OutdoorMapAdapter } from '@open-outdoor/map';
+import { OutdoorMapAdapter } from '@open-outdoor/map';
 import {
   InMemoryPrivateRepository,
   migratePrivateSnapshot,
@@ -148,7 +147,7 @@ export interface MobileApplication {
  * hiding the bundled public geography.
  */
 export function createOutdoorMapAdapter(): OutdoorMapAdapter {
-  return new OutdoorMapAdapter(bundled as unknown as OutdoorCollection);
+  return new OutdoorMapAdapter();
 }
 
 export async function createMobileApplication(

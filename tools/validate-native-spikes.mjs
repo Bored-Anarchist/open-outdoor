@@ -249,13 +249,16 @@ for (const token of [
   requireText(mobileApp, token, 'recorder-independent offline map startup');
 }
 rejectText(mobileApp, 'application ? <OutdoorMap', 'recorder-independent offline map startup');
-requireText(mobileMap, 'mapStyle={offlineStyle}', 'atomic offline map style');
+requireText(mobileMap, 'mapStyle={mapStyle}', 'complete native map style');
+requireText(mobileMap, 'useAssets(outdoorDataAsset)', 'native-file outdoor overlay');
+requireText(mobileMap, 'openfreemap-liberty.json', 'complete connected basemap');
 requireText(
   mobileMap,
   'onDidFinishRenderingMapFully={() => setLoaded(true)}',
   'atomic offline map readiness',
 );
 rejectText(mobileMap, '<GeoJSONSource\n            id="outdoors"', 'atomic offline map style');
+rejectText(mobileMap, "new-york-outdoors.json'", 'native-file outdoor overlay');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');

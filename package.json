@@ -49,6 +49,7 @@
     "phase5:audit": "node tools/release-audit.mjs",
     "phase5:acceptance": "node tools/phase5-guided.mjs",
     "map:acquire": "node --use-system-ca tools/acquire-outdoor-map.mjs",
+    "map:acquire-style": "node --use-system-ca tools/acquire-basemap-style.mjs",
     "test:map:browser": "node tools/outdoor-map-qa.mjs"
   },
   "devDependencies": {

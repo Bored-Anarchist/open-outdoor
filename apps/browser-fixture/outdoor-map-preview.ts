@@ -1,26 +1,24 @@
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import dataUrl from '../../packages/map/src/assets/new-york-outdoors.json?url';
-import { outdoorLayerStyles } from '@open-outdoor/map';
+import basemap from '../../packages/map/src/assets/openfreemap-liberty.json';
+import dataUrl from '../../packages/map/src/assets/new-york-outdoors.geojson?url';
+import { createOutdoorMapStyle, type OutdoorBaseMapStyle } from '@open-outdoor/map';
 const style = document.createElement('style');
 style.textContent =
   'body{margin:0;background:#edf1eb;font-family:system-ui;color:#203b31}main{max-width:1100px;margin:24px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 6px 28px #0002}header,footer{padding:20px 26px}header strong{letter-spacing:.1em;text-transform:uppercase;font-size:12px}h1{margin:8px 0;font-size:30px}p{margin:0}#map{height:580px}footer{font-size:13px;line-height:1.7}';
 document.head.appendChild(style);
 maplibregl.setWorkerUrl(workerUrl);
+const connected = new URLSearchParams(location.search).get('offline') !== '1';
 const map = new maplibregl.Map({
   container: 'map',
   center: [-74.25, 42.08],
   zoom: 10,
   attributionControl: false,
-  style: {
-    version: 8,
-    sources: { outdoors: { type: 'geojson', data: dataUrl } },
-    layers: [
-      { id: 'background', type: 'background', paint: { 'background-color': '#dfe8e8' } },
-      ...outdoorLayerStyles.map((layer) => ({ ...layer, source: 'outdoors' })),
-    ] as maplibregl.StyleSpecification['layers'],
-  },
+  style: createOutdoorMapStyle(
+    dataUrl,
+    connected ? (basemap as unknown as OutdoorBaseMapStyle) : undefined,
+  ) as unknown as maplibregl.StyleSpecification,
 });
 map.addControl(new maplibregl.NavigationControl());
 map.on('load', () => {
@@ -38,7 +36,15 @@ map.on('click', (event) => {
 });
 map.on('idle', () => {
   document.body.dataset.visibleFeatures = String(
-    map.queryRenderedFeatures({ layers: ['dec-land', 'dec-road', 'dec-trail'] }).length,
+    map.queryRenderedFeatures({
+      layers: ['dec-land', 'dec-road', 'dec-trail', 'dec-poi', 'dec-camping'],
+    }).length,
+  );
+  document.body.dataset.visibleCamping = String(
+    map.queryRenderedFeatures({ layers: ['dec-camping'] }).length,
+  );
+  document.body.dataset.basemapFeatures = String(
+    map.queryRenderedFeatures().filter((feature) => feature.source === 'openmaptiles').length,
   );
 });
 map.on('error', (event) => {

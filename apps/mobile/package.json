@@ -13,6 +13,7 @@
     "@open-outdoor/storage": "workspace:*",
     "@open-outdoor/tracking": "workspace:*",
     "expo": "56.0.20",
+    "expo-asset": "56.0.23",
     "expo-status-bar": "56.0.4",
     "react": "19.2.3",
     "react-native": "0.85.3"

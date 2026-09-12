@@ -15,4 +15,8 @@ uv.lock
 .github/ISSUE_TEMPLATE
 .github/rulesets
 
-packages/map/src/assets/new-york-outdoors.json
+packages/map/src/assets/new-york-outdoors.geojson
+packages/map/src/assets/new-york-outdoors.index.json
+packages/map/src/assets/new-york-outdoors.manifest.json
+packages/map/src/assets/openfreemap-liberty.json
+packages/map/src/assets/openfreemap-liberty.manifest.json

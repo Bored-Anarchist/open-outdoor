@@ -1,14 +1,16 @@
 {
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
-  "acquiredAt": "2026-09-12T00:37:50.920Z",
-  "sha256": "8af2bdb2178707b13e6687900cb9873b918d8a8baa7d91995f34229c32eb1112",
-  "bytes": 10234451,
-  "featureCount": 9895,
+  "acquiredAt": "2026-09-12T02:15:47.778Z",
+  "sha256": "f8b923c0a804d3c6bbd83fb63c733281b2cd43fbd17dac006e333053ecc422e9",
+  "bytes": 11919050,
+  "indexSha256": "0acbd9a32e6e2d5bd67616d91c134ff73349081cc2460e89b999680f92de75f1",
+  "indexBytes": 4278872,
+  "featureCount": 14455,
   "coordinateReferenceSystem": "EPSG:4326",
   "simplificationDegrees": 0.00003,
   "geometryPrecision": 5,
-  "coverage": "New York State boundary and published DEC lands, roads and hiking trails. Not a complete street basemap, land-ownership survey or camping authorization.",
+  "coverage": "New York State boundary and published DEC lands, roads, hiking trails and recreation points. Not a land-ownership survey, current-status feed or camping authorization.",
   "rights": {
     "license": "NYS public GIS data terms",
     "offlineStorage": true,
@@ -16,11 +18,13 @@
     "derivedData": true,
     "attribution": [
       "NYS ITS Geospatial Services",
-      "New York State Department of Environmental Conservation"
+      "New York State Department of Environmental Conservation",
+      "OPEN-NY"
     ],
     "terms": [
       "https://gis.ny.gov/disclaimer",
-      "https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS"
+      "https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS",
+      "https://data.ny.gov/about"
     ],
     "reviewedAt": "2026-09-11"
   },
@@ -29,7 +33,11 @@
       "id": "nys-boundary",
       "kind": "boundary",
       "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0",
-      "fields": ["OBJECTID", "NAME", "DATEMOD"],
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "DATEMOD"
+      ],
       "attribution": "NYS ITS Geospatial Services",
       "featureCount": 1,
       "inventorySha256": "1cdb82d29226b6f6577db63ec7ed10c00188e36164f977c46a4f35354a3ca105",
@@ -45,7 +53,15 @@
       "id": "nys-dec-lands",
       "kind": "land",
       "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2",
-      "fields": ["OBJECTID", "UNIT", "FACILITY", "CATEGORY", "CLASS", "PUBLICUSE", "UPDATED"],
+      "fields": [
+        "OBJECTID",
+        "UNIT",
+        "FACILITY",
+        "CATEGORY",
+        "CLASS",
+        "PUBLICUSE",
+        "UPDATED"
+      ],
       "attribution": "New York State Department of Environmental Conservation",
       "featureCount": 3297,
       "inventorySha256": "43f41a42ca47b141be59d934f9a96fa6e82d9e226d15836cf679a8ef90b91b12",
@@ -386,7 +402,14 @@
       "id": "nys-dec-roads",
       "kind": "road",
       "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/0",
-      "fields": ["OBJECTID", "NAME", "UNIT", "FACILITY", "PUBLICUSE", "UPDATED"],
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "UNIT",
+        "FACILITY",
+        "PUBLICUSE",
+        "UPDATED"
+      ],
       "attribution": "New York State Department of Environmental Conservation",
       "featureCount": 1308,
       "inventorySha256": "445dbb685b6f440b24b2048601c3f7d03bce6146ed21973e9def8d5bbbb325a8",
@@ -532,7 +555,14 @@
       "id": "nys-dec-trails",
       "kind": "trail",
       "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/2",
-      "fields": ["OBJECTID", "NAME", "UNIT", "FACILITY", "PUBLICUSE", "UPDATED"],
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "UNIT",
+        "FACILITY",
+        "PUBLICUSE",
+        "UPDATED"
+      ],
       "attribution": "New York State Department of Environmental Conservation",
       "featureCount": 5289,
       "inventorySha256": "5ca58ae6717a1de713e8558be46178052b121b8dc7cecc09631dfc0750b633b1",
@@ -1068,6 +1098,33 @@
           "count": 39
         }
       ]
+    },
+    {
+      "id": "nys-dec-poi",
+      "kind": "poi",
+      "url": "https://data.ny.gov/resource/yvkb-z58x.json",
+      "fields": [
+        ":id",
+        "facility",
+        "name",
+        "asset",
+        "latitude",
+        "longitude"
+      ],
+      "attribution": "New York State Department of Environmental Conservation / OPEN-NY",
+      "featureCount": 4560,
+      "inventorySha256": "e8dccb6649b35718fa756d27dfd22f7399ef77a0a70e1f2114f8e3dafc150f94",
+      "pages": [
+        {
+          "url": "https://data.ny.gov/resource/yvkb-z58x.json?%24select=%3Aid%2Cfacility%2Cname%2Casset%2Clatitude%2Clongitude&%24limit=50000&%24order=%3Aid",
+          "sha256": "f24d8a0106c01d548b261caeebf1d39324bb5c2d65dc65f59eae39ffb4740619",
+          "count": 4560
+        }
+      ],
+      "metadata": {
+        "url": "https://data.ny.gov/api/views/yvkb-z58x",
+        "sha256": "cf94362a6f000ec4e0ff1c4fcbeb5f77478f423cb2238aafac28bfc76b12c32f"
+      }
     }
   ]
 }

@@ -1,27 +1,38 @@
 import type { Coordinate } from '@open-outdoor/shared';
 import type { MapAdapter, MapCamera, MapFeature, MapRoute } from './index';
+export interface OutdoorFeatureProperties {
+  id: string;
+  kind: 'boundary' | 'land' | 'road' | 'trail' | 'poi';
+  name: string;
+  sourceId: string;
+  unit: string;
+  category: string;
+  publicUse: string;
+  sourceUpdated: string;
+}
 export interface OutdoorFeature {
   type: 'Feature';
   id: string;
-  properties: {
-    id: string;
-    kind: 'boundary' | 'land' | 'road' | 'trail';
-    name: string;
-    sourceId: string;
-    unit: string;
-    category: string;
-    publicUse: string;
-    sourceUpdated: string;
-  };
+  properties: OutdoorFeatureProperties;
   geometry:
     | { type: 'Polygon'; coordinates: number[][][] }
     | { type: 'MultiPolygon'; coordinates: number[][][][] }
     | { type: 'LineString'; coordinates: number[][] }
-    | { type: 'MultiLineString'; coordinates: number[][][] };
+    | { type: 'MultiLineString'; coordinates: number[][][] }
+    | { type: 'Point'; coordinates: number[] };
 }
 export interface OutdoorCollection {
   type: 'FeatureCollection';
   features: OutdoorFeature[];
+}
+export interface OutdoorFeatureSummary {
+  id: string;
+  properties: OutdoorFeatureProperties;
+  bounds: [number, number, number, number];
+}
+export interface OutdoorFeatureIndex {
+  schemaVersion: 1;
+  features: OutdoorFeatureSummary[];
 }
 export function geometryPositions(value: unknown): Coordinate[] {
   if (!Array.isArray(value)) throw new Error('Invalid geometry');
@@ -65,6 +76,23 @@ export function searchOutdoorFeatures(
       (f) =>
         f.properties.kind !== 'boundary' &&
         `${f.properties.name} ${f.properties.unit}`.toLocaleLowerCase().includes(term),
+    )
+    .slice(0, Math.min(50, Math.max(0, limit)));
+}
+export function searchOutdoorFeatureIndex(
+  index: OutdoorFeatureIndex,
+  query: string,
+  limit = 30,
+): OutdoorFeatureSummary[] {
+  const term = query.trim().toLocaleLowerCase();
+  if (!term) return [];
+  return index.features
+    .filter(
+      (feature) =>
+        feature.properties.kind !== 'boundary' &&
+        (feature.properties.name + ' ' + feature.properties.unit)
+          .toLocaleLowerCase()
+          .includes(term),
     )
     .slice(0, Math.min(50, Math.max(0, limit)));
 }
@@ -226,28 +254,80 @@ export const outdoorLayerStyles = [
     filter: ['==', ['get', 'kind'], 'trail'],
     paint: { 'line-color': '#205c86', 'line-width': 2 },
   },
+  {
+    id: 'dec-poi',
+    type: 'circle',
+    minzoom: 12,
+    filter: ['==', ['get', 'kind'], 'poi'],
+    paint: {
+      'circle-color': '#526f77',
+      'circle-radius': 3.5,
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': 1,
+    },
+  },
+  {
+    id: 'dec-camping',
+    type: 'circle',
+    minzoom: 9,
+    filter: [
+      'in',
+      ['get', 'category'],
+      [
+        'literal',
+        ['PRIMITIVE CAMPSITE', 'CAMPSITE', 'ACCESSIBLE CAMPSITE', 'CAMPGROUND', 'LEAN-TO'],
+      ],
+    ],
+    paint: {
+      'circle-color': '#c25424',
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 9, 3, 13, 6, 16, 8],
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': 1.5,
+    },
+  },
 ] as const;
 
 /**
  * Builds one self-contained style so native MapLibre receives the bundled
  * geography and its layers atomically during initial style loading.
  */
-export function createOutdoorMapStyle(collection: OutdoorCollection) {
+export interface OutdoorBaseMapStyle {
+  readonly version: 8;
+  readonly sources: Readonly<Record<string, Readonly<Record<string, unknown>>>>;
+  readonly layers: readonly (Readonly<{ id: string; type: string }> &
+    Readonly<Record<string, unknown>>)[];
+  readonly [key: string]: unknown;
+}
+
+export function createOutdoorMapStyle(
+  data: OutdoorCollection | string,
+  basemap?: OutdoorBaseMapStyle,
+) {
+  const background = {
+    id: 'background',
+    type: 'background' as const,
+    paint: { 'background-color': '#dfe8e8' },
+  };
+  const contextLayers = basemap?.layers ?? [background];
+  const firstLabel = contextLayers.findIndex((layer) => layer.type === 'symbol');
+  const insertionIndex = firstLabel < 0 ? contextLayers.length : firstLabel;
+  const overlays = outdoorLayerStyles
+    .filter((layer) => basemap === undefined || layer.id !== 'state-fill')
+    .map((layer) => ({ ...layer, source: 'outdoors' as const }));
   return {
+    ...(basemap ?? {}),
     version: 8 as const,
     sources: {
+      ...(basemap?.sources ?? {}),
       outdoors: {
         type: 'geojson' as const,
-        data: collection,
+        data,
       },
     },
     layers: [
-      {
-        id: 'background',
-        type: 'background' as const,
-        paint: { 'background-color': '#dfe8e8' },
-      },
-      ...outdoorLayerStyles.map((layer) => ({ ...layer, source: 'outdoors' as const })),
+      ...contextLayers.slice(0, insertionIndex),
+      ...overlays,
+      ...contextLayers.slice(insertionIndex),
     ],
   };
 }
