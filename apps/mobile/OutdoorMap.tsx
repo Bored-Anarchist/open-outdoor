@@ -14,7 +14,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 import {
   createOutdoorMapStyle,
-  createOfflineVectorBasemapStyle,
+  createTieredOfflineVectorBasemapStyle,
   searchOutdoorFeatureIndex,
   segmentedTrack,
   type OutdoorBaseMapStyle,
@@ -26,8 +26,10 @@ import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 import { ProductText as Text } from './accessibility';
 import { ProductButton, ProductCard, usePalette } from './ProductComponents';
 import { useOfflineBasemap } from './useOfflineBasemap';
-import offlineOverviewAsset from '../../packages/map/src/assets/new-york-overview-z9.pmtiles';
-import offlineBasemapManifest from '../../packages/map/src/assets/new-york-basemap.manifest.json';
+import worldOverviewAsset from '../../packages/map/src/assets/world-overview-z6.pmtiles';
+import regionalOverviewAsset from '../../packages/map/src/assets/us-canada-territories-z7-z9.pmtiles';
+import worldBasemapManifest from '../../packages/map/src/assets/world-basemap.manifest.json';
+import regionalBasemapManifest from '../../packages/map/src/assets/us-canada-basemap.manifest.json';
 import offlineFontAsset from '../../packages/map/src/assets/NotoSans-Variable.ttf';
 import outdoorDataAsset from '../../packages/map/src/assets/new-york-outdoors.geojson';
 import bundledIndex from '../../packages/map/src/assets/new-york-outdoors.index.json';
@@ -43,27 +45,38 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const palette = usePalette();
   const [assets, assetError] = useAssets([
     outdoorDataAsset,
-    offlineOverviewAsset,
+    worldOverviewAsset,
+    regionalOverviewAsset,
     offlineFontAsset,
   ]);
   const outdoorDataUri = assets?.[0]?.localUri ?? assets?.[0]?.uri;
-  const offlineOverviewUri = assets?.[1]?.localUri ?? assets?.[1]?.uri;
-  const offlineFontUri = assets?.[2]?.localUri ?? assets?.[2]?.uri;
-  const basemap = useOfflineBasemap(offlineOverviewUri);
+  const worldOverviewUri = assets?.[1]?.localUri ?? assets?.[1]?.uri;
+  const regionalOverviewUri = assets?.[2]?.localUri ?? assets?.[2]?.uri;
+  const offlineFontUri = assets?.[3]?.localUri ?? assets?.[3]?.uri;
+  const basemap = useOfflineBasemap(regionalOverviewUri);
   const mapStyle = useMemo(
     () =>
-      outdoorDataUri && basemap.source && offlineFontUri
+      outdoorDataUri && worldOverviewUri && basemap.source && offlineFontUri
         ? (createOutdoorMapStyle(
             outdoorDataUri,
-            createOfflineVectorBasemapStyle(
-              basemap.source.uri,
-              offlineFontUri,
-              offlineCartography,
-              basemap.source.manifest.maximumZoom,
-            ),
+            createTieredOfflineVectorBasemapStyle({
+              worldArchiveUri: worldOverviewUri,
+              regionalArchiveUri: regionalOverviewUri!,
+              installedArchiveUri:
+                basemap.source.kind === 'installed' ? basemap.source.uri : undefined,
+              fontUri: offlineFontUri,
+              sourceLayers: offlineCartography,
+              worldMaximumZoom: worldBasemapManifest.maximumZoom,
+              regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
+              regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
+              installedMaximumZoom:
+                basemap.source.kind === 'installed'
+                  ? basemap.source.manifest.maximumZoom
+                  : undefined,
+            }),
           ) as unknown as StyleSpecification)
         : null,
-    [basemap.source, offlineFontUri, outdoorDataUri],
+    [basemap.source, offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri],
   );
   const [query, setQuery] = useState('');
   const [showLicenses, setShowLicenses] = useState(false);
@@ -125,11 +138,12 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
       </Text>
       <Text>
         Stored map · {manifest.featureCount.toLocaleString()} DEC geographic features ·{' '}
-        {basemap.source?.kind === 'installed' ? 'detailed basemap' : 'overview basemap'} ·{' '}
-        {basemap.source?.kind === 'installed'
-          ? basemap.detailedSizeMiB
-          : offlineBasemapManifest.archive.megabytes}{' '}
-        MB
+        {basemap.source?.kind === 'installed' ? 'detailed New York basemap' : 'offline overview'} ·{' '}
+        {(
+          (worldBasemapManifest.archive.bytes + regionalBasemapManifest.archive.bytes) /
+          1024 ** 2
+        ).toFixed(1)}{' '}
+        MiB bundled
       </Text>
       <Text>
         Roads, towns, water, land cover, labels, DEC lands, hiking trails and recreation points are
@@ -255,19 +269,21 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
           : loaded
             ? basemap.source?.kind === 'installed'
               ? 'Detailed offline map ready. Pinch to zoom; drag to pan.'
-              : 'Offline overview ready. Pinch to zoom; drag to pan.'
+              : 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch to zoom; drag to pan.'
             : basemap.checking
               ? 'Verifying the installed basemap while the overview remains available…'
               : 'Loading the stored basemap and DEC overlays…'}
-        {outside ? ' Outside bundled New York coverage.' : ''}
+        {outside ? ' Outside the bundled New York outdoor-overlay coverage.' : ''}
       </Text>
       {basemap.error && <Text accessibilityLiveRegion="polite">{basemap.error}</Text>}
       {basemap.source?.kind !== 'installed' && (
         <>
           <Text>
-            The bundled overview stays compact. For road and terrain detail when zoomed in, copy the
-            approved {basemap.detailedSizeMiB} MB New York .pmtiles pack to Files, then import it
-            here. The app verifies and stores it locally; it never downloads or streams map data.
+            The bundled basemap covers the world through zoom 6 and the United States, its
+            territories, and Canada through zoom 9. For additional New York detail when zoomed in,
+            copy the approved {basemap.detailedSizeMiB} MB New York .pmtiles pack to Files, then
+            import it here. The app verifies and stores it locally; it never downloads or streams
+            map data.
           </Text>
           <ProductButton
             label={basemap.importing ? 'Importing detailed map…' : 'Import detailed New York map'}
@@ -353,7 +369,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         </ProductCard>
       )}
       <Text>
-        Basemap: {offlineBasemapManifest.attribution}. Overlay: NYS ITS Geospatial Services and New
+        Basemap: {worldBasemapManifest.attribution}. Overlay: NYS ITS Geospatial Services and New
         York State Department of Environmental Conservation. Geometry simplified for display.
         MapLibre Native renderer. Public-use GIS data is provided without warranty; boundaries are
         not legal surveys.

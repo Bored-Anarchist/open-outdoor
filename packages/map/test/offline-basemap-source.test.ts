@@ -7,8 +7,8 @@ import {
 
 const overviewManifest: OfflineBasemapSourceManifest = {
   schemaVersion: 1,
-  regionId: 'us-ny',
-  minimumZoom: 0,
+  regionId: 'us-canada-territories',
+  minimumZoom: 7,
   maximumZoom: 9,
   archive: {
     format: 'pmtiles',
@@ -28,7 +28,7 @@ const installedManifest: OfflineBasemapSourceManifest = {
 };
 
 const overview = {
-  uri: 'file:///bundle/new-york-overview-z9.pmtiles',
+  uri: 'file:///bundle/us-canada-territories-z7-z9.pmtiles',
   manifest: overviewManifest,
 };
 

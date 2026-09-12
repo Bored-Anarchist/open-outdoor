@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { createReadStream, readFileSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import {
   OutdoorMapAdapter,
   createOfflineVectorBasemapStyle,
+  createTieredOfflineVectorBasemapStyle,
   createOutdoorMapStyle,
   featureBounds,
   geometryPositions,
@@ -26,11 +27,30 @@ const basemap = JSON.parse(basemapBytes.toString()) as OutdoorBaseMapStyle;
 const basemapManifest = JSON.parse(
   readFileSync('packages/map/src/assets/openfreemap-liberty.manifest.json', 'utf8'),
 );
-const offlineBasemapBytes = readFileSync('packages/map/src/assets/new-york-overview-z9.pmtiles');
+const worldBasemapPath = 'packages/map/src/assets/world-overview-z6.pmtiles';
+const regionalBasemapPath = 'packages/map/src/assets/us-canada-territories-z7-z9.pmtiles';
 const offlineFontBytes = readFileSync('packages/map/src/assets/NotoSans-Variable.ttf');
-const offlineBasemapManifest = JSON.parse(
-  readFileSync('packages/map/src/assets/new-york-basemap.manifest.json', 'utf8'),
+const worldBasemapManifest = JSON.parse(
+  readFileSync('packages/map/src/assets/world-basemap.manifest.json', 'utf8'),
 );
+const regionalBasemapManifest = JSON.parse(
+  readFileSync('packages/map/src/assets/us-canada-basemap.manifest.json', 'utf8'),
+);
+
+async function expectPinnedArchive(path: string, archive: { bytes: number; sha256: string }) {
+  const fileBytes = statSync(path).size;
+  if (fileBytes < 1024) {
+    const possiblePointer = readFileSync(path, 'utf8');
+    expect(possiblePointer).toMatch(/^version https:\/\/git-lfs\.github\.com\/spec\/v1\n/);
+    expect(possiblePointer).toContain(`oid sha256:${archive.sha256}\n`);
+    expect(possiblePointer).toContain(`size ${archive.bytes}\n`);
+    return;
+  }
+  expect(fileBytes).toBe(archive.bytes);
+  const digest = createHash('sha256');
+  for await (const chunk of createReadStream(path)) digest.update(chunk);
+  expect(digest.digest('hex')).toBe(archive.sha256);
+}
 describe('real offline New York map', () => {
   it('ships the complete checksum-pinned source inventories with rights/attribution', () => {
     expect(createHash('sha256').update(bytes).digest('hex')).toBe(manifest.sha256);
@@ -128,20 +148,24 @@ describe('real offline New York map', () => {
       ).length,
     ).toBeGreaterThan(2500);
   });
-  it('ships a checksum-pinned statewide overview and local font with no network resources', () => {
-    expect(offlineBasemapBytes.length).toBe(offlineBasemapManifest.archive.bytes);
-    expect(createHash('sha256').update(offlineBasemapBytes).digest('hex')).toBe(
-      offlineBasemapManifest.archive.sha256,
-    );
+  it('ships checksum-pinned world and US/Canada tiers with no runtime network resources', async () => {
+    await expectPinnedArchive(worldBasemapPath, worldBasemapManifest.archive);
+    await expectPinnedArchive(regionalBasemapPath, regionalBasemapManifest.archive);
     expect(createHash('sha256').update(offlineFontBytes).digest('hex')).toBe(
-      offlineBasemapManifest.font.sha256,
+      worldBasemapManifest.font.sha256,
     );
-    expect(offlineBasemapManifest.maximumZoom).toBe(9);
-    expect(offlineBasemapManifest.offline).toBe(true);
-    const localBasemap = createOfflineVectorBasemapStyle(
-      'file:///bundle/new-york-overview-z9.pmtiles',
-      'file:///bundle/NotoSans-Variable.ttf',
-      [
+    expect(worldBasemapManifest.maximumZoom).toBe(6);
+    expect(regionalBasemapManifest.minimumZoom).toBe(7);
+    expect(regionalBasemapManifest.maximumZoom).toBe(9);
+    expect(worldBasemapManifest.offline).toBe(true);
+    expect(regionalBasemapManifest.offline).toBe(true);
+    expect(regionalBasemapManifest.coverage.territories).toContain('Puerto Rico');
+    expect(regionalBasemapManifest.coverage.minorOutlyingIslands).toContain('Wake Island');
+    const localBasemap = createTieredOfflineVectorBasemapStyle({
+      worldArchiveUri: 'file:///bundle/world-overview-z6.pmtiles',
+      regionalArchiveUri: 'file:///bundle/us-canada-territories-z7-z9.pmtiles',
+      fontUri: 'file:///bundle/NotoSans-Variable.ttf',
+      sourceLayers: [
         { id: 'background', type: 'background' },
         {
           id: 'place-label',
@@ -156,18 +180,29 @@ describe('real offline New York map', () => {
           layout: { 'icon-image': 'arrow' },
         },
       ],
-      offlineBasemapManifest.maximumZoom,
-    );
+      worldMaximumZoom: worldBasemapManifest.maximumZoom,
+      regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
+      regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
+    });
     const serialized = JSON.stringify(localBasemap);
     expect(serialized).not.toMatch(/https?:\/\//);
-    expect(localBasemap.sources['offline-basemap']?.url).toBe(
-      'pmtiles://file:///bundle/new-york-overview-z9.pmtiles',
+    expect(localBasemap.sources['offline-world']?.url).toBe(
+      'pmtiles://file:///bundle/world-overview-z6.pmtiles',
     );
-    expect(localBasemap.sources['offline-basemap']?.maxzoom).toBe(9);
+    expect(localBasemap.sources['offline-world']?.maxzoom).toBe(6);
+    expect(localBasemap.sources['offline-regional']?.url).toBe(
+      'pmtiles://file:///bundle/us-canada-territories-z7-z9.pmtiles',
+    );
+    expect(localBasemap.sources['offline-regional']?.minzoom).toBe(7);
+    expect(localBasemap.sources['offline-regional']?.maxzoom).toBe(9);
     expect(localBasemap['font-faces']).toEqual({
       'Open Outdoor Noto Sans': 'file:///bundle/NotoSans-Variable.ttf',
     });
-    expect(localBasemap.layers.map(({ id }) => id)).toEqual(['background', 'place-label']);
+    expect(localBasemap.layers.map(({ id }) => id)).toEqual([
+      'background',
+      'place-label',
+      'place-label-regional',
+    ]);
     expect(localBasemap.layers[1]?.layout).not.toHaveProperty('icon-image');
     expect(() =>
       createOfflineVectorBasemapStyle(
@@ -176,7 +211,7 @@ describe('real offline New York map', () => {
         [],
       ),
     ).toThrow(/local file URLs/);
-  });
+  }, 20_000);
   it('keeps camera and selection across remounts, without update loops', () => {
     const adapter = new OutdoorMapAdapter();
     let updates = 0;

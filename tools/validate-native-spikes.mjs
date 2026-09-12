@@ -81,16 +81,33 @@ requireText(
   'Print :OpenOutdoorPhase0DiagnosticsEnabled',
   'iOS build diagnostics gate',
 );
-requireText(iosBuildScript, 'new-york-overview-z9.pmtiles', 'bundled offline overview build gate');
+requireText(iosBuildScript, 'world-overview-z6.pmtiles', 'bundled world overview build gate');
+requireText(
+  iosBuildScript,
+  'us-canada-territories-z7-z9.pmtiles',
+  'bundled regional overview build gate',
+);
+for (const token of [
+  'world-basemap.manifest.json',
+  'us-canada-basemap.manifest.json',
+  'Ensure Git LFS objects were downloaded',
+  'manifest-pinned SHA-256',
+]) {
+  requireText(iosBuildScript, token, 'bundled basemap manifest verification');
+}
 requireText(
   iosBuildScript,
   'The optional 128.4 MiB New York detailed basemap must not be bundled',
   'optional detailed basemap exclusion gate',
 );
 rejectText(iosBuildScript, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion gate');
-rejectText(iosBuildWorkflow, 'lfs: true', 'ordinary Git overview checkout');
+requireText(iosBuildWorkflow, 'lfs: true', 'regional overview LFS checkout');
 requireText(gitAttributes, '*.pmtiles binary', 'ordinary Git overview asset');
-rejectText(gitAttributes, 'filter=lfs', 'ordinary Git overview asset');
+requireText(
+  gitAttributes,
+  'us-canada-territories-z7-z9.pmtiles filter=lfs',
+  'regional overview LFS asset',
+);
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
 requireText(podspec, "'CoreLocation', 'CoreMotion'", 'podspec');
 requireText(podspec, "'Network'", 'podspec');
@@ -267,9 +284,10 @@ rejectText(mobileApp, 'application ? <OutdoorMap', 'recorder-independent offline
 requireText(mobileMap, 'mapStyle={mapStyle}', 'complete native map style');
 for (const token of [
   'outdoorDataAsset',
-  'new-york-overview-z9.pmtiles',
+  'world-overview-z6.pmtiles',
+  'us-canada-territories-z7-z9.pmtiles',
   'offlineFontAsset',
-  'createOfflineVectorBasemapStyle(',
+  'createTieredOfflineVectorBasemapStyle({',
 ]) {
   requireText(mobileMap, token, 'complete offline native map');
 }

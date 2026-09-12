@@ -346,6 +346,124 @@ export function createOfflineVectorBasemapStyle(
   };
 }
 
+export interface TieredOfflineVectorBasemapInput {
+  readonly worldArchiveUri: string;
+  readonly regionalArchiveUri: string;
+  readonly installedArchiveUri?: string;
+  readonly fontUri: string;
+  readonly sourceLayers: OutdoorBaseMapStyle['layers'];
+  readonly worldMaximumZoom: number;
+  readonly regionalMinimumZoom: number;
+  readonly regionalMaximumZoom: number;
+  readonly installedMaximumZoom?: number;
+}
+
+function checkedZoom(value: number, label: string): number {
+  if (!Number.isInteger(value) || value < 0 || value > 22) {
+    throw new Error(`${label} must be an integer from 0 through 22`);
+  }
+  return value;
+}
+
+/**
+ * Composes a worldwide low-zoom archive with a higher-resolution regional
+ * archive. Keeping the archives as separate sources is intentional: outside
+ * the regional archive, MapLibre can continue overzooming the worldwide source
+ * instead of requesting missing tiles from an archive that advertises a
+ * global maximum zoom.
+ */
+export function createTieredOfflineVectorBasemapStyle(
+  input: TieredOfflineVectorBasemapInput,
+): OutdoorBaseMapStyle {
+  const archiveUris = [
+    input.worldArchiveUri,
+    input.regionalArchiveUri,
+    ...(input.installedArchiveUri ? [input.installedArchiveUri] : []),
+  ];
+  if (archiveUris.some((uri) => !isLocalFileUri(uri)) || !isLocalFileUri(input.fontUri)) {
+    throw new Error('tiered offline basemap archives and font must be local file URLs');
+  }
+  const worldMaximumZoom = checkedZoom(input.worldMaximumZoom, 'world maximum zoom');
+  const regionalMinimumZoom = checkedZoom(input.regionalMinimumZoom, 'regional minimum zoom');
+  const regionalMaximumZoom = checkedZoom(input.regionalMaximumZoom, 'regional maximum zoom');
+  if (regionalMinimumZoom !== worldMaximumZoom + 1 || regionalMinimumZoom > regionalMaximumZoom) {
+    throw new Error('tiered offline basemap zoom ranges must be ordered and non-overlapping');
+  }
+  const installedMaximumZoom =
+    input.installedMaximumZoom === undefined
+      ? undefined
+      : checkedZoom(input.installedMaximumZoom, 'installed maximum zoom');
+  if (input.installedArchiveUri && (installedMaximumZoom ?? -1) <= regionalMaximumZoom) {
+    throw new Error('installed offline basemap must add detail above the regional maximum zoom');
+  }
+  if (!input.installedArchiveUri && installedMaximumZoom !== undefined) {
+    throw new Error('installed maximum zoom requires an installed archive');
+  }
+
+  const sanitized = createOfflineVectorBasemapStyle(
+    input.worldArchiveUri,
+    input.fontUri,
+    input.sourceLayers,
+    worldMaximumZoom,
+  );
+  const layers = sanitized.layers.flatMap((layer) => {
+    if (layer.type === 'background' || !Object.hasOwn(layer, 'source')) return [{ ...layer }];
+    const worldLayer = { ...layer, source: 'offline-world' };
+    const regionalLayer = {
+      ...layer,
+      id: `${layer.id}-regional`,
+      source: 'offline-regional',
+      minzoom: Math.max(Number(layer.minzoom ?? 0), regionalMinimumZoom),
+    };
+    const installedLayer = input.installedArchiveUri
+      ? [
+          {
+            ...layer,
+            id: `${layer.id}-installed`,
+            source: 'offline-installed',
+            minzoom: Math.max(Number(layer.minzoom ?? 0), regionalMaximumZoom + 1),
+          },
+        ]
+      : [];
+    return [worldLayer, regionalLayer, ...installedLayer];
+  });
+
+  return {
+    version: 8,
+    sources: {
+      'offline-world': {
+        type: 'vector',
+        url: `pmtiles://${input.worldArchiveUri}`,
+        minzoom: 0,
+        maxzoom: worldMaximumZoom,
+        attribution: 'Protomaps © OpenStreetMap contributors',
+      },
+      'offline-regional': {
+        type: 'vector',
+        url: `pmtiles://${input.regionalArchiveUri}`,
+        minzoom: regionalMinimumZoom,
+        maxzoom: regionalMaximumZoom,
+        attribution: 'Protomaps © OpenStreetMap contributors',
+      },
+      ...(input.installedArchiveUri
+        ? {
+            'offline-installed': {
+              type: 'vector',
+              url: `pmtiles://${input.installedArchiveUri}`,
+              minzoom: regionalMaximumZoom + 1,
+              maxzoom: installedMaximumZoom,
+              attribution: 'Protomaps © OpenStreetMap contributors',
+            },
+          }
+        : {}),
+    },
+    'font-faces': {
+      'Open Outdoor Noto Sans': input.fontUri,
+    },
+    layers,
+  };
+}
+
 export function createOutdoorMapStyle(
   data: OutdoorCollection | string,
   basemap?: OutdoorBaseMapStyle,

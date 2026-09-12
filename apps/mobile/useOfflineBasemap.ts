@@ -7,7 +7,7 @@ import {
 } from '@open-outdoor/map';
 import type { PinnedBasemapManifest } from '@open-outdoor/storage';
 import { basemapPacks, type NativeInstalledBasemap } from './basemapPacks';
-import overviewManifestJson from '../../packages/map/src/assets/new-york-basemap.manifest.json';
+import overviewManifestJson from '../../packages/map/src/assets/us-canada-basemap.manifest.json';
 import detailedManifestJson from '../../packages/map/src/assets/new-york-full-basemap.manifest.json';
 
 const overviewManifest = overviewManifestJson as OfflineBasemapSourceManifest;

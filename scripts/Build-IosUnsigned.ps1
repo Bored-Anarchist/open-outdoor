@@ -39,21 +39,38 @@ try {
     if ($appBundles.Count -ne 1) {
         throw "Expected one built app bundle, found $($appBundles.Count)."
     }
-    $offlineOverview = Resolve-Path '../../../packages/map/src/assets/new-york-overview-z9.pmtiles'
-    $offlineOverviewFile = Get-Item -LiteralPath $offlineOverview
-    $offlineOverviewHash = (Get-FileHash -LiteralPath $offlineOverview -Algorithm SHA256).Hash
-    $bundledArchives = @(
-        Get-ChildItem -Path $appBundles[0].FullName -File -Recurse |
-            Where-Object { $_.Length -eq $offlineOverviewFile.Length }
+    $offlineArchives = @(
+        @{
+            Path = Resolve-Path '../../../packages/map/src/assets/world-overview-z6.pmtiles'
+            Manifest = Get-Content -Raw -LiteralPath '../../../packages/map/src/assets/world-basemap.manifest.json' | ConvertFrom-Json
+        }
+        @{
+            Path = Resolve-Path '../../../packages/map/src/assets/us-canada-territories-z7-z9.pmtiles'
+            Manifest = Get-Content -Raw -LiteralPath '../../../packages/map/src/assets/us-canada-basemap.manifest.json' | ConvertFrom-Json
+        }
     )
-    $matchingArchives = @(
-        $bundledArchives |
-            Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $offlineOverviewHash }
-    )
-    if ($matchingArchives.Count -ne 1) {
-        throw "Expected the bundled offline overview archive in the application bundle, found $($matchingArchives.Count)."
+    foreach ($offlineArchive in $offlineArchives) {
+        $offlineArchiveFile = Get-Item -LiteralPath $offlineArchive.Path
+        $offlineArchiveHash = (Get-FileHash -LiteralPath $offlineArchive.Path -Algorithm SHA256).Hash
+        if ($offlineArchiveFile.Length -ne $offlineArchive.Manifest.archive.bytes) {
+            throw "Offline archive '$($offlineArchiveFile.Name)' is not the manifest-pinned byte length. Ensure Git LFS objects were downloaded."
+        }
+        if ($offlineArchiveHash.ToLowerInvariant() -ne $offlineArchive.Manifest.archive.sha256) {
+            throw "Offline archive '$($offlineArchiveFile.Name)' is not the manifest-pinned SHA-256."
+        }
+        $bundledArchives = @(
+            Get-ChildItem -Path $appBundles[0].FullName -File -Recurse |
+                Where-Object { $_.Length -eq $offlineArchiveFile.Length }
+        )
+        $matchingArchives = @(
+            $bundledArchives |
+                Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $offlineArchiveHash }
+        )
+        if ($matchingArchives.Count -ne 1) {
+            throw "Expected bundled offline archive '$($offlineArchiveFile.Name)' in the application bundle, found $($matchingArchives.Count)."
+        }
+        Write-Host "Verified offline archive '$($matchingArchives[0].FullName)' ($($matchingArchives[0].Length) bytes)."
     }
-    Write-Host "Verified offline overview '$($matchingArchives[0].FullName)' ($($matchingArchives[0].Length) bytes)."
     $fullArchiveBytes = 134642224
     $unexpectedFullArchives = @(
         Get-ChildItem -Path $appBundles[0].FullName -File -Recurse |
