@@ -42,6 +42,7 @@ const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpi
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const mobileApplication = await text('apps/mobile/application.ts');
+const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
 const phase1Runner = await text('apps/mobile/Phase1AcceptanceRunner.tsx');
 const phase3Runner = await text('apps/mobile/Phase3AcceptanceRunner.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
@@ -248,6 +249,13 @@ for (const token of [
   requireText(mobileApp, token, 'recorder-independent offline map startup');
 }
 rejectText(mobileApp, 'application ? <OutdoorMap', 'recorder-independent offline map startup');
+requireText(mobileMap, 'mapStyle={offlineStyle}', 'atomic offline map style');
+requireText(
+  mobileMap,
+  'onDidFinishRenderingMapFully={() => setLoaded(true)}',
+  'atomic offline map readiness',
+);
+rejectText(mobileMap, '<GeoJSONSource\n            id="outdoors"', 'atomic offline map style');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');

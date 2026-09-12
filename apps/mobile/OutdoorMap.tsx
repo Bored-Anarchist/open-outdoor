@@ -7,12 +7,14 @@ import {
   GeoJSONSource,
   Layer,
   type CameraRef,
+  type MapRef,
+  type StyleSpecification,
 } from '@maplibre/maplibre-react-native';
 import {
+  createOutdoorMapStyle,
   featureBounds,
   searchOutdoorFeatures,
   segmentedTrack,
-  outdoorLayerStyles,
   type OutdoorCollection,
   type OutdoorFeature,
   type OutdoorMapAdapter,
@@ -22,17 +24,13 @@ import { ProductButton, ProductCard, usePalette } from './ProductComponents';
 import bundled from '../../packages/map/src/assets/new-york-outdoors.json';
 import manifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
 const collection = bundled as unknown as OutdoorCollection;
-const nativeCollection = collection as unknown as GeoJSON.FeatureCollection;
-const emptyStyle = {
-  version: 8 as const,
-  sources: {},
-  layers: [
-    { id: 'background', type: 'background' as const, paint: { 'background-color': '#dfe8e8' } },
-  ],
-};
+// The shared style is immutable by convention; MapLibre's public type uses
+// mutable expression tuples even though it only serializes this value.
+const offlineStyle = createOutdoorMapStyle(collection) as unknown as StyleSpecification;
 export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
   const camera = useRef<CameraRef>(null);
+  const mapView = useRef<MapRef>(null);
   const palette = usePalette();
   const [query, setQuery] = useState('');
   const [showLicenses, setShowLicenses] = useState(false);
@@ -123,12 +121,26 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         style={{ height: 440, marginVertical: 12, borderWidth: 1, borderColor: palette.border }}
       >
         <NativeMap
+          ref={mapView}
           style={{ flex: 1 }}
-          mapStyle={emptyStyle}
+          mapStyle={offlineStyle}
           attribution={false}
           logo={false}
-          onDidFinishLoadingMap={() => setLoaded(true)}
+          onDidFinishRenderingMapFully={() => setLoaded(true)}
           onDidFailLoadingMap={() => setFailed(true)}
+          onPress={(event) => {
+            void mapView.current
+              ?.queryRenderedFeatures(event.nativeEvent.point, {
+                layers: ['dec-land', 'dec-road', 'dec-trail'],
+              })
+              .then((features) => {
+                const id = features.find((feature) => feature.properties?.kind !== 'boundary')
+                  ?.properties?.id;
+                const feature = collection.features.find((candidate) => candidate.id === id);
+                if (feature) setSelected(feature);
+              })
+              .catch(() => undefined);
+          }}
           onRegionDidChange={(event) => {
             const [x, y] = event.nativeEvent.center;
             setOutside(x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02);
@@ -140,27 +152,6 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
             ref={camera}
             initialViewState={{ center: [...state.camera.center], zoom: state.camera.zoom }}
           />
-          <GeoJSONSource
-            id="outdoors"
-            data={nativeCollection}
-            onPress={(event) => {
-              const id = event.nativeEvent.features.find((f) => f.properties?.kind !== 'boundary')
-                ?.properties?.id;
-              const feature = collection.features.find((f) => f.id === id);
-              if (feature) setSelected(feature);
-            }}
-          >
-            {outdoorLayerStyles.map((layer) => (
-              <Layer
-                key={layer.id}
-                {...(layer as unknown as {
-                  id: string;
-                  type: 'line';
-                  paint: Record<string, unknown>;
-                })}
-              />
-            ))}
-          </GeoJSONSource>
           {selected && (
             <GeoJSONSource
               id="selection"

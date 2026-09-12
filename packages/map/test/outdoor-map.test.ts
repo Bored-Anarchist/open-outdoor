@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import {
   OutdoorMapAdapter,
+  createOutdoorMapStyle,
   featureBounds,
   geometryPositions,
   searchOutdoorFeatures,
@@ -58,6 +59,22 @@ describe('real offline New York map', () => {
     expect(searchOutdoorFeatures(collection, '')).toEqual([]);
     expect(searchOutdoorFeatures(collection, 'a', 100)).toHaveLength(50);
     expect(collection.features.some((f) => f.properties.name === 'Hemlock Loop')).toBe(false);
+  });
+  it('loads bundled geography and all base layers as one atomic native style', () => {
+    const style = createOutdoorMapStyle(collection);
+    expect(style.sources.outdoors.data).toBe(collection);
+    expect(style.layers.map((layer) => layer.id)).toEqual([
+      'background',
+      'state-fill',
+      'state-outline',
+      'dec-land',
+      'dec-land-outline',
+      'dec-road',
+      'dec-trail',
+    ]);
+    expect(
+      style.layers.slice(1).every((layer) => 'source' in layer && layer.source === 'outdoors'),
+    ).toBe(true);
   });
   it('keeps camera and selection across remounts, without update loops', () => {
     const adapter = new OutdoorMapAdapter();

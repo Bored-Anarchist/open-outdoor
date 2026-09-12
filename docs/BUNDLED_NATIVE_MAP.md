@@ -7,6 +7,10 @@ The snapshot contains 9,895 features: one New York boundary, 3,297 DEC land feat
 The public map adapter is constructed synchronously and renders independently of the private
 recorder store and tracking module. A recorder initialization or native-tracking failure disables
 recording and reports its own diagnostic, but must not leave Explore at “Loading local map…”.
+The bundled GeoJSON source and its base layers are also supplied as one initial MapLibre style.
+This avoids an iOS lifecycle race where the background style could finish loading before a large
+React-child GeoJSON source was attached, leaving a ready-looking but blank map. “Ready” is emitted
+only after MapLibre reports a fully rendered frame.
 
 This is partial basemap coverage. It does not include a full street network, terrain, comprehensive trail coverage, surveyed property lines, verified access or camping authorization. The statewide MBTiles compiler integration from WP-301 remains separate work. WP-304's full catalog facets and camping evidence are not substituted by this name-search interface.
 

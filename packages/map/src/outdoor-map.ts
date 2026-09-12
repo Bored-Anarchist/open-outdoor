@@ -13,10 +13,11 @@ export interface OutdoorFeature {
     publicUse: string;
     sourceUpdated: string;
   };
-  geometry: {
-    type: 'Polygon' | 'MultiPolygon' | 'LineString' | 'MultiLineString';
-    coordinates: unknown;
-  };
+  geometry:
+    | { type: 'Polygon'; coordinates: number[][][] }
+    | { type: 'MultiPolygon'; coordinates: number[][][][] }
+    | { type: 'LineString'; coordinates: number[][] }
+    | { type: 'MultiLineString'; coordinates: number[][][] };
 }
 export interface OutdoorCollection {
   type: 'FeatureCollection';
@@ -226,3 +227,27 @@ export const outdoorLayerStyles = [
     paint: { 'line-color': '#205c86', 'line-width': 2 },
   },
 ] as const;
+
+/**
+ * Builds one self-contained style so native MapLibre receives the bundled
+ * geography and its layers atomically during initial style loading.
+ */
+export function createOutdoorMapStyle(collection: OutdoorCollection) {
+  return {
+    version: 8 as const,
+    sources: {
+      outdoors: {
+        type: 'geojson' as const,
+        data: collection,
+      },
+    },
+    layers: [
+      {
+        id: 'background',
+        type: 'background' as const,
+        paint: { 'background-color': '#dfe8e8' },
+      },
+      ...outdoorLayerStyles.map((layer) => ({ ...layer, source: 'outdoors' as const })),
+    ],
+  };
+}
