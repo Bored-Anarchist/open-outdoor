@@ -18,6 +18,7 @@
         "OpenOutdoorPhase0DiagnosticsEnabled": true,
         "UIBackgroundModes": ["location"]
       }
-    }
+    },
+    "plugins": ["@maplibre/maplibre-react-native"]
   }
 }

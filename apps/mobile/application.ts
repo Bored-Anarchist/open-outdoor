@@ -3,7 +3,8 @@ import {
   RecorderCoordinator,
   type RecorderPersistence,
 } from '@open-outdoor/recorder';
-import { FixtureMapAdapter } from '@open-outdoor/map';
+import bundled from '../../packages/map/src/assets/new-york-outdoors.json';
+import { type OutdoorCollection, OutdoorMapAdapter } from '@open-outdoor/map';
 import {
   InMemoryPrivateRepository,
   migratePrivateSnapshot,
@@ -138,7 +139,7 @@ export interface MobileApplication {
   readonly repository: InMemoryPrivateRepository;
   readonly recorder: RecorderCoordinator;
   readonly library: ActivityLibrary;
-  readonly map: FixtureMapAdapter;
+  readonly map: OutdoorMapAdapter;
 }
 
 export async function createMobileApplication(): Promise<MobileApplication> {
@@ -163,6 +164,6 @@ export async function createMobileApplication(): Promise<MobileApplication> {
     },
   };
   const recorder = new RecorderCoordinator(new NativeTrackerAdapter(), repository, persistence);
-  const map = new FixtureMapAdapter();
+  const map = new OutdoorMapAdapter(bundled as unknown as OutdoorCollection);
   return { repository, recorder, library: new ActivityLibrary(repository), map };
 }

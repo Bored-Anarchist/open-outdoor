@@ -14,3 +14,5 @@ uv.lock
 *.md
 .github/ISSUE_TEMPLATE
 .github/rulesets
+
+packages/map/src/assets/new-york-outdoors.json

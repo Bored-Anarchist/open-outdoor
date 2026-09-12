@@ -4,7 +4,7 @@ import {
   useDeviceAccessibility,
   useAnnouncement,
 } from './accessibility';
-import { campingLegend, phase1OfflineMapFixture } from '@open-outdoor/map';
+import { campingLegend } from '@open-outdoor/map';
 import { StatusBar } from 'expo-status-bar';
 import {
   appearances,
@@ -23,20 +23,11 @@ import {
   ProductCard,
   OriginBadge,
   ProductMetric,
-  ProductDetail,
   usePalette,
 } from './ProductComponents';
 import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Alert,
-  AppState,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  useColorScheme,
-  View,
-} from 'react-native';
+import { Alert, AppState, ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
 import {
   nativeSpikes,
   type NativeTrackingInspection,
@@ -44,6 +35,7 @@ import {
 } from './nativeSpikes';
 import { createMobileApplication, type MobileApplication } from './application';
 import { Phase1AcceptanceRunner } from './Phase1AcceptanceRunner';
+import { OutdoorMap } from './OutdoorMap';
 import { Phase5AcceptanceRunner } from './Phase5AcceptanceRunner';
 import { Phase3AcceptanceRunner } from './Phase3AcceptanceRunner';
 
@@ -88,11 +80,9 @@ function AppContent({
   const palette = usePalette();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const lastRenderedCheckpoint = useRef('');
-  const [query, setQuery] = useState('');
-  const [selectedPlace, setSelectedPlace] = useState('Hemlock Loop');
   const [legendOpen, setLegendOpen] = useState(false);
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
-  const [section, setSection] = useState<AppSection>('track');
+  const [section, setSection] = useState<AppSection>('explore');
   const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
   const [recovery, setRecovery] = useState<NativeTrackingInspection | null>(null);
   const [savedActivities, setSavedActivities] = useState<
@@ -151,8 +141,12 @@ function AppContent({
         const distance = calculateDistanceRevision(observations);
         const elevation = calculateElevationRevision(observations);
         const accuracy = observations.at(-1)?.horizontalAccuracyM;
+        const display = boundedDisplayPoints(observations);
         application.map.setActiveTrack(
-          boundedDisplayPoints(observations).map(({ coordinate }) => coordinate),
+          display.map(({ coordinate }) => coordinate),
+          display.flatMap((point, index) =>
+            index > 0 && point.segment !== display[index - 1]?.segment ? [index] : [],
+          ),
         );
         lastRenderedCheckpoint.current = revision;
         setLiveStats({
@@ -416,61 +410,8 @@ function AppContent({
       </View>
       {section === 'explore' || section === 'search' ? (
         <>
-          {section === 'search' ? (
-            <ProductCard title="Search offline fixture">
-              <Text style={styles.copy}>Place or trail name</Text>
-              <TextInput
-                accessibilityLabel="Place or trail name"
-                value={query}
-                onChangeText={setQuery}
-                placeholder="Search local fixture"
-                placeholderTextColor={palette.muted}
-                style={styles.searchInput}
-              />
-              <Text accessibilityLiveRegion="polite" style={styles.copy}>
-                {
-                  phase1OfflineMapFixture.features.filter((place) =>
-                    place.name.toLowerCase().includes(query.trim().toLowerCase()),
-                  ).length
-                }{' '}
-                results
-              </Text>
-              {phase1OfflineMapFixture.features
-                .filter((place) => place.name.toLowerCase().includes(query.trim().toLowerCase()))
-                .map((place) => (
-                  <AccessibleButton
-                    key={place.id}
-                    label={place.name}
-                    hint="Show source and access details"
-                    selected={selectedPlace === place.name}
-                    onPress={() => setSelectedPlace(place.name)}
-                  />
-                ))}
-              {!phase1OfflineMapFixture.features.some((place) =>
-                place.name.toLowerCase().includes(query.trim().toLowerCase()),
-              ) ? (
-                <FieldNotice state="empty" />
-              ) : null}
-            </ProductCard>
-          ) : null}
-          <Text style={styles.copy}>
-            Selected route: Hemlock Loop. Display only—there are no turn instructions, rerouting, or
-            off-route alerts.
-          </Text>
-          <View
-            accessibilityLabel="Hemlock Loop route summary, four fixture points"
-            style={styles.mapAlternative}
-          >
-            <Text style={styles.mapHeading}>Hemlock Loop</Text>
-            <View
-              accessibilityElementsHidden
-              importantForAccessibility="no-hide-descendants"
-              style={styles.routeLine}
-            />
-            <Text style={styles.mapCopy}>
-              Offline fixture map · 4 route points · trailhead and preserve
-            </Text>
-          </View>
+          <Text>Display only: there are no turn instructions, rerouting, or off-route alerts.</Text>
+          {application ? <OutdoorMap adapter={application.map} /> : <Text>Loading local map…</Text>}
           <AccessibleButton
             label="Land and camping legend"
             hint="Expand or collapse status explanations"
@@ -486,18 +427,6 @@ function AppContent({
               ))}
             </ProductCard>
           ) : null}
-          <ProductDetail
-            detail={{
-              name: selectedPlace,
-              origin: 'fixture',
-              source: 'Open Outdoor synthetic fixture',
-              coverage: 'Synthetic preserve only; not a field catalog',
-              freshness: 'Unknown — no live verification',
-              restrictions: 'No verified access rules in this fixture',
-              uncertainty: 'Missing information is not permission.',
-              provenance: 'Project-authored synthetic geometry, Apache-2.0',
-            }}
-          />
         </>
       ) : null}
       <Text accessibilityLiveRegion="polite" style={styles.status}>

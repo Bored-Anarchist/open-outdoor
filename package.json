@@ -47,12 +47,15 @@
     "release:artifacts": "node tools/release-artifacts.mjs",
     "release:sbom": "node tools/release-sbom.mjs",
     "phase5:audit": "node tools/release-audit.mjs",
-    "phase5:acceptance": "node tools/phase5-guided.mjs"
+    "phase5:acceptance": "node tools/phase5-guided.mjs",
+    "map:acquire": "node --use-system-ca tools/acquire-outdoor-map.mjs",
+    "test:map:browser": "node tools/outdoor-map-qa.mjs"
   },
   "devDependencies": {
     "@types/node": "24.10.1",
     "ajv": "8.18.0",
     "axe-core": "4.13.0",
+    "maplibre-gl": "6.9.0",
     "playwright": "1.62.1",
     "prettier": "3.9.0",
     "react": "19.2.3",
