@@ -15,11 +15,7 @@
           <label>
             Show on map
             <select id="place-filter">
-              <option value="all">All places</option>
-              <option value="camping">Camping & shelters</option>
-              <option value="parking">Parking & pull-offs</option>
-              <option value="water">Water access & fishing</option>
-              <option value="day-use">Day use & viewpoints</option>
+              <option value="all">All iOverlander categories</option>
             </select>
           </label>
           <label>
@@ -36,9 +32,10 @@
       <div id="map" aria-label="New York geographic map"></div>
       <footer>
         Numbered orange circles group nearby places. Zoom in to reveal category icons and then place
-        names.<br />▲ Camp · ⌂ Shelter · P Parking · ≈ Water · ◆ Day use<br />Data: NYS ITS
-        Geospatial Services and NYS Department of Environmental Conservation. Mapped land or a place
-        marker does not establish access or camping permission.
+        names.<br /><span id="category-key"></span><br />Data: NYS ITS Geospatial Services and NYS
+        Department of Environmental Conservation. Category labels follow the iOverlander system;
+        marker glyphs are original Open Outdoor UI. Mapped land or a place marker does not establish
+        access or camping permission.
       </footer>
     </main>
     <script type="module" src="/outdoor-map-preview.ts"></script>

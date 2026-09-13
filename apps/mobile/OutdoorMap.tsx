@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
   type ComponentProps,
 } from 'react';
-import { Alert, Pressable, TextInput, View } from 'react-native';
+import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import {
   Map as NativeMap,
@@ -38,6 +38,11 @@ import {
   type OutdoorMarkerDensity,
   type OutdoorPlaceFilter,
 } from '@open-outdoor/map';
+import {
+  ioverlanderCategoryDefinition,
+  ioverlanderCategoryDefinitions,
+  type IoverlanderCategory,
+} from '@open-outdoor/shared';
 import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 import { ProductText as Text } from './accessibility';
 import { ProductButton, ProductCard, usePalette } from './ProductComponents';
@@ -58,12 +63,16 @@ const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light
 const placeFilterOptions: readonly {
   readonly value: OutdoorPlaceFilter;
   readonly label: string;
+  readonly icon?: string;
+  readonly color?: string;
 }[] = [
-  { value: 'all', label: 'All places' },
-  { value: 'camping', label: 'Camping & shelters' },
-  { value: 'parking', label: 'Parking & pull-offs' },
-  { value: 'water', label: 'Water access & fishing' },
-  { value: 'day-use', label: 'Day use & viewpoints' },
+  { value: 'all', label: 'All iOverlander categories' },
+  ...ioverlanderCategoryDefinitions.map((definition) => ({
+    value: definition.id,
+    label: definition.label,
+    icon: definition.icon,
+    color: definition.color,
+  })),
 ];
 const markerDensityOptions: readonly {
   readonly value: OutdoorMarkerDensity;
@@ -84,7 +93,12 @@ function MapSelect<Value extends string>({
 }: {
   readonly label: string;
   readonly value: Value;
-  readonly options: readonly { readonly value: Value; readonly label: string }[];
+  readonly options: readonly {
+    readonly value: Value;
+    readonly label: string;
+    readonly icon?: string;
+    readonly color?: string;
+  }[];
   readonly expanded: boolean;
   readonly onToggle: () => void;
   readonly onChange: (value: Value) => void;
@@ -112,6 +126,7 @@ function MapSelect<Value extends string>({
       >
         <Text style={{ color: palette.muted, fontSize: 13, fontWeight: '700' }}>{label}</Text>
         <Text style={{ color: palette.text, fontSize: 16, fontWeight: '700' }}>
+          {selected.icon ? `${selected.icon} ` : ''}
           {selected.label} {expanded ? '⌃' : '⌄'}
         </Text>
       </Pressable>
@@ -131,28 +146,49 @@ function MapSelect<Value extends string>({
             overflow: 'hidden',
           }}
         >
-          {options.map((option) => (
-            <Pressable
-              key={option.value}
-              accessibilityRole="button"
-              accessibilityState={{ selected: option.value === value }}
-              onPress={() => onChange(option.value)}
-              style={({ pressed }) => ({
-                minHeight: 52,
-                paddingHorizontal: 14,
-                justifyContent: 'center',
-                backgroundColor:
-                  pressed || option.value === value ? palette.selected : palette.surface,
-                borderBottomWidth: option === options.at(-1) ? 0 : 1,
-                borderBottomColor: palette.border,
-              })}
-            >
-              <Text style={{ color: palette.text, fontSize: 16, fontWeight: '600' }}>
-                {option.label}
-                {option.value === value ? ' · Selected' : ''}
-              </Text>
-            </Pressable>
-          ))}
+          <ScrollView style={{ maxHeight: 360 }} nestedScrollEnabled>
+            {options.map((option) => (
+              <Pressable
+                key={option.value}
+                accessibilityRole="button"
+                accessibilityState={{ selected: option.value === value }}
+                onPress={() => onChange(option.value)}
+                style={({ pressed }) => ({
+                  minHeight: 52,
+                  paddingHorizontal: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  backgroundColor:
+                    pressed || option.value === value ? palette.selected : palette.surface,
+                  borderBottomWidth: option === options.at(-1) ? 0 : 1,
+                  borderBottomColor: palette.border,
+                })}
+              >
+                {option.icon && option.color ? (
+                  <View
+                    accessibilityElementsHidden
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: option.color,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '800' }}>
+                      {option.icon}
+                    </Text>
+                  </View>
+                ) : null}
+                <Text style={{ color: palette.text, fontSize: 16, fontWeight: '600', flex: 1 }}>
+                  {option.label}
+                  {option.value === value ? ' · Selected' : ''}
+                </Text>
+              </Pressable>
+            ))}
+          </ScrollView>
         </View>
       ) : null}
     </View>
@@ -292,6 +328,18 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const placeLayers = useMemo(() => createOutdoorPlaceLayerStyles(markerDensity), [markerDensity]);
   const densityConfig = outdoorMarkerDensityConfig[markerDensity];
   const zoomPresentation = outdoorZoomPresentation(zoom, markerDensity);
+  const legendCategories: readonly IoverlanderCategory[] =
+    placeFilter === 'all'
+      ? [
+          'campsite',
+          'informal_campsite',
+          'wild_campsite',
+          'shorterm_parking',
+          'water',
+          'warning',
+          'other',
+        ]
+      : [placeFilter];
   const results = useMemo(() => searchOutdoorFeatureIndex(featureIndex, query), [query]);
   const track = useMemo(
     () => segmentedTrack(state.activeTrack, state.trackBreaks),
@@ -597,14 +645,20 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         )}
       </View>
       <View
-        accessibilityLabel="Place icon key"
+        accessibilityLabel="iOverlander category icon key"
         style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
       >
-        <PlaceKey symbol="▲" label="Camp" color="#cf5726" />
-        <PlaceKey symbol="⌂" label="Shelter" color="#9b4d1f" />
-        <PlaceKey symbol="P" label="Parking" color="#355c7d" />
-        <PlaceKey symbol="≈" label="Water" color="#147d92" />
-        <PlaceKey symbol="◆" label="Day use" color="#5f7f31" />
+        {legendCategories.map((category) => {
+          const definition = ioverlanderCategoryDefinition(category);
+          return (
+            <PlaceKey
+              key={category}
+              symbol={definition.icon}
+              label={definition.label}
+              color={definition.color}
+            />
+          );
+        })}
       </View>
       <Text accessibilityLiveRegion="polite">
         {failed || assetError
@@ -691,9 +745,10 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
       />
       <Text>
         Map key: green areas — DEC lands; blue lines — hiking trails; brown lines — DEC roads;
-        numbered orange circles — grouped places; category symbols — individual recreation places;
-        pink — recorded route; blue GPS dot — current position. Zooming in expands groups into
-        icons, then reveals names. Tap a group, feature, or search result for details.
+        numbered orange circles — grouped places; colored symbols — iOverlander categories; pink —
+        recorded route; blue GPS dot — current position. Zooming in expands groups into
+        category-specific icons, then reveals names. Tap a group, feature, or search result for
+        details.
       </Text>
       {selected && (
         <ProductCard title={selected.properties.name}>

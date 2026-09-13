@@ -34,7 +34,7 @@ async function render(mode, screenshot, allowConnectedBasemap) {
   const errors = [];
   async function openPage() {
     const nextPage = await browser.newPage({
-      viewport: { width: 1150, height: 880 },
+      viewport: { width: 1150, height: 980 },
       deviceScaleFactor: 1,
     });
     nextPage.on('pageerror', (e) => {
@@ -74,6 +74,19 @@ async function render(mode, screenshot, allowConnectedBasemap) {
   await page.waitForFunction(() => Number(document.body.dataset.visibleCamping) > 0);
   assert.equal(await page.getByLabel('Show on map').inputValue(), 'all');
   assert.equal(await page.getByLabel('Marker detail').inputValue(), 'automatic');
+  assert.equal(await page.getByLabel('Show on map').locator('option').count(), 33);
+  assert.deepEqual(
+    await page
+      .getByLabel('Show on map')
+      .locator('option')
+      .evaluateAll((options) => options.slice(0, 4).map((option) => option.textContent)),
+    [
+      'All iOverlander categories',
+      'C Established Campground',
+      'I Informal Campsite',
+      '▲ Wild Camping',
+    ],
+  );
   assert.equal(await page.evaluate(() => document.body.dataset.mapError), undefined);
   const zoomStages = [];
   if (allowConnectedBasemap) {
@@ -117,10 +130,10 @@ async function render(mode, screenshot, allowConnectedBasemap) {
     assert.ok(site.labels > 0);
     zoomStages.push(site);
 
-    await page.getByLabel('Show on map').selectOption('camping');
+    await page.getByLabel('Show on map').selectOption('campsite');
     await page.waitForFunction(
       () =>
-        document.body.dataset.placeFilter === 'camping' &&
+        document.body.dataset.placeFilter === 'campsite' &&
         document.body.dataset.renderedPlaceRevision === document.body.dataset.placeRevision &&
         Number(document.body.dataset.visiblePlaceIcons) > 0 &&
         Number(document.body.dataset.visiblePlaceLabels) > 0,
@@ -164,7 +177,7 @@ async function render(mode, screenshot, allowConnectedBasemap) {
   }
   assert.deepEqual(errors, []);
   await mkdir('dist/outdoor-map', { recursive: true });
-  await page.screenshot({ path: 'dist/outdoor-map/' + screenshot, fullPage: true });
+  await page.screenshot({ path: 'dist/outdoor-map/' + screenshot });
   await page.close();
   return { requests: external.length, errors, zoomStages };
 }

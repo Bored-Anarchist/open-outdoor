@@ -80,7 +80,7 @@ describe('private iOverlander processing', () => {
           name: 'n42_w75.json',
           value: {
             places: [
-              place(1, 1, 'Pine Camp', -74.00001, 42.00001),
+              place(1, 1, 'Pine Camp', -74.00001, 42.00001, { category: 'campsite' }),
               place(2, 2, 'Lake Camp', -74.5, 42.2),
               place(3, 3, 'Lake Camp', -74.50001, 42.20001, { revision: 2 }),
               place(4, 4, 'Water Stop', -74.7, 42.4, { category: 'water' }),
@@ -107,6 +107,10 @@ describe('private iOverlander processing', () => {
     expect(result.records.map((item) => item.record.properties.name).sort()).toEqual([
       'Lake Camp',
       'Water Stop',
+    ]);
+    expect(result.records.map((item) => item.record.properties.category).sort()).toEqual([
+      'water',
+      'wild_campsite',
     ]);
     const serialized = JSON.stringify(result.records);
     expect(serialized).not.toContain('description');
@@ -169,5 +173,30 @@ describe('private iOverlander processing', () => {
       outputPrivatePlaces: 1,
     });
     expect(() => manualReviewDecisionsFromCsv(csv.replace('Yes', 'Maybe'))).toThrow(/Yes or No/);
+  });
+
+  it('keeps colocated places in different iOverlander categories distinct', () => {
+    const result = processIoverlanderPrivateData(
+      [
+        {
+          name: 'n42_w75.json',
+          value: {
+            places: [
+              place(10, 10, 'Shared Location', -74.55, 42.25, { category: 'campsite' }),
+              place(11, 11, 'Shared Location', -74.55, 42.25, { category: 'restaurant' }),
+            ],
+          },
+        },
+      ],
+      dec,
+      generatedAt,
+    );
+
+    expect(result.records).toHaveLength(2);
+    expect(result.privateLinks).toHaveLength(0);
+    expect(result.records.map((item) => item.record.properties.category).sort()).toEqual([
+      'campsite',
+      'restaurant',
+    ]);
   });
 });

@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import type { IoverlanderCategory } from '@open-outdoor/shared';
 import { DatabaseSync } from 'node:sqlite';
 import type { PlaceRecord, Position } from './canonical.js';
 import { validateCanonicalRecord } from './canonical.js';
@@ -13,7 +14,7 @@ import {
 } from './entity-resolution.js';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const PROCESSOR_VERSION = '1.0.0';
+const PROCESSOR_VERSION = '1.1.0';
 const MAXIMUM_MATCH_DISTANCE_METERS = DEFAULT_RESOLUTION_THRESHOLDS.maximumPlaceDistanceMeters;
 const REVIEW_THRESHOLD = DEFAULT_RESOLUTION_THRESHOLDS.place * 0.75;
 
@@ -218,59 +219,18 @@ function rawPlace(value: unknown): RawIoverlanderPlace | null {
   };
 }
 
-const PRIVATE_CATEGORY = new Map<string, string>([
-  ['wild_campsite', 'camping'],
-  ['informal_campsite', 'camping'],
-  ['campsite', 'camping'],
-  ['shorterm_parking', 'parking'],
-  ['overnight-prohibited', 'overnight-prohibited'],
-  ['water', 'water'],
-  ['sanitation_dump', 'sanitation'],
-  ['showers', 'showers'],
-  ['laundry', 'laundry'],
-  ['propane', 'propane'],
-  ['tourist_attraction', 'attraction'],
-  ['wifi', 'wifi'],
-  ['mechanic', 'mechanic'],
-  ['gas_station', 'fuel'],
-  ['restaurant', 'food'],
-  ['shopping', 'shopping'],
-  ['hotel', 'lodging'],
-  ['hostel', 'lodging'],
-  ['warning', 'warning'],
-  ['road_report', 'warning'],
-]);
-
-function privateCategory(raw: string): string {
-  return PRIVATE_CATEGORY.get(raw) ?? 'other';
+function privateCategory(rawValue: string): IoverlanderCategory {
+  const category = normalizeText(rawValue).toLocaleLowerCase('en-US');
+  return (category === 'shortterm_parking' ? 'shorterm_parking' : category) as IoverlanderCategory;
 }
 
-function decCategory(rawValue: unknown): string {
+function decCategory(rawValue: unknown): IoverlanderCategory {
   const raw =
     typeof rawValue === 'string' ? normalizeText(rawValue).toLocaleUpperCase('en-US') : '';
-  if (/CAMP|LEAN-TO/.test(raw)) return 'camping';
-  if (/PARK|PULL-OFF/.test(raw)) return 'parking';
-  if (/BOAT LAUNCH/.test(raw)) return 'boat-launch';
-  if (/PICNIC/.test(raw)) return 'picnic';
-  if (/FISH/.test(raw)) return 'fishing';
-  if (/VIEW|VISTA|FIRE TOWER/.test(raw)) return 'viewpoint';
-  return raw ? raw.toLocaleLowerCase('en-US').replace(/[^a-z0-9]+/g, '-') : 'unknown';
-}
-
-function appCategory(raw: string): string {
-  switch (raw) {
-    case 'wild_campsite':
-    case 'informal_campsite':
-      return 'PRIMITIVE CAMPSITE';
-    case 'campsite':
-      return 'CAMPGROUND';
-    case 'shorterm_parking':
-      return 'PULL-OFF';
-    case 'overnight-prohibited':
-      return 'OVERNIGHT PROHIBITED';
-    default:
-      return raw.replaceAll('_', ' ').toLocaleUpperCase('en-US');
-  }
+  if (/CAMP|LEAN-TO/.test(raw)) return 'campsite';
+  if (/PARK|PULL-OFF/.test(raw)) return 'shorterm_parking';
+  if (/PICNIC|VIEW|VISTA|FIRE TOWER/.test(raw)) return 'tourist_attraction';
+  return 'other';
 }
 
 function placeRecord(raw: RawIoverlanderPlace, tile: string, generatedAt: string): PlaceRecord {
@@ -425,7 +385,7 @@ function decRecord(feature: DecFeature, generatedAt: string): PlaceRecord | null
     properties: {
       name,
       category,
-      rawCategory: null,
+      rawCategory: category === 'other' ? rawCategory : null,
       entrances: [[longitude, latitude] as Position],
       elevation: null,
     },
@@ -489,22 +449,8 @@ export function placeDistanceMeters(left: PlaceRecord, right: PlaceRecord): numb
   return 6_371_008.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function nameFirstToken(value: string): string {
-  return (
-    value
-      .normalize('NFC')
-      .toLocaleLowerCase('en-US')
-      .replace(/[^\p{L}\p{N}]+/gu, ' ')
-      .trim()
-      .split(/\s+/)[0] ?? ''
-  );
-}
-
 function samePrivateBlock(left: PlaceRecord, right: PlaceRecord): boolean {
-  return (
-    left.properties.category === right.properties.category ||
-    nameFirstToken(left.properties.name) === nameFirstToken(right.properties.name)
-  );
+  return left.properties.category === right.properties.category;
 }
 
 function candidate(
@@ -779,6 +725,7 @@ export function processIoverlanderPrivateData(
     left.record.id.localeCompare(right.record.id),
   )) {
     const scored = nearby(source.record, decIndex)
+      .filter((record) => record.properties.category === source.record.properties.category)
       .map((record) => ({ record, candidate: candidate(source.record, record) }))
       .filter(
         (
@@ -932,7 +879,7 @@ function privateAppFeature(source: PrivatePlaceSource): AppFeature {
       name: source.record.properties.name,
       sourceId: 'private-ioverlander',
       unit: 'Private iOverlander reference',
-      category: appCategory(source.raw.category),
+      category: source.record.properties.category,
       publicUse: `${source.raw.open || 'unknown'}; private reference; verify current access`,
       sourceUpdated: source.record.sourceUpdatedAt ?? '',
       origin: 'private-catalog',
@@ -1277,9 +1224,23 @@ export async function buildIoverlanderPrivateCatalog(
   const decGeojsonPath = await realpath(options.decGeojsonPath);
   const reviewCsvPath = options.reviewCsvPath ? await realpath(options.reviewCsvPath) : null;
   const outputDirectory = resolve(options.outputDirectory);
-  if (pathIsInside(publicCheckout, outputDirectory) || outputDirectory === publicCheckout) {
-    throw new Error('private output must be outside the public checkout');
+  const privateDataRoot = resolve(publicCheckout, 'PrivateData');
+  const outputInCheckout =
+    outputDirectory === publicCheckout || pathIsInside(publicCheckout, outputDirectory);
+  const outputInPrivateData =
+    outputDirectory === privateDataRoot || pathIsInside(privateDataRoot, outputDirectory);
+  if (outputInCheckout && !outputInPrivateData) {
+    throw new Error('private output must be outside the public checkout or under PrivateData');
   }
+  if (outputInPrivateData) {
+    const ignoreRules = await readFile(join(publicCheckout, '.gitignore'), 'utf8');
+    if (!ignoreRules.split(/\r?\n/).some((line) => line.trim() === '/PrivateData/')) {
+      throw new Error('PrivateData output requires an exact /PrivateData/ ignore rule');
+    }
+  }
+  const outputLocationPolicy = outputInPrivateData
+    ? 'gitignored-private-root'
+    : 'outside-public-checkout';
   if (existsSync(outputDirectory)) throw new Error('outputDirectory already exists');
   await mkdir(dirname(outputDirectory), { recursive: true });
   const temporaryDirectory = join(
@@ -1385,12 +1346,13 @@ export async function buildIoverlanderPrivateCatalog(
         includesContributorIdentity: false,
         includesDescriptions: false,
         includesCheckInText: false,
-        outputLocationPolicy: 'outside-public-checkout',
+        outputLocationPolicy,
       },
       compatibility: {
         geojsonSchema: 'OutdoorCollection',
         indexSchema: 'OutdoorFeatureIndex/v1',
         sqliteSchema: 'catalog/v1+private-resolution',
+        categorySystem: 'ioverlander',
       },
       counts: result.counts,
       artifacts,
@@ -1401,7 +1363,9 @@ export async function buildIoverlanderPrivateCatalog(
       [
         'Private iOverlander + NYS DEC deduplicated catalog',
         '',
-        'Keep this directory private. It is intentionally outside the public checkout.',
+        outputInPrivateData
+          ? 'Keep this directory private. It is under the Git-ignored PrivateData root.'
+          : 'Keep this directory private. It is intentionally outside the public checkout.',
         'Use new-york-outdoors.composed.geojson and its index as the app-readable merged view.',
         'Use private-ioverlander.geojson and its index for the private overlay alone.',
         'catalog.sqlite is compatible with the catalog record/search layout and adds dedup audit tables.',

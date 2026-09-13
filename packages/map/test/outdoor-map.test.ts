@@ -11,8 +11,8 @@ import {
   featureBounds,
   geometryPositions,
   nextOutdoorZoom,
+  outdoorIoverlanderCategory,
   outdoorMarkerDensityConfig,
-  outdoorPlaceGroup,
   outdoorPlaceIcon,
   outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
@@ -112,24 +112,24 @@ describe('real offline New York map', () => {
   });
   it('builds filterable point collections with stable category icons', () => {
     const all = createOutdoorPlaceCollection(index);
-    const camping = createOutdoorPlaceCollection(index, 'camping');
-    const parking = createOutdoorPlaceCollection(index, 'parking');
-    const water = createOutdoorPlaceCollection(index, 'water');
-    const dayUse = createOutdoorPlaceCollection(index, 'day-use');
+    const camping = createOutdoorPlaceCollection(index, 'campsite');
+    const parking = createOutdoorPlaceCollection(index, 'shorterm_parking');
+    const attractions = createOutdoorPlaceCollection(index, 'tourist_attraction');
+    const other = createOutdoorPlaceCollection(index, 'other');
     expect(all.features).toHaveLength(4560);
     expect(camping.features.length).toBeGreaterThan(2500);
     expect(parking.features.length).toBeGreaterThan(1500);
-    expect(water.features.length).toBeGreaterThan(150);
-    expect(dayUse.features.length).toBeGreaterThan(100);
+    expect(attractions.features.length).toBeGreaterThan(100);
+    expect(other.features.length).toBeGreaterThan(150);
     expect(camping.features.every((feature) => feature.geometry.type === 'Point')).toBe(true);
     expect(
-      camping.features.every((feature) =>
-        ['camping', 'shelter'].includes(feature.properties.placeGroup),
-      ),
+      camping.features.every((feature) => feature.properties.ioverlanderCategory === 'campsite'),
     ).toBe(true);
-    expect(outdoorPlaceGroup('LEAN-TO')).toBe('shelter');
-    expect(outdoorPlaceIcon('camping')).toBe('▲');
-    expect(outdoorPlaceIcon('parking')).toBe('P');
+    expect(outdoorIoverlanderCategory('LEAN-TO')).toBe('campsite');
+    expect(outdoorIoverlanderCategory('wild_campsite')).toBe('wild_campsite');
+    expect(outdoorPlaceIcon('campsite')).toBe('C');
+    expect(outdoorPlaceIcon('wild_campsite')).toBe('▲');
+    expect(outdoorPlaceIcon('shorterm_parking')).toBe('P');
     expect(outdoorPlaceIcon('water')).toBe('≈');
   });
   it('uses clusters, icons, then labels as the user zooms in', () => {

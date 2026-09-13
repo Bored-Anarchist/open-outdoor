@@ -15,7 +15,19 @@ import {
   type OutdoorMarkerDensity,
   type OutdoorPlaceFilter,
 } from '@open-outdoor/map';
+import { ioverlanderCategoryDefinitions } from '@open-outdoor/shared';
 const featureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
+const categorySelect = document.querySelector<HTMLSelectElement>('#place-filter')!;
+for (const definition of ioverlanderCategoryDefinitions) {
+  const option = document.createElement('option');
+  option.value = definition.id;
+  option.textContent = `${definition.icon} ${definition.label}`;
+  categorySelect.appendChild(option);
+}
+document.querySelector('#category-key')!.textContent = ioverlanderCategoryDefinitions
+  .slice(0, 7)
+  .map((definition) => `${definition.icon} ${definition.label}`)
+  .join(' · ');
 const style = document.createElement('style');
 style.textContent =
   'body{margin:0;background:#edf1eb;font-family:system-ui;color:#203b31}main{max-width:1100px;margin:24px auto;background:white;border-radius:16px;overflow:hidden;box-shadow:0 6px 28px #0002}header,footer{padding:20px 26px}header strong{letter-spacing:.1em;text-transform:uppercase;font-size:12px}h1{margin:8px 0;font-size:30px}p{margin:0}.map-selectors{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-top:18px}.map-selectors label{display:grid;gap:5px;font-size:12px;font-weight:700}.map-selectors select{min-height:44px;border:2px solid #526973;border-radius:10px;background:white;color:#182e36;padding:0 38px 0 12px;font:600 15px system-ui}#zoom-readout{margin-left:auto;background:#d8eaf0;border-radius:10px;padding:10px 12px;font-weight:700}#map{height:580px}footer{font-size:13px;line-height:1.7}';

@@ -1,4 +1,11 @@
-import type { Coordinate } from '@open-outdoor/shared';
+import {
+  ioverlanderCategoryDefinition,
+  ioverlanderCategoryDefinitions,
+  ioverlanderCategoryIds,
+  normalizeIoverlanderCategory,
+  type Coordinate,
+  type IoverlanderCategory,
+} from '@open-outdoor/shared';
 import type { MapAdapter, MapCamera, MapFeature, MapRoute } from './index';
 import { isLocalFileUri } from './offline-basemap-source';
 export interface OutdoorFeatureProperties {
@@ -37,13 +44,12 @@ export interface OutdoorFeatureIndex {
   features: OutdoorFeatureSummary[];
 }
 
-export const outdoorPlaceFilters = ['all', 'camping', 'parking', 'water', 'day-use'] as const;
-export type OutdoorPlaceFilter = (typeof outdoorPlaceFilters)[number];
+export const outdoorPlaceFilters = ['all', ...ioverlanderCategoryIds] as const;
+export type OutdoorPlaceFilter = 'all' | IoverlanderCategory;
 export const outdoorMarkerDensities = ['automatic', 'fewer', 'more'] as const;
 export type OutdoorMarkerDensity = (typeof outdoorMarkerDensities)[number];
-export type OutdoorPlaceGroup = 'camping' | 'shelter' | 'parking' | 'water' | 'day-use' | 'other';
 
-export const campingCategories = [
+const decCampingCategories = [
   'PRIMITIVE CAMPSITE',
   'CAMPSITE',
   'ACCESSIBLE CAMPSITE',
@@ -58,17 +64,7 @@ const parkingCategories = [
   'ACCESSIBLE PARKING SPACE',
   'PULL-OFF',
 ] as const;
-const waterCategories = [
-  'BOAT LAUNCH',
-  'FISHING ACCESS SITE',
-  'FISHING PIER',
-  'ACCESSIBLE FISHING PIER',
-  'ACCESSIBLE FISHING PLATFORM',
-  'ACCESSIBLE HAND LAUNCH',
-  'ACCESSIBLE WATER ACCESS',
-  'ACCESSIBLE DOCK',
-] as const;
-const dayUseCategories = [
+const touristAttractionCategories = [
   'PICNIC SITE',
   'PICNIC PAVILION',
   'ACCESSIBLE PICNIC TABLE',
@@ -82,35 +78,30 @@ function includesCategory(values: readonly string[], value: string): boolean {
   return values.includes(value);
 }
 
-export function outdoorPlaceGroup(category: string): OutdoorPlaceGroup {
-  if (category === 'LEAN-TO') return 'shelter';
-  if (includesCategory(campingCategories, category)) return 'camping';
-  if (includesCategory(parkingCategories, category)) return 'parking';
-  if (includesCategory(waterCategories, category)) return 'water';
-  if (includesCategory(dayUseCategories, category)) return 'day-use';
+export function outdoorIoverlanderCategory(category: string): IoverlanderCategory {
+  const sourceCategory = category.normalize('NFC').trim().toLocaleLowerCase('en-US');
+  if (ioverlanderCategoryIds.includes(sourceCategory as IoverlanderCategory)) {
+    return normalizeIoverlanderCategory(sourceCategory);
+  }
+  const decCategory = category.normalize('NFC').trim().toLocaleUpperCase('en-US');
+  if (includesCategory(decCampingCategories, decCategory)) return 'campsite';
+  if (includesCategory(parkingCategories, decCategory)) return 'shorterm_parking';
+  if (includesCategory(touristAttractionCategories, decCategory)) return 'tourist_attraction';
   return 'other';
 }
 
-export function outdoorPlaceIcon(group: OutdoorPlaceGroup): string {
-  return {
-    camping: '▲',
-    shelter: '⌂',
-    parking: 'P',
-    water: '≈',
-    'day-use': '◆',
-    other: '•',
-  }[group];
+export function outdoorPlaceIcon(category: IoverlanderCategory): string {
+  return ioverlanderCategoryDefinition(category).icon;
 }
 
-function matchesPlaceFilter(group: OutdoorPlaceGroup, filter: OutdoorPlaceFilter): boolean {
-  if (filter === 'all') return true;
-  if (filter === 'camping') return group === 'camping' || group === 'shelter';
-  return group === filter;
+function matchesPlaceFilter(category: IoverlanderCategory, filter: OutdoorPlaceFilter): boolean {
+  return filter === 'all' || category === filter;
 }
 
 export interface OutdoorPlaceFeature extends Omit<OutdoorFeature, 'properties' | 'geometry'> {
   properties: OutdoorFeatureProperties & {
-    placeGroup: OutdoorPlaceGroup;
+    ioverlanderCategory: IoverlanderCategory;
+    categoryLabel: string;
     placeIcon: string;
   };
   geometry: { type: 'Point'; coordinates: number[] };
@@ -130,16 +121,18 @@ export function createOutdoorPlaceCollection(
     type: 'FeatureCollection',
     features: index.features.flatMap((feature) => {
       if (feature.properties.kind !== 'poi') return [];
-      const group = outdoorPlaceGroup(feature.properties.category);
-      if (!matchesPlaceFilter(group, filter)) return [];
+      const category = outdoorIoverlanderCategory(feature.properties.category);
+      if (!matchesPlaceFilter(category, filter)) return [];
+      const definition = ioverlanderCategoryDefinition(category);
       return [
         {
           type: 'Feature' as const,
           id: feature.id,
           properties: {
             ...feature.properties,
-            placeGroup: group,
-            placeIcon: outdoorPlaceIcon(group),
+            ioverlanderCategory: category,
+            categoryLabel: definition.label,
+            placeIcon: definition.icon,
           },
           geometry: {
             type: 'Point' as const,
@@ -191,20 +184,11 @@ export function nextOutdoorZoom(current: number, direction: 'in' | 'out'): numbe
 export function createOutdoorPlaceLayerStyles(density: OutdoorMarkerDensity = 'automatic') {
   const config = outdoorMarkerDensityConfig[density];
   const individualMinZoom = config.clusterMaxZoom + 1;
-  const groupColor = [
+  const categoryColor = [
     'match',
-    ['get', 'placeGroup'],
-    'camping',
-    '#cf5726',
-    'shelter',
-    '#9b4d1f',
-    'parking',
-    '#355c7d',
-    'water',
-    '#147d92',
-    'day-use',
-    '#5f7f31',
-    '#526f77',
+    ['get', 'ioverlanderCategory'],
+    ...ioverlanderCategoryDefinitions.flatMap((definition) => [definition.id, definition.color]),
+    ioverlanderCategoryDefinition('other').color,
   ];
   return [
     {
@@ -238,7 +222,7 @@ export function createOutdoorPlaceLayerStyles(density: OutdoorMarkerDensity = 'a
       minzoom: individualMinZoom,
       filter: ['!', ['has', 'point_count']],
       paint: {
-        'circle-color': groupColor,
+        'circle-color': categoryColor,
         'circle-radius': ['interpolate', ['linear'], ['zoom'], individualMinZoom, 9, 17, 13],
         'circle-stroke-color': '#ffffff',
         'circle-stroke-width': 2,
