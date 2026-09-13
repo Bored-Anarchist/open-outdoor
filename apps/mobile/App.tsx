@@ -38,10 +38,7 @@ import {
   createOutdoorMapAdapter,
   type MobileApplication,
 } from './application';
-import { Phase1AcceptanceRunner } from './Phase1AcceptanceRunner';
 import { OutdoorMap } from './OutdoorMap';
-import { Phase5AcceptanceRunner } from './Phase5AcceptanceRunner';
-import { Phase3AcceptanceRunner } from './Phase3AcceptanceRunner';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
@@ -542,25 +539,12 @@ function AppContent({
           {nativeSpikes.phase0DiagnosticsEnabled ? (
             <>
               <Text accessibilityRole="header" style={styles.sectionHeading}>
-                Physical acceptance evidence
+                Advanced diagnostics
               </Text>
               <Text style={styles.copy}>
                 Diagnostic JSON contains timings, memory sizes, and file policy only—never
                 coordinates.
               </Text>
-              <Phase5AcceptanceRunner enabled={application !== null} />
-              <Phase3AcceptanceRunner enabled={application !== null} />
-              <Phase1AcceptanceRunner
-                enabled={application !== null}
-                onFinish={finish}
-                onMemoryProfileChange={setMemoryProfileActive}
-                onPause={pause}
-                onResume={resume}
-                onRecover={recover}
-                onStart={start}
-                recorderState={recorderState}
-              />
-              <Text style={styles.copy}>Advanced individual diagnostics:</Text>
               <View style={styles.controls}>
                 <AccessibleButton
                   label="Measure 20 Start/Stop acknowledgements"

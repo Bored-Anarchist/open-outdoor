@@ -9,10 +9,6 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
-  private var phase1AcceptanceInstance: OpenOutdoorPhase1AcceptanceCoordinator?
-  private var phase5AcceptanceInstance: OpenOutdoorPhase3AcceptanceStore?
-  private var phase3AcceptanceInstance: OpenOutdoorPhase3AcceptanceStore?
-
   private func phase0Diagnostics() throws -> OpenOutdoorPhase0Diagnostics {
     if let phase0DiagnosticsInstance { return phase0DiagnosticsInstance }
     let diagnostics = try OpenOutdoorPhase0Diagnostics()
@@ -30,26 +26,6 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     return diagnostics
   }
 
-  private func phase1Acceptance() throws -> OpenOutdoorPhase1AcceptanceCoordinator {
-    if let phase1AcceptanceInstance { return phase1AcceptanceInstance }
-    let coordinator = try OpenOutdoorPhase1AcceptanceCoordinator(tracker: tracker)
-    phase1AcceptanceInstance = coordinator
-    return coordinator
-  }
-
-  private func phase5Acceptance() throws -> OpenOutdoorPhase3AcceptanceStore {
-    if let phase5AcceptanceInstance { return phase5AcceptanceInstance }
-    let store = try OpenOutdoorPhase3AcceptanceStore(namespace: "Phase5Acceptance", reportProfile: "iphone14-ios26.6-production-guided-v1")
-    phase5AcceptanceInstance = store
-    return store
-  }
-
-  private func phase3Acceptance() throws -> OpenOutdoorPhase3AcceptanceStore {
-    if let phase3AcceptanceInstance { return phase3AcceptanceInstance }
-    let store = try OpenOutdoorPhase3AcceptanceStore()
-    phase3AcceptanceInstance = store
-    return store
-  }
 #endif
 
   public func definition() -> ModuleDefinition {
@@ -95,7 +71,6 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     AsyncFunction("stopTracking") { () -> Int64 in
       let finalSequence = try self.tracker.stop()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
-      self.phase1AcceptanceInstance?.recordExplicitStop(finalSequence: finalSequence)
       self.phase0PerformanceInstance?.cancelMemoryProfile()
 #endif
       return finalSequence
@@ -114,11 +89,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     }.runOnQueue(.main)
 
     AsyncFunction("recoverTrackingSession") { () -> String in
-      let inspection = try self.tracker.recover()
-#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
-      self.phase1AcceptanceInstance?.recordTrackerRecovery()
-#endif
-      return inspection
+      try self.tracker.recover()
     }.runOnQueue(.main)
 
     AsyncFunction("discardRecoverableTrackingSession") { () -> String in
@@ -232,88 +203,6 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       try self.phase0Performance().shareLastReport()
     }.runOnQueue(.main)
 
-    AsyncFunction("beginPhase1Acceptance") { (referenceClimbM: Double) -> String in
-      try self.phase1Acceptance().begin(referenceClimbM: referenceClimbM)
-    }.runOnQueue(.main)
-
-    AsyncFunction("currentPhase1Acceptance") { () -> String in
-      try self.phase1Acceptance().currentReportJSON()
-    }.runOnQueue(.main)
-
-    AsyncFunction("armPhase1CrashRecovery") { () -> String in
-      try self.phase1Acceptance().armCrashRecovery()
-    }.runOnQueue(.main)
-
-    AsyncFunction("beginPhase1FieldRun") { () -> String in
-      try self.phase1Acceptance().beginFieldRun()
-    }.runOnQueue(.main)
-
-    AsyncFunction("recordPhase1FieldResult") { (memoryReportJSON: String, measuredAscentM: Double) -> String in
-      try self.phase1Acceptance().recordFieldResult(
-        memoryReportJSON: memoryReportJSON,
-        measuredAscentM: measuredAscentM
-      )
-    }.runOnQueue(.main)
-
-    AsyncFunction("beginPhase1ElevationRetry") { () -> String in
-      try self.phase1Acceptance().beginElevationRetry()
-    }.runOnQueue(.main)
-
-    AsyncFunction("recordPhase1ElevationRetry") { (measuredAscentM: Double) -> String in
-      try self.phase1Acceptance().recordElevationRetry(measuredAscentM)
-    }.runOnQueue(.main)
-
-    AsyncFunction("retryPhase1Accessibility") { () -> String in
-      try self.phase1Acceptance().retryAccessibility()
-    }.runOnQueue(.main)
-
-    AsyncFunction("recordPhase1AccessibilityControl") { (action: String) -> String in
-      try self.phase1Acceptance().recordAccessibilityControl(action)
-    }.runOnQueue(.main)
-
-    AsyncFunction("confirmPhase1Accessibility") { (usable: Bool) -> String in
-      try self.phase1Acceptance().confirmAccessibilityUsability(usable)
-    }.runOnQueue(.main)
-
-    AsyncFunction("resetPhase1Acceptance") { () -> String in
-      try self.phase1Acceptance().reset()
-    }.runOnQueue(.main)
-
-    AsyncFunction("sharePhase1AcceptanceReport") { () -> String in
-      try self.phase1Acceptance().shareCurrentReport()
-    }.runOnQueue(.main)
-
-    AsyncFunction("phase3AcceptanceEnvironment") { () -> String in
-      try self.phase3Acceptance().environmentJSON()
-    }.runOnQueue(.main)
-
-    AsyncFunction("loadPhase5AcceptanceState") { () -> String? in
-      try self.phase5Acceptance().loadState()
-    }.runOnQueue(.main)
-
-    AsyncFunction("savePhase5AcceptanceState") { (stateJSON: String) -> String in
-      try self.phase5Acceptance().saveState(stateJSON)
-    }.runOnQueue(.main)
-
-    AsyncFunction("sharePhase5AcceptanceReport") { (reportJSON: String) -> String in
-      try self.phase5Acceptance().shareReport(reportJSON)
-    }.runOnQueue(.main)
-
-    AsyncFunction("loadPhase3AcceptanceState") { () -> String? in
-      try self.phase3Acceptance().loadState()
-    }.runOnQueue(.main)
-
-    AsyncFunction("savePhase3AcceptanceState") { (stateJSON: String) -> String in
-      try self.phase3Acceptance().saveState(stateJSON)
-    }.runOnQueue(.main)
-
-    AsyncFunction("resetPhase3AcceptanceState") {
-      try self.phase3Acceptance().reset()
-    }.runOnQueue(.main)
-
-    AsyncFunction("sharePhase3AcceptanceReport") { (reportJSON: String) -> String in
-      try self.phase3Acceptance().shareReport(reportJSON)
-    }.runOnQueue(.main)
 #endif
   }
 }

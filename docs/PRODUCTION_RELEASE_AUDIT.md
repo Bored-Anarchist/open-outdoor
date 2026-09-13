@@ -54,4 +54,4 @@ The CLI first verifies WP-504 signatures and all inventory bytes, requires the p
 
 No release, tag, merge, private key or production approval is created by this command.
 
-For the coordinated Windows command and persistent iOS guide, use [guided production acceptance](GUIDED_PRODUCTION_ACCEPTANCE.md). It collects observations and prepares this audit; it does not waive the signed evidence, numeric measurement or independent review requirements.
+The former in-app guide is documented in [guided production acceptance](GUIDED_PRODUCTION_ACCEPTANCE.md) as historical evidence. New physical reports must be assembled directly against `config/production-quality-profile.json` and evaluated with `pnpm phase5:quality --verify-physical`; signed release evidence still uses `pnpm phase5:audit`. The runner retirement does not waive numeric measurement, installed-candidate binding or independent review requirements.

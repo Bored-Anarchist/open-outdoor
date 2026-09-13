@@ -80,4 +80,4 @@ All code, templates, and synthetic fixtures are original AI-assisted project con
 
 ### Automated Phase 4 acceptance
 
-Run `pnpm phase4:acceptance` to execute the full machine acceptance workflow for WP-401 through WP-406. [The runner guide](PHASE_4_GUIDED_ACCEPTANCE.md) describes clean-candidate evidence and reviewer disposition. The runner and its decision tests are original AI-assisted repository contributions using synthetic fixtures and existing dependencies.
+The retired `phase4:acceptance` runner executed the full machine acceptance workflow for WP-401 through WP-406. [The historical runner guide](PHASE_4_GUIDED_ACCEPTANCE.md) describes clean-candidate evidence and reviewer disposition. Its evidence-contract library and decision tests remain original AI-assisted repository contributions using synthetic fixtures and existing dependencies.

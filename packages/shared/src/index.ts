@@ -138,5 +138,3 @@ export * from './design-system';
 
 export * from './foreground-task';
 export * from './accessibility';
-
-export * from './production-guided';

@@ -1,5 +1,7 @@
 # Phase 4 guided acceptance
 
+**Retired:** The Phase 4 runner command was removed after the gate was accepted. Its evidence-contract library, tests, reports and disposition remain for auditability.
+
 Run `pnpm phase4:acceptance` from the repository after installing the pinned Node 24.19.0 and pnpm 11.20.0 toolchain (`pnpm install --frozen-lockfile`). Windows PowerShell is required on Windows; other hosts need `pwsh` for the downstream check. Commit all changes first. A dirty checkout can run diagnostics but cannot produce passing acceptance evidence.
 
 The runner automates full TypeScript checks, the complete Vitest suite, formatting, release/workflow/native-contract validation, private CI policy, isolated synthetic downstream Git synchronization, the public browser build, and public-boundary scanning. It requires explicit passing suite evidence for WP-401 through WP-406 and their case IDs in [the acceptance plan](TEST_AND_ACCEPTANCE_PLAN.md). No tests may be skipped. Commands have ten-minute limits; a missing dependency, failed command, or missing test output blocks acceptance. Every command prints progress and the runner continues through remaining checks after ordinary command failures.

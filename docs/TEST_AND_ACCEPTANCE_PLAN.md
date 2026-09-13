@@ -3,6 +3,8 @@
 **Status:** In progress; Phase 2 accepted, with later phase and release acceptance pending
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
+**Runner retirement:** Phase 1–5 guided execution surfaces were removed after owner sign-off. Commands described below are historical records; retained gate schemas, evidence evaluators and reports remain authoritative.
+
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
 
 ## 1. Test levels
@@ -257,7 +259,7 @@ Each accepted suite records:
 - A release candidate is accepted only at the exact commit/artifact checksum reviewed.
 - Product MVP acceptance occurs only at M4/Phase 3 and requires all must-haves in the [product release definition](PRODUCT_RELEASE_DEFINITION.md); no earlier alpha may be relabelled as MVP.
 
-Phase 4 automated evidence: run `pnpm phase4:acceptance` on a clean candidate. See [Phase 4 guided acceptance](PHASE_4_GUIDED_ACCEPTANCE.md) for automated checks, commit-bound reports, and reviewer acceptance.
+Phase 4 automated evidence was collected with the retired `phase4:acceptance` command on a clean candidate. See [Phase 4 guided acceptance](PHASE_4_GUIDED_ACCEPTANCE.md) for the historical automated checks, commit-bound reports and reviewer acceptance.
 
 ## WP-501 automated design coverage
 

@@ -1,5 +1,7 @@
 # Guided acceptance on Windows and iOS
 
+**Retired:** The in-app Phase 5 guide and its native state/report bridge were removed after the owner accepted the automatic preflight on 2026-09-12. This document is retained only as historical acceptance evidence; the current app does not expose this workflow.
+
 The Phase 5 runner coordinates automated checks, the phone checklist and the post-WP-506 evidence handoff. It does not automatically approve a release or replace physical instrumentation and independent review.
 
 ## Windows

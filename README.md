@@ -2,7 +2,7 @@
 
 Open Outdoor is a planned open-source, offline-first iOS application for trail discovery, camping information, and GPS hike recording. The initial reference implementation targets New York, an iPhone 14, and a Windows-first contributor workflow. The browser is a QA harness; Android and turn-by-turn navigation are not in the initial scope.
 
-The repository contains an iOS candidate with recording, guided acceptance tooling and a [native geographic map](docs/BUNDLED_NATIVE_MAP.md). Explore combines a bundled New York OpenStreetMap/Protomaps overview with bundled NYS DEC lands, roads, hiking trails and recreation points. The app never streams maps: optional detailed basemaps are imported from local files and every installation retains the bundled overview as an offline fallback. Physical acceptance and independent release review remain pending.
+The repository contains an iOS candidate with recording, retained acceptance evidence and a [native geographic map](docs/BUNDLED_NATIVE_MAP.md). Explore combines a bundled New York OpenStreetMap/Protomaps overview with bundled NYS DEC lands, roads, hiking trails and recreation points. The app never streams maps: optional detailed basemaps are imported from local files and every installation retains the bundled overview as an offline fallback. Physical acceptance and independent release review remain pending.
 
 ## Phase 0 developer bootstrap
 
@@ -56,7 +56,7 @@ Implementation begins with Phase 0 in the [work-package breakdown](docs/WORK_PAC
 
 Public contributions use project handles, privacy-protected commit addresses, and an account-bound rights attestation—no additional personal identifying details. Hosted CI is local-first and path/gate-filtered to minimize GitHub Actions minutes.
 
-Phase 4 connector acceptance: `pnpm phase4:acceptance`. See [the runner guide](docs/PHASE_4_GUIDED_ACCEPTANCE.md).
+Phase 4 connector acceptance evidence and the retired runner procedure are preserved in the [historical guide](docs/PHASE_4_GUIDED_ACCEPTANCE.md).
 
 The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) documents WP-501 tokens, components, states and map appearances. Run `pnpm test:design:browser` for the synthetic browser acceptance matrix.
 

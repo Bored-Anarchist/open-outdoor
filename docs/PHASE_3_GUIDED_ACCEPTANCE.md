@@ -1,5 +1,7 @@
 # Phase 3 automatic acceptance
 
+**Retired:** The in-app Phase 3 runner and native acceptance store were removed after the phase gate was accepted. This procedure remains as historical evidence and is not present in current builds.
+
 The Phase 3 workflow combines deterministic repository checks with an automatic physical-iPhone run. Every result is bound to the embedded source commit, installed executable SHA-256, iPhone 14/iOS 26.6 profile, and a coordinate-free protected report.
 
 ## Phone run
