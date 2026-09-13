@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "4d829da66e00d0e0a5b2e732cb125e771b9e6add",
+  "reportSha256": "967e93596736442cb185a4da87d8bdcb526e7b16d315ba12129b5920de002243",
+  "evaluation": {
+    "automaticStatus": "passed",
+    "automaticBlockers": [],
+    "physicalStatus": "blocked",
+    "productionStatus": "not-approved"
+  },
+  "hostedChecks": {
+    "pullRequest": 10,
+    "status": "passed",
+    "checks": [
+      "design-accessibility-traceability",
+      "documentation-integrity",
+      "security-rights-privacy",
+      "windows-quality",
+      "windows-shared"
+    ]
+  },
+  "review": {
+    "accepted": true,
+    "reviewer": "Bored-Anarchist",
+    "date": "2026-09-12",
+    "notes": "Owner explicitly approved the automatic Phase 5 preflight in the task: Let's sign off on phase 5 testing, automatic preflight passes."
+  },
+  "scope": "Automatic Windows quality, privacy, production automation, iOS JavaScript export and hosted PR checks only. No physical-device, endurance, installed-executable, independent-review, native-reproduction or production-release result is claimed.",
+  "disposition": "accepted-automatic-preflight",
+  "reportPath": "phase5-automatic-preflight-4d829da.json"
+}

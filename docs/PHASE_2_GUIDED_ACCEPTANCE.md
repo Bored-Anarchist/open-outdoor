@@ -1,5 +1,7 @@
 # Phase 2 guided acceptance
 
+**Retired:** The Phase 2 runner command was removed after the gate was accepted. This procedure and its report/schema references remain as historical acceptance evidence.
+
 The Phase 2 runner reduces the New York data-alpha acceptance pass to one non-interactive command. It runs every local Phase 2 suite, checks all 17 official source registrations, validates the public boundary, and writes a schema-validated report plus a reviewer proposal. It never changes the gate record. Follow the [Phase 2 acceptance checklist](PHASE_2_ACCEPTANCE_CHECKLIST.md) for the exact tester and reviewer sequence. ADR-046 is implemented: RIDB uses Recreation.gov's official daily JSON ZIP and does not require an API key.
 
 ## Tester preparation

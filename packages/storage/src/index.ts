@@ -43,6 +43,22 @@ export const storageLayout = {
     fileProtection: 'completeUntilFirstUserAuthentication',
     backupExcluded: true,
   },
+  basemapInstalled: {
+    id: 'basemap-installed',
+    kind: 'readonly-catalog',
+    schemaVersion: 1,
+    relativePath: 'Library/Application Support/Basemaps/Installed',
+    fileProtection: 'completeUntilFirstUserAuthentication',
+    backupExcluded: true,
+  },
+  basemapStaging: {
+    id: 'basemap-staging',
+    kind: 'readonly-catalog',
+    schemaVersion: 1,
+    relativePath: 'Library/Application Support/Basemaps/Staging',
+    fileProtection: 'completeUntilFirstUserAuthentication',
+    backupExcluded: true,
+  },
 } as const satisfies Record<string, StoreDescriptor>;
 
 export interface StoreCapability {
@@ -233,6 +249,7 @@ export function simulateCatalogActivation(
 }
 
 export * from './catalog-activation';
+export * from './basemap-pack';
 
 export interface Phase0ActivityFixture {
   readonly id: string;

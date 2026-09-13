@@ -1,5 +1,7 @@
 # Phase 1 guided acceptance
 
+**Retired:** The in-app Phase 1 runner and native coordinator were removed after the phase gate was accepted. This procedure remains as historical evidence and is not present in current builds.
+
 The guided runner reduces WP-109 to one persistent workflow while preserving every binding physical and accessibility threshold. It is compiled only in the local diagnostics channel and never records coordinates.
 
 ## Before starting

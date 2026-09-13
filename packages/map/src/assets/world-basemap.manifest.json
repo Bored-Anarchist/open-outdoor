@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "regionId": "world",
+  "role": "bundled-world-overview",
+  "acquiredAt": "2026-09-12T18:27:15-04:00",
+  "source": "https://build.protomaps.com/20260910.pmtiles",
+  "sourceTimestamp": "2026-09-10T04:00:00Z",
+  "bounds": [-180, -85.0511287, 180, 85.0511287],
+  "minimumZoom": 0,
+  "maximumZoom": 6,
+  "overzoomBeyondMaximum": true,
+  "archive": {
+    "format": "pmtiles",
+    "bytes": 44885093,
+    "mebibytes": 42.81,
+    "tileEntries": 3400,
+    "sha256": "474e74e67b2c2907a39122cd72c06ede2d9c8a38576b13def3c529ecb1355fb5"
+  },
+  "compiler": {
+    "name": "go-pmtiles",
+    "version": "1.31.2",
+    "archiveSha256": "a658baa4d7e55020aef6ca17bd9ff9faa1582671266b36f58c52db0ac8e785a1"
+  },
+  "font": {
+    "name": "Noto Sans",
+    "sourceRevision": "809e4d8b8d7e9364a914909bb777679606c178b8",
+    "sha256": "bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d",
+    "license": "OFL-1.1"
+  },
+  "attribution": "Protomaps © OpenStreetMap contributors",
+  "license": "OpenStreetMap data ODbL; Protomaps basemap software BSD-3-Clause; Noto Sans OFL-1.1",
+  "offline": true
+}

@@ -108,6 +108,47 @@ export interface RecorderPersistence {
 
 export class RecorderCoordinator {
   readonly stateMachine = new RecorderStateMachine();
+  private operations: Promise<void> = Promise.resolve();
+  private synchronizationDirty = false;
+  private pendingAcknowledgement: number | null = null;
+  private serialize<T>(operation: () => Promise<T>): Promise<T> {
+    const result = this.operations.then(operation);
+    this.operations = result.then(
+      () => undefined,
+      () => undefined,
+    );
+    return result;
+  }
+  start(
+    ...args: Parameters<RecorderCoordinator['startUnlocked']>
+  ): ReturnType<RecorderCoordinator['startUnlocked']> {
+    return this.serialize(() => this.startUnlocked(...args));
+  }
+  pause(
+    ...args: Parameters<RecorderCoordinator['pauseUnlocked']>
+  ): ReturnType<RecorderCoordinator['pauseUnlocked']> {
+    return this.serialize(() => this.pauseUnlocked(...args));
+  }
+  resume(
+    ...args: Parameters<RecorderCoordinator['resumeUnlocked']>
+  ): ReturnType<RecorderCoordinator['resumeUnlocked']> {
+    return this.serialize(() => this.resumeUnlocked(...args));
+  }
+  recover(
+    ...args: Parameters<RecorderCoordinator['recoverUnlocked']>
+  ): ReturnType<RecorderCoordinator['recoverUnlocked']> {
+    return this.serialize(() => this.recoverUnlocked(...args));
+  }
+  synchronize(
+    ...args: Parameters<RecorderCoordinator['synchronizeUnlocked']>
+  ): ReturnType<RecorderCoordinator['synchronizeUnlocked']> {
+    return this.serialize(() => this.synchronizeUnlocked(...args));
+  }
+  finish(
+    ...args: Parameters<RecorderCoordinator['finishUnlocked']>
+  ): ReturnType<RecorderCoordinator['finishUnlocked']> {
+    return this.serialize(() => this.finishUnlocked(...args));
+  }
 
   constructor(
     readonly tracker: ProductionTrackerAdapter,
@@ -124,7 +165,7 @@ export class RecorderCoordinator {
     );
   }
 
-  async start(
+  private async startUnlocked(
     mode: TrackingMode,
     name = 'Recorded hike',
     startedAt = new Date().toISOString(),
@@ -143,7 +184,7 @@ export class RecorderCoordinator {
     return activity;
   }
 
-  async pause(recordedAt = new Date().toISOString()): Promise<void> {
+  private async pauseUnlocked(recordedAt = new Date().toISOString()): Promise<void> {
     await this.tracker.pause();
     this.stateMachine.pause(recordedAt);
     this.repository.updateActivityLifecycle(activityId(this.activeSessionId()), 'paused');
@@ -155,7 +196,7 @@ export class RecorderCoordinator {
     );
   }
 
-  async resume(recordedAt = new Date().toISOString()): Promise<void> {
+  private async resumeUnlocked(recordedAt = new Date().toISOString()): Promise<void> {
     await this.tracker.resume();
     this.stateMachine.resume(recordedAt);
     this.repository.updateActivityLifecycle(activityId(this.activeSessionId()), 'recording');
@@ -167,7 +208,7 @@ export class RecorderCoordinator {
     );
   }
 
-  async recover(
+  private async recoverUnlocked(
     recordedAt = new Date().toISOString(),
     reason: 'process-termination' | 'permission-loss' | 'native-error' = 'process-termination',
   ): Promise<RecordedActivity | null> {
@@ -218,7 +259,8 @@ export class RecorderCoordinator {
         finishedAt: null,
       });
     }
-    await this.synchronize(recordedAt);
+    this.synchronizationDirty = true;
+    await this.synchronizeUnlocked(recordedAt);
     return this.repository.listActivities().find((activity) => activity.id === id) ?? null;
   }
   private activeSessionId(): string {
@@ -229,7 +271,7 @@ export class RecorderCoordinator {
     return state.sessionId;
   }
 
-  async synchronize(recordedAt = new Date().toISOString()): Promise<number> {
+  private async synchronizeUnlocked(recordedAt = new Date().toISOString()): Promise<number> {
     const state = this.stateMachine.state;
     if (state.kind !== 'recording' && state.kind !== 'paused') {
       throw new Error('recorder is not synchronizable');
@@ -239,6 +281,14 @@ export class RecorderCoordinator {
       state.highestCommittedSequence,
     );
     if (replay.gaps.length > 0) return state.highestCommittedSequence;
+    if (replay.observations.length === 0 && !this.synchronizationDirty) {
+      if (this.pendingAcknowledgement !== null) {
+        await this.tracker.acknowledge(this.pendingAcknowledgement);
+        this.pendingAcknowledgement = null;
+      }
+      return state.highestCommittedSequence;
+    }
+    this.synchronizationDirty = true;
     this.stateMachine.commit(replay.observations, recordedAt);
     this.repository.appendSamples(
       activityId(state.sessionId),
@@ -256,16 +306,21 @@ export class RecorderCoordinator {
       })),
     );
     await this.persist(state.sessionId, replay.highestCommittedSequence);
+    this.synchronizationDirty = false;
+    this.pendingAcknowledgement = replay.highestCommittedSequence;
     await this.tracker.acknowledge(replay.highestCommittedSequence);
+    this.pendingAcknowledgement = null;
     return replay.highestCommittedSequence;
   }
 
-  async finish(finishedAt = new Date().toISOString()): Promise<FinishedActivitySummary> {
+  private async finishUnlocked(
+    finishedAt = new Date().toISOString(),
+  ): Promise<FinishedActivitySummary> {
     for (let batch = 0; batch < 10_000; batch += 1) {
       const state = this.stateMachine.state;
       const before =
         state.kind === 'recording' || state.kind === 'paused' ? state.highestCommittedSequence : 0;
-      const after = await this.synchronize(finishedAt);
+      const after = await this.synchronizeUnlocked(finishedAt);
       if (after === before) break;
       if (batch === 9_999) throw new Error('tracking spool exceeded the bounded drain limit');
     }
@@ -276,7 +331,7 @@ export class RecorderCoordinator {
       const committed =
         state.kind === 'recording' || state.kind === 'paused' ? state.highestCommittedSequence : 0;
       if (committed === stopped.finalSequence) break;
-      const after = await this.synchronize(finishedAt);
+      const after = await this.synchronizeUnlocked(finishedAt);
       if (after === committed || batch === 9_999) {
         throw new Error('final native tracking sequence was not durably imported');
       }

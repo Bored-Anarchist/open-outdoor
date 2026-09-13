@@ -44,5 +44,11 @@
 | WP-404 | [Permission-gated adapter shells](WP-404.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
 | WP-405 | [Private extension compatibility](WP-405.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
 | WP-406 | [Connector operations](WP-406.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
+| WP-501 | [Product design system](WP-501.md) | Implemented; Phase 5 automatic preflight owner-accepted |
+| WP-502 | [Production accessibility](WP-502.md) | Automated verification accepted; physical acceptance pending |
+| WP-503 | [Production performance and endurance](WP-503.md) | Automated verification accepted; physical acceptance pending |
+| WP-504 | [Signed release artifacts](WP-504.md) | Implementation and synthetic verification complete |
+| WP-505 | [Contributor governance](WP-505.md) | Governance implementation complete; independent reviewer pending |
+| WP-506 | [Production release audit](WP-506.md) | Automatic preflight owner-accepted; production acceptance blocked |
 
 The authoritative machine-readable dispositions are `config/phase0-gate.json` and `config/phase1-gate.json`. A package implementation record does not convert a pending physical case into a pass. An accepted waiver closes only its explicitly scoped gate case and remains distinguishable from evidence-backed `passed` status.

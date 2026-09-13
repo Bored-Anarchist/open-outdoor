@@ -73,7 +73,7 @@ Stop conditions: elevation thresholds are not viable, critical controls fail nat
 
 Outcome: rights-aware source acquisition through canonical entities, reversible resolution, deterministic camping evaluation, and a reproducible New York catalog prototype.
 
-Acceptance uses the one-command [Phase 2 guided procedure](PHASE_2_GUIDED_ACCEPTANCE.md) and the reviewer-controlled [Phase 2 gate](PHASE_2_GATE_REPORT.md).
+Acceptance used the now-retired [Phase 2 guided procedure](PHASE_2_GUIDED_ACCEPTANCE.md) and the reviewer-controlled [Phase 2 gate](PHASE_2_GATE_REPORT.md).
 
 Stop conditions: source authorization is ambiguous, public/private raw boundaries leak, positive statuses survive stale mandatory evidence, or provenance cannot explain canonical output.
 

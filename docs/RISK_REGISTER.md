@@ -73,3 +73,19 @@ A risk is closed only when the underlying condition is eliminated or accepted by
 ## WP-404–WP-406 mitigation evidence (2026-09-09)
 
 R-004/R-005: disabled permission shells cannot fetch or grant redistribution; private package/state verification keeps private content and diagnostics out of public outputs. R-010: bounded package inventory, digest verification, path/junction rejection, and bounded connector stages reduce extension/input exposure. R-012: field/schema/volume metrics quarantine drift and preserve last-good snapshots; recovery needs an explicit probe and, for schema changes, the reviewed fingerprint. R-015: exact stable version intervals, package locks/provenance, and public-upstream compatibility tests reject unsupported upgrades before execution. These implemented controls do not retire the risks or replace source-rights/code review. See the [connector ecosystem guide](CONNECTOR_ECOSYSTEM.md) and WP-404–WP-406 evidence records.
+
+## WP-501 design evidence (2026-09-09)
+
+R-017/R-019: shared original tokens and icons, exhaustive field-state catalog, contrast/semantic/layout tests and an explicit asset inventory reduce inconsistent styling and provenance risk. R-006: source dates, uncertainty, restrictions and private origin remain explicit in details and the camping legend. Physical appearance, VoiceOver, outdoor readability and performance risks remain open for WP-502/WP-503; a browser fixture cannot close them. See [Product design system](PRODUCT_DESIGN_SYSTEM.md).
+
+## WP-502/WP-503 residual risks (2026-09-10)
+
+R-003: foreground-only serialized UI refresh and empty-write elimination remove unnecessary work, while full-snapshot writes and accumulated metric calculations still require final long-track device profiling. R-013/R-017: physical accessibility and performance evidence is explicitly deferred to Phase 5 end by ADR-049; mock/native-policy/browser tests cannot establish device acceptance. The strict production evidence gate retains missing cases and rejects mismatched/reused field runs. R-004: report schema excludes free-form diagnostics and private paths, with only redacted numeric evidence/digests admitted. See [production quality](PRODUCTION_QUALITY.md).
+
+## WP-504/WP-505 residual risks (2026-09-10)
+
+External trust-policy compromise or an authorized signer attesting false inputs cannot be detected from signatures alone. Protected-commit review, complete native/Python/tool inventories, independent reproducibility and WP-506 rights/privacy/device evidence remain mandatory. The sole owner is a capacity and independent-review bottleneck; governance records it explicitly and makes LTS conditional on staffing. No production key, release or expanded maintainer roster was created. See [release security](RELEASE_SECURITY.md).
+
+## WP-506 residual gates (2026-09-10)
+
+All existing physical, privacy/rights, native reproducibility and single-maintainer independence risks remain open. ADR-050 moves final execution after WP-506 implementation without accepting them. Signed evidence and role allowlists prevent accidental substitutions but cannot establish truth of human assertions or host isolation; independent source/host review remains necessary. Windows shared clean-checkout evidence is supplemental. See [production release audit](PRODUCTION_RELEASE_AUDIT.md).

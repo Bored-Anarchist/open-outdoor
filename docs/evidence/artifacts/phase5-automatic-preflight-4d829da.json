@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "4d829da66e00d0e0a5b2e732cb125e771b9e6add",
+  "binarySha256": null,
+  "classification": "SYNTHETIC_OR_REDACTED",
+  "testingDisposition": "post-WP506-ADR-050",
+  "automaticStatus": "passed",
+  "commands": [
+    {
+      "id": "quality",
+      "passed": true,
+      "durationMilliseconds": 44193,
+      "outputSha256": "23124f1a27b9e44d37e47c54a54a7eaf7cbfd46b70e172c563e1f9be02cc1600"
+    },
+    {
+      "id": "privacy",
+      "passed": true,
+      "durationMilliseconds": 5221,
+      "outputSha256": "626c734aece502bc6c859d9777f52a10f55b680ace866f5a55a3f75bb839f70a"
+    },
+    {
+      "id": "production-automation",
+      "passed": true,
+      "durationMilliseconds": 27527,
+      "outputSha256": "f6501bd15ecf1768a3ae5a253be92558fcdf6a0f7e5850809471f41a8d5efdfa"
+    },
+    {
+      "id": "ios-javascript",
+      "passed": true,
+      "durationMilliseconds": 47390,
+      "outputSha256": "a4cc6bb2e49daee77092fa4641bc40b22e744547200a2d3fef6b04a2cf0a0a4e"
+    }
+  ],
+  "importedObservationsSha256": null,
+  "observationsRecorded": 0,
+  "physicalAcceptance": {
+    "status": "blocked",
+    "blockers": [
+      "PHYSICAL_EVIDENCE_REQUIRED_AT_PHASE5_END"
+    ],
+    "metrics": {}
+  },
+  "productionAcceptance": "requires-signed-audit-and-independent-review",
+  "blockers": []
+}

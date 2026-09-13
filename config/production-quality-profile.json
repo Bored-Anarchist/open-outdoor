@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "iphone14-ios26.6-production-v1",
+  "referenceDevice": { "model": "iPhone 14", "os": "iOS 26.6" },
+  "physicalAcceptance": {
+    "decision": "ADR-049",
+    "when": "end-of-phase5",
+    "blockingWorkPackage": "WP-506",
+    "claimsAllowedBeforeAcceptance": false
+  },
+  "measurements": {
+    "coldLaunchMs": {
+      "minimumSamples": 20,
+      "minimumDurationSeconds": 0,
+      "p50Maximum": 2500,
+      "p95Maximum": 4000
+    },
+    "searchMs": {
+      "minimumSamples": 20,
+      "minimumDurationSeconds": 0,
+      "p50Maximum": 150,
+      "p95Maximum": 500,
+      "maximum": 1000
+    },
+    "mapFrameMs": {
+      "minimumSamples": 600,
+      "minimumDurationSeconds": 30,
+      "p95Maximum": 33.333333333333336,
+      "maximum": 250
+    },
+    "scrollFrameMs": { "minimumSamples": 600, "minimumDurationSeconds": 30, "maximum": 250 },
+    "mapMemoryMiB": { "minimumSamples": 60, "minimumDurationSeconds": 300, "p95Maximum": 500 },
+    "trackerMemoryMiB": {
+      "minimumSamples": 360,
+      "minimumDurationSeconds": 1800,
+      "p95Maximum": 150
+    },
+    "startAckMs": { "minimumSamples": 20, "minimumDurationSeconds": 0, "p95Maximum": 500 },
+    "stopAckMs": { "minimumSamples": 20, "minimumDurationSeconds": 0, "p95Maximum": 500 }
+  },
+  "accessibilityFlows": [
+    "permission",
+    "start-pause-resume-finish",
+    "recover-discard",
+    "offline-search-detail",
+    "map-legend-alternative",
+    "catalog-rollback-space",
+    "import-export",
+    "backup-restore-delete",
+    "private-origin-unavailable",
+    "closure-conflict-unknown",
+    "gps-battery-checkpoint"
+  ],
+  "accessibilitySettings": [
+    "voiceover",
+    "largest-dynamic-type",
+    "bold-text",
+    "increased-contrast",
+    "differentiate-without-color",
+    "reduced-motion",
+    "dark-appearance",
+    "touch-one-handed",
+    "outdoor-readability"
+  ]
+}

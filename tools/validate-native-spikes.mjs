@@ -1,3 +1,4 @@
+import { designTokens } from '../packages/shared/src/design-system.ts';
 import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
@@ -19,6 +20,8 @@ const mobilePackage = JSON.parse(await text('apps/mobile/package.json'));
 const moduleConfig = JSON.parse(await text('packages/native-spikes/expo-module.config.json'));
 const podspec = await text('packages/native-spikes/OpenOutdoorNativeSpikes.podspec');
 const iosBuildScript = await text('scripts/Build-IosUnsigned.ps1');
+const iosBuildWorkflow = await text('.github/workflows/ios-feasibility.yml');
+const gitAttributes = await text('.gitattributes');
 const tracker = await text('packages/native-spikes/ios/OpenOutdoorTrackerSpike.swift');
 const trackingIndex = await text('packages/tracking/src/index.ts');
 const mapIndex = await text('packages/map/src/index.ts');
@@ -31,17 +34,14 @@ const performanceDiagnostics = await text(
   'packages/native-spikes/ios/OpenOutdoorPhase0PerformanceDiagnostics.swift',
 );
 const privateStore = await text('packages/native-spikes/ios/OpenOutdoorPrivateStore.swift');
-const phase1Acceptance = await text(
-  'packages/native-spikes/ios/OpenOutdoorPhase1AcceptanceCoordinator.swift',
-);
-const phase3Acceptance = await text(
-  'packages/native-spikes/ios/OpenOutdoorPhase3AcceptanceStore.swift',
-);
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
+const basemapStore = await text('packages/native-spikes/ios/OpenOutdoorBasemapPackStore.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
+const basemapBinding = await text('apps/mobile/basemapPacks.ts');
+const basemapHook = await text('apps/mobile/useOfflineBasemap.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
-const phase1Runner = await text('apps/mobile/Phase1AcceptanceRunner.tsx');
-const phase3Runner = await text('apps/mobile/Phase3AcceptanceRunner.tsx');
+const mobileApplication = await text('apps/mobile/application.ts');
+const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -72,6 +72,33 @@ requireText(
   iosBuildScript,
   'Print :OpenOutdoorPhase0DiagnosticsEnabled',
   'iOS build diagnostics gate',
+);
+requireText(iosBuildScript, 'world-overview-z6.pmtiles', 'bundled world overview build gate');
+requireText(
+  iosBuildScript,
+  'us-canada-territories-z7-z9.pmtiles',
+  'bundled regional overview build gate',
+);
+for (const token of [
+  'world-basemap.manifest.json',
+  'us-canada-basemap.manifest.json',
+  'Ensure Git LFS objects were downloaded',
+  'manifest-pinned SHA-256',
+]) {
+  requireText(iosBuildScript, token, 'bundled basemap manifest verification');
+}
+requireText(
+  iosBuildScript,
+  'The optional 128.4 MiB New York detailed basemap must not be bundled',
+  'optional detailed basemap exclusion gate',
+);
+rejectText(iosBuildScript, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion gate');
+requireText(iosBuildWorkflow, 'lfs: true', 'regional overview LFS checkout');
+requireText(gitAttributes, '*.pmtiles binary', 'ordinary Git overview asset');
+requireText(
+  gitAttributes,
+  'us-canada-territories-z7-z9.pmtiles filter=lfs',
+  'regional overview LFS asset',
 );
 requireText(podspec, "s.libraries      = 'sqlite3'", 'podspec');
 requireText(podspec, "'CoreLocation', 'CoreMotion'", 'podspec');
@@ -154,26 +181,12 @@ for (const functionName of [
   requireText(nativeModule, `AsyncFunction("${functionName}")`, 'native module');
   requireText(mobileBinding, `readonly ${functionName}`, 'mobile native binding');
 }
-for (const functionName of [
-  'phase3AcceptanceEnvironment',
-  'loadPhase3AcceptanceState',
-  'savePhase3AcceptanceState',
-  'resetPhase3AcceptanceState',
-  'sharePhase3AcceptanceReport',
+for (const runnerToken of [
+  'Phase1AcceptanceRunner',
+  'Phase3AcceptanceRunner',
+  'Phase5AcceptanceRunner',
 ]) {
-  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'Phase 3 acceptance module');
-  requireText(mobileBinding, `readonly ${functionName}`, 'Phase 3 acceptance binding');
-}
-for (const functionName of [
-  'recordAcknowledgementBenchmark',
-  'beginMemoryProfile',
-  'isMemoryProfileActive',
-  'finishMemoryProfile',
-  'inspectTrackingProtection',
-  'sharePhysicalDiagnosticReport',
-]) {
-  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'physical diagnostics module');
-  requireText(mobileBinding, `readonly ${functionName}`, 'physical diagnostics binding');
+  rejectText(mobileApp, runnerToken, 'retired guided acceptance UI');
 }
 for (const functionName of [
   'beginPhase1Acceptance',
@@ -188,9 +201,28 @@ for (const functionName of [
   'recordPhase1AccessibilityControl',
   'resetPhase1Acceptance',
   'sharePhase1AcceptanceReport',
+  'phase3AcceptanceEnvironment',
+  'loadPhase3AcceptanceState',
+  'savePhase3AcceptanceState',
+  'resetPhase3AcceptanceState',
+  'sharePhase3AcceptanceReport',
+  'loadPhase5AcceptanceState',
+  'savePhase5AcceptanceState',
+  'sharePhase5AcceptanceReport',
 ]) {
-  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'Phase 1 acceptance module');
-  requireText(mobileBinding, `readonly ${functionName}`, 'Phase 1 acceptance binding');
+  rejectText(nativeModule, `AsyncFunction("${functionName}")`, 'retired native runner API');
+  rejectText(mobileBinding, `readonly ${functionName}`, 'retired mobile runner binding');
+}
+for (const functionName of [
+  'recordAcknowledgementBenchmark',
+  'beginMemoryProfile',
+  'isMemoryProfileActive',
+  'finishMemoryProfile',
+  'inspectTrackingProtection',
+  'sharePhysicalDiagnosticReport',
+]) {
+  requireText(nativeModule, `AsyncFunction("${functionName}")`, 'physical diagnostics module');
+  requireText(mobileBinding, `readonly ${functionName}`, 'physical diagnostics binding');
 }
 for (const token of [
   'mach_task_basic_info',
@@ -232,6 +264,75 @@ requireText(mobileBinding, 'module !== null', 'startup-safe mobile native bindin
 requireText(mobileBinding, 'requiredModule()', 'startup-safe mobile native binding');
 requireText(mobileApp, 'Native capability unavailable', 'mobile startup diagnostic UI');
 requireText(mobileApp, 'disabled={!nativeSpikes.available ||', 'mobile startup diagnostic UI');
+for (const token of [
+  'export function createOutdoorMapAdapter()',
+  'map: OutdoorMapAdapter = createOutdoorMapAdapter()',
+]) {
+  requireText(mobileApplication, token, 'recorder-independent offline map startup');
+}
+for (const token of [
+  'const map = useMemo(createOutdoorMapAdapter, []);',
+  'createMobileApplication(map)',
+  '<OutdoorMap adapter={map} />',
+]) {
+  requireText(mobileApp, token, 'recorder-independent offline map startup');
+}
+rejectText(mobileApp, 'application ? <OutdoorMap', 'recorder-independent offline map startup');
+requireText(mobileMap, 'mapStyle={mapStyle}', 'complete native map style');
+for (const token of [
+  'outdoorDataAsset',
+  'world-overview-z6.pmtiles',
+  'us-canada-territories-z7-z9.pmtiles',
+  'offlineFontAsset',
+  'createTieredOfflineVectorBasemapStyle({',
+]) {
+  requireText(mobileMap, token, 'complete offline native map');
+}
+for (const token of [
+  'NativeUserLocation',
+  'trackUserLocation={followUser',
+  'Center on my location',
+  'blue GPS dot',
+]) {
+  requireText(mobileMap, token, 'live offline GPS map position');
+}
+rejectText(mobileMap, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion');
+rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
+for (const token of ['activeBasemapPack', 'importBasemapPack', 'removeActiveBasemapPack']) {
+  requireText(nativeModule, token, 'offline basemap native bridge');
+  requireText(basemapBinding, token, 'offline basemap TypeScript bridge');
+}
+for (const token of [
+  'source.isFileURL',
+  'SHA256()',
+  'read(upToCount: 1024 * 1024)',
+  'digest == manifest.sha256',
+  'Data("PMTiles".utf8)',
+  'options: .atomic',
+  'completeUntilFirstUserAuthentication',
+]) {
+  requireText(basemapStore, token, 'verified local basemap activation');
+}
+for (const token of [
+  'File.pickFileAsync',
+  'resolveOfflineBasemapSource',
+  'basemapPacks.import',
+  'basemapPacks.removeActive',
+]) {
+  requireText(basemapHook, token, 'offline basemap import and fallback');
+}
+for (const source of [basemapStore, basemapBinding, basemapHook]) {
+  rejectText(source, 'fetch(', 'offline-only basemap path');
+  rejectText(source, 'http://', 'offline-only basemap path');
+  rejectText(source, 'https://', 'offline-only basemap path');
+}
+requireText(
+  mobileMap,
+  'onDidFinishRenderingMapFully={() => setLoaded(true)}',
+  'atomic offline map readiness',
+);
+rejectText(mobileMap, '<GeoJSONSource\n            id="outdoors"', 'atomic offline map style');
+rejectText(mobileMap, "new-york-outdoors.json'", 'native-file outdoor overlay');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
 requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
@@ -248,81 +349,6 @@ for (const token of [
 }
 requireText(tracker, 'observations.count >= 256', 'bounded native tracking batch');
 for (const token of [
-  'NWPathMonitor',
-  'didEnterBackgroundNotification',
-  'process-relaunched-after-crash-arm',
-  'permissionSafeStopObserved',
-  'minimumBackgroundSeconds = 30.0 * 60.0',
-  'memoryThresholdBytes: UInt64 = 150 * 1_024 * 1_024',
-  'UIAccessibility.isVoiceOverRunning',
-  'shouldDifferentiateWithoutColor',
-  'phase1-physical-report.json',
-  'accessibilityControls',
-  'elevation-retry-started',
-  'Still required:',
-  'deviceModelIdentifier',
-  'OpenOutdoorSourceCommit',
-]) {
-  requireText(phase1Acceptance, token, 'guided Phase 1 acceptance coordinator');
-}
-for (const token of [
-  'Begin guided acceptance',
-  'Start and arm crash test',
-  'Begin combined 30-minute field run',
-  'Accessibility flow is usable',
-  'Export consolidated acceptance report',
-  'Retry elevation climb only',
-  'Retry accessibility only',
-  'Start accessibility test recording',
-  'Pause accessibility test recording',
-  'Finish accessibility test recording',
-  'operationInFlight.current',
-  'combined-field-run-finished',
-  'isMemoryProfileActive',
-]) {
-  requireText(phase1Runner, token, 'guided Phase 1 acceptance UI');
-}
-for (const token of [
-  'Automatic Phase 3 test run',
-  'This run starts by itself',
-  'Running automatic tests',
-  'Offline explore, search, and details',
-  'Catalog activation and rollback',
-  'Protected encrypted backup and restore',
-  'Runtime performance budgets',
-  'Accessibility contract',
-  'automatic-ios-runner',
-  'external-constraint',
-  'requestAnimationFrame',
-  'coordinateFree: true',
-  'containsPersonalData: false',
-]) {
-  requireText(phase3Runner, token, 'automatic Phase 3 acceptance UI');
-}
-for (const token of [
-  'Begin Phase 3 guided acceptance',
-  'decisionButtons',
-  'Complete tester attestation',
-  'Downloaded IPA SHA-256',
-  'TextInput',
-]) {
-  rejectText(phase3Runner, token, 'automatic Phase 3 acceptance UI');
-}
-for (const token of [
-  'guided-state.json',
-  '.completeFileProtection',
-  'phase3-physical-report.json',
-  'UIActivityViewController',
-  'OpenOutdoorSourceCommit',
-  'executableSHA256',
-  'encryptedRoundTrip',
-  'wrongSecretRejected',
-  'residentMemoryMiB',
-]) {
-  requireText(phase3Acceptance, token, 'automatic Phase 3 acceptance store');
-}
-requireText(mobileApp, 'Phase3AcceptanceRunner', 'mobile Phase 3 acceptance integration');
-for (const token of [
   'Start recording',
   'Pause recording',
   'Resume recording',
@@ -330,12 +356,26 @@ for (const token of [
   'Recover interrupted recording',
   'Discard interrupted recording',
   'Alert.alert',
-  'minHeight: 52',
-  'useWindowDimensions',
+  'ProductButton as AccessibleButton',
+  'AppearanceContext.Provider',
   'no turn instructions, rerouting, or',
 ]) {
   requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
 }
+const productComponents = await text('apps/mobile/ProductComponents.tsx');
+for (const token of [
+  'minHeight: t.target.minimum',
+  'minWidth: t.target.minimum',
+  'accessibilityRole="button"',
+  'accessibilityState=',
+  'flexShrink: 1',
+]) {
+  requireText(productComponents, token, 'shared native product components');
+}
+if (designTokens.target.minimum < 44)
+  throw new Error('Product touch targets must be at least 44 points');
+rejectText(productComponents, 'allowFontScaling={false}', 'native Dynamic Type support');
+rejectText(productComponents, 'numberOfLines=', 'native text reflow');
 requireText(nativeModule, 'OpenOutdoorPhase0DiagnosticsEnabled', 'native diagnostics gate');
 for (const token of [
   '#if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS',
@@ -376,6 +416,9 @@ for (const key of [
   if (typeof info[key] !== 'string' || info[key].length === 0) {
     throw new Error(`iOS Info.plist is missing ${key}`);
   }
+}
+if (!info.NSLocationWhenInUseUsageDescription.includes('GPS dot')) {
+  throw new Error('iOS location purpose must explain the live map GPS dot');
 }
 if (!info.UIBackgroundModes.includes('location')) {
   throw new Error('iOS background location mode is not declared');

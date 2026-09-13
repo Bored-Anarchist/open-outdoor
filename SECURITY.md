@@ -2,7 +2,7 @@
 
 ## Supported status
 
-The repository is currently planning/bootstrap documentation and has no released application. Once releases exist, the release plan will list supported app, catalog, backup, and private-extension versions. Only supported versions receive security fixes unless the repository owner approves an exceptional backport.
+The repository is in development and has no production release or LTS line. GOVERNANCE.md defines the support matrix and end-of-support commitments required for the first production release. Development fixes are best effort. Only explicitly supported versions receive security fixes unless the repository owner approves an exceptional backport. See [release security](docs/RELEASE_SECURITY.md) for signing-key rotation, dependency triage and independent verification.
 
 ## Reporting a vulnerability or sensitive incident
 

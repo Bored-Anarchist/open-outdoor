@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "basemap",
+  "packId": "us-ny-protomaps-z12",
+  "version": "2026-09-10",
+  "displayName": "New York detailed basemap",
+  "fileName": "new-york-z12.pmtiles",
+  "byteLength": 134642224,
+  "sha256": "4d9ab843aa49fbb7b160e3c9b05afd8b4388899aaf3a608f1276604dc27f65ae",
+  "format": {
+    "type": "pmtiles",
+    "specVersion": 3,
+    "minZoom": 0,
+    "maxZoom": 12
+  },
+  "coverage": {
+    "bounds": [-79.7624, 40.4774, -71.7517, 45.0159]
+  },
+  "compatibility": {
+    "minimumAppVersion": "0.1.0",
+    "styleSchemaVersion": 1
+  },
+  "attribution": ["Protomaps", "OpenStreetMap contributors"]
+}

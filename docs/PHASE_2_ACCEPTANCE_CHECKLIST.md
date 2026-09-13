@@ -1,5 +1,7 @@
 # Phase 2 acceptance checklist
 
+**Retired:** The Phase 2 runner command was removed after the gate was accepted. This checklist is retained only to explain the recorded disposition.
+
 This is the shortest complete path for accepting WP-201 through WP-210. The tester performs one command and one result check. The runner performs the remaining local and live checks and creates reviewable evidence; it cannot approve its own gate.
 
 ## Tester steps

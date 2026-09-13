@@ -3,6 +3,8 @@
 **Status:** In progress; Phase 2 accepted, with later phase and release acceptance pending
 **Quality principle:** A test environment may only prove capabilities it actually exercises
 
+**Runner retirement:** Phase 1–5 guided execution surfaces were removed after owner sign-off. Commands described below are historical records; retained gate schemas, evidence evaluators and reports remain authoritative.
+
 Numeric limits, reference hardware, repetitions, formulas, and evidence fields are normative in the [non-functional budgets](NON_FUNCTIONAL_BUDGETS.md). A suite row identifies a family; every executable case uses `T-<LEVEL>-NNN-C<two digits>` (for example, `T-PHY-005-C03`) and records its exact case ID in evidence.
 
 ## 1. Test levels
@@ -257,4 +259,12 @@ Each accepted suite records:
 - A release candidate is accepted only at the exact commit/artifact checksum reviewed.
 - Product MVP acceptance occurs only at M4/Phase 3 and requires all must-haves in the [product release definition](PRODUCT_RELEASE_DEFINITION.md); no earlier alpha may be relabelled as MVP.
 
-Phase 4 automated evidence: run `pnpm phase4:acceptance` on a clean candidate. See [Phase 4 guided acceptance](PHASE_4_GUIDED_ACCEPTANCE.md) for automated checks, commit-bound reports, and reviewer acceptance.
+Phase 4 automated evidence was collected with the retired `phase4:acceptance` command on a clean candidate. See [Phase 4 guided acceptance](PHASE_4_GUIDED_ACCEPTANCE.md) for the historical automated checks, commit-bound reports and reviewer acceptance.
+
+## WP-501 automated design coverage
+
+`T-E2E-001-D01` validates appearance contrast, complete field-state/icon coverage, target tokens, motion/haptic policy and untrusted detail escaping. `T-E2E-001-D02` validates local-only map styles, canonical input preservation, clustering, seven camping statuses and safety/track/location hierarchy. `T-E2E-001-D03` runs the browser keyboard, state, layout and reduced-motion matrix with synthetic screenshots via `pnpm test:design:browser`. These support REQ-UX-001, REQ-MAP-003 and the automated portion of REQ-A11Y-001. Physical T-PHY-003 and WP-502/WP-503 gates remain separate. See [Product design system](PRODUCT_DESIGN_SYSTEM.md).
+
+## WP-502/WP-503 acceptance timing
+
+Per owner-approved ADR-049, physical tests run at the end of Phase 5; WP-502/WP-503 implementation completion uses automated evidence. `T-PHY-003-P01` covers the 99-case final accessibility matrix; `T-PHY-002-P01` covers candidate-bound repeated performance/endurance evidence. `T-INT-001-P01` covers foreground scheduling and persistence retry/serialization; `T-E2E-001-P01` covers browser WCAG scans with a negative control. See [production quality](PRODUCTION_QUALITY.md). No physical case is marked passed by automation.
