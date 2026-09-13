@@ -10,13 +10,35 @@
       <header>
         <strong>Open Outdoor</strong>
         <h1>New York outdoor map</h1>
-        <p>Offline geographic layers · NYS DEC lands, roads and hiking trails</p>
+        <p>Offline geographic layers · NYS DEC lands, roads, trails and recreation places</p>
+        <div class="map-selectors">
+          <label>
+            Show on map
+            <select id="place-filter">
+              <option value="all">All places</option>
+              <option value="camping">Camping & shelters</option>
+              <option value="parking">Parking & pull-offs</option>
+              <option value="water">Water access & fishing</option>
+              <option value="day-use">Day use & viewpoints</option>
+            </select>
+          </label>
+          <label>
+            Marker detail
+            <select id="marker-density">
+              <option value="automatic">Automatic detail</option>
+              <option value="fewer">Fewer markers</option>
+              <option value="more">More markers</option>
+            </select>
+          </label>
+          <output id="zoom-readout" aria-live="polite"></output>
+        </div>
       </header>
       <div id="map" aria-label="New York geographic map"></div>
       <footer>
-        Green: DEC land · Blue: hiking trails · Brown: DEC roads<br />Data: NYS ITS Geospatial
-        Services and NYS Department of Environmental Conservation.<br />Partial basemap coverage.
-        Mapped land does not establish access or camping permission.
+        Numbered orange circles group nearby places. Zoom in to reveal category icons and then place
+        names.<br />▲ Camp · ⌂ Shelter · P Parking · ≈ Water · ◆ Day use<br />Data: NYS ITS
+        Geospatial Services and NYS Department of Environmental Conservation. Mapped land or a place
+        marker does not establish access or camping permission.
       </footer>
     </main>
     <script type="module" src="/outdoor-map-preview.ts"></script>

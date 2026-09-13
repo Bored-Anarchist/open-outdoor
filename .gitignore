@@ -1,4 +1,5 @@
 # Local secrets and private extensions must never enter the public checkout.
+/PrivateData/
 .env
 .env.*
 !.env.example

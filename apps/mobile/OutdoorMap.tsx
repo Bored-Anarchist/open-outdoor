@@ -1,7 +1,14 @@
 import licenses from './map-licenses.json';
 import offlineMapLicenses from './offline-map-licenses.json';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Alert, TextInput, View } from 'react-native';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ComponentProps,
+} from 'react';
+import { Alert, Pressable, TextInput, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import {
   Map as NativeMap,
@@ -10,18 +17,26 @@ import {
   Layer,
   NativeUserLocation,
   type CameraRef,
+  type GeoJSONSourceRef,
   type MapRef,
   type StyleSpecification,
 } from '@maplibre/maplibre-react-native';
 import {
+  createOutdoorPlaceCollection,
+  createOutdoorPlaceLayerStyles,
   createOutdoorMapStyle,
   createTieredOfflineVectorBasemapStyle,
+  nextOutdoorZoom,
+  outdoorMarkerDensityConfig,
+  outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
   segmentedTrack,
   type OutdoorBaseMapStyle,
   type OutdoorFeatureIndex,
   type OutdoorFeatureSummary,
   type OutdoorMapAdapter,
+  type OutdoorMarkerDensity,
+  type OutdoorPlaceFilter,
 } from '@open-outdoor/map';
 import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 import { ProductText as Text } from './accessibility';
@@ -39,11 +54,190 @@ const featureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light'), {
   lang: 'en',
 }) as unknown as OutdoorBaseMapStyle['layers'];
+
+const placeFilterOptions: readonly {
+  readonly value: OutdoorPlaceFilter;
+  readonly label: string;
+}[] = [
+  { value: 'all', label: 'All places' },
+  { value: 'camping', label: 'Camping & shelters' },
+  { value: 'parking', label: 'Parking & pull-offs' },
+  { value: 'water', label: 'Water access & fishing' },
+  { value: 'day-use', label: 'Day use & viewpoints' },
+];
+const markerDensityOptions: readonly {
+  readonly value: OutdoorMarkerDensity;
+  readonly label: string;
+}[] = [
+  { value: 'automatic', label: 'Automatic detail' },
+  { value: 'fewer', label: 'Fewer markers' },
+  { value: 'more', label: 'More markers' },
+];
+
+function MapSelect<Value extends string>({
+  label,
+  value,
+  options,
+  expanded,
+  onToggle,
+  onChange,
+}: {
+  readonly label: string;
+  readonly value: Value;
+  readonly options: readonly { readonly value: Value; readonly label: string }[];
+  readonly expanded: boolean;
+  readonly onToggle: () => void;
+  readonly onChange: (value: Value) => void;
+}) {
+  const palette = usePalette();
+  const selected = options.find((option) => option.value === value)!;
+  return (
+    <View style={{ flex: 1, minWidth: 180 }}>
+      <Pressable
+        accessibilityLabel={label}
+        accessibilityHint={`Current selection: ${selected.label}. Opens the selection menu.`}
+        accessibilityRole="button"
+        accessibilityState={{ expanded }}
+        onPress={onToggle}
+        style={({ pressed }) => ({
+          minHeight: 56,
+          borderWidth: 2,
+          borderColor: expanded ? palette.accent : palette.border,
+          borderRadius: 12,
+          backgroundColor: pressed || expanded ? palette.selected : palette.surface,
+          paddingHorizontal: 14,
+          paddingVertical: 8,
+          justifyContent: 'center',
+        })}
+      >
+        <Text style={{ color: palette.muted, fontSize: 13, fontWeight: '700' }}>{label}</Text>
+        <Text style={{ color: palette.text, fontSize: 16, fontWeight: '700' }}>
+          {selected.label} {expanded ? '⌃' : '⌄'}
+        </Text>
+      </Pressable>
+      {expanded ? (
+        <View
+          accessibilityLabel={`${label} choices`}
+          style={{
+            position: 'absolute',
+            zIndex: 20,
+            top: 60,
+            left: 0,
+            right: 0,
+            borderWidth: 2,
+            borderColor: palette.border,
+            borderRadius: 12,
+            backgroundColor: palette.surface,
+            overflow: 'hidden',
+          }}
+        >
+          {options.map((option) => (
+            <Pressable
+              key={option.value}
+              accessibilityRole="button"
+              accessibilityState={{ selected: option.value === value }}
+              onPress={() => onChange(option.value)}
+              style={({ pressed }) => ({
+                minHeight: 52,
+                paddingHorizontal: 14,
+                justifyContent: 'center',
+                backgroundColor:
+                  pressed || option.value === value ? palette.selected : palette.surface,
+                borderBottomWidth: option === options.at(-1) ? 0 : 1,
+                borderBottomColor: palette.border,
+              })}
+            >
+              <Text style={{ color: palette.text, fontSize: 16, fontWeight: '600' }}>
+                {option.label}
+                {option.value === value ? ' · Selected' : ''}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function MapZoomButton({
+  label,
+  symbol,
+  disabled,
+  onPress,
+}: {
+  readonly label: string;
+  readonly symbol: string;
+  readonly disabled: boolean;
+  readonly onPress: () => void;
+}) {
+  const palette = usePalette();
+  return (
+    <Pressable
+      accessibilityLabel={label}
+      accessibilityRole="button"
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => ({
+        width: 52,
+        height: 52,
+        borderRadius: 14,
+        borderWidth: 2,
+        borderColor: palette.border,
+        backgroundColor: pressed ? palette.selected : palette.surface,
+        alignItems: 'center',
+        justifyContent: 'center',
+        opacity: disabled ? 0.5 : 0.96,
+      })}
+    >
+      <Text style={{ color: palette.text, fontSize: 30, fontWeight: '500', lineHeight: 34 }}>
+        {symbol}
+      </Text>
+    </Pressable>
+  );
+}
+
+function PlaceKey({
+  symbol,
+  label,
+  color,
+}: {
+  readonly symbol: string;
+  readonly label: string;
+  readonly color: string;
+}) {
+  const palette = usePalette();
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <View
+        accessibilityElementsHidden
+        style={{
+          width: 25,
+          height: 25,
+          borderRadius: 13,
+          backgroundColor: color,
+          borderColor: palette.surface,
+          borderWidth: 2,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '800' }}>{symbol}</Text>
+      </View>
+      <Text style={{ color: palette.text, fontSize: 14 }}>{label}</Text>
+    </View>
+  );
+}
+
 export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
   const camera = useRef<CameraRef>(null);
   const mapView = useRef<MapRef>(null);
+  const placeSource = useRef<GeoJSONSourceRef>(null);
   const palette = usePalette();
+  const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
+  const [markerDensity, setMarkerDensity] = useState<OutdoorMarkerDensity>('automatic');
+  const [openMenu, setOpenMenu] = useState<'places' | 'density' | null>(null);
   const [assets, assetError] = useAssets([
     outdoorDataAsset,
     worldOverviewAsset,
@@ -75,6 +269,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
                   ? basemap.source.manifest.maximumZoom
                   : undefined,
             }),
+            { includePlaces: false },
           ) as unknown as StyleSpecification)
         : null,
     [basemap.source, offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri],
@@ -90,6 +285,13 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const [outside, setOutside] = useState(false);
   const [followUser, setFollowUser] = useState(false);
   const [zoom, setZoom] = useState(state.camera.zoom);
+  const placeData = useMemo(
+    () => createOutdoorPlaceCollection(featureIndex, placeFilter),
+    [placeFilter],
+  );
+  const placeLayers = useMemo(() => createOutdoorPlaceLayerStyles(markerDensity), [markerDensity]);
+  const densityConfig = outdoorMarkerDensityConfig[markerDensity];
+  const zoomPresentation = outdoorZoomPresentation(zoom, markerDensity);
   const results = useMemo(() => searchOutdoorFeatureIndex(featureIndex, query), [query]);
   const track = useMemo(
     () => segmentedTrack(state.activeTrack, state.trackBreaks),
@@ -131,6 +333,10 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         duration: 0,
       });
     }
+  }
+  function changeZoom(direction: 'in' | 'out') {
+    setFollowUser(false);
+    camera.current?.zoomTo(nextOutdoorZoom(zoom, direction), { duration: 160 });
   }
   return (
     <View>
@@ -184,86 +390,204 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         />
       ))}
       <View
-        style={{ height: 440, marginVertical: 12, borderWidth: 1, borderColor: palette.border }}
+        style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          gap: 10,
+          marginTop: 10,
+          marginBottom: 4,
+          zIndex: 30,
+        }}
+      >
+        <MapSelect
+          label="Show on map"
+          value={placeFilter}
+          options={placeFilterOptions}
+          expanded={openMenu === 'places'}
+          onToggle={() => setOpenMenu(openMenu === 'places' ? null : 'places')}
+          onChange={(value) => {
+            setPlaceFilter(value);
+            setSelected(null);
+            setOpenMenu(null);
+          }}
+        />
+        <MapSelect
+          label="Marker detail"
+          value={markerDensity}
+          options={markerDensityOptions}
+          expanded={openMenu === 'density'}
+          onToggle={() => setOpenMenu(openMenu === 'density' ? null : 'density')}
+          onChange={(value) => {
+            setMarkerDensity(value);
+            setOpenMenu(null);
+          }}
+        />
+      </View>
+      <Text accessibilityLiveRegion="polite" style={{ color: palette.muted }}>
+        {placeData.features.length.toLocaleString()} matching places · {zoomPresentation.label}
+      </Text>
+      <View
+        style={{
+          height: 520,
+          marginVertical: 12,
+          borderWidth: 2,
+          borderRadius: 16,
+          overflow: 'hidden',
+          borderColor: palette.border,
+        }}
       >
         {mapStyle ? (
-          <NativeMap
-            key={basemap.source?.uri}
-            ref={mapView}
-            style={{ flex: 1 }}
-            mapStyle={mapStyle}
-            attribution
-            logo={false}
-            onDidFinishRenderingMapFully={() => setLoaded(true)}
-            onDidFailLoadingMap={() => setFailed(true)}
-            onPress={(event) => {
-              void mapView.current
-                ?.queryRenderedFeatures(event.nativeEvent.point, {
-                  layers: ['dec-camping', 'dec-poi', 'dec-land', 'dec-road', 'dec-trail'],
-                })
-                .then((features) => {
-                  const id = features.find((feature) => feature.properties?.kind !== 'boundary')
-                    ?.properties?.id;
-                  const feature = featureIndex.features.find((candidate) => candidate.id === id);
-                  if (feature) setSelected(feature);
-                })
-                .catch(() => undefined);
-            }}
-            onRegionDidChange={(event) => {
-              const [x, y] = event.nativeEvent.center;
-              setOutside(x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02);
-              setZoom(event.nativeEvent.zoom);
-              adapter.moveCamera({ center: [x, y], zoom: event.nativeEvent.zoom });
-            }}
-          >
-            <Camera
-              ref={camera}
-              initialViewState={{ center: [...state.camera.center], zoom: state.camera.zoom }}
-              trackUserLocation={followUser ? 'default' : undefined}
-              onTrackUserLocationChange={(event) =>
-                setFollowUser(event.nativeEvent.trackUserLocation !== null)
-              }
-            />
-            <NativeUserLocation mode="default" />
-            <Layer
-              id="selection-outline"
-              type="line"
-              source="outdoors"
-              filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
-              paint={{ 'line-color': '#a43913', 'line-width': 5 }}
-            />
-            <Layer
-              id="selection-point"
-              type="circle"
-              source="outdoors"
-              filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
-              paint={{
-                'circle-color': '#a43913',
-                'circle-radius': 10,
-                'circle-stroke-color': '#ffffff',
-                'circle-stroke-width': 3,
+          <>
+            <NativeMap
+              key={basemap.source?.uri}
+              ref={mapView}
+              style={{ flex: 1 }}
+              mapStyle={mapStyle}
+              attribution
+              logo={false}
+              onDidFinishRenderingMapFully={() => setLoaded(true)}
+              onDidFailLoadingMap={() => setFailed(true)}
+              onPress={(event) => {
+                void mapView.current
+                  ?.queryRenderedFeatures(event.nativeEvent.point, {
+                    layers: ['dec-land', 'dec-road', 'dec-trail'],
+                  })
+                  .then((features) => {
+                    const id = features.find((feature) => feature.properties?.kind !== 'boundary')
+                      ?.properties?.id;
+                    const feature = featureIndex.features.find((candidate) => candidate.id === id);
+                    if (feature) setSelected(feature);
+                  })
+                  .catch(() => undefined);
               }}
-            />
-            <GeoJSONSource id="recorded-track" data={track}>
-              <Layer
-                id="recorded-line"
-                type="line"
-                paint={{ 'line-color': '#b80d44', 'line-width': 4 }}
+              onRegionDidChange={(event) => {
+                const [x, y] = event.nativeEvent.center;
+                setOutside(x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02);
+                setZoom(event.nativeEvent.zoom);
+                adapter.moveCamera({ center: [x, y], zoom: event.nativeEvent.zoom });
+              }}
+            >
+              <Camera
+                ref={camera}
+                initialViewState={{ center: [...state.camera.center], zoom: state.camera.zoom }}
+                trackUserLocation={followUser ? 'default' : undefined}
+                onTrackUserLocationChange={(event) =>
+                  setFollowUser(event.nativeEvent.trackUserLocation !== null)
+                }
               />
-            </GeoJSONSource>
-            <GeoJSONSource id="recorded-position" data={point}>
+              <NativeUserLocation mode="default" />
+              <GeoJSONSource
+                key={`${placeFilter}-${markerDensity}`}
+                ref={placeSource}
+                id="outdoor-places"
+                data={placeData}
+                cluster
+                clusterRadius={densityConfig.clusterRadius}
+                clusterMaxZoom={densityConfig.clusterMaxZoom}
+                onPress={(event) => {
+                  const rendered = event.nativeEvent.features[0];
+                  const properties = rendered?.properties;
+                  if (properties?.point_count && properties.cluster_id !== undefined) {
+                    void placeSource.current
+                      ?.getClusterExpansionZoom(Number(properties.cluster_id))
+                      .then((expansionZoom) => {
+                        setFollowUser(false);
+                        camera.current?.jumpTo({
+                          center: [...event.nativeEvent.lngLat],
+                          zoom: Math.min(18, expansionZoom),
+                        });
+                      })
+                      .catch(() => changeZoom('in'));
+                    return;
+                  }
+                  const id = properties?.id;
+                  const feature = featureIndex.features.find((candidate) => candidate.id === id);
+                  if (feature) select(feature);
+                }}
+              >
+                {placeLayers.map((placeLayer) => (
+                  <Layer
+                    key={placeLayer.id}
+                    {...(placeLayer as unknown as ComponentProps<typeof Layer>)}
+                  />
+                ))}
+              </GeoJSONSource>
               <Layer
-                id="last-recorded"
+                id="selection-outline"
+                type="line"
+                source="outdoors"
+                filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                paint={{ 'line-color': '#a43913', 'line-width': 5 }}
+              />
+              <Layer
+                id="selection-point"
                 type="circle"
+                source="outdoors"
+                filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
                 paint={{
-                  'circle-color': '#b80d44',
-                  'circle-radius': 6,
-                  'circle-stroke-width': 2,
+                  'circle-color': '#a43913',
+                  'circle-radius': 13,
                   'circle-stroke-color': '#ffffff',
+                  'circle-stroke-width': 3,
                 }}
               />
-            </GeoJSONSource>
-          </NativeMap>
+              <GeoJSONSource id="recorded-track" data={track}>
+                <Layer
+                  id="recorded-line"
+                  type="line"
+                  paint={{ 'line-color': '#b80d44', 'line-width': 4 }}
+                />
+              </GeoJSONSource>
+              <GeoJSONSource id="recorded-position" data={point}>
+                <Layer
+                  id="last-recorded"
+                  type="circle"
+                  paint={{
+                    'circle-color': '#b80d44',
+                    'circle-radius': 6,
+                    'circle-stroke-width': 2,
+                    'circle-stroke-color': '#ffffff',
+                  }}
+                />
+              </GeoJSONSource>
+            </NativeMap>
+            <View
+              pointerEvents="box-none"
+              style={{ position: 'absolute', right: 12, top: 12, gap: 8 }}
+            >
+              <MapZoomButton
+                label="Zoom in"
+                symbol="+"
+                disabled={zoom >= 18}
+                onPress={() => changeZoom('in')}
+              />
+              <MapZoomButton
+                label="Zoom out"
+                symbol="−"
+                disabled={zoom <= 3}
+                onPress={() => changeZoom('out')}
+              />
+            </View>
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                left: 12,
+                bottom: 12,
+                backgroundColor: palette.surface,
+                borderColor: palette.border,
+                borderWidth: 1,
+                borderRadius: 9,
+                paddingHorizontal: 10,
+                paddingVertical: 6,
+                opacity: 0.94,
+              }}
+            >
+              <Text style={{ color: palette.text, fontSize: 13, fontWeight: '700' }}>
+                Zoom {zoom.toFixed(1)}
+              </Text>
+            </View>
+          </>
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
             <Text>
@@ -272,13 +596,23 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
           </View>
         )}
       </View>
+      <View
+        accessibilityLabel="Place icon key"
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
+      >
+        <PlaceKey symbol="▲" label="Camp" color="#cf5726" />
+        <PlaceKey symbol="⌂" label="Shelter" color="#9b4d1f" />
+        <PlaceKey symbol="P" label="Parking" color="#355c7d" />
+        <PlaceKey symbol="≈" label="Water" color="#147d92" />
+        <PlaceKey symbol="◆" label="Day use" color="#5f7f31" />
+      </View>
       <Text accessibilityLiveRegion="polite">
         {failed || assetError
           ? 'Map could not render. Search and geographic details remain available.'
           : loaded
             ? basemap.source?.kind === 'installed'
-              ? 'Detailed offline map ready. Pinch to zoom; drag to pan.'
-              : 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch to zoom; drag to pan.'
+              ? 'Detailed offline map ready. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
+              : 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
             : basemap.checking
               ? 'Verifying the installed basemap while the overview remains available…'
               : 'Loading the stored basemap and DEC overlays…'}
@@ -323,18 +657,6 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
           }
         />
       )}
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <ProductButton
-          label="Zoom in"
-          hint="Increase map detail"
-          onPress={() => camera.current?.zoomTo(Math.min(20, zoom + 1), { duration: 0 })}
-        />
-        <ProductButton
-          label="Zoom out"
-          hint="Show a wider area"
-          onPress={() => camera.current?.zoomTo(Math.max(3, zoom - 1), { duration: 0 })}
-        />
-      </View>
       <ProductButton
         label="Show all New York coverage"
         hint="Fit the statewide geographic layers"
@@ -368,10 +690,10 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         }}
       />
       <Text>
-        Map key: green areas — DEC lands; blue lines — hiking trails; orange dots — DEC campsites
-        and lean-tos; gray dots — other DEC recreation points; brown lines — DEC roads; pink —
-        recorded route; blue GPS dot — current position. Tap a feature or search its name for text
-        details.
+        Map key: green areas — DEC lands; blue lines — hiking trails; brown lines — DEC roads;
+        numbered orange circles — grouped places; category symbols — individual recreation places;
+        pink — recorded route; blue GPS dot — current position. Zooming in expands groups into
+        icons, then reveals names. Tap a group, feature, or search result for details.
       </Text>
       {selected && (
         <ProductCard title={selected.properties.name}>

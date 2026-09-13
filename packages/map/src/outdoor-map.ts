@@ -10,6 +10,7 @@ export interface OutdoorFeatureProperties {
   category: string;
   publicUse: string;
   sourceUpdated: string;
+  origin?: 'public-catalog' | 'private-catalog';
 }
 export interface OutdoorFeature {
   type: 'Feature';
@@ -34,6 +35,253 @@ export interface OutdoorFeatureSummary {
 export interface OutdoorFeatureIndex {
   schemaVersion: 1;
   features: OutdoorFeatureSummary[];
+}
+
+export const outdoorPlaceFilters = ['all', 'camping', 'parking', 'water', 'day-use'] as const;
+export type OutdoorPlaceFilter = (typeof outdoorPlaceFilters)[number];
+export const outdoorMarkerDensities = ['automatic', 'fewer', 'more'] as const;
+export type OutdoorMarkerDensity = (typeof outdoorMarkerDensities)[number];
+export type OutdoorPlaceGroup = 'camping' | 'shelter' | 'parking' | 'water' | 'day-use' | 'other';
+
+export const campingCategories = [
+  'PRIMITIVE CAMPSITE',
+  'CAMPSITE',
+  'ACCESSIBLE CAMPSITE',
+  'CAMPGROUND',
+  'LEAN-TO',
+] as const;
+
+const parkingCategories = [
+  'UNPAVED PARKING LOT',
+  'PAVED PARKING LOT',
+  'ACCESSIBLE PARKING LOT',
+  'ACCESSIBLE PARKING SPACE',
+  'PULL-OFF',
+] as const;
+const waterCategories = [
+  'BOAT LAUNCH',
+  'FISHING ACCESS SITE',
+  'FISHING PIER',
+  'ACCESSIBLE FISHING PIER',
+  'ACCESSIBLE FISHING PLATFORM',
+  'ACCESSIBLE HAND LAUNCH',
+  'ACCESSIBLE WATER ACCESS',
+  'ACCESSIBLE DOCK',
+] as const;
+const dayUseCategories = [
+  'PICNIC SITE',
+  'PICNIC PAVILION',
+  'ACCESSIBLE PICNIC TABLE',
+  'ACCESSIBLE PICNIC AREA',
+  'DAY USE AREA',
+  'SCENIC VISTA',
+  'FIRE TOWER',
+] as const;
+
+function includesCategory(values: readonly string[], value: string): boolean {
+  return values.includes(value);
+}
+
+export function outdoorPlaceGroup(category: string): OutdoorPlaceGroup {
+  if (category === 'LEAN-TO') return 'shelter';
+  if (includesCategory(campingCategories, category)) return 'camping';
+  if (includesCategory(parkingCategories, category)) return 'parking';
+  if (includesCategory(waterCategories, category)) return 'water';
+  if (includesCategory(dayUseCategories, category)) return 'day-use';
+  return 'other';
+}
+
+export function outdoorPlaceIcon(group: OutdoorPlaceGroup): string {
+  return {
+    camping: '▲',
+    shelter: '⌂',
+    parking: 'P',
+    water: '≈',
+    'day-use': '◆',
+    other: '•',
+  }[group];
+}
+
+function matchesPlaceFilter(group: OutdoorPlaceGroup, filter: OutdoorPlaceFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'camping') return group === 'camping' || group === 'shelter';
+  return group === filter;
+}
+
+export interface OutdoorPlaceFeature extends Omit<OutdoorFeature, 'properties' | 'geometry'> {
+  properties: OutdoorFeatureProperties & {
+    placeGroup: OutdoorPlaceGroup;
+    placeIcon: string;
+  };
+  geometry: { type: 'Point'; coordinates: number[] };
+}
+
+export interface OutdoorPlaceCollection {
+  type: 'FeatureCollection';
+  features: OutdoorPlaceFeature[];
+}
+
+/** Builds a point-only collection suitable for native or browser clustering. */
+export function createOutdoorPlaceCollection(
+  index: OutdoorFeatureIndex,
+  filter: OutdoorPlaceFilter = 'all',
+): OutdoorPlaceCollection {
+  return {
+    type: 'FeatureCollection',
+    features: index.features.flatMap((feature) => {
+      if (feature.properties.kind !== 'poi') return [];
+      const group = outdoorPlaceGroup(feature.properties.category);
+      if (!matchesPlaceFilter(group, filter)) return [];
+      return [
+        {
+          type: 'Feature' as const,
+          id: feature.id,
+          properties: {
+            ...feature.properties,
+            placeGroup: group,
+            placeIcon: outdoorPlaceIcon(group),
+          },
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [feature.bounds[0], feature.bounds[1]],
+          },
+        },
+      ];
+    }),
+  };
+}
+
+export const outdoorMarkerDensityConfig = {
+  automatic: { minimumZoom: 7, clusterMaxZoom: 12, clusterRadius: 50, labelMinZoom: 14 },
+  fewer: { minimumZoom: 8, clusterMaxZoom: 14, clusterRadius: 72, labelMinZoom: 16 },
+  more: { minimumZoom: 6, clusterMaxZoom: 11, clusterRadius: 38, labelMinZoom: 13 },
+} as const satisfies Record<
+  OutdoorMarkerDensity,
+  {
+    readonly minimumZoom: number;
+    readonly clusterMaxZoom: number;
+    readonly clusterRadius: number;
+    readonly labelMinZoom: number;
+  }
+>;
+
+export type OutdoorZoomBand = 'regional' | 'clusters' | 'icons' | 'labels';
+export function outdoorZoomPresentation(
+  zoom: number,
+  density: OutdoorMarkerDensity = 'automatic',
+): { readonly band: OutdoorZoomBand; readonly label: string } {
+  const config = outdoorMarkerDensityConfig[density];
+  if (zoom < config.minimumZoom) {
+    return { band: 'regional', label: 'Regional view · zoom in to see places' };
+  }
+  if (zoom < config.clusterMaxZoom + 1) {
+    return { band: 'clusters', label: 'Area view · numbers group nearby places' };
+  }
+  if (zoom < config.labelMinZoom) {
+    return { band: 'icons', label: 'Local view · individual place icons' };
+  }
+  return { band: 'labels', label: 'Site view · place names and icons' };
+}
+
+export function nextOutdoorZoom(current: number, direction: 'in' | 'out'): number {
+  const rounded = Math.round(current * 10) / 10;
+  return Math.min(18, Math.max(3, rounded + (direction === 'in' ? 1 : -1)));
+}
+
+export function createOutdoorPlaceLayerStyles(density: OutdoorMarkerDensity = 'automatic') {
+  const config = outdoorMarkerDensityConfig[density];
+  const individualMinZoom = config.clusterMaxZoom + 1;
+  const groupColor = [
+    'match',
+    ['get', 'placeGroup'],
+    'camping',
+    '#cf5726',
+    'shelter',
+    '#9b4d1f',
+    'parking',
+    '#355c7d',
+    'water',
+    '#147d92',
+    'day-use',
+    '#5f7f31',
+    '#526f77',
+  ];
+  return [
+    {
+      id: 'place-clusters',
+      type: 'circle',
+      minzoom: config.minimumZoom,
+      filter: ['has', 'point_count'],
+      paint: {
+        'circle-color': '#cf5726',
+        'circle-radius': ['step', ['get', 'point_count'], 17, 10, 21, 50, 27, 200, 33],
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 3,
+      },
+    },
+    {
+      id: 'place-cluster-count',
+      type: 'symbol',
+      minzoom: config.minimumZoom,
+      filter: ['has', 'point_count'],
+      layout: {
+        'text-field': ['get', 'point_count_abbreviated'],
+        'text-size': 12,
+        'text-allow-overlap': true,
+        'text-font': ['Open Outdoor Noto Sans'],
+      },
+      paint: { 'text-color': '#ffffff' },
+    },
+    {
+      id: 'place-marker',
+      type: 'circle',
+      minzoom: individualMinZoom,
+      filter: ['!', ['has', 'point_count']],
+      paint: {
+        'circle-color': groupColor,
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], individualMinZoom, 9, 17, 13],
+        'circle-stroke-color': '#ffffff',
+        'circle-stroke-width': 2,
+      },
+    },
+    {
+      id: 'place-icon',
+      type: 'symbol',
+      minzoom: individualMinZoom,
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'text-field': ['get', 'placeIcon'],
+        'text-size': ['interpolate', ['linear'], ['zoom'], individualMinZoom, 11, 17, 15],
+        'text-allow-overlap': true,
+        'text-font': ['Open Outdoor Noto Sans'],
+      },
+      paint: {
+        'text-color': '#ffffff',
+        'text-halo-color': '#000000',
+        'text-halo-width': 0.35,
+      },
+    },
+    {
+      id: 'place-label',
+      type: 'symbol',
+      minzoom: config.labelMinZoom,
+      filter: ['!', ['has', 'point_count']],
+      layout: {
+        'text-field': ['get', 'name'],
+        'text-size': 12,
+        'text-anchor': 'top',
+        'text-offset': [0, 1.25],
+        'text-max-width': 16,
+        'text-optional': true,
+        'text-font': ['Open Outdoor Noto Sans'],
+      },
+      paint: {
+        'text-color': '#182e36',
+        'text-halo-color': '#ffffff',
+        'text-halo-width': 1.5,
+      },
+    },
+  ] as const;
 }
 export function geometryPositions(value: unknown): Coordinate[] {
   if (!Array.isArray(value)) throw new Error('Invalid geometry');
@@ -183,7 +431,7 @@ export class OutdoorMapAdapter implements MapAdapter {
         name: f.properties.name,
         kind: f.properties.kind,
         coordinate,
-        origin: 'public-catalog' as const,
+        origin: f.properties.origin ?? 'public-catalog',
       }));
   }
 }
@@ -464,9 +712,14 @@ export function createTieredOfflineVectorBasemapStyle(
   };
 }
 
+export interface OutdoorMapStyleOptions {
+  readonly includePlaces?: boolean;
+}
+
 export function createOutdoorMapStyle(
   data: OutdoorCollection | string,
   basemap?: OutdoorBaseMapStyle,
+  options: OutdoorMapStyleOptions = {},
 ) {
   const background = {
     id: 'background',
@@ -478,6 +731,10 @@ export function createOutdoorMapStyle(
   const insertionIndex = firstLabel < 0 ? contextLayers.length : firstLabel;
   const overlays = outdoorLayerStyles
     .filter((layer) => basemap === undefined || layer.id !== 'state-fill')
+    .filter(
+      (layer) =>
+        options.includePlaces !== false || (layer.id !== 'dec-poi' && layer.id !== 'dec-camping'),
+    )
     .map((layer) => ({ ...layer, source: 'outdoors' as const }));
   return {
     ...(basemap ?? {}),

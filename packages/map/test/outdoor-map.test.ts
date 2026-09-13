@@ -6,8 +6,15 @@ import {
   createOfflineVectorBasemapStyle,
   createTieredOfflineVectorBasemapStyle,
   createOutdoorMapStyle,
+  createOutdoorPlaceCollection,
+  createOutdoorPlaceLayerStyles,
   featureBounds,
   geometryPositions,
+  nextOutdoorZoom,
+  outdoorMarkerDensityConfig,
+  outdoorPlaceGroup,
+  outdoorPlaceIcon,
+  outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
   searchOutdoorFeatures,
   segmentedTrack,
@@ -102,6 +109,68 @@ describe('real offline New York map', () => {
     );
     expect(index.features.every((feature) => feature.bounds.length === 4)).toBe(true);
     expect(collection.features.some((f) => f.properties.name === 'Hemlock Loop')).toBe(false);
+  });
+  it('builds filterable point collections with stable category icons', () => {
+    const all = createOutdoorPlaceCollection(index);
+    const camping = createOutdoorPlaceCollection(index, 'camping');
+    const parking = createOutdoorPlaceCollection(index, 'parking');
+    const water = createOutdoorPlaceCollection(index, 'water');
+    const dayUse = createOutdoorPlaceCollection(index, 'day-use');
+    expect(all.features).toHaveLength(4560);
+    expect(camping.features.length).toBeGreaterThan(2500);
+    expect(parking.features.length).toBeGreaterThan(1500);
+    expect(water.features.length).toBeGreaterThan(150);
+    expect(dayUse.features.length).toBeGreaterThan(100);
+    expect(camping.features.every((feature) => feature.geometry.type === 'Point')).toBe(true);
+    expect(
+      camping.features.every((feature) =>
+        ['camping', 'shelter'].includes(feature.properties.placeGroup),
+      ),
+    ).toBe(true);
+    expect(outdoorPlaceGroup('LEAN-TO')).toBe('shelter');
+    expect(outdoorPlaceIcon('camping')).toBe('▲');
+    expect(outdoorPlaceIcon('parking')).toBe('P');
+    expect(outdoorPlaceIcon('water')).toBe('≈');
+  });
+  it('uses clusters, icons, then labels as the user zooms in', () => {
+    expect(outdoorZoomPresentation(6.9)).toMatchObject({ band: 'regional' });
+    expect(outdoorZoomPresentation(7)).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(12.9)).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(13)).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(14)).toMatchObject({ band: 'labels' });
+    expect(outdoorZoomPresentation(12, 'fewer')).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(15, 'fewer')).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(16, 'fewer')).toMatchObject({ band: 'labels' });
+    expect(outdoorZoomPresentation(12, 'more')).toMatchObject({ band: 'icons' });
+    expect(nextOutdoorZoom(17.7, 'in')).toBe(18);
+    expect(nextOutdoorZoom(3.2, 'out')).toBe(3);
+
+    const layers = createOutdoorPlaceLayerStyles();
+    expect(layers.map((layer) => layer.id)).toEqual([
+      'place-clusters',
+      'place-cluster-count',
+      'place-marker',
+      'place-icon',
+      'place-label',
+    ]);
+    expect(layers.find((layer) => layer.id === 'place-clusters')?.minzoom).toBe(
+      outdoorMarkerDensityConfig.automatic.minimumZoom,
+    );
+    expect(layers.find((layer) => layer.id === 'place-marker')?.minzoom).toBe(
+      outdoorMarkerDensityConfig.automatic.clusterMaxZoom + 1,
+    );
+    expect(layers.find((layer) => layer.id === 'place-label')?.minzoom).toBe(
+      outdoorMarkerDensityConfig.automatic.labelMinZoom,
+    );
+    expect(JSON.stringify(layers)).toContain('Open Outdoor Noto Sans');
+  });
+  it('can remove legacy unclustered point layers when a clustered source owns places', () => {
+    const style = createOutdoorMapStyle(collection, undefined, { includePlaces: false });
+    const ids = style.layers.map((layer) => layer.id);
+    expect(ids).not.toContain('dec-poi');
+    expect(ids).not.toContain('dec-camping');
+    expect(ids).toContain('dec-trail');
+    expect(ids).toContain('dec-land');
   });
   it('loads bundled geography and all base layers as one atomic native style', () => {
     const style = createOutdoorMapStyle(collection);
@@ -225,6 +294,21 @@ describe('real offline New York map', () => {
     unsubscribe();
     adapter.setSelectedFeature(null);
     expect(updates).toBe(2);
+  });
+  it('preserves private catalog origin when querying a composed collection', () => {
+    const privateFeature = {
+      ...collection.features.find((feature) => feature.properties.kind === 'poi')!,
+      properties: {
+        ...collection.features.find((feature) => feature.properties.kind === 'poi')!.properties,
+        origin: 'private-catalog' as const,
+      },
+    };
+    const adapter = new OutdoorMapAdapter({
+      type: 'FeatureCollection',
+      features: [privateFeature],
+    });
+    const point = featureBounds(privateFeature);
+    expect(adapter.queryFeatures([point[0], point[1]])[0]?.origin).toBe('private-catalog');
   });
   it('never joins paused/recovered recording segments or mutates the input', () => {
     const points: [number, number][] = [
