@@ -80,6 +80,12 @@
       "enduranceClaimsAllowed": false
     }
   },
+  "productionQuality": {
+    "profile": "production-quality-profile.json",
+    "physicalAcceptance": "end-of-phase5",
+    "decision": "ADR-049",
+    "blockingWorkPackage": "WP-506"
+  },
   "budgets": {
     "diagnosticRetentionHours": 24,
     "publicArtifactRetentionDays": 1,

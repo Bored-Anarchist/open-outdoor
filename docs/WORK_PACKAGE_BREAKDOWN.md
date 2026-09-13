@@ -129,3 +129,15 @@ Every completed package records:
 - acceptance date and approver.
 
 The Product MVP is achieved only after `WP-301` through `WP-307` pass the M4 gate; finishing Phase 1 or Phase 2 is not an MVP claim. Platform, feature, and release names are controlled by the [product release definition](PRODUCT_RELEASE_DEFINITION.md).
+
+## ADR-049 completion timing (2026-09-10)
+
+The owner deferred WP-502/WP-503 physical testing to the end of Phase 5. These packages complete implementation and automated verification now; physical VoiceOver/Dynamic Type/contrast/outdoor, performance/memory and endurance acceptance remains mandatory for WP-506. Numeric budgets are unchanged, and no unexecuted case is reported as passed. See [production quality](PRODUCTION_QUALITY.md) and [ADR-049](DECISION_LOG.md).
+
+## WP-504/WP-505 implementation (2026-09-10)
+
+Release tooling binds artifacts, SBOM/DBOM, rights and notices to signed provenance with independent external trust and exact candidate policy. Governance records the actual one-contributor stage, closes the two-maintainer quorum gap and defines support/LTS entry conditions. See [release security](RELEASE_SECURITY.md), [WP-504 evidence](evidence/WP-504.md) and [WP-505 evidence](evidence/WP-505.md). This does not claim sustained external participation, a production release or completion of WP-506; ADR-049 physical deferral remains in force.
+
+## ADR-050 completion timing (2026-09-10)
+
+The owner directed that final tests happen after WP-506. WP-506 implementation and automated validation complete before physical execution and independent review; production acceptance remains blocked on all 26 criteria and actual evidence. This supersedes the earlier Phase-5-end package timing, without weakening any test or budget. See [ADR-050](DECISION_LOG.md), [audit procedure](PRODUCTION_RELEASE_AUDIT.md) and [WP-506 evidence](evidence/WP-506.md).

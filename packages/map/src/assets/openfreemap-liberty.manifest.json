@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "acquiredAt": "2026-09-12T02:03:43.609Z",
+  "source": "https://tiles.openfreemap.org/styles/liberty",
+  "sha256": "f58c00118f0fa89a5e66b1afa0a77ea600affdf46f4e60a267fb19d79d4c53c6",
+  "bytes": 43188,
+  "layerCount": 111,
+  "attribution": "OpenFreeMap © OpenMapTiles Data from OpenStreetMap",
+  "connectedOnly": true,
+  "license": "Style code BSD-3-Clause; style design CC BY 4.0; OpenStreetMap data ODbL; OpenFreeMap project MIT"
+}

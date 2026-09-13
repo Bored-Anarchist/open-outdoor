@@ -12,12 +12,13 @@
       "deploymentTarget": "16.4",
       "supportsTablet": false,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Open Outdoor uses your location only while you explicitly record an outdoor activity.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor continues an activity you explicitly started while the screen is locked.",
+        "NSLocationWhenInUseUsageDescription": "Open Outdoor uses your location while the map is open to show your position as a GPS dot, and while you explicitly record an outdoor activity.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor uses Always Location only to continue an outdoor activity you explicitly started while the screen is locked.",
         "NSMotionUsageDescription": "Open Outdoor uses barometer data during an active recording to improve elevation estimates.",
         "OpenOutdoorPhase0DiagnosticsEnabled": true,
         "UIBackgroundModes": ["location"]
       }
-    }
+    },
+    "plugins": ["@maplibre/maplibre-react-native"]
   }
 }

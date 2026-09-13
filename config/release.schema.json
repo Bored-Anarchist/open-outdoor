@@ -13,7 +13,8 @@
     "schemas",
     "phase0",
     "phase3",
-    "budgets"
+    "budgets",
+    "productionQuality"
   ],
   "properties": {
     "$schema": { "type": "string" },
@@ -208,6 +209,17 @@
             "enduranceClaimsAllowed": { "const": false }
           }
         }
+      }
+    },
+    "productionQuality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "physicalAcceptance", "decision", "blockingWorkPackage"],
+      "properties": {
+        "profile": { "const": "production-quality-profile.json" },
+        "physicalAcceptance": { "const": "end-of-phase5" },
+        "decision": { "const": "ADR-049" },
+        "blockingWorkPackage": { "const": "WP-506" }
       }
     },
     "budgets": {

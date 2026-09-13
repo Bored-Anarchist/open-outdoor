@@ -1,24 +1,44 @@
-import { StatusBar } from 'expo-status-bar';
-import type { AppSection } from '@open-outdoor/shared';
-import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
-import { useEffect, useState } from 'react';
 import {
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+  AccessibilityContext,
+  ProductText as Text,
+  useDeviceAccessibility,
+  useAnnouncement,
+} from './accessibility';
+import { campingLegend } from '@open-outdoor/map';
+import { StatusBar } from 'expo-status-bar';
+import {
+  appearances,
+  accessibleAppearance,
+  ForegroundTask,
+  boundedDisplayPoints,
+  designTokens as t,
+  type Appearance,
+  type Palette,
+  type AppSection,
+} from '@open-outdoor/shared';
+import {
+  AppearanceContext,
+  ProductButton as AccessibleButton,
+  FieldNotice,
+  ProductCard,
+  OriginBadge,
+  ProductMetric,
+  usePalette,
+} from './ProductComponents';
+import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Alert, AppState, ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
 import {
   nativeSpikes,
   type NativeTrackingInspection,
   type NativeTrackingMode,
 } from './nativeSpikes';
-import { createMobileApplication, type MobileApplication } from './application';
-import { Phase1AcceptanceRunner } from './Phase1AcceptanceRunner';
-import { Phase3AcceptanceRunner } from './Phase3AcceptanceRunner';
+import {
+  createMobileApplication,
+  createOutdoorMapAdapter,
+  type MobileApplication,
+} from './application';
+import { OutdoorMap } from './OutdoorMap';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
@@ -33,50 +53,38 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-interface AccessibleButtonProps {
-  readonly label: string;
-  readonly hint: string;
-  readonly disabled?: boolean;
-  readonly selected?: boolean;
-  readonly destructive?: boolean;
-  readonly onPress: () => void;
-}
-
-function AccessibleButton({
-  label,
-  hint,
-  disabled = false,
-  selected = false,
-  destructive = false,
-  onPress,
-}: AccessibleButtonProps) {
+export default function App() {
+  const systemAppearance = useColorScheme();
+  const [override, setOverride] = useState<Appearance | null>(null);
+  const accessibility = useDeviceAccessibility();
+  const appearance = accessibleAppearance(
+    systemAppearance,
+    override,
+    accessibility.increasedContrast,
+  );
   return (
-    <Pressable
-      accessibilityHint={hint}
-      accessibilityLabel={label}
-      accessibilityRole="button"
-      accessibilityState={{ disabled, selected }}
-      disabled={disabled}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.button,
-        selected && styles.buttonSelected,
-        destructive && styles.buttonDestructive,
-        pressed && !disabled && styles.buttonPressed,
-        disabled && styles.buttonDisabled,
-      ]}
-    >
-      <Text style={[styles.buttonLabel, destructive && styles.buttonDestructiveLabel]}>
-        {label}
-      </Text>
-    </Pressable>
+    <AccessibilityContext.Provider value={accessibility}>
+      <AppearanceContext.Provider value={appearance}>
+        <AppContent appearance={appearance} onAppearance={setOverride} />
+      </AppearanceContext.Provider>
+    </AccessibilityContext.Provider>
   );
 }
 
-export default function App() {
-  const { fontScale } = useWindowDimensions();
+function AppContent({
+  appearance,
+  onAppearance,
+}: {
+  appearance: Appearance;
+  onAppearance: (value: Appearance | null) => void;
+}) {
+  const palette = usePalette();
+  const styles = useMemo(() => createStyles(palette), [palette]);
+  const map = useMemo(createOutdoorMapAdapter, []);
+  const lastRenderedCheckpoint = useRef('');
+  const [legendOpen, setLegendOpen] = useState(false);
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
-  const [section, setSection] = useState<AppSection>('track');
+  const [section, setSection] = useState<AppSection>('explore');
   const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
   const [recovery, setRecovery] = useState<NativeTrackingInspection | null>(null);
   const [savedActivities, setSavedActivities] = useState<
@@ -98,9 +106,11 @@ export default function App() {
       : 'Native capability unavailable: ' + nativeSpikes.loadError,
   );
 
+  useAnnouncement(status);
+
   useEffect(() => {
     if (!nativeSpikes.available) return;
-    void createMobileApplication()
+    void createMobileApplication(map)
       .then(async (nextApplication) => {
         setApplication(nextApplication);
         setSavedActivities(
@@ -117,19 +127,30 @@ export default function App() {
         }
       })
       .catch((error: unknown) => setStatus('Private store startup failed: ' + errorMessage(error)));
-  }, []);
+  }, [map]);
   useEffect(() => {
     if (application === null || recorderState !== 'recording') return;
     let cancelled = false;
     const synchronize = async (): Promise<void> => {
       try {
         await application.recorder.synchronize();
-        if (cancelled) return;
+        if (cancelled || AppState.currentState !== 'active') return;
+        const state = application.recorder.stateMachine.state;
+        if (state.kind !== 'recording') return;
+        const revision = state.sessionId + ':' + state.highestCommittedSequence;
+        if (lastRenderedCheckpoint.current === revision) return;
         const observations = application.recorder.stateMachine.committedObservations;
         const distance = calculateDistanceRevision(observations);
         const elevation = calculateElevationRevision(observations);
         const accuracy = observations.at(-1)?.horizontalAccuracyM;
-        application.map.setActiveTrack(observations.map(({ coordinate }) => coordinate));
+        const display = boundedDisplayPoints(observations);
+        application.map.setActiveTrack(
+          display.map(({ coordinate }) => coordinate),
+          display.flatMap((point, index) =>
+            index > 0 && point.segment !== display[index - 1]?.segment ? [index] : [],
+          ),
+        );
+        lastRenderedCheckpoint.current = revision;
         setLiveStats({
           sequence: observations.at(-1)?.sequence ?? 0,
           distanceM: distance.distanceM,
@@ -147,11 +168,15 @@ export default function App() {
         if (!cancelled) setStatus('Checkpoint failed: ' + errorMessage(error));
       }
     };
-    void synchronize();
-    const timer = setInterval(() => void synchronize(), 5_000);
+    const refresh = new ForegroundTask({ run: synchronize, onError: () => {}, intervalMs: 5_000 });
+    refresh.setEligible(AppState.currentState === 'active');
+    const subscription = AppState.addEventListener('change', (value) =>
+      refresh.setEligible(value === 'active'),
+    );
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      refresh.dispose();
+      subscription.remove();
     };
   }, [application, recorderState]);
 
@@ -363,9 +388,9 @@ export default function App() {
 
   const active = recorderState === 'recording' || recorderState === 'paused';
   return (
-    <ScrollView contentContainerStyle={styles.container} key={'font-scale-' + fontScale}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text accessibilityRole="header" style={styles.eyebrow}>
-        Offline recorder alpha
+        Clear information for time outside.
       </Text>
       <Text accessibilityRole="header" style={styles.heading}>
         Open Outdoor
@@ -377,6 +402,7 @@ export default function App() {
         {(['explore', 'search', 'track', 'saved'] as const).map((candidate) => (
           <AccessibleButton
             key={candidate}
+            icon={candidate}
             label={candidate[0]?.toUpperCase() + candidate.slice(1)}
             hint={`Open the ${candidate} section`}
             selected={section === candidate}
@@ -384,40 +410,43 @@ export default function App() {
           />
         ))}
       </View>
-      {section === 'search' ? (
-        <Text accessibilityLiveRegion="polite" style={styles.copy}>
-          Offline search results: Hemlock Loop, Hemlock Trailhead, Fixture Preserve.
-        </Text>
+      {section === 'explore' || section === 'search' ? (
+        <>
+          <Text>Display only: there are no turn instructions, rerouting, or off-route alerts.</Text>
+          <OutdoorMap adapter={map} />
+          <AccessibleButton
+            label="Land and camping legend"
+            hint="Expand or collapse status explanations"
+            expanded={legendOpen}
+            onPress={() => setLegendOpen(!legendOpen)}
+          />
+          {legendOpen ? (
+            <ProductCard title="Land and camping status">
+              {campingLegend.map((entry) => (
+                <Text key={entry.id} style={styles.copy}>
+                  {entry.mark} · {entry.label}: {entry.explanation}
+                </Text>
+              ))}
+            </ProductCard>
+          ) : null}
+        </>
       ) : null}
-      <Text style={styles.copy}>
-        Selected route: Hemlock Loop. Display only—there are no turn instructions, rerouting, or
-        off-route alerts.
-      </Text>
-      <View
-        accessibilityLabel="Hemlock Loop route summary, four fixture points"
-        style={styles.mapAlternative}
-      >
-        <Text style={styles.mapHeading}>Hemlock Loop</Text>
-        <View
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          style={styles.routeLine}
-        />
-        <Text style={styles.mapCopy}>
-          Offline fixture map · 4 route points · trailhead and preserve
-        </Text>
-      </View>
       <Text accessibilityLiveRegion="polite" style={styles.status}>
         {status}
       </Text>
+      {recorderState !== 'idle' ? <FieldNotice state={recorderState} /> : null}
       {active ? (
-        <View accessibilityLabel="Committed recording statistics" style={styles.activityCard}>
+        <ProductCard title="Recording statistics">
           <Text style={styles.activityHeading}>Committed checkpoint {liveStats.sequence}</Text>
-          <Text style={styles.copy}>
-            {liveStats.distanceM.toFixed(0)} m distance · {liveStats.ascentM.toFixed(0)} m ascent ·
-            GPS {liveStats.gpsQuality} · Battery impact {modeLabels[mode]}
-          </Text>
-        </View>
+          <ProductMetric label="Distance" value={`${liveStats.distanceM.toFixed(0)} m`} />
+          <ProductMetric label="Ascent" value={`${liveStats.ascentM.toFixed(0)} m`} />
+          <ProductMetric
+            label="GPS"
+            value={liveStats.gpsQuality}
+            degraded={liveStats.gpsQuality === 'Degraded' || liveStats.gpsQuality === 'Poor'}
+          />
+          <ProductMetric label="Recording mode" value={modeLabels[mode]} />
+        </ProductCard>
       ) : null}
 
       {!nativeSpikes.available ? (
@@ -429,224 +458,251 @@ export default function App() {
         </View>
       ) : null}
 
-      <Text accessibilityRole="header" style={styles.sectionHeading}>
-        Tracking mode
-      </Text>
-      <Text style={styles.copy}>
-        Balanced is the default. High Accuracy is always an explicit choice.
-      </Text>
-      <View style={styles.controls}>
-        {(Object.keys(modeLabels) as NativeTrackingMode[]).map((candidate) => (
-          <AccessibleButton
-            key={candidate}
-            label={modeLabels[candidate]}
-            hint={'Select ' + modeLabels[candidate] + ' tracking mode'}
-            selected={candidate === mode}
-            disabled={!nativeSpikes.available || active || recorderState === 'recoverable'}
-            onPress={() => setMode(candidate)}
-          />
-        ))}
-      </View>
-
-      <Text accessibilityRole="header" style={styles.sectionHeading}>
-        Recorder controls
-      </Text>
-      <View style={styles.controls}>
+      {section !== 'track' && active ? (
         <AccessibleButton
-          label="Request Always Location"
-          hint="Opens the iOS location permission prompt"
-          disabled={!nativeSpikes.available || active}
-          onPress={() => void requestPermission()}
+          label="Return to recording controls"
+          hint="Open Track to pause or finish your activity"
+          icon="track"
+          onPress={() => setSection('track')}
         />
-        <AccessibleButton
-          label="Start recording"
-          hint="Starts offline location and elevation recording"
-          disabled={!nativeSpikes.available || recorderState !== 'idle'}
-          onPress={() => void start()}
-        />
-        <AccessibleButton
-          label="Pause recording"
-          hint="Stops sensors and excludes paused distance and elevation"
-          disabled={recorderState !== 'recording'}
-          onPress={() => void pause()}
-        />
-        <AccessibleButton
-          label="Resume recording"
-          hint="Restarts sensors in a new activity segment"
-          disabled={recorderState !== 'paused'}
-          onPress={() => void resume()}
-        />
-        <AccessibleButton
-          label="Finish and save recording"
-          hint="Stops sensors and saves the private activity"
-          disabled={!active}
-          onPress={() => void finish()}
-        />
-        <AccessibleButton
-          label="Recover interrupted recording"
-          hint="Continues from the last durable checkpoint"
-          disabled={recorderState !== 'recoverable' || recovery === null}
-          onPress={() => void recover()}
-        />
-        <AccessibleButton
-          label="Discard interrupted recording"
-          hint="Requires confirmation before permanently discarding recovery"
-          destructive
-          disabled={recorderState !== 'recoverable' || recovery === null}
-          onPress={confirmDiscard}
-        />
-      </View>
-
-      {nativeSpikes.phase0DiagnosticsEnabled ? (
+      ) : null}
+      {section === 'track' ? (
         <>
           <Text accessibilityRole="header" style={styles.sectionHeading}>
-            Physical acceptance evidence
+            Tracking mode
           </Text>
           <Text style={styles.copy}>
-            Diagnostic JSON contains timings, memory sizes, and file policy only—never coordinates.
+            Balanced is the default. High Accuracy is always an explicit choice.
           </Text>
-          <Phase3AcceptanceRunner enabled={application !== null} />
-          <Phase1AcceptanceRunner
-            enabled={application !== null}
-            onFinish={finish}
-            onMemoryProfileChange={setMemoryProfileActive}
-            onPause={pause}
-            onResume={resume}
-            onRecover={recover}
-            onStart={start}
-            recorderState={recorderState}
-          />
-          <Text style={styles.copy}>Advanced individual diagnostics:</Text>
+          <View style={styles.controls}>
+            {(Object.keys(modeLabels) as NativeTrackingMode[]).map((candidate) => (
+              <AccessibleButton
+                key={candidate}
+                label={modeLabels[candidate]}
+                hint={'Select ' + modeLabels[candidate] + ' tracking mode'}
+                selected={candidate === mode}
+                disabled={!nativeSpikes.available || active || recorderState === 'recoverable'}
+                onPress={() => setMode(candidate)}
+              />
+            ))}
+          </View>
+
+          <Text accessibilityRole="header" style={styles.sectionHeading}>
+            Recorder controls
+          </Text>
           <View style={styles.controls}>
             <AccessibleButton
-              label="Measure 20 Start/Stop acknowledgements"
-              hint="Runs the physical recording acknowledgement benchmark"
-              disabled={
-                active || recorderState === 'recoverable' || benchmarking || memoryProfileActive
-              }
-              onPress={() => void benchmarkAcknowledgements()}
+              label="Request Always Location"
+              hint="Opens the iOS location permission prompt"
+              disabled={!nativeSpikes.available || active}
+              onPress={requestPermission}
             />
             <AccessibleButton
-              label="Inspect active tracking protection"
-              hint="Checks protection and system backup exclusion without reading coordinates"
-              disabled={recorderState !== 'recording' || benchmarking}
-              onPress={() => void inspectProtection()}
+              label="Start recording"
+              hint="Starts offline location and elevation recording"
+              disabled={application === null || recorderState !== 'idle'}
+              onPress={start}
             />
             <AccessibleButton
-              label="Begin 30-minute memory profile"
-              hint="Begins screen-lock memory sampling for the active recorder"
-              disabled={recorderState !== 'recording' || benchmarking || memoryProfileActive}
-              onPress={() => void beginMemoryProfile()}
+              label="Pause recording"
+              hint="Stops sensors and excludes paused distance and elevation"
+              disabled={recorderState !== 'recording'}
+              onPress={pause}
             />
             <AccessibleButton
-              label="Finish 30-minute memory profile"
-              hint="Stops memory sampling and computes the binding p95 result"
-              disabled={!memoryProfileActive}
-              onPress={() => void finishMemoryProfile()}
+              label="Resume recording"
+              hint="Restarts sensors in a new activity segment"
+              disabled={recorderState !== 'paused'}
+              onPress={resume}
             />
             <AccessibleButton
-              label="Share physical diagnostic JSON"
-              hint="Shares the redacted physical acceptance report"
-              disabled={!physicalReportAvailable || benchmarking || memoryProfileActive}
-              onPress={() => void sharePhysicalReport()}
+              label="Finish and save recording"
+              hint="Stops sensors and saves the private activity"
+              disabled={!active}
+              onPress={finish}
+            />
+            <AccessibleButton
+              label="Recover interrupted recording"
+              hint="Continues from the last durable checkpoint"
+              disabled={recorderState !== 'recoverable' || recovery === null}
+              onPress={() => recover()}
+            />
+            <AccessibleButton
+              label="Discard interrupted recording"
+              hint="Requires confirmation before permanently discarding recovery"
+              destructive
+              disabled={recorderState !== 'recoverable' || recovery === null}
+              onPress={confirmDiscard}
             />
           </View>
+
+          {nativeSpikes.phase0DiagnosticsEnabled ? (
+            <>
+              <Text accessibilityRole="header" style={styles.sectionHeading}>
+                Advanced diagnostics
+              </Text>
+              <Text style={styles.copy}>
+                Diagnostic JSON contains timings, memory sizes, and file policy only—never
+                coordinates.
+              </Text>
+              <View style={styles.controls}>
+                <AccessibleButton
+                  label="Measure 20 Start/Stop acknowledgements"
+                  hint="Runs the physical recording acknowledgement benchmark"
+                  disabled={
+                    active || recorderState === 'recoverable' || benchmarking || memoryProfileActive
+                  }
+                  onPress={() => void benchmarkAcknowledgements()}
+                />
+                <AccessibleButton
+                  label="Inspect active tracking protection"
+                  hint="Checks protection and system backup exclusion without reading coordinates"
+                  disabled={recorderState !== 'recording' || benchmarking}
+                  onPress={() => void inspectProtection()}
+                />
+                <AccessibleButton
+                  label="Begin 30-minute memory profile"
+                  hint="Begins screen-lock memory sampling for the active recorder"
+                  disabled={recorderState !== 'recording' || benchmarking || memoryProfileActive}
+                  onPress={() => void beginMemoryProfile()}
+                />
+                <AccessibleButton
+                  label="Finish 30-minute memory profile"
+                  hint="Stops memory sampling and computes the binding p95 result"
+                  disabled={!memoryProfileActive}
+                  onPress={() => void finishMemoryProfile()}
+                />
+                <AccessibleButton
+                  label="Share physical diagnostic JSON"
+                  hint="Shares the redacted physical acceptance report"
+                  disabled={!physicalReportAvailable || benchmarking || memoryProfileActive}
+                  onPress={() => void sharePhysicalReport()}
+                />
+              </View>
+            </>
+          ) : null}
         </>
       ) : null}
-
-      <Text accessibilityRole="header" style={styles.sectionHeading}>
-        Saved activities
-      </Text>
-      {savedActivities.length === 0 ? (
-        <Text style={styles.copy}>No saved activities yet.</Text>
-      ) : (
-        savedActivities.map((activity) => (
-          <View key={activity.id} style={styles.activityCard}>
-            <Text style={styles.activityHeading}>Private recorded activity</Text>
-            <Text style={styles.copy}>
-              {activity.id} · {activity.finalSequence} durable observations
-            </Text>
-          </View>
-        ))
-      )}
-      <StatusBar style="auto" />
+      {section === 'saved' ? (
+        <>
+          <Text accessibilityRole="header" style={styles.sectionHeading}>
+            Saved activities
+          </Text>
+          {savedActivities.length === 0 ? (
+            <FieldNotice
+              state="empty"
+              detail="No saved activities yet. Start a recording from Track to create a private activity."
+            />
+          ) : (
+            savedActivities.map((activity) => (
+              <ProductCard key={activity.id} title="Private recorded activity">
+                <OriginBadge origin="user" />
+                <Text style={styles.copy}>
+                  {activity.id} · {activity.finalSequence} durable observations
+                </Text>
+              </ProductCard>
+            ))
+          )}
+        </>
+      ) : null}
+      <ProductCard title="Appearance">
+        <View style={styles.controls}>
+          <AccessibleButton
+            label="Use device appearance"
+            hint="Follow the device light or dark setting"
+            onPress={() => onAppearance(null)}
+          />
+          {appearances.map((value) => (
+            <AccessibleButton
+              key={value}
+              label={value}
+              hint={`Use ${value} appearance`}
+              selected={appearance === value}
+              onPress={() => onAppearance(value)}
+            />
+          ))}
+        </View>
+      </ProductCard>
+      <StatusBar style={appearance === 'light' ? 'dark' : 'light'} />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  activityCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    marginBottom: 12,
-    padding: 16,
-  },
-  activityHeading: { color: '#173d2b', fontSize: 18, fontWeight: '700' },
-  alert: {
-    backgroundColor: '#fff0ee',
-    borderColor: '#a5251b',
-    borderRadius: 12,
-    borderWidth: 2,
-    marginBottom: 12,
-    padding: 16,
-  },
-  alertCopy: { color: '#5f1711', fontSize: 16, lineHeight: 24 },
-  alertHeading: { color: '#7b1d15', fontSize: 18, fontWeight: '700', marginBottom: 6 },
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#fdfdf8',
-    borderColor: '#28533f',
-    borderRadius: 12,
-    borderWidth: 2,
-    justifyContent: 'center',
-    minHeight: 52,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  buttonDestructive: { borderColor: '#9b241b' },
-  buttonDestructiveLabel: { color: '#7b1d15' },
-  buttonDisabled: { opacity: 0.45 },
-  buttonLabel: {
-    color: '#173d2b',
-    flexShrink: 1,
-    fontSize: 17,
-    fontWeight: '700',
-    textAlign: 'center',
-    width: '100%',
-  },
-  buttonPressed: { backgroundColor: '#d8e6d8' },
-  buttonSelected: { backgroundColor: '#cbe1cf', borderWidth: 3 },
-  container: { backgroundColor: '#f3f1e8', flexGrow: 1, padding: 24 },
-  controls: { gap: 12 },
-  copy: { color: '#303b34', fontSize: 17, lineHeight: 26, marginBottom: 14 },
-  eyebrow: { color: '#496355', fontSize: 15, fontWeight: '700', letterSpacing: 1 },
-  heading: { color: '#173d2b', fontSize: 34, fontWeight: '800', marginBottom: 10 },
-  mapAlternative: {
-    backgroundColor: '#cfe2ce',
-    borderColor: '#35634d',
-    borderRadius: 16,
-    borderWidth: 2,
-    marginBottom: 16,
-    minHeight: 176,
-    padding: 18,
-  },
-  mapCopy: { color: '#244737', fontSize: 16, lineHeight: 23 },
-  mapHeading: { color: '#173d2b', fontSize: 21, fontWeight: '800' },
-  routeLine: { backgroundColor: '#a72d2d', borderRadius: 8, height: 8, marginVertical: 36 },
-  sectionHeading: {
-    color: '#173d2b',
-    fontSize: 23,
-    fontWeight: '800',
-    marginBottom: 10,
-    marginTop: 24,
-  },
-  status: {
-    backgroundColor: '#deeadc',
-    borderRadius: 12,
-    color: '#17251c',
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: 16,
-    padding: 16,
-  },
-});
+function createStyles(p: Palette) {
+  return StyleSheet.create({
+    searchInput: {
+      color: p.text,
+      backgroundColor: p.surface,
+      borderColor: p.border,
+      borderWidth: 2,
+      borderRadius: t.radius.control,
+      minHeight: t.target.minimum,
+      padding: t.space.md,
+      fontSize: t.type.body,
+    },
+    activityHeading: { color: p.text, fontSize: t.type.body, fontWeight: '700' },
+    alert: {
+      backgroundColor: p.surface,
+      borderColor: p.danger,
+      borderRadius: t.radius.card,
+      borderWidth: 2,
+      marginBottom: t.space.lg,
+      padding: t.space.lg,
+    },
+    alertCopy: { color: p.text, fontSize: t.type.body, lineHeight: t.type.lineHeight },
+    alertHeading: {
+      color: p.danger,
+      fontSize: t.type.title,
+      fontWeight: '700',
+      marginBottom: t.space.sm,
+    },
+    container: { backgroundColor: p.background, flexGrow: 1, padding: t.space.xl },
+    controls: { gap: t.space.md },
+    copy: {
+      color: p.text,
+      fontSize: t.type.body,
+      lineHeight: t.type.lineHeight,
+      marginBottom: t.space.lg,
+    },
+    eyebrow: { color: p.muted, fontSize: t.type.caption, fontWeight: '700' },
+    heading: {
+      color: p.text,
+      fontSize: t.type.display,
+      fontWeight: '800',
+      marginBottom: t.space.md,
+    },
+    mapAlternative: {
+      backgroundColor: p.land,
+      borderColor: p.border,
+      borderRadius: t.radius.card,
+      borderWidth: 2,
+      marginBottom: t.space.lg,
+      minHeight: 176,
+      padding: t.space.lg,
+    },
+    mapCopy: { color: p.text, fontSize: t.type.body, lineHeight: t.type.lineHeight },
+    mapHeading: { color: p.text, fontSize: t.type.title, fontWeight: '800' },
+    routeLine: {
+      backgroundColor: p.route,
+      borderRadius: t.radius.badge,
+      height: 8,
+      marginVertical: t.space.xxl,
+    },
+    sectionHeading: {
+      color: p.text,
+      fontSize: t.type.title,
+      fontWeight: '800',
+      marginBottom: t.space.md,
+      marginTop: t.space.xl,
+    },
+    status: {
+      backgroundColor: p.selected,
+      borderRadius: t.radius.card,
+      color: p.text,
+      fontSize: t.type.body,
+      lineHeight: t.type.lineHeight,
+      marginBottom: t.space.lg,
+      padding: t.space.lg,
+    },
+  });
+}

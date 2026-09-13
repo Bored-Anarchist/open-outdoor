@@ -12,5 +12,13 @@ apps/mobile/android
 pnpm-lock.yaml
 uv.lock
 *.md
+*.pmtiles
+*.ttf
 .github/ISSUE_TEMPLATE
 .github/rulesets
+
+packages/map/src/assets/new-york-outdoors.geojson
+packages/map/src/assets/new-york-outdoors.index.json
+packages/map/src/assets/new-york-outdoors.manifest.json
+packages/map/src/assets/openfreemap-liberty.json
+packages/map/src/assets/openfreemap-liberty.manifest.json

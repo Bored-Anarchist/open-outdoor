@@ -1,6 +1,7 @@
 import type { Coordinate } from '@open-outdoor/shared';
 
 export * from './basemap';
+export * from './offline-basemap-source';
 export * from './offline-explore';
 export * from './field-readiness';
 
@@ -25,7 +26,7 @@ export interface MapRoute {
 
 export interface MapFeature {
   readonly id: string;
-  readonly kind: 'trail' | 'poi' | 'land';
+  readonly kind: 'trail' | 'poi' | 'land' | 'road' | 'boundary';
   readonly name: string;
   readonly coordinate: Coordinate;
   readonly origin: 'fixture' | 'public-catalog' | 'private-catalog';
@@ -196,3 +197,7 @@ export class FixtureMapAdapter implements MapAdapter {
     );
   }
 }
+
+export * from './product-style';
+
+export * from './outdoor-map';

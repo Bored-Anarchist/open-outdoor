@@ -3,7 +3,7 @@ import {
   RecorderCoordinator,
   type RecorderPersistence,
 } from '@open-outdoor/recorder';
-import { FixtureMapAdapter } from '@open-outdoor/map';
+import { OutdoorMapAdapter } from '@open-outdoor/map';
 import {
   InMemoryPrivateRepository,
   migratePrivateSnapshot,
@@ -138,10 +138,21 @@ export interface MobileApplication {
   readonly repository: InMemoryPrivateRepository;
   readonly recorder: RecorderCoordinator;
   readonly library: ActivityLibrary;
-  readonly map: FixtureMapAdapter;
+  readonly map: OutdoorMapAdapter;
 }
 
-export async function createMobileApplication(): Promise<MobileApplication> {
+/**
+ * The offline map is available without private storage or tracking capabilities.
+ * Keeping this construction synchronous prevents recorder startup failures from
+ * hiding the bundled public geography.
+ */
+export function createOutdoorMapAdapter(): OutdoorMapAdapter {
+  return new OutdoorMapAdapter();
+}
+
+export async function createMobileApplication(
+  map: OutdoorMapAdapter = createOutdoorMapAdapter(),
+): Promise<MobileApplication> {
   const stored = await nativeSpikes.loadPrivateSnapshot();
   const snapshot =
     stored === null
@@ -163,6 +174,5 @@ export async function createMobileApplication(): Promise<MobileApplication> {
     },
   };
   const recorder = new RecorderCoordinator(new NativeTrackerAdapter(), repository, persistence);
-  const map = new FixtureMapAdapter();
   return { repository, recorder, library: new ActivityLibrary(repository), map };
 }
