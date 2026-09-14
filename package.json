@@ -48,6 +48,7 @@
     "map:acquire": "node --use-system-ca tools/acquire-outdoor-map.mjs",
     "map:acquire-style": "node --use-system-ca tools/acquire-basemap-style.mjs",
     "nps:acquire:ny": "node --use-system-ca tools/acquire-nps-new-york.mjs",
+    "federal:acquire:ny": "node --use-system-ca tools/acquire-federal-new-york.mjs",
     "test:map:browser": "node tools/outdoor-map-qa.mjs"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyManualReviewDecisions,
+  federalNewYorkAppFeatures,
   manualReviewDecisionsFromCsv,
   processIoverlanderPrivateData,
 } from '../src/ioverlander-private.js';
@@ -70,6 +71,81 @@ const dec = {
       geometry: { type: 'Point', coordinates: [-74, 42] },
     },
   ],
+};
+
+const federal = {
+  schemaVersion: 1,
+  stateCode: 'NY',
+  retrievedAt: generatedAt,
+  usfs: {
+    surfaceOwnership: [
+      {
+        type: 'Feature',
+        id: 'usfs-surface:1',
+        properties: {
+          objectid: 1,
+          nfslandunitname: 'Finger Lakes National Forest',
+          ownerclassification: 'USDA FOREST SERVICE',
+        },
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [-74.4, 42.1],
+              [-74.1, 42.1],
+              [-74.1, 42.4],
+              [-74.4, 42.4],
+              [-74.4, 42.1],
+            ],
+          ],
+        },
+      },
+    ],
+    recreationSites: [
+      {
+        type: 'Feature',
+        id: 'usfs-recreation:1',
+        properties: {
+          objectid: 1,
+          site_cn: 'site-1',
+          public_site_name: 'Official Forest Camp',
+          site_type: 'CAMPGROUND',
+          seasonal_operational_status: 'OPEN',
+          edw_last_modify: Date.parse(generatedAt),
+        },
+        geometry: { type: 'Point', coordinates: [-74.25, 42.25] },
+      },
+    ],
+    mvumRoads: [
+      {
+        type: 'Feature',
+        id: 'usfs-mvum-road:1',
+        properties: { objectid: 1, name: 'Forest Road 1' },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [-74.3, 42.2],
+            [-74.2, 42.3],
+          ],
+        },
+      },
+    ],
+    mvumTrails: [
+      {
+        type: 'Feature',
+        id: 'usfs-mvum-trail:1',
+        properties: { objectid: 1, name: 'Motor Trail 1' },
+        geometry: {
+          type: 'LineString',
+          coordinates: [
+            [-74.28, 42.2],
+            [-74.18, 42.3],
+          ],
+        },
+      },
+    ],
+  },
+  blm: { managedLands: [] },
 };
 
 describe('private iOverlander processing', () => {
@@ -254,5 +330,53 @@ describe('private iOverlander processing', () => {
       targetSourceId: 'nps-campgrounds-ny',
     });
     expect(result.counts).toMatchObject({ matchedToDec: 0, matchedToNps: 1 });
+  });
+
+  it('deduplicates against USFS recreation sites and maps federal layers for the app', () => {
+    const result = processIoverlanderPrivateData(
+      [
+        {
+          name: 'n42_w75.json',
+          value: {
+            places: [
+              place(13, 13, 'Official Forest Camp', -74.25001, 42.25001, {
+                category: 'campsite',
+              }),
+            ],
+          },
+        },
+      ],
+      dec,
+      generatedAt,
+      undefined,
+      federal,
+    );
+
+    expect(result.records).toHaveLength(0);
+    expect(result.publicLinks).toHaveLength(1);
+    expect(result.publicLinks[0]).toMatchObject({
+      targetOrigin: 'public-catalog',
+      targetSourceId: 'usfs-recreation-sites-ny',
+    });
+    expect(result.counts).toMatchObject({
+      matchedToDec: 0,
+      matchedToNps: 0,
+      matchedToUsfs: 1,
+    });
+
+    const features = federalNewYorkAppFeatures(federal);
+    expect(features.map((feature) => feature.properties.sourceId)).toEqual([
+      'usfs-surface-ownership-ny',
+      'usfs-mvum-roads-ny',
+      'usfs-mvum-trails-ny',
+      'usfs-recreation-sites-ny',
+    ]);
+    expect(features.map((feature) => feature.properties.kind)).toEqual([
+      'land',
+      'road',
+      'trail',
+      'poi',
+    ]);
+    expect(features.at(-1)?.properties.category).toBe('campsite');
   });
 });

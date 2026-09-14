@@ -20,7 +20,7 @@ const inputDirectory = args.get('input');
 const outputDirectory = args.get('output');
 if (!inputDirectory || !outputDirectory) {
   throw new Error(
-    'usage: pnpm catalog:private:ioverlander -- --input <directory> --output <directory> [--dec <geojson>] [--nps <snapshot.json>] [--review <csv>] [--generated-at <UTC>]',
+    'usage: pnpm catalog:private:ioverlander -- --input <directory> --output <directory> [--dec <geojson>] [--nps <snapshot.json>] [--federal <snapshot.json>] [--review <csv>] [--generated-at <UTC>]',
   );
 }
 
@@ -28,6 +28,7 @@ const result = await buildIoverlanderPrivateCatalog({
   inputDirectory: resolve(inputDirectory),
   decGeojsonPath: resolve(args.get('dec') ?? 'packages/map/src/assets/new-york-outdoors.geojson'),
   npsSnapshotPath: args.get('nps') ? resolve(args.get('nps')) : undefined,
+  federalSnapshotPath: args.get('federal') ? resolve(args.get('federal')) : undefined,
   outputDirectory: resolve(outputDirectory),
   publicCheckout: process.cwd(),
   reviewCsvPath: args.get('review') ? resolve(args.get('review')) : undefined,

@@ -14,7 +14,7 @@ import {
 } from './entity-resolution.js';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const PROCESSOR_VERSION = '1.2.0';
+const PROCESSOR_VERSION = '1.3.0';
 const MAXIMUM_MATCH_DISTANCE_METERS = DEFAULT_RESOLUTION_THRESHOLDS.maximumPlaceDistanceMeters;
 const REVIEW_THRESHOLD = DEFAULT_RESOLUTION_THRESHOLDS.place * 0.75;
 
@@ -92,6 +92,21 @@ interface NpsSnapshot {
   readonly boundaries: readonly DecFeature[];
 }
 
+interface FederalSnapshot {
+  readonly schemaVersion: 1;
+  readonly stateCode: 'NY';
+  readonly retrievedAt: string;
+  readonly usfs: {
+    readonly surfaceOwnership: readonly DecFeature[];
+    readonly recreationSites: readonly DecFeature[];
+    readonly mvumRoads: readonly DecFeature[];
+    readonly mvumTrails: readonly DecFeature[];
+  };
+  readonly blm: {
+    readonly managedLands: readonly DecFeature[];
+  };
+}
+
 export interface PrivatePlaceSource {
   readonly tile: string;
   readonly raw: RawIoverlanderPlace;
@@ -147,6 +162,7 @@ export interface PrivateCatalogProcessingResult {
     readonly privateDuplicatesRemoved: number;
     readonly matchedToDec: number;
     readonly matchedToNps: number;
+    readonly matchedToUsfs: number;
     readonly reviewCandidates: number;
     readonly manualDuplicatesRemoved: number;
     readonly manualNonDuplicates: number;
@@ -159,6 +175,7 @@ export interface IoverlanderPrivateCatalogOptions {
   readonly inputDirectory: string;
   readonly decGeojsonPath: string;
   readonly npsSnapshotPath?: string;
+  readonly federalSnapshotPath?: string;
   readonly outputDirectory: string;
   readonly publicCheckout: string;
   readonly reviewCsvPath?: string;
@@ -458,6 +475,50 @@ function parseNpsSnapshot(value: unknown): NpsSnapshot {
   return document as unknown as NpsSnapshot;
 }
 
+function parseFederalSnapshot(value: unknown): FederalSnapshot {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('federal snapshot must be an object');
+  }
+  const document = value as Readonly<Record<string, unknown>>;
+  const usfs = document.usfs as Readonly<Record<string, unknown>> | undefined;
+  const blm = document.blm as Readonly<Record<string, unknown>> | undefined;
+  if (
+    document.schemaVersion !== 1 ||
+    document.stateCode !== 'NY' ||
+    typeof document.retrievedAt !== 'string' ||
+    !utc(document.retrievedAt) ||
+    !usfs ||
+    !Array.isArray(usfs.surfaceOwnership) ||
+    !Array.isArray(usfs.recreationSites) ||
+    !Array.isArray(usfs.mvumRoads) ||
+    !Array.isArray(usfs.mvumTrails) ||
+    !blm ||
+    !Array.isArray(blm.managedLands)
+  ) {
+    throw new Error('federal snapshot does not match the New York snapshot schema');
+  }
+  const features = [
+    ...usfs.surfaceOwnership,
+    ...usfs.recreationSites,
+    ...usfs.mvumRoads,
+    ...usfs.mvumTrails,
+    ...blm.managedLands,
+  ];
+  if (
+    features.some(
+      (feature) =>
+        !feature ||
+        typeof feature !== 'object' ||
+        Array.isArray(feature) ||
+        (feature as DecFeature).type !== 'Feature' ||
+        !(feature as DecFeature).geometry,
+    )
+  ) {
+    throw new Error('federal snapshot contains an invalid GeoJSON feature');
+  }
+  return document as unknown as FederalSnapshot;
+}
+
 function npsCoordinate(longitudeValue: string, latitudeValue: string): Position | null {
   const longitude = Number(longitudeValue);
   const latitude = Number(latitudeValue);
@@ -593,6 +654,123 @@ function npsRecords(snapshot: NpsSnapshot, generatedAt: string): readonly PlaceR
       : [];
   });
   return [...parks, ...campgrounds, ...alerts];
+}
+
+function usfsCategory(value: unknown): IoverlanderCategory {
+  const type = normalizeText(String(value ?? '')).toLocaleUpperCase('en-US');
+  if (/CAMPGROUND|CAMP SITE/.test(type)) return 'campsite';
+  if (/TRAILHEAD|PARKING/.test(type)) return 'shorterm_parking';
+  if (/CABIN|LODGE/.test(type)) return 'hotel';
+  if (/WATER/.test(type)) return 'water';
+  if (
+    /PICNIC|OBSERVATION|VISITOR|INTERPRETIVE|BOAT|SCENIC|LOOKOUT|FISHING|DOCUMENTARY/.test(type)
+  ) {
+    return 'tourist_attraction';
+  }
+  return 'other';
+}
+
+function sourceUpdatedAt(value: unknown, fallback: string): string {
+  if (typeof value === 'number' && Number.isFinite(value)) return new Date(value).toISOString();
+  if (typeof value === 'string') {
+    const parsed = /^\d+$/.test(value) ? new Date(Number(value)).toISOString() : utc(value);
+    if (parsed) return parsed;
+  }
+  return fallback;
+}
+
+function federalRecreationRecords(
+  snapshot: FederalSnapshot,
+  generatedAt: string,
+): readonly PlaceRecord[] {
+  return snapshot.usfs.recreationSites.flatMap((feature) => {
+    if (
+      feature.geometry.type !== 'Point' ||
+      !Array.isArray(feature.geometry.coordinates) ||
+      typeof feature.geometry.coordinates[0] !== 'number' ||
+      typeof feature.geometry.coordinates[1] !== 'number'
+    ) {
+      return [];
+    }
+    const coordinate = [
+      feature.geometry.coordinates[0],
+      feature.geometry.coordinates[1],
+    ] as Position;
+    const externalId = normalizeText(
+      String(feature.properties.site_cn ?? feature.properties.objectid ?? feature.id),
+    );
+    const name = normalizeText(
+      String(
+        feature.properties.public_site_name ??
+          feature.properties.site_name ??
+          'USFS recreation site',
+      ),
+    );
+    const category = usfsCategory(feature.properties.site_type);
+    const updatedAt = sourceUpdatedAt(
+      feature.properties.edw_last_modify ?? feature.properties.infra_last_update,
+      snapshot.retrievedAt,
+    );
+    const id = deterministicUuid(`usfs:recreation:${externalId}`);
+    const core = {
+      schemaVersion: '1.0.0' as const,
+      recordType: 'place' as const,
+      id,
+      source: {
+        sourceId: 'usfs-recreation-sites-ny',
+        externalId,
+        sourcePartition: 'new-york',
+        connectorVersion: PROCESSOR_VERSION,
+        parserVersion: PROCESSOR_VERSION,
+        normalizerVersion: PROCESSOR_VERSION,
+      },
+      retrievedAt: generatedAt,
+      sourceUpdatedAt: updatedAt,
+      geometry: { type: 'Point' as const, coordinates: coordinate },
+      geometryQuality: {
+        sourceCrs: 'EPSG:4326',
+        sourceAxisOrder: 'longitude-latitude',
+        coordinatePrecisionMeters: null,
+        flags: ['official-usfs-coordinate'],
+        repair: null,
+      },
+      fieldProvenance: {
+        name: {
+          sourceField: 'public_site_name/site_name',
+          sourceValue: name,
+          observedAt: updatedAt,
+          transformation: 'Unicode NFC, whitespace normalized',
+        },
+        category: {
+          sourceField: 'site_type',
+          sourceValue: String(feature.properties.site_type ?? ''),
+          observedAt: updatedAt,
+          transformation: `mapped to iOverlander category ${category}`,
+        },
+      },
+      rights: {
+        policyId: 'usfs-us-government-work-v1',
+        distribution: 'public' as const,
+        attribution: ['USDA Forest Service Enterprise Data Warehouse'],
+      },
+      validation: { state: 'valid' as const, reasonCodes: [] },
+      tombstone: false,
+      classification: 'public-reference' as const,
+      properties: {
+        name,
+        category,
+        rawCategory: category === 'other' ? String(feature.properties.site_type ?? '') : null,
+        entrances: [coordinate],
+        elevation: null,
+      },
+    };
+    return [
+      validateCanonicalRecord({
+        ...core,
+        contentChecksum: sha256(stableJson(core)),
+      }) as PlaceRecord,
+    ];
+  });
 }
 
 function ringContains(point: Position, ring: readonly unknown[]): boolean {
@@ -794,12 +972,14 @@ export function processIoverlanderPrivateData(
   decValue: unknown,
   generatedAt: string,
   npsValue?: unknown,
+  federalValue?: unknown,
 ): PrivateCatalogProcessingResult {
   if (!utc(generatedAt) || utc(generatedAt) !== generatedAt) {
     throw new Error('generatedAt must be a normalized UTC timestamp');
   }
   const dec = parseDecCollection(decValue);
   const nps = npsValue === undefined ? null : parseNpsSnapshot(npsValue);
+  const federal = federalValue === undefined ? null : parseFederalSnapshot(federalValue);
   const boundary = dec.features.find(
     (feature) =>
       feature.properties.kind === 'boundary' &&
@@ -920,7 +1100,11 @@ export function processIoverlanderPrivateData(
     .filter((feature) => feature.properties.kind === 'poi')
     .map((feature) => decRecord(feature, generatedAt))
     .filter((record): record is PlaceRecord => record !== null);
-  const publicRecords = [...decRecords, ...(nps ? npsRecords(nps, generatedAt) : [])];
+  const publicRecords = [
+    ...decRecords,
+    ...(nps ? npsRecords(nps, generatedAt) : []),
+    ...(federal ? federalRecreationRecords(federal, generatedAt) : []),
+  ];
   const publicIndex = spatialIndex(publicRecords);
   const publicLinks: DedupLink[] = [];
   const output: PrivatePlaceSource[] = [];
@@ -980,8 +1164,9 @@ export function processIoverlanderPrivateData(
       invalid: count('invalid'),
       privateDuplicatesRemoved:
         identityUnique.length - survivors.length + (accepted.length - identityUnique.length),
-      matchedToDec: publicLinks.filter((link) => !link.targetSourceId.startsWith('nps-')).length,
+      matchedToDec: publicLinks.filter((link) => link.targetSourceId.startsWith('nys-dec-')).length,
       matchedToNps: publicLinks.filter((link) => link.targetSourceId.startsWith('nps-')).length,
+      matchedToUsfs: publicLinks.filter((link) => link.targetSourceId.startsWith('usfs-')).length,
       reviewCandidates: reviews.length,
       manualDuplicatesRemoved: 0,
       manualNonDuplicates: 0,
@@ -1040,6 +1225,12 @@ export function applyManualReviewDecisions(
     .filter((decision) => decision.targetOrigin === 'public-catalog')
     .map(asLink);
   const manualNpsLinks = manualPublicLinks.filter((link) => link.targetSourceId.startsWith('nps-'));
+  const manualUsfsLinks = manualPublicLinks.filter((link) =>
+    link.targetSourceId.startsWith('usfs-'),
+  );
+  const manualDecLinks = manualPublicLinks.filter((link) =>
+    link.targetSourceId.startsWith('nys-dec-'),
+  );
   const pendingReviews = result.reviews.filter(
     (review) => !decisionByPair.has(`${review.privateId}|${review.targetId}`),
   );
@@ -1058,8 +1249,9 @@ export function applyManualReviewDecisions(
     counts: {
       ...result.counts,
       privateDuplicatesRemoved: result.counts.privateDuplicatesRemoved + manualPrivateLinks.length,
-      matchedToDec: result.counts.matchedToDec + (manualPublicLinks.length - manualNpsLinks.length),
+      matchedToDec: result.counts.matchedToDec + manualDecLinks.length,
       matchedToNps: result.counts.matchedToNps + manualNpsLinks.length,
+      matchedToUsfs: result.counts.matchedToUsfs + manualUsfsLinks.length,
       manualDuplicatesRemoved: appliedDuplicates.length,
       manualNonDuplicates: manualDecisions.length - acceptedDuplicates.length,
       pendingReviewCandidates: pendingReviews.length,
@@ -1068,7 +1260,7 @@ export function applyManualReviewDecisions(
   };
 }
 
-interface AppFeature {
+export interface AppFeature {
   readonly type: 'Feature';
   readonly id: string | number;
   readonly properties: Readonly<Record<string, unknown>>;
@@ -1162,6 +1354,132 @@ function npsAppFeatures(snapshot: NpsSnapshot, generatedAt: string): readonly Ap
       };
     });
   return [...boundaries, ...points];
+}
+
+export function federalNewYorkAppFeatures(
+  value: unknown,
+  generatedAt?: string,
+): readonly AppFeature[] {
+  const snapshot = parseFederalSnapshot(value);
+  const retrievalTime = generatedAt ?? snapshot.retrievedAt;
+  if (!utc(retrievalTime) || utc(retrievalTime) !== retrievalTime) {
+    throw new Error('generatedAt must be a normalized UTC timestamp');
+  }
+  const recreationById = new Map(
+    snapshot.usfs.recreationSites.map((feature) => [
+      normalizeText(
+        String(feature.properties.site_cn ?? feature.properties.objectid ?? feature.id),
+      ),
+      feature,
+    ]),
+  );
+  const recreation = federalRecreationRecords(snapshot, retrievalTime).map((record): AppFeature => {
+    const feature = recreationById.get(record.source.externalId);
+    const id = `usfs:recreation:${record.source.externalId}`;
+    const status = normalizeText(
+      String(feature?.properties.seasonal_operational_status ?? 'status not supplied'),
+    );
+    return {
+      type: 'Feature',
+      id,
+      properties: {
+        id,
+        kind: 'poi',
+        name: record.properties.name,
+        sourceId: record.source.sourceId,
+        unit: 'Finger Lakes National Forest',
+        category: record.properties.category,
+        publicUse: `Official USFS recreation site; ${status}; verify current access`,
+        sourceUpdated: record.sourceUpdatedAt ?? snapshot.retrievedAt,
+        sourceUrl:
+          normalizeText(String(feature?.properties.usda_portal_url ?? '')) ||
+          'https://www.fs.usda.gov/r09/gmfl/',
+        origin: 'public-catalog',
+      },
+      geometry: { type: 'Point', coordinates: record.geometry!.coordinates },
+    };
+  });
+  const mapped = (
+    features: readonly DecFeature[],
+    sourceId: string,
+    kind: 'land' | 'road' | 'trail',
+    fallbackName: string,
+    category: string,
+    publicUse: string,
+    sourceUrl: string,
+  ): readonly AppFeature[] =>
+    features.map((feature): AppFeature => {
+      const properties = feature.properties;
+      const name = normalizeText(
+        String(
+          properties.name ??
+            properties.ADMIN_UNIT_NAME ??
+            properties.nfslandunitname ??
+            fallbackName,
+        ),
+      );
+      return {
+        type: 'Feature',
+        id: String(feature.id),
+        properties: {
+          id: String(feature.id),
+          kind,
+          name,
+          sourceId,
+          unit: normalizeText(
+            String(properties.nfslandunitname ?? properties.ADMIN_UNIT_NAME ?? name),
+          ),
+          category,
+          publicUse,
+          sourceUpdated: sourceUpdatedAt(
+            properties.edw_last_modify ?? properties.actiondate,
+            snapshot.retrievedAt,
+          ),
+          sourceUrl,
+          origin: 'public-catalog',
+        },
+        geometry: feature.geometry,
+      };
+    });
+  return [
+    ...mapped(
+      snapshot.usfs.surfaceOwnership,
+      'usfs-surface-ownership-ny',
+      'land',
+      'Finger Lakes National Forest',
+      'NATIONAL FOREST',
+      'Official USFS surface-ownership reference; verify current boundaries and access',
+      'https://data.fs.usda.gov/geodata/edw/datasets.php',
+    ),
+    ...mapped(
+      snapshot.usfs.mvumRoads,
+      'usfs-mvum-roads-ny',
+      'road',
+      'USFS MVUM road',
+      'MVUM ROAD',
+      'Official MVUM designation; verify current season, conditions, and closures',
+      'https://www.fs.usda.gov/visit/maps',
+    ),
+    ...mapped(
+      snapshot.usfs.mvumTrails,
+      'usfs-mvum-trails-ny',
+      'trail',
+      'USFS MVUM trail',
+      'MVUM TRAIL',
+      'Official MVUM designation; verify current season, conditions, and closures',
+      'https://www.fs.usda.gov/visit/maps',
+    ),
+    ...recreation,
+    ...mapped(
+      snapshot.blm.managedLands,
+      'blm-managed-lands-ny',
+      'land',
+      'BLM managed land',
+      'BLM MANAGED LAND',
+      'Official BLM surface-management reference; verify current boundaries and access',
+      'https://www.blm.gov/services/geospatial/GISData',
+    ),
+  ];
 }
 
 function appBounds(feature: AppFeature): readonly [number, number, number, number] {
@@ -1488,6 +1806,7 @@ export async function buildIoverlanderPrivateCatalog(
     publicCheckout: options.publicCheckout,
     ...(options.reviewCsvPath ? { reviewCsvPath: options.reviewCsvPath } : {}),
     ...(options.npsSnapshotPath ? { npsSnapshotPath: options.npsSnapshotPath } : {}),
+    ...(options.federalSnapshotPath ? { federalSnapshotPath: options.federalSnapshotPath } : {}),
   })) {
     if (!isAbsolute(value)) throw new Error(`${name} must be absolute`);
   }
@@ -1499,6 +1818,9 @@ export async function buildIoverlanderPrivateCatalog(
   const inputDirectory = await realpath(options.inputDirectory);
   const decGeojsonPath = await realpath(options.decGeojsonPath);
   const npsSnapshotPath = options.npsSnapshotPath ? await realpath(options.npsSnapshotPath) : null;
+  const federalSnapshotPath = options.federalSnapshotPath
+    ? await realpath(options.federalSnapshotPath)
+    : null;
   const reviewCsvPath = options.reviewCsvPath ? await realpath(options.reviewCsvPath) : null;
   const outputDirectory = resolve(options.outputDirectory);
   const privateDataRoot = resolve(publicCheckout, 'PrivateData');
@@ -1527,19 +1849,25 @@ export async function buildIoverlanderPrivateCatalog(
   if (existsSync(temporaryDirectory)) throw new Error('temporary output directory already exists');
   await mkdir(temporaryDirectory);
   try {
-    const [{ tiles, inventory }, decBytes, npsBytes, decisionBytes] = await Promise.all([
-      loadTileInputs(inputDirectory),
-      readFile(decGeojsonPath),
-      npsSnapshotPath ? readFile(npsSnapshotPath) : Promise.resolve(null),
-      reviewCsvPath ? readFile(reviewCsvPath) : Promise.resolve(null),
-    ]);
+    const [{ tiles, inventory }, decBytes, npsBytes, federalBytes, decisionBytes] =
+      await Promise.all([
+        loadTileInputs(inputDirectory),
+        readFile(decGeojsonPath),
+        npsSnapshotPath ? readFile(npsSnapshotPath) : Promise.resolve(null),
+        federalSnapshotPath ? readFile(federalSnapshotPath) : Promise.resolve(null),
+        reviewCsvPath ? readFile(reviewCsvPath) : Promise.resolve(null),
+      ]);
     const dec = parseDecCollection(JSON.parse(decBytes.toString('utf8')));
     const nps = npsBytes ? parseNpsSnapshot(JSON.parse(npsBytes.toString('utf8'))) : null;
+    const federal = federalBytes
+      ? parseFederalSnapshot(JSON.parse(federalBytes.toString('utf8')))
+      : null;
     const automaticResult = processIoverlanderPrivateData(
       tiles,
       dec,
       generatedAt,
       nps ?? undefined,
+      federal ?? undefined,
     );
     const result = decisionBytes
       ? applyManualReviewDecisions(
@@ -1550,7 +1878,13 @@ export async function buildIoverlanderPrivateCatalog(
     const privateFeatures = result.records.map(privateAppFeature);
     const publicFeatures = dec.features as readonly AppFeature[];
     const npsFeatures = nps ? npsAppFeatures(nps, generatedAt) : [];
-    const composedFeatures = [...publicFeatures, ...npsFeatures, ...privateFeatures];
+    const federalFeatures = federal ? federalNewYorkAppFeatures(federal, generatedAt) : [];
+    const composedFeatures = [
+      ...publicFeatures,
+      ...npsFeatures,
+      ...federalFeatures,
+      ...privateFeatures,
+    ];
 
     const privateGeojsonPath = join(temporaryDirectory, 'private-ioverlander.geojson');
     const privateIndexPath = join(temporaryDirectory, 'private-ioverlander.index.json');
@@ -1630,6 +1964,20 @@ export async function buildIoverlanderPrivateCatalog(
               },
             }
           : {}),
+        ...(federalSnapshotPath && federalBytes && federal
+          ? {
+              federalSnapshot: {
+                file: basename(federalSnapshotPath),
+                bytes: federalBytes.byteLength,
+                sha256: sha256(federalBytes),
+                usfsSurfaceOwnership: federal.usfs.surfaceOwnership.length,
+                usfsRecreationSites: federal.usfs.recreationSites.length,
+                usfsMvumRoads: federal.usfs.mvumRoads.length,
+                usfsMvumTrails: federal.usfs.mvumTrails.length,
+                blmManagedLands: federal.blm.managedLands.length,
+              },
+            }
+          : {}),
         ...(reviewCsvPath && decisionBytes
           ? {
               manualReview: {
@@ -1659,16 +2007,22 @@ export async function buildIoverlanderPrivateCatalog(
     await writeExclusive(
       join(temporaryDirectory, 'README.txt'),
       [
-        nps
-          ? 'Private iOverlander + NYS DEC + National Park Service deduplicated catalog'
-          : 'Private iOverlander + NYS DEC deduplicated catalog',
+        [
+          'Private iOverlander',
+          'NYS DEC',
+          ...(nps ? ['National Park Service'] : []),
+          ...(federal ? ['USDA Forest Service + Bureau of Land Management'] : []),
+        ].join(' + ') + ' deduplicated catalog',
         '',
         outputInPrivateData
           ? 'Keep this directory private. It is under the Git-ignored PrivateData root.'
           : 'Keep this directory private. It is intentionally outside the public checkout.',
-        nps
-          ? 'Use new-york-outdoors.composed.geojson and its index as the app-readable DEC + NPS + private iOverlander view.'
-          : 'Use new-york-outdoors.composed.geojson and its index as the app-readable merged view.',
+        `Use new-york-outdoors.composed.geojson and its index as the app-readable ${[
+          'DEC',
+          ...(nps ? ['NPS'] : []),
+          ...(federal ? ['USFS', 'BLM'] : []),
+          'private iOverlander',
+        ].join(' + ')} view.`,
         'Use private-ioverlander.geojson and its index for the private overlay alone.',
         'catalog.sqlite is compatible with the catalog record/search layout and adds dedup audit tables.',
         decisionBytes
