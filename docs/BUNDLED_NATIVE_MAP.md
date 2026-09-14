@@ -8,7 +8,7 @@ The guaranteed fallback basemap consists of two checksum-pinned PMTiles extracts
 
 The world archive remains a separate MapLibre source and is overzoomed beyond zoom 6. The regional source is drawn above it beginning at zoom 7 and is overzoomed beyond zoom 9. This separation guarantees that the rest of the world continues to display its zoom-6 overview when the camera zoom exceeds 6; a single sparse archive advertising zoom 9 globally would instead cause missing regional tile requests. The separate DEC data retains New York trail, road, land, and recreation-point detail. Protomaps light cartography and the bundled Noto Sans variable font provide roads, settlements, water, land cover, parks, POIs, and labels without a tile, glyph, or sprite server.
 
-The app is offline-only. It never streams a basemap, style, glyph, sprite, overlay, or map update. A user who needs more contextual detail can obtain the separately distributed, checksum-approved 128.4 MiB zoom-12 New York PMTiles pack on another device or computer and import the local file through the iOS Files picker. That installed pack adds zoom 10 through zoom 12 above both bundled sources; it does not replace US/Canada coverage elsewhere. The detailed pack is not part of the IPA or the Git repository. If an installed pack is absent, damaged, or incompatible, Explore uses both bundled overview tiers instead of making a network request or showing a blank map.
+The app is offline-only. It never streams or imports a basemap, style, glyph, sprite, overlay, or map update. The fixed two-tier basemap is overzoomed above zoom 9 while the separate DEC and iOverlander overlays retain their close-zoom geometry and place detail.
 
 The public map adapter is constructed synchronously and renders independently of the private
 recorder store and tracking module. A recorder initialization or native-tracking failure disables
@@ -24,19 +24,17 @@ The offline basemap is contextual, not a surveyed property map or camping author
 - `packages/map/src/assets/new-york-outdoors.manifest.json` records source query URLs, counts, hashes, dates, redistribution basis and attribution. The source registry already authorizes these NYS datasets. Only selected public fields and geometry are retained; no personal observations are included.
 - The two bundled manifests pin the Protomaps source date, source timestamp, zooms, compiler version, archive checksums, local font checksum, rights, and attribution. The regional manifest also pins the Natural Earth revision, input checksum, deterministic extraction-boundary checksum, selected map units, and explicit minor-island inventory.
 - The 42.81 MiB world overview is an ordinary Git binary. The 356.01 MiB regional archive exceeds GitHub's ordinary 100 MB object limit and is stored in Git LFS. Lightweight CI validates its LFS object ID and declared byte length; the macOS device-build workflow downloads the real object and verifies that both exact archives are embedded.
-- The optional detailed-pack allow-list records the approved file name, exact byte length, SHA-256, PMTiles/style compatibility, bounds, zooms, and attribution. Import verifies the local file before activation. Detailed pack binaries are distributed separately and are not committed to this repository.
 - `pnpm test:map:browser` renders the real data using MapLibre GL JS and rejects external requests or page errors. The screenshot/report are written under `dist/outdoor-map`. This is supplemental rendering evidence, not native-device acceptance.
 - `pnpm quality` verifies the overview/font checksums, local-only source resolution, network-free style, geometry, search, camera state and recording segment boundaries alongside the existing suites.
-- `pnpm build:ios:bundle` verifies Metro bundling. The macOS workflow also compares byte length and SHA-256 inside the built `.app`, failing if the overview is missing or truncated and failing if the 134,642,224-byte detailed archive is present.
+- `pnpm build:ios:bundle` verifies Metro bundling. The macOS workflow also compares byte length and SHA-256 inside the built `.app`, failing if either fixed offline archive is missing or truncated.
 
 ## Device checks after installation
 
-1. Enable airplane mode before opening the app. Open Explore without an imported detailed pack and confirm overview roads, town names, water, land cover, green DEC lands and blue DEC trail lines all appear.
+1. Enable airplane mode before opening the app. Open Explore and confirm overview roads, town names, water, land cover, green DEC lands and blue DEC trail lines all appear.
 2. Force-quit and reopen while airplane mode remains enabled. Pan within New York and Canada through zoom 9, then pan to Europe or Asia above zoom 6 and confirm the overzoomed world overview remains visible without a network request.
 3. Search Slide, select a trail and confirm its real geometry is highlighted. Clear selection, pan, pinch and use both zoom buttons.
 4. Switch to Track and back. Confirm camera/selection persist. Text search and source details provide a non-gesture alternative.
 5. Record outdoors, pause, move, resume and return to Explore. Confirm the recorded route appears without connecting the pause gap. Show last recorded position must use the recorded point without starting a new sensor session.
-6. Import an approved detailed PMTiles file from local Files storage, remain in airplane mode, and confirm that Explore uses it. Remove or corrupt a test copy and confirm that the bundled overview returns without a blank map.
-7. Perform the remaining guided accessibility, performance and endurance observations on this candidate. Automated tests do not count as these observations.
+6. Perform the remaining guided accessibility, performance and endurance observations on this candidate. Automated tests do not count as these observations.
 
 Physical evidence and independent review remain pending under ADR-050. Prior WP-301/WP-304 acceptance statements describe contract/index tests, not a delivered native map or a complete offline field beta.

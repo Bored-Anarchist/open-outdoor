@@ -1,7 +1,6 @@
 import type { Coordinate } from '@open-outdoor/shared';
 
 export * from './basemap';
-export * from './offline-basemap-source';
 export * from './offline-explore';
 export * from './field-readiness';
 

@@ -8,7 +8,7 @@ import {
   useSyncExternalStore,
   type ComponentProps,
 } from 'react';
-import { Alert, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import {
   Map as NativeMap,
@@ -46,7 +46,6 @@ import {
 import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 import { ProductText as Text } from './accessibility';
 import { ProductButton, ProductCard, usePalette } from './ProductComponents';
-import { useOfflineBasemap } from './useOfflineBasemap';
 import worldOverviewAsset from '../../packages/map/src/assets/world-overview-z6.pmtiles';
 import regionalOverviewAsset from '../../packages/map/src/assets/us-canada-territories-z7-z9.pmtiles';
 import worldBasemapManifest from '../../packages/map/src/assets/world-basemap.manifest.json';
@@ -284,31 +283,24 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const worldOverviewUri = assets?.[1]?.localUri ?? assets?.[1]?.uri;
   const regionalOverviewUri = assets?.[2]?.localUri ?? assets?.[2]?.uri;
   const offlineFontUri = assets?.[3]?.localUri ?? assets?.[3]?.uri;
-  const basemap = useOfflineBasemap(regionalOverviewUri);
   const mapStyle = useMemo(
     () =>
-      outdoorDataUri && worldOverviewUri && basemap.source && offlineFontUri
+      outdoorDataUri && worldOverviewUri && regionalOverviewUri && offlineFontUri
         ? (createOutdoorMapStyle(
             outdoorDataUri,
             createTieredOfflineVectorBasemapStyle({
               worldArchiveUri: worldOverviewUri,
-              regionalArchiveUri: regionalOverviewUri!,
-              installedArchiveUri:
-                basemap.source.kind === 'installed' ? basemap.source.uri : undefined,
+              regionalArchiveUri: regionalOverviewUri,
               fontUri: offlineFontUri,
               sourceLayers: offlineCartography,
               worldMaximumZoom: worldBasemapManifest.maximumZoom,
               regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
               regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
-              installedMaximumZoom:
-                basemap.source.kind === 'installed'
-                  ? basemap.source.manifest.maximumZoom
-                  : undefined,
             }),
             { includePlaces: false },
           ) as unknown as StyleSpecification)
         : null,
-    [basemap.source, offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri],
+    [offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri],
   );
   const [query, setQuery] = useState('');
   const [showLicenses, setShowLicenses] = useState(false);
@@ -369,7 +361,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   useEffect(() => {
     setLoaded(false);
     setFailed(false);
-  }, [basemap.source?.uri]);
+  }, [regionalOverviewUri]);
   function select(feature: OutdoorFeatureSummary) {
     setSelected(feature);
     const [west, south, east, north] = feature.bounds;
@@ -395,8 +387,8 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         New York outdoor map
       </Text>
       <Text>
-        Stored map · {manifest.featureCount.toLocaleString()} DEC geographic features ·{' '}
-        {basemap.source?.kind === 'installed' ? 'detailed New York basemap' : 'offline overview'} ·{' '}
+        Stored map · {manifest.featureCount.toLocaleString()} DEC geographic features · offline
+        overview ·{' '}
         {(
           (worldBasemapManifest.archive.bytes + regionalBasemapManifest.archive.bytes) /
           1024 ** 2
@@ -487,7 +479,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         {mapStyle ? (
           <>
             <NativeMap
-              key={basemap.source?.uri}
+              key={regionalOverviewUri}
               ref={mapView}
               style={{ flex: 1 }}
               mapStyle={mapStyle}
@@ -664,53 +656,10 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         {failed || assetError
           ? 'Map could not render. Search and geographic details remain available.'
           : loaded
-            ? basemap.source?.kind === 'installed'
-              ? 'Detailed offline map ready. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
-              : 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
-            : basemap.checking
-              ? 'Verifying the installed basemap while the overview remains available…'
-              : 'Loading the stored basemap and DEC overlays…'}
+            ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
+            : 'Loading the stored basemap and DEC overlays…'}
         {outside ? ' Outside the bundled New York outdoor-overlay coverage.' : ''}
       </Text>
-      {basemap.error && <Text accessibilityLiveRegion="polite">{basemap.error}</Text>}
-      {basemap.source?.kind !== 'installed' && (
-        <>
-          <Text>
-            The bundled basemap covers the world through zoom 6 and the United States, its
-            territories, and Canada through zoom 9. For additional New York detail when zoomed in,
-            copy the approved {basemap.detailedSizeMiB} MB New York .pmtiles pack to Files, then
-            import it here. The app verifies and stores it locally; it never downloads or streams
-            map data.
-          </Text>
-          <ProductButton
-            label={basemap.importing ? 'Importing detailed map…' : 'Import detailed New York map'}
-            hint="Choose the approved offline New York PMTiles file from Files"
-            disabled={!basemap.importAvailable || basemap.importing}
-            onPress={() => void basemap.importDetailed()}
-          />
-        </>
-      )}
-      {basemap.source?.kind === 'installed' && (
-        <ProductButton
-          label={basemap.removing ? 'Removing detailed map…' : 'Remove detailed map'}
-          hint="Free the detailed basemap storage and return to the bundled overview"
-          disabled={basemap.removing}
-          onPress={() =>
-            Alert.alert(
-              'Remove detailed map?',
-              `This removes the app's ${basemap.detailedSizeMiB} MB copy. The bundled offline overview remains available.`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Remove',
-                  style: 'destructive',
-                  onPress: () => void basemap.removeDetailed(),
-                },
-              ],
-            )
-          }
-        />
-      )}
       <ProductButton
         label="Show all New York coverage"
         hint="Fit the statewide geographic layers"

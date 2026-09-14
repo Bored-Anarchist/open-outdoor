@@ -7,7 +7,13 @@ import {
   type IoverlanderCategory,
 } from '@open-outdoor/shared';
 import type { MapAdapter, MapCamera, MapFeature, MapRoute } from './index';
-import { isLocalFileUri } from './offline-basemap-source';
+
+const LOCAL_FILE_URI = /^file:\/\/\/.+/i;
+
+function isLocalFileUri(uri: string): boolean {
+  return LOCAL_FILE_URI.test(uri) && !/[\r\n]/.test(uri);
+}
+
 export interface OutdoorFeatureProperties {
   id: string;
   kind: 'boundary' | 'land' | 'road' | 'trail' | 'poi';
@@ -581,13 +587,11 @@ export function createOfflineVectorBasemapStyle(
 export interface TieredOfflineVectorBasemapInput {
   readonly worldArchiveUri: string;
   readonly regionalArchiveUri: string;
-  readonly installedArchiveUri?: string;
   readonly fontUri: string;
   readonly sourceLayers: OutdoorBaseMapStyle['layers'];
   readonly worldMaximumZoom: number;
   readonly regionalMinimumZoom: number;
   readonly regionalMaximumZoom: number;
-  readonly installedMaximumZoom?: number;
 }
 
 function checkedZoom(value: number, label: string): number {
@@ -607,11 +611,7 @@ function checkedZoom(value: number, label: string): number {
 export function createTieredOfflineVectorBasemapStyle(
   input: TieredOfflineVectorBasemapInput,
 ): OutdoorBaseMapStyle {
-  const archiveUris = [
-    input.worldArchiveUri,
-    input.regionalArchiveUri,
-    ...(input.installedArchiveUri ? [input.installedArchiveUri] : []),
-  ];
+  const archiveUris = [input.worldArchiveUri, input.regionalArchiveUri];
   if (archiveUris.some((uri) => !isLocalFileUri(uri)) || !isLocalFileUri(input.fontUri)) {
     throw new Error('tiered offline basemap archives and font must be local file URLs');
   }
@@ -621,17 +621,6 @@ export function createTieredOfflineVectorBasemapStyle(
   if (regionalMinimumZoom !== worldMaximumZoom + 1 || regionalMinimumZoom > regionalMaximumZoom) {
     throw new Error('tiered offline basemap zoom ranges must be ordered and non-overlapping');
   }
-  const installedMaximumZoom =
-    input.installedMaximumZoom === undefined
-      ? undefined
-      : checkedZoom(input.installedMaximumZoom, 'installed maximum zoom');
-  if (input.installedArchiveUri && (installedMaximumZoom ?? -1) <= regionalMaximumZoom) {
-    throw new Error('installed offline basemap must add detail above the regional maximum zoom');
-  }
-  if (!input.installedArchiveUri && installedMaximumZoom !== undefined) {
-    throw new Error('installed maximum zoom requires an installed archive');
-  }
-
   const sanitized = createOfflineVectorBasemapStyle(
     input.worldArchiveUri,
     input.fontUri,
@@ -647,17 +636,7 @@ export function createTieredOfflineVectorBasemapStyle(
       source: 'offline-regional',
       minzoom: Math.max(Number(layer.minzoom ?? 0), regionalMinimumZoom),
     };
-    const installedLayer = input.installedArchiveUri
-      ? [
-          {
-            ...layer,
-            id: `${layer.id}-installed`,
-            source: 'offline-installed',
-            minzoom: Math.max(Number(layer.minzoom ?? 0), regionalMaximumZoom + 1),
-          },
-        ]
-      : [];
-    return [worldLayer, regionalLayer, ...installedLayer];
+    return [worldLayer, regionalLayer];
   });
 
   return {
@@ -677,17 +656,6 @@ export function createTieredOfflineVectorBasemapStyle(
         maxzoom: regionalMaximumZoom,
         attribution: 'Protomaps © OpenStreetMap contributors',
       },
-      ...(input.installedArchiveUri
-        ? {
-            'offline-installed': {
-              type: 'vector',
-              url: `pmtiles://${input.installedArchiveUri}`,
-              minzoom: regionalMaximumZoom + 1,
-              maxzoom: installedMaximumZoom,
-              attribution: 'Protomaps © OpenStreetMap contributors',
-            },
-          }
-        : {}),
     },
     'font-faces': {
       'Open Outdoor Noto Sans': input.fontUri,
