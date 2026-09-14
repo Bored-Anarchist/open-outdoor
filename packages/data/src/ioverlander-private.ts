@@ -14,7 +14,7 @@ import {
 } from './entity-resolution.js';
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const PROCESSOR_VERSION = '1.1.0';
+const PROCESSOR_VERSION = '1.2.0';
 const MAXIMUM_MATCH_DISTANCE_METERS = DEFAULT_RESOLUTION_THRESHOLDS.maximumPlaceDistanceMeters;
 const REVIEW_THRESHOLD = DEFAULT_RESOLUTION_THRESHOLDS.place * 0.75;
 
@@ -53,6 +53,45 @@ interface DecCollection {
   readonly features: readonly DecFeature[];
 }
 
+interface NpsPark {
+  readonly id: string;
+  readonly parkCode: string;
+  readonly fullName: string;
+  readonly latitude: string;
+  readonly longitude: string;
+  readonly lastIndexedDate?: string;
+  readonly url?: string;
+}
+
+interface NpsCampground {
+  readonly id: string;
+  readonly parkCode: string;
+  readonly name: string;
+  readonly latitude: string;
+  readonly longitude: string;
+  readonly lastIndexedDate?: string;
+  readonly url?: string;
+}
+
+interface NpsAlert {
+  readonly id: string;
+  readonly parkCode: string;
+  readonly title: string;
+  readonly category?: string;
+  readonly lastIndexedDate?: string;
+  readonly url?: string;
+}
+
+interface NpsSnapshot {
+  readonly schemaVersion: 1;
+  readonly stateCode: 'NY';
+  readonly retrievedAt: string;
+  readonly parks: readonly NpsPark[];
+  readonly campgrounds: readonly NpsCampground[];
+  readonly alerts: readonly NpsAlert[];
+  readonly boundaries: readonly DecFeature[];
+}
+
 export interface PrivatePlaceSource {
   readonly tile: string;
   readonly raw: RawIoverlanderPlace;
@@ -66,6 +105,7 @@ export interface DedupLink {
   readonly targetId: string;
   readonly targetName: string;
   readonly targetOrigin: 'private-catalog' | 'public-catalog';
+  readonly targetSourceId: string;
   readonly distanceMeters: number;
   readonly score: number;
   readonly components: Readonly<Record<string, number>>;
@@ -106,6 +146,7 @@ export interface PrivateCatalogProcessingResult {
     readonly invalid: number;
     readonly privateDuplicatesRemoved: number;
     readonly matchedToDec: number;
+    readonly matchedToNps: number;
     readonly reviewCandidates: number;
     readonly manualDuplicatesRemoved: number;
     readonly manualNonDuplicates: number;
@@ -117,6 +158,7 @@ export interface PrivateCatalogProcessingResult {
 export interface IoverlanderPrivateCatalogOptions {
   readonly inputDirectory: string;
   readonly decGeojsonPath: string;
+  readonly npsSnapshotPath?: string;
   readonly outputDirectory: string;
   readonly publicCheckout: string;
   readonly reviewCsvPath?: string;
@@ -396,6 +438,163 @@ function decRecord(feature: DecFeature, generatedAt: string): PlaceRecord | null
   }) as PlaceRecord;
 }
 
+function parseNpsSnapshot(value: unknown): NpsSnapshot {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('NPS snapshot must be an object');
+  }
+  const document = value as Readonly<Record<string, unknown>>;
+  if (
+    document.schemaVersion !== 1 ||
+    document.stateCode !== 'NY' ||
+    typeof document.retrievedAt !== 'string' ||
+    !utc(document.retrievedAt) ||
+    !Array.isArray(document.parks) ||
+    !Array.isArray(document.campgrounds) ||
+    !Array.isArray(document.alerts) ||
+    !Array.isArray(document.boundaries)
+  ) {
+    throw new Error('NPS snapshot does not match the New York snapshot schema');
+  }
+  return document as unknown as NpsSnapshot;
+}
+
+function npsCoordinate(longitudeValue: string, latitudeValue: string): Position | null {
+  const longitude = Number(longitudeValue);
+  const latitude = Number(latitudeValue);
+  if (
+    !Number.isFinite(longitude) ||
+    !Number.isFinite(latitude) ||
+    Math.abs(longitude) > 180 ||
+    Math.abs(latitude) > 90
+  ) {
+    return null;
+  }
+  return [longitude, latitude];
+}
+
+function npsRecord(
+  sourceId: string,
+  externalId: string,
+  name: string,
+  category: IoverlanderCategory,
+  coordinate: Position,
+  sourceUpdatedValue: string | undefined,
+  generatedAt: string,
+): PlaceRecord {
+  const sourceUpdatedAt = sourceUpdatedValue ? utc(sourceUpdatedValue) : null;
+  const id = deterministicUuid(`nps:${sourceId}:${externalId}`);
+  const core = {
+    schemaVersion: '1.0.0' as const,
+    recordType: 'place' as const,
+    id,
+    source: {
+      sourceId,
+      externalId,
+      sourcePartition: 'new-york',
+      connectorVersion: PROCESSOR_VERSION,
+      parserVersion: PROCESSOR_VERSION,
+      normalizerVersion: PROCESSOR_VERSION,
+    },
+    retrievedAt: generatedAt,
+    sourceUpdatedAt,
+    geometry: { type: 'Point' as const, coordinates: coordinate },
+    geometryQuality: {
+      sourceCrs: 'EPSG:4326',
+      sourceAxisOrder: 'longitude-latitude',
+      coordinatePrecisionMeters: null,
+      flags: ['official-nps-coordinate'],
+      repair: null,
+    },
+    fieldProvenance: {
+      name: {
+        sourceField: sourceId === 'nps-campgrounds-ny' ? 'name' : 'fullName/title',
+        sourceValue: name,
+        observedAt: sourceUpdatedAt,
+        transformation: 'Unicode NFC, whitespace normalized',
+      },
+      category: {
+        sourceField: 'NPS endpoint',
+        sourceValue: sourceId,
+        observedAt: sourceUpdatedAt,
+        transformation: `mapped to iOverlander category ${category}`,
+      },
+    },
+    rights: {
+      policyId: 'nps-us-government-work-v1',
+      distribution: 'public' as const,
+      attribution: ['National Park Service'],
+    },
+    validation: { state: 'valid' as const, reasonCodes: [] },
+    tombstone: false,
+    classification: 'public-reference' as const,
+    properties: {
+      name: normalizeText(name),
+      category,
+      rawCategory: null,
+      entrances: [coordinate],
+      elevation: null,
+    },
+  };
+  return validateCanonicalRecord({
+    ...core,
+    contentChecksum: sha256(stableJson(core)),
+  }) as PlaceRecord;
+}
+
+function npsRecords(snapshot: NpsSnapshot, generatedAt: string): readonly PlaceRecord[] {
+  const parkByCode = new Map(snapshot.parks.map((park) => [park.parkCode, park]));
+  const parks = snapshot.parks.flatMap((park) => {
+    const coordinate = npsCoordinate(park.longitude, park.latitude);
+    return coordinate
+      ? [
+          npsRecord(
+            'nps-parks-ny',
+            park.id,
+            park.fullName,
+            'tourist_attraction',
+            coordinate,
+            park.lastIndexedDate,
+            generatedAt,
+          ),
+        ]
+      : [];
+  });
+  const campgrounds = snapshot.campgrounds.flatMap((campground) => {
+    const coordinate = npsCoordinate(campground.longitude, campground.latitude);
+    return coordinate
+      ? [
+          npsRecord(
+            'nps-campgrounds-ny',
+            campground.id,
+            campground.name,
+            'campsite',
+            coordinate,
+            campground.lastIndexedDate,
+            generatedAt,
+          ),
+        ]
+      : [];
+  });
+  const alerts = snapshot.alerts.flatMap((alert) => {
+    const park = parkByCode.get(alert.parkCode);
+    const coordinate = park ? npsCoordinate(park.longitude, park.latitude) : null;
+    return coordinate
+      ? [
+          npsRecord(
+            'nps-alerts-ny',
+            alert.id,
+            alert.title,
+            'warning',
+            coordinate,
+            alert.lastIndexedDate,
+            generatedAt,
+          ),
+        ]
+      : [];
+  });
+  return [...parks, ...campgrounds, ...alerts];
+}
+
 function ringContains(point: Position, ring: readonly unknown[]): boolean {
   let inside = false;
   for (let index = 0, previous = ring.length - 1; index < ring.length; previous = index++) {
@@ -543,6 +742,7 @@ function dedupLink(
     targetId: targetRecord.id,
     targetName: targetRecord.properties.name,
     targetOrigin,
+    targetSourceId: targetRecord.source.sourceId,
     distanceMeters: Math.round(scored.distanceMeters * 10) / 10,
     score: Math.round(scored.score.total * 10_000) / 10_000,
     components: scored.score.components,
@@ -593,11 +793,13 @@ export function processIoverlanderPrivateData(
   tiles: readonly IoverlanderTileInput[],
   decValue: unknown,
   generatedAt: string,
+  npsValue?: unknown,
 ): PrivateCatalogProcessingResult {
   if (!utc(generatedAt) || utc(generatedAt) !== generatedAt) {
     throw new Error('generatedAt must be a normalized UTC timestamp');
   }
   const dec = parseDecCollection(decValue);
+  const nps = npsValue === undefined ? null : parseNpsSnapshot(npsValue);
   const boundary = dec.features.find(
     (feature) =>
       feature.properties.kind === 'boundary' &&
@@ -718,13 +920,14 @@ export function processIoverlanderPrivateData(
     .filter((feature) => feature.properties.kind === 'poi')
     .map((feature) => decRecord(feature, generatedAt))
     .filter((record): record is PlaceRecord => record !== null);
-  const decIndex = spatialIndex(decRecords);
+  const publicRecords = [...decRecords, ...(nps ? npsRecords(nps, generatedAt) : [])];
+  const publicIndex = spatialIndex(publicRecords);
   const publicLinks: DedupLink[] = [];
   const output: PrivatePlaceSource[] = [];
   for (const source of survivors.sort((left, right) =>
     left.record.id.localeCompare(right.record.id),
   )) {
-    const scored = nearby(source.record, decIndex)
+    const scored = nearby(source.record, publicIndex)
       .filter((record) => record.properties.category === source.record.properties.category)
       .map((record) => ({ record, candidate: candidate(source.record, record) }))
       .filter(
@@ -777,7 +980,8 @@ export function processIoverlanderPrivateData(
       invalid: count('invalid'),
       privateDuplicatesRemoved:
         identityUnique.length - survivors.length + (accepted.length - identityUnique.length),
-      matchedToDec: publicLinks.length,
+      matchedToDec: publicLinks.filter((link) => !link.targetSourceId.startsWith('nps-')).length,
+      matchedToNps: publicLinks.filter((link) => link.targetSourceId.startsWith('nps-')).length,
       reviewCandidates: reviews.length,
       manualDuplicatesRemoved: 0,
       manualNonDuplicates: 0,
@@ -835,6 +1039,7 @@ export function applyManualReviewDecisions(
   const manualPublicLinks = appliedDuplicates
     .filter((decision) => decision.targetOrigin === 'public-catalog')
     .map(asLink);
+  const manualNpsLinks = manualPublicLinks.filter((link) => link.targetSourceId.startsWith('nps-'));
   const pendingReviews = result.reviews.filter(
     (review) => !decisionByPair.has(`${review.privateId}|${review.targetId}`),
   );
@@ -853,7 +1058,8 @@ export function applyManualReviewDecisions(
     counts: {
       ...result.counts,
       privateDuplicatesRemoved: result.counts.privateDuplicatesRemoved + manualPrivateLinks.length,
-      matchedToDec: result.counts.matchedToDec + manualPublicLinks.length,
+      matchedToDec: result.counts.matchedToDec + (manualPublicLinks.length - manualNpsLinks.length),
+      matchedToNps: result.counts.matchedToNps + manualNpsLinks.length,
       manualDuplicatesRemoved: appliedDuplicates.length,
       manualNonDuplicates: manualDecisions.length - acceptedDuplicates.length,
       pendingReviewCandidates: pendingReviews.length,
@@ -889,6 +1095,73 @@ function privateAppFeature(source: PrivatePlaceSource): AppFeature {
       coordinates: source.record.geometry!.coordinates,
     },
   };
+}
+
+function npsAppFeatures(snapshot: NpsSnapshot, generatedAt: string): readonly AppFeature[] {
+  const records = npsRecords(snapshot, generatedAt);
+  const urls = new Map<string, string>();
+  snapshot.parks.forEach((item) => item.url && urls.set(`nps-parks-ny:${item.id}`, item.url));
+  snapshot.campgrounds.forEach(
+    (item) => item.url && urls.set(`nps-campgrounds-ny:${item.id}`, item.url),
+  );
+  snapshot.alerts.forEach((item) => item.url && urls.set(`nps-alerts-ny:${item.id}`, item.url));
+  const points = records.map((record): AppFeature => {
+    const sourceId = record.source.sourceId;
+    const isAlert = sourceId === 'nps-alerts-ny';
+    const id = `nps:${record.source.externalId}`;
+    return {
+      type: 'Feature',
+      id,
+      properties: {
+        id,
+        kind: 'poi',
+        name: record.properties.name,
+        sourceId,
+        unit: 'National Park Service',
+        category: record.properties.category,
+        publicUse: isAlert
+          ? 'NPS alert snapshot; verify current status at nps.gov'
+          : 'Official NPS public visitor information',
+        sourceUpdated: record.sourceUpdatedAt ?? snapshot.retrievedAt,
+        sourceUrl: urls.get(`${sourceId}:${record.source.externalId}`) ?? 'https://www.nps.gov/',
+        origin: 'public-catalog',
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: record.geometry!.coordinates,
+      },
+    };
+  });
+  const boundaries = snapshot.boundaries
+    .filter(
+      (feature) =>
+        feature?.type === 'Feature' &&
+        (feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon'),
+    )
+    .map((feature, index): AppFeature => {
+      const parkCode = normalizeText(String(feature.properties.parkCode ?? 'unknown'));
+      const name = normalizeText(
+        String(feature.properties.fullName ?? feature.properties.name ?? 'NPS park'),
+      );
+      const id = `nps:boundary:${parkCode}:${index + 1}`;
+      return {
+        type: 'Feature',
+        id,
+        properties: {
+          id,
+          kind: 'land',
+          name,
+          sourceId: 'nps-parks-ny',
+          unit: name,
+          category: 'NATIONAL PARK SERVICE',
+          publicUse: 'Official NPS park boundary; verify current access at nps.gov',
+          sourceUpdated: snapshot.retrievedAt,
+          origin: 'public-catalog',
+        },
+        geometry: feature.geometry,
+      };
+    });
+  return [...boundaries, ...points];
 }
 
 function appBounds(feature: AppFeature): readonly [number, number, number, number] {
@@ -943,6 +1216,7 @@ function reviewCsv(reviews: readonly DedupReview[]): string {
     'target_id',
     'target_name',
     'target_origin',
+    'target_source_id',
     'distance_meters',
     'score',
   ];
@@ -957,6 +1231,7 @@ function reviewCsv(reviews: readonly DedupReview[]): string {
         item.targetId,
         item.targetName,
         item.targetOrigin,
+        item.targetSourceId,
         item.distanceMeters,
         item.score,
       ]
@@ -1212,6 +1487,7 @@ export async function buildIoverlanderPrivateCatalog(
     outputDirectory: options.outputDirectory,
     publicCheckout: options.publicCheckout,
     ...(options.reviewCsvPath ? { reviewCsvPath: options.reviewCsvPath } : {}),
+    ...(options.npsSnapshotPath ? { npsSnapshotPath: options.npsSnapshotPath } : {}),
   })) {
     if (!isAbsolute(value)) throw new Error(`${name} must be absolute`);
   }
@@ -1222,6 +1498,7 @@ export async function buildIoverlanderPrivateCatalog(
   const publicCheckout = await realpath(options.publicCheckout);
   const inputDirectory = await realpath(options.inputDirectory);
   const decGeojsonPath = await realpath(options.decGeojsonPath);
+  const npsSnapshotPath = options.npsSnapshotPath ? await realpath(options.npsSnapshotPath) : null;
   const reviewCsvPath = options.reviewCsvPath ? await realpath(options.reviewCsvPath) : null;
   const outputDirectory = resolve(options.outputDirectory);
   const privateDataRoot = resolve(publicCheckout, 'PrivateData');
@@ -1250,13 +1527,20 @@ export async function buildIoverlanderPrivateCatalog(
   if (existsSync(temporaryDirectory)) throw new Error('temporary output directory already exists');
   await mkdir(temporaryDirectory);
   try {
-    const [{ tiles, inventory }, decBytes, decisionBytes] = await Promise.all([
+    const [{ tiles, inventory }, decBytes, npsBytes, decisionBytes] = await Promise.all([
       loadTileInputs(inputDirectory),
       readFile(decGeojsonPath),
+      npsSnapshotPath ? readFile(npsSnapshotPath) : Promise.resolve(null),
       reviewCsvPath ? readFile(reviewCsvPath) : Promise.resolve(null),
     ]);
     const dec = parseDecCollection(JSON.parse(decBytes.toString('utf8')));
-    const automaticResult = processIoverlanderPrivateData(tiles, dec, generatedAt);
+    const nps = npsBytes ? parseNpsSnapshot(JSON.parse(npsBytes.toString('utf8'))) : null;
+    const automaticResult = processIoverlanderPrivateData(
+      tiles,
+      dec,
+      generatedAt,
+      nps ?? undefined,
+    );
     const result = decisionBytes
       ? applyManualReviewDecisions(
           automaticResult,
@@ -1265,7 +1549,8 @@ export async function buildIoverlanderPrivateCatalog(
       : automaticResult;
     const privateFeatures = result.records.map(privateAppFeature);
     const publicFeatures = dec.features as readonly AppFeature[];
-    const composedFeatures = [...publicFeatures, ...privateFeatures];
+    const npsFeatures = nps ? npsAppFeatures(nps, generatedAt) : [];
+    const composedFeatures = [...publicFeatures, ...npsFeatures, ...privateFeatures];
 
     const privateGeojsonPath = join(temporaryDirectory, 'private-ioverlander.geojson');
     const privateIndexPath = join(temporaryDirectory, 'private-ioverlander.index.json');
@@ -1332,6 +1617,19 @@ export async function buildIoverlanderPrivateCatalog(
           bytes: decBytes.byteLength,
           sha256: sha256(decBytes),
         },
+        ...(npsSnapshotPath && npsBytes && nps
+          ? {
+              npsSnapshot: {
+                file: basename(npsSnapshotPath),
+                bytes: npsBytes.byteLength,
+                sha256: sha256(npsBytes),
+                parks: nps.parks.length,
+                campgrounds: nps.campgrounds.length,
+                alerts: nps.alerts.length,
+                boundaries: nps.boundaries.length,
+              },
+            }
+          : {}),
         ...(reviewCsvPath && decisionBytes
           ? {
               manualReview: {
@@ -1361,12 +1659,16 @@ export async function buildIoverlanderPrivateCatalog(
     await writeExclusive(
       join(temporaryDirectory, 'README.txt'),
       [
-        'Private iOverlander + NYS DEC deduplicated catalog',
+        nps
+          ? 'Private iOverlander + NYS DEC + National Park Service deduplicated catalog'
+          : 'Private iOverlander + NYS DEC deduplicated catalog',
         '',
         outputInPrivateData
           ? 'Keep this directory private. It is under the Git-ignored PrivateData root.'
           : 'Keep this directory private. It is intentionally outside the public checkout.',
-        'Use new-york-outdoors.composed.geojson and its index as the app-readable merged view.',
+        nps
+          ? 'Use new-york-outdoors.composed.geojson and its index as the app-readable DEC + NPS + private iOverlander view.'
+          : 'Use new-york-outdoors.composed.geojson and its index as the app-readable merged view.',
         'Use private-ioverlander.geojson and its index for the private overlay alone.',
         'catalog.sqlite is compatible with the catalog record/search layout and adds dedup audit tables.',
         decisionBytes

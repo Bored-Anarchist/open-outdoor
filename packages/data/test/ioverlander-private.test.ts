@@ -143,6 +143,7 @@ describe('private iOverlander processing', () => {
       targetId: second!.record.id,
       targetName: second!.record.properties.name,
       targetOrigin: 'private-catalog' as const,
+      targetSourceId: 'private-ioverlander',
       distanceMeters: 10,
       score: 0.7,
       components: { name: 0.5, proximity: 1, category: 1 },
@@ -198,5 +199,60 @@ describe('private iOverlander processing', () => {
       'campsite',
       'restaurant',
     ]);
+  });
+
+  it('deduplicates private campgrounds against official NPS campground points', () => {
+    const nps = {
+      schemaVersion: 1,
+      stateCode: 'NY',
+      retrievedAt: generatedAt,
+      parks: [
+        {
+          id: 'park-1',
+          parkCode: 'test',
+          fullName: 'Test National Park',
+          latitude: '42.5',
+          longitude: '-74.5',
+          lastIndexedDate: generatedAt,
+        },
+      ],
+      campgrounds: [
+        {
+          id: 'camp-1',
+          parkCode: 'test',
+          name: 'Official Camp',
+          latitude: '42.25',
+          longitude: '-74.25',
+          lastIndexedDate: generatedAt,
+        },
+      ],
+      alerts: [],
+      boundaries: [],
+    };
+    const result = processIoverlanderPrivateData(
+      [
+        {
+          name: 'n42_w75.json',
+          value: {
+            places: [
+              place(12, 12, 'Official Camp', -74.25001, 42.25001, {
+                category: 'campsite',
+              }),
+            ],
+          },
+        },
+      ],
+      dec,
+      generatedAt,
+      nps,
+    );
+
+    expect(result.records).toHaveLength(0);
+    expect(result.publicLinks).toHaveLength(1);
+    expect(result.publicLinks[0]).toMatchObject({
+      targetOrigin: 'public-catalog',
+      targetSourceId: 'nps-campgrounds-ny',
+    });
+    expect(result.counts).toMatchObject({ matchedToDec: 0, matchedToNps: 1 });
   });
 });
