@@ -14,6 +14,8 @@ The standard public build bundles all redistributable DEC, NPS, USFS, and BLM co
 
 Selecting any mapped feature also opens a private place journal. Check in now to append a local timestamp and save the current note, or save a note without checking in. These entries are stored in the protected writable user store, remain independent of the read-only catalog across catalog refreshes, and are included in encrypted private backups. A local check-in does not authenticate with or post data to iOverlander.
 
+The same selection card has a Get directions action. On iOS it presents Apple Maps plus installed Google Maps and Waze apps, with a system share-sheet fallback for another app or the raw coordinates. The handoff contains only the selected destination: an exact coordinate for points or the center of the mapped bounds for areas and trails. Open Outdoor does not send the user's current position; the chosen map app obtains its own start location and owns route calculation, permissions, connectivity, downloaded maps, and turn-by-turn guidance. In-app turn instructions and rerouting remain out of scope.
+
 The public map adapter is constructed synchronously and renders independently of the private
 recorder store and tracking module. A recorder initialization or native-tracking failure disables
 recording and reports its own diagnostic, but must not leave Explore at “Loading local map…”.

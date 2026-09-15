@@ -296,6 +296,20 @@ for (const token of [
 ]) {
   requireText(mobileMap, token, 'private place journal and community details');
 }
+for (const token of [
+  'Get directions',
+  'ActionSheetIOS.showActionSheetWithOptions',
+  'Linking.canOpenURL',
+  'Linking.openURL',
+  'Other app or share coordinates',
+]) {
+  requireText(mobileMap, token, 'external map-app directions handoff');
+}
+for (const scheme of ['comgooglemaps', 'waze']) {
+  if (!app.expo.ios.infoPlist.LSApplicationQueriesSchemes.includes(scheme)) {
+    throw new Error(`iOS directions handoff must query the ${scheme} URL scheme`);
+  }
+}
 requireText(
   mobileApplication,
   'repository.savePlaceJournal(entry)',

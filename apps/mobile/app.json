@@ -16,6 +16,7 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor uses Always Location only to continue an outdoor activity you explicitly started while the screen is locked.",
         "NSMotionUsageDescription": "Open Outdoor uses barometer data during an active recording to improve elevation estimates.",
         "OpenOutdoorPhase0DiagnosticsEnabled": true,
+        "LSApplicationQueriesSchemes": ["comgooglemaps", "waze"],
         "UIBackgroundModes": ["location"]
       }
     },

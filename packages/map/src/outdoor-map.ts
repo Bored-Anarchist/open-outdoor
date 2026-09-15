@@ -57,6 +57,59 @@ export interface OutdoorFeatureIndex {
   features: OutdoorFeatureSummary[];
 }
 
+export type OutdoorDirectionsProvider = 'apple' | 'google' | 'waze' | 'generic';
+
+export interface OutdoorDirectionsDestination {
+  readonly name: string;
+  /** GeoJSON order: longitude, latitude. */
+  readonly coordinate: readonly [number, number];
+}
+
+/** Returns the exact point or the geographic center of a line/area selection. */
+export function outdoorDirectionsDestination(
+  feature: OutdoorFeatureSummary,
+): OutdoorDirectionsDestination {
+  const [west, south, east, north] = feature.bounds;
+  if (
+    ![west, south, east, north].every(Number.isFinite) ||
+    west < -180 ||
+    east > 180 ||
+    south < -90 ||
+    north > 90 ||
+    west > east ||
+    south > north
+  ) {
+    throw new RangeError('Outdoor feature bounds must contain valid geographic coordinates.');
+  }
+  return {
+    name: feature.properties.name,
+    coordinate: [(west + east) / 2, (south + north) / 2],
+  };
+}
+
+export function outdoorDirectionsCoordinateText(destination: OutdoorDirectionsDestination): string {
+  const [longitude, latitude] = destination.coordinate;
+  return `${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+}
+
+/** Builds destination-only links so the chosen map app obtains the start location itself. */
+export function outdoorDirectionsUrl(
+  provider: OutdoorDirectionsProvider,
+  destination: OutdoorDirectionsDestination,
+): string {
+  const coordinate = outdoorDirectionsCoordinateText(destination);
+  switch (provider) {
+    case 'apple':
+      return `http://maps.apple.com/?daddr=${encodeURIComponent(coordinate)}&dirflg=d`;
+    case 'google':
+      return `comgooglemaps://?daddr=${encodeURIComponent(coordinate)}&directionsmode=driving`;
+    case 'waze':
+      return `https://waze.com/ul?ll=${encodeURIComponent(coordinate)}&navigate=yes&utm_source=org.openoutdoor.local`;
+    case 'generic':
+      return `geo:0,0?q=${encodeURIComponent(`${coordinate} (${destination.name})`)}`;
+  }
+}
+
 export const outdoorPlaceFilters = ['all', ...ioverlanderCategoryIds] as const;
 export type OutdoorPlaceFilter = 'all' | IoverlanderCategory;
 export const outdoorMarkerDensities = ['automatic', 'fewer', 'more'] as const;

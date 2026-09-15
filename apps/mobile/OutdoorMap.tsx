@@ -8,7 +8,16 @@ import {
   useSyncExternalStore,
   type ComponentProps,
 } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import {
+  ActionSheetIOS,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  TextInput,
+  View,
+} from 'react-native';
 import { useAssets } from 'expo-asset';
 import {
   Map as NativeMap,
@@ -27,6 +36,9 @@ import {
   createOutdoorMapStyle,
   createTieredOfflineVectorBasemapStyle,
   nextOutdoorZoom,
+  outdoorDirectionsCoordinateText,
+  outdoorDirectionsDestination,
+  outdoorDirectionsUrl,
   outdoorMarkerDensityConfig,
   outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
@@ -327,6 +339,7 @@ export function OutdoorMap({
   const [journalEntry, setJournalEntry] = useState<PlaceJournalEntry | null>(null);
   const [noteDraft, setNoteDraft] = useState('');
   const [journalStatus, setJournalStatus] = useState('');
+  const [directionsStatus, setDirectionsStatus] = useState('');
   const placeData = useMemo(
     () => createOutdoorPlaceCollection(featureIndex, placeFilter),
     [placeFilter],
@@ -381,6 +394,7 @@ export function OutdoorMap({
     setJournalEntry(entry);
     setNoteDraft(entry?.note ?? '');
     setJournalStatus('');
+    setDirectionsStatus('');
   }, [placeJournal, selected?.id]);
   function select(feature: OutdoorFeatureSummary) {
     setSelected(feature);
@@ -431,6 +445,79 @@ export function OutdoorMap({
       );
       throw error;
     }
+  }
+  async function shareDirectionsDestination(): Promise<void> {
+    if (!selected) return;
+    const destination = outdoorDirectionsDestination(selected);
+    const coordinate = outdoorDirectionsCoordinateText(destination);
+    try {
+      await Share.share({
+        title: `Directions to ${destination.name}`,
+        message: `${destination.name}\n${coordinate}\n${outdoorDirectionsUrl('apple', destination)}`,
+      });
+      setDirectionsStatus('Coordinates opened in the system share sheet.');
+    } catch (error) {
+      setDirectionsStatus(
+        `Could not share coordinates: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+  async function openDirectionUrl(label: string, url: string): Promise<void> {
+    try {
+      await Linking.openURL(url);
+      setDirectionsStatus(`Opening ${label} with the selected destination.`);
+    } catch (error) {
+      setDirectionsStatus(
+        `Could not open ${label}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+  async function chooseDirectionsApp(): Promise<void> {
+    if (!selected) return;
+    const destination = outdoorDirectionsDestination(selected);
+    const coordinate = outdoorDirectionsCoordinateText(destination);
+    setDirectionsStatus('Checking available map apps…');
+
+    if (Platform.OS !== 'ios') {
+      await openDirectionUrl('your map app', outdoorDirectionsUrl('generic', destination));
+      return;
+    }
+
+    const [hasGoogleMaps, hasWaze] = await Promise.all([
+      Linking.canOpenURL('comgooglemaps://').catch(() => false),
+      Linking.canOpenURL('waze://').catch(() => false),
+    ]);
+    const mapApps = [
+      {
+        label: 'Apple Maps',
+        url: outdoorDirectionsUrl('apple', destination),
+      },
+      ...(hasGoogleMaps
+        ? [{ label: 'Google Maps', url: outdoorDirectionsUrl('google', destination) }]
+        : []),
+      ...(hasWaze ? [{ label: 'Waze', url: outdoorDirectionsUrl('waze', destination) }] : []),
+    ];
+    const shareLabel = 'Other app or share coordinates';
+    const options = [...mapApps.map((app) => app.label), shareLabel, 'Cancel'];
+    const shareButtonIndex = mapApps.length;
+    const cancelButtonIndex = options.length - 1;
+    setDirectionsStatus(`${mapApps.length} map app${mapApps.length === 1 ? '' : 's'} available.`);
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        title: `Directions to ${destination.name}`,
+        message: coordinate,
+        options,
+        cancelButtonIndex,
+      },
+      (buttonIndex) => {
+        if (buttonIndex < mapApps.length) {
+          const app = mapApps[buttonIndex]!;
+          void openDirectionUrl(app.label, app.url);
+        } else if (buttonIndex === shareButtonIndex) {
+          void shareDirectionsDestination();
+        }
+      },
+    );
   }
   return (
     <View>
@@ -784,6 +871,19 @@ export function OutdoorMap({
           <Text>
             Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}
           </Text>
+          <ProductButton
+            label="Get directions"
+            hint="Choose an installed maps app to route to this feature's coordinates"
+            onPress={chooseDirectionsApp}
+          />
+          <Text style={{ color: palette.muted }}>
+            Destination: {outdoorDirectionsCoordinateText(outdoorDirectionsDestination(selected))}.
+            Points use their exact coordinates; areas and trails use the center of their mapped
+            bounds.
+          </Text>
+          {directionsStatus ? (
+            <Text accessibilityLiveRegion="polite">{directionsStatus}</Text>
+          ) : null}
           {selected.properties.sourceId === 'private-ioverlander' ? (
             <View style={{ gap: 8 }}>
               <Text accessibilityRole="header" style={{ fontWeight: '700' }}>

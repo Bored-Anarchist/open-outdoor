@@ -11,6 +11,9 @@ import {
   featureBounds,
   geometryPositions,
   nextOutdoorZoom,
+  outdoorDirectionsCoordinateText,
+  outdoorDirectionsDestination,
+  outdoorDirectionsUrl,
   outdoorIoverlanderCategory,
   outdoorMarkerDensityConfig,
   outdoorPlaceIcon,
@@ -59,6 +62,38 @@ async function expectPinnedArchive(path: string, archive: { bytes: number; sha25
   expect(digest.digest('hex')).toBe(archive.sha256);
 }
 describe('real offline New York map', () => {
+  it('hands exact points and feature centers to installed map apps', () => {
+    const pointFeature = index.features.find(
+      (feature) =>
+        feature.bounds[0] === feature.bounds[2] && feature.bounds[1] === feature.bounds[3],
+    )!;
+    const pointDestination = outdoorDirectionsDestination(pointFeature);
+    expect(pointDestination.coordinate).toEqual([pointFeature.bounds[0], pointFeature.bounds[1]]);
+
+    const areaFeature = {
+      ...pointFeature,
+      properties: { ...pointFeature.properties, name: 'Moffitt Beach Campground' },
+      bounds: [-74.45, 43.53, -74.41, 43.57] as [number, number, number, number],
+    };
+    const destination = outdoorDirectionsDestination(areaFeature);
+    expect(destination.coordinate).toEqual([-74.43, 43.55]);
+    expect(outdoorDirectionsCoordinateText(destination)).toBe('43.550000,-74.430000');
+    expect(outdoorDirectionsUrl('apple', destination)).toBe(
+      'http://maps.apple.com/?daddr=43.550000%2C-74.430000&dirflg=d',
+    );
+    expect(outdoorDirectionsUrl('google', destination)).toBe(
+      'comgooglemaps://?daddr=43.550000%2C-74.430000&directionsmode=driving',
+    );
+    expect(outdoorDirectionsUrl('waze', destination)).toBe(
+      'https://waze.com/ul?ll=43.550000%2C-74.430000&navigate=yes&utm_source=org.openoutdoor.local',
+    );
+  });
+  it('rejects invalid destination bounds before opening another app', () => {
+    const feature = index.features[0]!;
+    expect(() => outdoorDirectionsDestination({ ...feature, bounds: [181, 42, 182, 43] })).toThrow(
+      RangeError,
+    );
+  });
   it('ships the complete checksum-pinned source inventories with rights/attribution', () => {
     expect(createHash('sha256').update(bytes).digest('hex')).toBe(manifest.sha256);
     expect(bytes.length).toBe(manifest.bytes);
