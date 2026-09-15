@@ -25,17 +25,10 @@ export const mobileMapDataMetadata = {
   schemaVersion: 1,
   classification: publicManifest.classification,
   hasPrivateData: false,
-  label: 'DEC public catalog',
+  label: 'DEC + NPS + USFS + BLM public catalog',
   featureCount: publicManifest.featureCount,
   acquiredAt: publicManifest.acquiredAt,
   attribution:
-    'NYS ITS Geospatial Services; New York State Department of Environmental Conservation; OPEN-NY',
-  sources: [
-    {
-      id: 'nys-dec',
-      label: 'NYS DEC',
-      featureCount: publicManifest.featureCount,
-      status: 'public offline snapshot',
-    },
-  ],
+    'NYS ITS Geospatial Services; New York State Department of Environmental Conservation; OPEN-NY; National Park Service; USDA Forest Service; Bureau of Land Management',
+  sources: publicManifest.catalogSources,
 } satisfies MobileMapDataMetadata;

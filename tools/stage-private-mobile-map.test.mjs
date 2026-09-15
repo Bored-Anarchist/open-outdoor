@@ -16,6 +16,15 @@ test('stages a verified private catalog and reports every map source', async () 
   const output = join(root, 'mobile');
   await mkdir(input);
   try {
+    const sourceIds = [
+      'nys-dec-poi',
+      'private-ioverlander',
+      'nps-parks-ny',
+      'nps-campgrounds-ny',
+      'nps-alerts-ny',
+      'nps-parks-ny',
+      'usfs-surface-ownership-ny',
+    ];
     const features = Array.from({ length: 7 }, (_, index) => ({
       type: 'Feature',
       id: `feature-${index}`,
@@ -23,7 +32,7 @@ test('stages a verified private catalog and reports every map source', async () 
         id: `feature-${index}`,
         kind: 'poi',
         name: `Feature ${index}`,
-        sourceId: 'fixture',
+        sourceId: sourceIds[index],
         sourceUpdated: '2026-09-14T00:00:00.000Z',
       },
       geometry: { type: 'Point', coordinates: [-74 + index / 100, 42] },

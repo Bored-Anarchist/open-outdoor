@@ -91,22 +91,32 @@ export async function stagePrivateMobileMap({
     throw new Error('composed index and GeoJSON feature counts differ');
   }
 
-  const ioverlanderCount = nonNegativeInteger(
-    counts.outputPrivatePlaces,
-    'iOverlander output count',
-  );
-  const npsCount =
-    nonNegativeInteger(nps.parks, 'NPS park count') +
-    nonNegativeInteger(nps.campgrounds, 'NPS campground count') +
-    nonNegativeInteger(nps.alerts, 'NPS alert count') +
-    nonNegativeInteger(nps.boundaries, 'NPS boundary count');
-  const usfsCount =
-    nonNegativeInteger(federal.usfsSurfaceOwnership, 'USFS ownership count') +
-    nonNegativeInteger(federal.usfsRecreationSites, 'USFS recreation count') +
-    nonNegativeInteger(federal.usfsMvumRoads, 'USFS road count') +
-    nonNegativeInteger(federal.usfsMvumTrails, 'USFS trail count');
-  const blmCount = nonNegativeInteger(federal.blmManagedLands, 'BLM managed-land count');
-  const decCount = geojson.features.length - ioverlanderCount - npsCount - usfsCount - blmCount;
+  nonNegativeInteger(nps.parks, 'NPS park count');
+  nonNegativeInteger(nps.campgrounds, 'NPS campground count');
+  nonNegativeInteger(nps.alerts, 'NPS alert count');
+  nonNegativeInteger(nps.boundaries, 'NPS boundary count');
+  nonNegativeInteger(federal.usfsSurfaceOwnership, 'USFS ownership count');
+  nonNegativeInteger(federal.usfsRecreationSites, 'USFS recreation count');
+  nonNegativeInteger(federal.usfsMvumRoads, 'USFS road count');
+  nonNegativeInteger(federal.usfsMvumTrails, 'USFS trail count');
+  nonNegativeInteger(federal.blmManagedLands, 'BLM managed-land count');
+  const sourceCount = (prefix) =>
+    index.features.filter((feature) =>
+      String(feature?.properties?.sourceId ?? '').startsWith(prefix),
+    ).length;
+  const ioverlanderCount = sourceCount('private-ioverlander');
+  const npsCount = sourceCount('nps-');
+  const usfsCount = sourceCount('usfs-');
+  const blmCount = sourceCount('blm-');
+  const decCount = sourceCount('nys-');
+  if (
+    ioverlanderCount !== nonNegativeInteger(counts.outputPrivatePlaces, 'iOverlander output count')
+  ) {
+    throw new Error('private catalog count does not match its composed index');
+  }
+  if (decCount + ioverlanderCount + npsCount + usfsCount + blmCount !== index.features.length) {
+    throw new Error('composed index contains an unrecognized map source');
+  }
   if (decCount < 1) throw new Error('composed catalog does not retain its public DEC base');
 
   const metadata = {

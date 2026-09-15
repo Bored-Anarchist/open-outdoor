@@ -379,4 +379,34 @@ describe('private iOverlander processing', () => {
     ]);
     expect(features.at(-1)?.properties.category).toBe('campsite');
   });
+
+  it('reuses USFS points promoted into the public base without ambiguous duplicate matches', () => {
+    const publicBase = {
+      ...dec,
+      features: [...dec.features, ...federalNewYorkAppFeatures(federal)],
+    };
+    const result = processIoverlanderPrivateData(
+      [
+        {
+          name: 'n42_w75.json',
+          value: {
+            places: [
+              place(14, 14, 'Official Forest Camp', -74.25001, 42.25001, {
+                category: 'campsite',
+              }),
+            ],
+          },
+        },
+      ],
+      publicBase,
+      generatedAt,
+      undefined,
+      federal,
+    );
+
+    expect(result.records).toHaveLength(0);
+    expect(result.publicLinks).toHaveLength(1);
+    expect(result.reviews).toHaveLength(0);
+    expect(result.counts).toMatchObject({ matchedToUsfs: 1, outputPrivatePlaces: 0 });
+  });
 });

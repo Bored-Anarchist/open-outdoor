@@ -389,6 +389,29 @@ function decRecord(feature: DecFeature, generatedAt: string): PlaceRecord | null
   const rawCategory = normalizeText(String(feature.properties.category ?? 'unknown'));
   const category = decCategory(rawCategory);
   const sourceId = normalizeText(String(feature.properties.sourceId ?? 'nys-dec-poi'));
+  const publicSource = sourceId.startsWith('nps-')
+    ? {
+        flag: 'official-nps-coordinate',
+        policyId: 'nps-us-government-work-v1',
+        attribution: 'National Park Service',
+      }
+    : sourceId.startsWith('usfs-')
+      ? {
+          flag: 'official-usfs-coordinate',
+          policyId: 'usfs-us-government-work-v1',
+          attribution: 'USDA Forest Service',
+        }
+      : sourceId.startsWith('blm-')
+        ? {
+            flag: 'official-blm-coordinate',
+            policyId: 'blm-us-government-work-v1',
+            attribution: 'Bureau of Land Management',
+          }
+        : {
+            flag: 'public-dec-reference',
+            policyId: 'bundled-nys-dec-public-reference-v1',
+            attribution: 'New York State Department of Environmental Conservation',
+          };
   const updatedValue = feature.properties.sourceUpdated;
   const sourceUpdatedAt =
     typeof updatedValue === 'string' && /^\d+$/.test(updatedValue)
@@ -416,7 +439,7 @@ function decRecord(feature: DecFeature, generatedAt: string): PlaceRecord | null
       sourceCrs: 'EPSG:4326',
       sourceAxisOrder: 'longitude-latitude',
       coordinatePrecisionMeters: null,
-      flags: ['public-dec-reference'],
+      flags: [publicSource.flag],
       repair: null,
     },
     fieldProvenance: {
@@ -434,9 +457,9 @@ function decRecord(feature: DecFeature, generatedAt: string): PlaceRecord | null
       },
     },
     rights: {
-      policyId: 'bundled-nys-dec-public-reference-v1',
+      policyId: publicSource.policyId,
       distribution: 'public' as const,
-      attribution: ['New York State Department of Environmental Conservation'],
+      attribution: [publicSource.attribution],
     },
     validation: { state: 'valid' as const, reasonCodes: [] },
     tombstone: false,
@@ -1100,10 +1123,15 @@ export function processIoverlanderPrivateData(
     .filter((feature) => feature.properties.kind === 'poi')
     .map((feature) => decRecord(feature, generatedAt))
     .filter((record): record is PlaceRecord => record !== null);
+  const bundledSourceIds = new Set(decRecords.map((record) => record.source.sourceId));
   const publicRecords = [
     ...decRecords,
-    ...(nps ? npsRecords(nps, generatedAt) : []),
-    ...(federal ? federalRecreationRecords(federal, generatedAt) : []),
+    ...(nps && ![...bundledSourceIds].some((sourceId) => sourceId.startsWith('nps-'))
+      ? npsRecords(nps, generatedAt)
+      : []),
+    ...(federal && !bundledSourceIds.has('usfs-recreation-sites-ny')
+      ? federalRecreationRecords(federal, generatedAt)
+      : []),
   ];
   const publicIndex = spatialIndex(publicRecords);
   const publicLinks: DedupLink[] = [];
@@ -1267,6 +1295,100 @@ export interface AppFeature {
   readonly geometry: DecFeature['geometry'];
 }
 
+const NEW_YORK_DISPLAY_BOUNDS = [-79.8, 40.4, -71.7, 45.1] as const;
+
+function clipRingToNewYork(value: unknown): readonly Position[] {
+  if (!Array.isArray(value)) return [];
+  let points = value
+    .filter(
+      (point): point is [number, number] =>
+        Array.isArray(point) &&
+        typeof point[0] === 'number' &&
+        Number.isFinite(point[0]) &&
+        typeof point[1] === 'number' &&
+        Number.isFinite(point[1]),
+    )
+    .map(([longitude, latitude]) => [longitude, latitude] as Position);
+  if (
+    points.length > 1 &&
+    points[0]![0] === points.at(-1)![0] &&
+    points[0]![1] === points.at(-1)![1]
+  ) {
+    points = points.slice(0, -1);
+  }
+  const edges = [
+    {
+      inside: ([longitude]: Position) => longitude >= NEW_YORK_DISPLAY_BOUNDS[0],
+      intersect: ([ax, ay]: Position, [bx, by]: Position): Position => [
+        NEW_YORK_DISPLAY_BOUNDS[0],
+        ay + ((by - ay) * (NEW_YORK_DISPLAY_BOUNDS[0] - ax)) / (bx - ax),
+      ],
+    },
+    {
+      inside: ([longitude]: Position) => longitude <= NEW_YORK_DISPLAY_BOUNDS[2],
+      intersect: ([ax, ay]: Position, [bx, by]: Position): Position => [
+        NEW_YORK_DISPLAY_BOUNDS[2],
+        ay + ((by - ay) * (NEW_YORK_DISPLAY_BOUNDS[2] - ax)) / (bx - ax),
+      ],
+    },
+    {
+      inside: ([, latitude]: Position) => latitude >= NEW_YORK_DISPLAY_BOUNDS[1],
+      intersect: ([ax, ay]: Position, [bx, by]: Position): Position => [
+        ax + ((bx - ax) * (NEW_YORK_DISPLAY_BOUNDS[1] - ay)) / (by - ay),
+        NEW_YORK_DISPLAY_BOUNDS[1],
+      ],
+    },
+    {
+      inside: ([, latitude]: Position) => latitude <= NEW_YORK_DISPLAY_BOUNDS[3],
+      intersect: ([ax, ay]: Position, [bx, by]: Position): Position => [
+        ax + ((bx - ax) * (NEW_YORK_DISPLAY_BOUNDS[3] - ay)) / (by - ay),
+        NEW_YORK_DISPLAY_BOUNDS[3],
+      ],
+    },
+  ];
+  for (const edge of edges) {
+    const input = points;
+    points = [];
+    for (let index = 0; index < input.length; index += 1) {
+      const current = input[index]!;
+      const previous = input[(index + input.length - 1) % input.length]!;
+      const currentInside = edge.inside(current);
+      const previousInside = edge.inside(previous);
+      if (currentInside) {
+        if (!previousInside) points.push(edge.intersect(previous, current));
+        points.push(current);
+      } else if (previousInside) {
+        points.push(edge.intersect(previous, current));
+      }
+    }
+  }
+  if (points.length < 3) return [];
+  return [...points, points[0]!];
+}
+
+function clipNpsBoundaryGeometry(geometry: DecFeature['geometry']): DecFeature['geometry'] | null {
+  const polygons =
+    geometry.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry.type === 'MultiPolygon' && Array.isArray(geometry.coordinates)
+        ? geometry.coordinates
+        : [];
+  const clipped = polygons.flatMap((polygon) => {
+    if (!Array.isArray(polygon)) return [];
+    const exterior = clipRingToNewYork(polygon[0]);
+    if (exterior.length < 4) return [];
+    const holes = polygon
+      .slice(1)
+      .map(clipRingToNewYork)
+      .filter((ring) => ring.length >= 4);
+    return [[exterior, ...holes]];
+  });
+  if (clipped.length === 0) return null;
+  return clipped.length === 1
+    ? { type: 'Polygon', coordinates: clipped[0] }
+    : { type: 'MultiPolygon', coordinates: clipped };
+}
+
 function privateAppFeature(source: PrivatePlaceSource): AppFeature {
   return {
     type: 'Feature',
@@ -1289,8 +1411,22 @@ function privateAppFeature(source: PrivatePlaceSource): AppFeature {
   };
 }
 
-function npsAppFeatures(snapshot: NpsSnapshot, generatedAt: string): readonly AppFeature[] {
-  const records = npsRecords(snapshot, generatedAt);
+export function npsNewYorkAppFeatures(value: unknown, generatedAt?: string): readonly AppFeature[] {
+  const snapshot = parseNpsSnapshot(value);
+  const retrievalTime = generatedAt ?? snapshot.retrievedAt;
+  if (!utc(retrievalTime) || utc(retrievalTime) !== retrievalTime) {
+    throw new Error('generatedAt must be a normalized UTC timestamp');
+  }
+  const records = npsRecords(snapshot, retrievalTime).filter((record) => {
+    if (record.geometry?.type !== 'Point') return false;
+    const [longitude, latitude] = record.geometry.coordinates;
+    return (
+      longitude >= NEW_YORK_DISPLAY_BOUNDS[0] &&
+      longitude <= NEW_YORK_DISPLAY_BOUNDS[2] &&
+      latitude >= NEW_YORK_DISPLAY_BOUNDS[1] &&
+      latitude <= NEW_YORK_DISPLAY_BOUNDS[3]
+    );
+  });
   const urls = new Map<string, string>();
   snapshot.parks.forEach((item) => item.url && urls.set(`nps-parks-ny:${item.id}`, item.url));
   snapshot.campgrounds.forEach(
@@ -1330,28 +1466,32 @@ function npsAppFeatures(snapshot: NpsSnapshot, generatedAt: string): readonly Ap
         feature?.type === 'Feature' &&
         (feature.geometry?.type === 'Polygon' || feature.geometry?.type === 'MultiPolygon'),
     )
-    .map((feature, index): AppFeature => {
+    .flatMap((feature, index): readonly AppFeature[] => {
+      const geometry = clipNpsBoundaryGeometry(feature.geometry);
+      if (!geometry) return [];
       const parkCode = normalizeText(String(feature.properties.parkCode ?? 'unknown'));
       const name = normalizeText(
         String(feature.properties.fullName ?? feature.properties.name ?? 'NPS park'),
       );
       const id = `nps:boundary:${parkCode}:${index + 1}`;
-      return {
-        type: 'Feature',
-        id,
-        properties: {
+      return [
+        {
+          type: 'Feature',
           id,
-          kind: 'land',
-          name,
-          sourceId: 'nps-parks-ny',
-          unit: name,
-          category: 'NATIONAL PARK SERVICE',
-          publicUse: 'Official NPS park boundary; verify current access at nps.gov',
-          sourceUpdated: snapshot.retrievedAt,
-          origin: 'public-catalog',
+          properties: {
+            id,
+            kind: 'land',
+            name,
+            sourceId: 'nps-parks-ny',
+            unit: name,
+            category: 'NATIONAL PARK SERVICE',
+            publicUse: 'Official NPS park boundary; verify current access at nps.gov',
+            sourceUpdated: snapshot.retrievedAt,
+            origin: 'public-catalog',
+          },
+          geometry,
         },
-        geometry: feature.geometry,
-      };
+      ];
     });
   return [...boundaries, ...points];
 }
@@ -1505,11 +1645,15 @@ function appBounds(feature: AppFeature): readonly [number, number, number, numbe
   );
 }
 
-function appCollection(features: readonly AppFeature[]): Readonly<Record<string, unknown>> {
+export function outdoorAppCollection(
+  features: readonly AppFeature[],
+): Readonly<Record<string, unknown>> {
   return { type: 'FeatureCollection', features };
 }
 
-function appIndex(features: readonly AppFeature[]): Readonly<Record<string, unknown>> {
+export function outdoorAppIndex(
+  features: readonly AppFeature[],
+): Readonly<Record<string, unknown>> {
   return {
     schemaVersion: 1,
     features: features.map((feature) => ({
@@ -1877,8 +2021,20 @@ export async function buildIoverlanderPrivateCatalog(
       : automaticResult;
     const privateFeatures = result.records.map(privateAppFeature);
     const publicFeatures = dec.features as readonly AppFeature[];
-    const npsFeatures = nps ? npsAppFeatures(nps, generatedAt) : [];
-    const federalFeatures = federal ? federalNewYorkAppFeatures(federal, generatedAt) : [];
+    const publicSourceIds = new Set(
+      publicFeatures.map((feature) => normalizeText(String(feature.properties.sourceId ?? ''))),
+    );
+    const npsFeatures =
+      nps && ![...publicSourceIds].some((sourceId) => sourceId.startsWith('nps-'))
+        ? npsNewYorkAppFeatures(nps, generatedAt)
+        : [];
+    const federalFeatures =
+      federal &&
+      ![...publicSourceIds].some(
+        (sourceId) => sourceId.startsWith('usfs-') || sourceId.startsWith('blm-'),
+      )
+        ? federalNewYorkAppFeatures(federal, generatedAt)
+        : [];
     const composedFeatures = [
       ...publicFeatures,
       ...npsFeatures,
@@ -1895,10 +2051,13 @@ export async function buildIoverlanderPrivateCatalog(
     const reviewPath = join(temporaryDirectory, 'dedup-review.csv');
     const decisionPath = decisionBytes ? join(temporaryDirectory, 'dedup-decisions.csv') : null;
     await Promise.all([
-      writeExclusive(privateGeojsonPath, `${stableJson(appCollection(privateFeatures))}\n`),
-      writeExclusive(privateIndexPath, `${stableJson(appIndex(privateFeatures))}\n`),
-      writeExclusive(composedGeojsonPath, `${stableJson(appCollection(composedFeatures))}\n`),
-      writeExclusive(composedIndexPath, `${stableJson(appIndex(composedFeatures))}\n`),
+      writeExclusive(privateGeojsonPath, `${stableJson(outdoorAppCollection(privateFeatures))}\n`),
+      writeExclusive(privateIndexPath, `${stableJson(outdoorAppIndex(privateFeatures))}\n`),
+      writeExclusive(
+        composedGeojsonPath,
+        `${stableJson(outdoorAppCollection(composedFeatures))}\n`,
+      ),
+      writeExclusive(composedIndexPath, `${stableJson(outdoorAppIndex(composedFeatures))}\n`),
       writeExclusive(
         reportPath,
         `${stableJson({

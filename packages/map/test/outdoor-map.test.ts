@@ -74,22 +74,62 @@ describe('real offline New York map', () => {
         manifest.rights.redistribution &&
         manifest.rights.derivedData,
     ).toBe(true);
-    expect(manifest.rights.attribution).toHaveLength(3);
+    expect(manifest.rights.attribution).toEqual(
+      expect.arrayContaining([
+        'NYS ITS Geospatial Services',
+        'New York State Department of Environmental Conservation',
+        'National Park Service',
+        'USDA Forest Service',
+        'Bureau of Land Management',
+      ]),
+    );
     for (const source of manifest.sources) {
       expect(collection.features.filter((f) => f.properties.sourceId === source.id)).toHaveLength(
         source.featureCount,
       );
       expect(source.pages.reduce((n: number, p: any) => n + p.count, 0)).toBe(source.featureCount);
     }
+    expect(manifest.catalogSources).toEqual([
+      expect.objectContaining({ id: 'nys-dec', featureCount: 14_455 }),
+      expect.objectContaining({ id: 'nps', featureCount: 87 }),
+      expect.objectContaining({ id: 'usfs', featureCount: 237 }),
+      expect.objectContaining({ id: 'blm', featureCount: 0 }),
+    ]);
   });
   it('contains valid geographic geometries and only approved public fields', () => {
     for (const f of collection.features) {
       expect(['Polygon', 'MultiPolygon', 'LineString', 'MultiLineString', 'Point']).toContain(
         f.geometry.type,
       );
-      expect(Object.keys(f.properties).sort()).toEqual(
-        ['id', 'kind', 'name', 'sourceId', 'unit', 'category', 'publicUse', 'sourceUpdated'].sort(),
+      const propertyNames = Object.keys(f.properties);
+      expect(propertyNames).toEqual(
+        expect.arrayContaining([
+          'id',
+          'kind',
+          'name',
+          'sourceId',
+          'unit',
+          'category',
+          'publicUse',
+          'sourceUpdated',
+        ]),
       );
+      expect(
+        propertyNames.every((name) =>
+          [
+            'id',
+            'kind',
+            'name',
+            'sourceId',
+            'unit',
+            'category',
+            'publicUse',
+            'sourceUpdated',
+            'sourceUrl',
+            'origin',
+          ].includes(name),
+        ),
+      ).toBe(true);
       const [w, s, e, n] = featureBounds(f);
       expect(w).toBeGreaterThan(-80);
       expect(e).toBeLessThan(-71);
@@ -97,6 +137,24 @@ describe('real offline New York map', () => {
       expect(n).toBeLessThan(46);
     }
   }, 15_000);
+  it('includes official federal sources in the redistributable public catalog', () => {
+    const sourceIds = new Set(collection.features.map((feature) => feature.properties.sourceId));
+    expect([...sourceIds]).toEqual(
+      expect.arrayContaining([
+        'nps-parks-ny',
+        'nps-campgrounds-ny',
+        'nps-alerts-ny',
+        'usfs-surface-ownership-ny',
+        'usfs-recreation-sites-ny',
+        'usfs-mvum-roads-ny',
+      ]),
+    );
+    expect(sourceIds.has('blm-managed-lands-ny')).toBe(false);
+    expect(manifest.catalogSources.find((source: any) => source.id === 'blm')).toMatchObject({
+      featureCount: 0,
+      status: expect.stringContaining('verified'),
+    });
+  });
   it('finds real named trails without synthetic preserve substitution', () => {
     expect(searchOutdoorFeatures(collection, 'Slide').length).toBeGreaterThan(0);
     expect(
@@ -116,7 +174,7 @@ describe('real offline New York map', () => {
     const parking = createOutdoorPlaceCollection(index, 'shorterm_parking');
     const attractions = createOutdoorPlaceCollection(index, 'tourist_attraction');
     const other = createOutdoorPlaceCollection(index, 'other');
-    expect(all.features).toHaveLength(4560);
+    expect(all.features).toHaveLength(4640);
     expect(camping.features.length).toBeGreaterThan(2500);
     expect(parking.features.length).toBeGreaterThan(1500);
     expect(attractions.features.length).toBeGreaterThan(100);
@@ -207,7 +265,7 @@ describe('real offline New York map', () => {
       style.layers.findIndex((layer) => layer.type === 'symbol'),
     );
     expect(collection.features.filter((feature) => feature.properties.kind === 'poi')).toHaveLength(
-      4560,
+      4640,
     );
     expect(
       collection.features.filter((feature) =>
