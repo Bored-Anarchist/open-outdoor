@@ -51,9 +51,11 @@ import regionalOverviewAsset from '../../packages/map/src/assets/us-canada-terri
 import worldBasemapManifest from '../../packages/map/src/assets/world-basemap.manifest.json';
 import regionalBasemapManifest from '../../packages/map/src/assets/us-canada-basemap.manifest.json';
 import offlineFontAsset from '../../packages/map/src/assets/NotoSans-Variable.ttf';
-import outdoorDataAsset from '../../packages/map/src/assets/new-york-outdoors.geojson';
-import bundledIndex from '../../packages/map/src/assets/new-york-outdoors.index.json';
-import manifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
+import {
+  mobileMapDataAsset as outdoorDataAsset,
+  mobileMapDataIndex as bundledIndex,
+  mobileMapDataMetadata,
+} from '@open-outdoor/mobile-map-data';
 const featureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light'), {
   lang: 'en',
@@ -306,6 +308,13 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const [showLicenses, setShowLicenses] = useState(false);
   const selected =
     featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ?? null;
+  const selectedProperties = selected?.properties as
+    | (OutdoorFeatureSummary['properties'] & {
+        readonly publicUse?: string;
+        readonly sourceUrl?: string;
+        readonly origin?: string;
+      })
+    | undefined;
   const setSelected = (feature: OutdoorFeatureSummary | null) =>
     adapter.setSelectedFeature(feature?.id ?? null);
   const [loaded, setLoaded] = useState(false);
@@ -387,8 +396,8 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         New York outdoor map
       </Text>
       <Text>
-        Stored map · {manifest.featureCount.toLocaleString()} DEC geographic features · offline
-        overview ·{' '}
+        Stored map · {mobileMapDataMetadata.featureCount.toLocaleString()} geographic features ·{' '}
+        {mobileMapDataMetadata.label} · offline overview ·{' '}
         {(
           (worldBasemapManifest.archive.bytes + regionalBasemapManifest.archive.bytes) /
           1024 ** 2
@@ -396,7 +405,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         MiB bundled
       </Text>
       <Text>
-        Roads, towns, water, land cover, labels, DEC lands, hiking trails and recreation points are
+        Roads, towns, water, land cover, labels, agency lands, trails and recreation points are
         stored on this phone and work in airplane mode. Mapped land or a campsite marker is not
         current permission to camp or enter.
       </Text>
@@ -466,6 +475,13 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
       <Text accessibilityLiveRegion="polite" style={{ color: palette.muted }}>
         {placeData.features.length.toLocaleString()} matching places · {zoomPresentation.label}
       </Text>
+      <ProductCard title="Data on this map">
+        {mobileMapDataMetadata.sources.map((source) => (
+          <Text key={source.id}>
+            {source.label}: {source.featureCount.toLocaleString()} features · {source.status}
+          </Text>
+        ))}
+      </ProductCard>
       <View
         style={{
           height: 520,
@@ -657,7 +673,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
           ? 'Map could not render. Search and geographic details remain available.'
           : loaded
             ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
-            : 'Loading the stored basemap and DEC overlays…'}
+            : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
         {outside ? ' Outside the bundled New York outdoor-overlay coverage.' : ''}
       </Text>
       <ProductButton
@@ -693,11 +709,11 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         }}
       />
       <Text>
-        Map key: green areas — DEC lands; blue lines — hiking trails; brown lines — DEC roads;
-        numbered orange circles — grouped places; colored symbols — iOverlander categories; pink —
-        recorded route; blue GPS dot — current position. Zooming in expands groups into
-        category-specific icons, then reveals names. Tap a group, feature, or search result for
-        details.
+        Map key: green areas — DEC, NPS, USFS and BLM land references when present; blue lines —
+        trails; brown lines — roads; numbered orange circles — grouped places; colored symbols —
+        iOverlander categories; pink — recorded route; blue GPS dot — current position. Zooming in
+        expands groups into category-specific icons, then reveals names. Tap a group, feature, or
+        search result for details.
       </Text>
       {selected && (
         <ProductCard title={selected.properties.name}>
@@ -706,7 +722,19 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
           </Text>
           <Text>
             Source: {selected.properties.sourceId}. Source update:{' '}
-            {selected.properties.sourceUpdated}. Current access and camping status are unverified.
+            {selected.properties.sourceUpdated}.
+          </Text>
+          <Text>
+            Access note:{' '}
+            {selectedProperties?.publicUse ??
+              'Current access and camping status are unverified; check the managing agency.'}
+          </Text>
+          <Text>
+            Catalog:{' '}
+            {selectedProperties?.origin === 'private-catalog' ? 'private on-device' : 'public'}
+            {selectedProperties?.sourceUrl
+              ? ` · Official source: ${selectedProperties.sourceUrl}`
+              : ''}
           </Text>
           <Text>
             Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}
@@ -719,10 +747,9 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
         </ProductCard>
       )}
       <Text>
-        Basemap: {worldBasemapManifest.attribution}. Overlay: NYS ITS Geospatial Services and New
-        York State Department of Environmental Conservation. Geometry simplified for display.
-        MapLibre Native renderer. Public-use GIS data is provided without warranty; boundaries are
-        not legal surveys.
+        Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
+        Geometry simplified for display. MapLibre Native renderer. Public-use GIS data is provided
+        without warranty; boundaries are not legal surveys.
       </Text>
       <ProductButton
         label="Map renderer licenses"

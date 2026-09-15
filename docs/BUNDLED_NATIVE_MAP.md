@@ -8,7 +8,9 @@ The guaranteed fallback basemap consists of two checksum-pinned PMTiles extracts
 
 The world archive remains a separate MapLibre source and is overzoomed beyond zoom 6. The regional source is drawn above it beginning at zoom 7 and is overzoomed beyond zoom 9. This separation guarantees that the rest of the world continues to display its zoom-6 overview when the camera zoom exceeds 6; a single sparse archive advertising zoom 9 globally would instead cause missing regional tile requests. The separate DEC data retains New York trail, road, land, and recreation-point detail. Protomaps light cartography and the bundled Noto Sans variable font provide roads, settlements, water, land cover, parks, POIs, and labels without a tile, glyph, or sprite server.
 
-The app is offline-only. It never streams or imports a basemap, style, glyph, sprite, overlay, or map update. The fixed two-tier basemap is overzoomed above zoom 9 while the separate DEC and iOverlander overlays retain their close-zoom geometry and place detail.
+The app is offline-only. It never streams or imports a basemap, style, glyph, sprite, overlay, or map update. The fixed two-tier basemap is overzoomed above zoom 9 while the separate outdoor overlays retain their close-zoom geometry and place detail.
+
+The standard public build continues to bundle only redistributable DEC data. A private build stages the composed catalog from the ignored `PrivateData` root and substitutes it at Metro resolution time. That private catalog makes iOverlander places, NPS parks/campgrounds/alerts/boundaries, USFS Finger Lakes ownership/recreation/MVUM features, and BLM managed-land results visible through the same map and search UI. The map lists a verified zero-result BLM New York query as zero features; it does not fabricate geometry. Selection details identify the source, update time, access note, catalog origin, and official source URL when supplied.
 
 The public map adapter is constructed synchronously and renders independently of the private
 recorder store and tracking module. A recorder initialization or native-tracking failure disables
@@ -26,7 +28,10 @@ The offline basemap is contextual, not a surveyed property map or camping author
 - The 42.81 MiB world overview is an ordinary Git binary. The 356.01 MiB regional archive exceeds GitHub's ordinary 100 MB object limit and is stored in Git LFS. Lightweight CI validates its LFS object ID and declared byte length; the macOS device-build workflow downloads the real object and verifies that both exact archives are embedded.
 - `pnpm test:map:browser` renders the real data using MapLibre GL JS and rejects external requests or page errors. The screenshot/report are written under `dist/outdoor-map`. This is supplemental rendering evidence, not native-device acceptance.
 - `pnpm quality` verifies the overview/font checksums, local-only source resolution, network-free style, geometry, search, camera state and recording segment boundaries alongside the existing suites.
-- `pnpm build:ios:bundle` verifies Metro bundling. The macOS workflow also compares byte length and SHA-256 inside the built `.app`, failing if either fixed offline archive is missing or truncated.
+- `pnpm build:ios:bundle` verifies the public Metro bundle.
+- `pnpm map:private:stage` validates the composed catalog classification, privacy flags, artifact hashes, index count, and required NPS/federal coverage before copying it to the ignored mobile staging directory.
+- `pnpm build:ios:unsigned:private` stages that catalog, enables the private Metro substitution, builds the unsigned app on macOS, verifies the exact composed GeoJSON inside the `.app`, and removes the staging copy afterward. The index hash and count are verified before Metro compiles that JSON into the JavaScript bundle. The regular unsigned build remains public-only.
+- The macOS workflow also compares byte length and SHA-256 inside the built `.app`, failing if either fixed offline archive is missing or truncated.
 
 ## Device checks after installation
 

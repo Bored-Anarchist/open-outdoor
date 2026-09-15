@@ -1,5 +1,6 @@
 # Local secrets and private extensions must never enter the public checkout.
 /PrivateData/
+/apps/mobile/.private-map-data/
 .env
 .env.*
 !.env.example
