@@ -7,6 +7,7 @@ import { OutdoorMapAdapter } from '@open-outdoor/map';
 import {
   InMemoryPrivateRepository,
   migratePrivateSnapshot,
+  type PlaceJournalEntry,
   type PrivateDatabaseSnapshot,
 } from '@open-outdoor/storage';
 import type {
@@ -139,6 +140,12 @@ export interface MobileApplication {
   readonly recorder: RecorderCoordinator;
   readonly library: ActivityLibrary;
   readonly map: OutdoorMapAdapter;
+  readonly placeJournal: PlaceJournalService;
+}
+
+export interface PlaceJournalService {
+  readonly get: (featureId: string) => PlaceJournalEntry | null;
+  readonly save: (entry: PlaceJournalEntry) => Promise<PlaceJournalEntry>;
 }
 
 /**
@@ -159,20 +166,34 @@ export async function createMobileApplication(
       ? undefined
       : migratePrivateSnapshot(JSON.parse(stored) as PrivateDatabaseSnapshot);
   const repository = new InMemoryPrivateRepository(snapshot);
+  let persistenceQueue = Promise.resolve();
+  const persist = (operation: () => Promise<void>): Promise<void> => {
+    const next = persistenceQueue.then(operation, operation);
+    persistenceQueue = next.catch(() => undefined);
+    return next;
+  };
   const persistence: RecorderPersistence = {
     commit: async (nextSnapshot, tracking) => {
       const json = JSON.stringify(nextSnapshot);
       if (tracking === undefined) {
-        await nativeSpikes.commitPrivateSnapshot(json);
+        await persist(() => nativeSpikes.commitPrivateSnapshot(json));
       } else {
-        await nativeSpikes.commitTrackingSnapshot(
-          json,
-          tracking.sessionId,
-          tracking.highestSequence,
+        await persist(() =>
+          nativeSpikes.commitTrackingSnapshot(json, tracking.sessionId, tracking.highestSequence),
         );
       }
     },
   };
   const recorder = new RecorderCoordinator(new NativeTrackerAdapter(), repository, persistence);
-  return { repository, recorder, library: new ActivityLibrary(repository), map };
+  const placeJournal: PlaceJournalService = {
+    get: (featureId) => repository.placeJournalFor(featureId),
+    save: async (entry) => {
+      const saved = repository.savePlaceJournal(entry);
+      await persist(() =>
+        nativeSpikes.commitPrivateSnapshot(JSON.stringify(repository.exportSnapshot())),
+      );
+      return saved;
+    },
+  };
+  return { repository, recorder, library: new ActivityLibrary(repository), map, placeJournal };
 }

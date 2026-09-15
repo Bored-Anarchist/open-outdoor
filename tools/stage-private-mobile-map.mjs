@@ -67,8 +67,8 @@ export async function stagePrivateMobileMap({
   const privacy = requireObject(manifest.privacy, 'manifest privacy');
   if (
     privacy.includesContributorIdentity !== false ||
-    privacy.includesDescriptions !== false ||
-    privacy.includesCheckInText !== false
+    privacy.includesDescriptions !== true ||
+    privacy.includesCheckInText !== true
   ) {
     throw new Error('private catalog violates the mobile privacy boundary');
   }
@@ -89,6 +89,42 @@ export async function stagePrivateMobileMap({
   }
   if (!Array.isArray(index.features) || index.features.length !== geojson.features.length) {
     throw new Error('composed index and GeoJSON feature counts differ');
+  }
+  for (const feature of index.features) {
+    const properties = requireObject(feature?.properties, 'feature properties');
+    const privateIoverlander = properties.sourceId === 'private-ioverlander';
+    if (!privateIoverlander) {
+      if (
+        'communityDescription' in properties ||
+        'communityCheckIns' in properties ||
+        'communityCheckInCount' in properties
+      ) {
+        throw new Error('community narrative fields must remain private iOverlander metadata');
+      }
+      continue;
+    }
+    if (
+      typeof properties.communityDescription !== 'string' ||
+      properties.communityDescription.length > 4_000 ||
+      !Array.isArray(properties.communityCheckIns) ||
+      properties.communityCheckIns.length > 100 ||
+      !Number.isSafeInteger(properties.communityCheckInCount) ||
+      properties.communityCheckInCount < properties.communityCheckIns.length
+    ) {
+      throw new Error('private iOverlander community metadata is malformed');
+    }
+    for (const checkIn of properties.communityCheckIns) {
+      const item = requireObject(checkIn, 'community check-in');
+      if (
+        Object.keys(item).some((key) => !['occurredAt', 'comment'].includes(key)) ||
+        typeof item.occurredAt !== 'string' ||
+        !Number.isFinite(Date.parse(item.occurredAt)) ||
+        typeof item.comment !== 'string' ||
+        item.comment.length > 2_000
+      ) {
+        throw new Error('private iOverlander check-in contains unsafe or malformed fields');
+      }
+    }
   }
 
   nonNegativeInteger(nps.parks, 'NPS park count');
@@ -139,7 +175,8 @@ export async function stagePrivateMobileMap({
         id: 'private-ioverlander',
         label: 'iOverlander',
         featureCount: ioverlanderCount,
-        status: 'private on-device places; narrative and contributor data removed',
+        status:
+          'private on-device places with community descriptions and check-ins; contributor identities removed',
       },
       {
         id: 'nps',

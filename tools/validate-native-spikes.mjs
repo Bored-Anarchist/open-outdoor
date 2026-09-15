@@ -264,7 +264,7 @@ for (const token of [
 for (const token of [
   'const map = useMemo(createOutdoorMapAdapter, []);',
   'createMobileApplication(map)',
-  '<OutdoorMap adapter={map} />',
+  '<OutdoorMap adapter={map} placeJournal={application?.placeJournal ?? null} />',
 ]) {
   requireText(mobileApp, token, 'recorder-independent offline map startup');
 }
@@ -287,6 +287,20 @@ for (const token of [
 ]) {
   requireText(mobileMap, token, 'live offline GPS map position');
 }
+for (const token of [
+  'iOverlander community information',
+  'Your private check-ins and notes',
+  'Check in now and save note',
+  'Save note without checking in',
+  'placeJournal.save(entry)',
+]) {
+  requireText(mobileMap, token, 'private place journal and community details');
+}
+requireText(
+  mobileApplication,
+  'repository.savePlaceJournal(entry)',
+  'protected place journal persistence',
+);
 rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
 requireText(
   mobileMap,
@@ -303,7 +317,7 @@ for (const token of [
   'private_snapshot',
   'tracking_checkpoint',
   'migration_audit',
-  'PRAGMA user_version=3',
+  'PRAGMA user_version=4',
   'ON CONFLICT(session_id)',
   'ROLLBACK',
 ]) {

@@ -34,6 +34,15 @@ test('stages a verified private catalog and reports every map source', async () 
         name: `Feature ${index}`,
         sourceId: sourceIds[index],
         sourceUpdated: '2026-09-14T00:00:00.000Z',
+        ...(sourceIds[index] === 'private-ioverlander'
+          ? {
+              communityDescription: 'A community description.',
+              communityCheckIns: [
+                { occurredAt: '2026-09-13T00:00:00.000Z', comment: 'Road was dry.' },
+              ],
+              communityCheckInCount: 1,
+            }
+          : {}),
       },
       geometry: { type: 'Point', coordinates: [-74 + index / 100, 42] },
     }));
@@ -58,8 +67,8 @@ test('stages a verified private catalog and reports every map source', async () 
       },
       privacy: {
         includesContributorIdentity: false,
-        includesDescriptions: false,
-        includesCheckInText: false,
+        includesDescriptions: true,
+        includesCheckInText: true,
       },
       counts: { outputPrivatePlaces: 1 },
       artifacts: [
@@ -100,7 +109,7 @@ test('stages a verified private catalog and reports every map source', async () 
   }
 });
 
-test('rejects catalogs that retain private narrative fields', async () => {
+test('rejects catalogs that retain contributor identity', async () => {
   const root = await mkdtemp(join(tmpdir(), 'open-outdoor-private-map-'));
   await mkdir(join(root, 'catalog'));
   try {
@@ -112,9 +121,9 @@ test('rejects catalogs that retain private narrative fields', async () => {
         classification: 'PRIVATE_USER',
         input: {},
         privacy: {
-          includesContributorIdentity: false,
+          includesContributorIdentity: true,
           includesDescriptions: true,
-          includesCheckInText: false,
+          includesCheckInText: true,
         },
       }),
     );

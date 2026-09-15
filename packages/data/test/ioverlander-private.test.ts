@@ -30,10 +30,16 @@ function place(
     deleted: false,
     open: 'unknown',
     revision: 1,
-    description: 'must not be retained',
+    description: 'Community place description.',
     contributor_id: 999,
     contributors: [{ name: 'must not be retained' }],
-    check_ins: [{ comment: 'must not be retained' }],
+    check_ins: [
+      {
+        comment: 'Community visit note.',
+        contributor_id: 998,
+        when: '2026-08-31 00:00:00 UTC',
+      },
+    ],
     ...overrides,
   };
 }
@@ -149,7 +155,7 @@ const federal = {
 };
 
 describe('private iOverlander processing', () => {
-  it('filters to New York, removes duplicates, links DEC matches, and strips narrative PII', () => {
+  it('filters and deduplicates while retaining community notes without contributor identity', () => {
     const result = processIoverlanderPrivateData(
       [
         {
@@ -189,10 +195,19 @@ describe('private iOverlander processing', () => {
       'wild_campsite',
     ]);
     const serialized = JSON.stringify(result.records);
-    expect(serialized).not.toContain('description');
     expect(serialized).not.toContain('contributor');
     expect(serialized).not.toContain('check_ins');
     expect(serialized).not.toContain('must not be retained');
+    expect(result.records[0]?.raw).toMatchObject({
+      communityDescription: 'Community place description.',
+      communityCheckIns: [
+        {
+          occurredAt: '2026-08-31T00:00:00.000Z',
+          comment: 'Community visit note.',
+        },
+      ],
+      communityCheckInCount: 1,
+    });
   });
 
   it('strictly applies the rightmost Duplicate column and keeps preserving an audit trail', () => {

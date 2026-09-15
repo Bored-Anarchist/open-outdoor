@@ -28,7 +28,7 @@ function fixture() {
 }
 
 function legacyContainer(): Uint8Array {
-  const snapshot = { ...fixture(), schemaVersion: 2 };
+  const snapshot = { ...fixture(), schemaVersion: 3 };
   const salt = randomBytes(16);
   const nonce = randomBytes(12);
   const header = {
@@ -44,7 +44,7 @@ function legacyContainer(): Uint8Array {
     createdAt: '2026-08-23T12:00:00.000Z',
     snapshot,
     manifest: {
-      privateSchemaVersion: 2,
+      privateSchemaVersion: 3,
       activityCount: 1,
       userTrailCount: 0,
       overlayCount: 0,
@@ -118,13 +118,13 @@ describe('WP-107 authenticated all-or-nothing backup restore', () => {
 describe('WP-306 complete encrypted backup and restore', () => {
   it('restores the previous major container format', () => {
     expect(stageEncryptedRestore(legacyContainer(), passphrase).snapshot).toMatchObject({
-      schemaVersion: 3,
+      schemaVersion: 4,
       activities: [{ id: 'activity-1' }],
     });
   });
 
   it('encrypts a complete manifest and restores the previous private schema transactionally', () => {
-    const previous = { ...fixture(), schemaVersion: 2 };
+    const previous = { ...fixture(), schemaVersion: 3 };
     const bytes = createEncryptedBackup(
       previous,
       [
@@ -140,7 +140,7 @@ describe('WP-306 complete encrypted backup and restore', () => {
       passphrase,
     );
     const restored = stageEncryptedRestore(bytes, passphrase);
-    expect(restored.snapshot.schemaVersion).toBe(3);
+    expect(restored.snapshot.schemaVersion).toBe(4);
     expect(restored.attachments[0]).toMatchObject({
       ownerType: 'activity',
       ownerId: 'activity-1',

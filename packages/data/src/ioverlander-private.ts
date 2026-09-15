@@ -32,6 +32,12 @@ interface RawIoverlanderPlace {
   readonly deleted: boolean;
   readonly open: string;
   readonly revision: number;
+  readonly communityDescription: string;
+  readonly communityCheckIns: readonly {
+    readonly occurredAt: string;
+    readonly comment: string;
+  }[];
+  readonly communityCheckInCount: number;
 }
 
 interface RawTileDocument {
@@ -230,6 +236,43 @@ function normalizeText(value: string): string {
     .trim();
 }
 
+const MAXIMUM_COMMUNITY_DESCRIPTION_LENGTH = 4_000;
+const MAXIMUM_COMMUNITY_COMMENT_LENGTH = 2_000;
+const MAXIMUM_COMMUNITY_CHECK_INS = 100;
+
+function communityCheckIns(value: unknown): {
+  readonly items: RawIoverlanderPlace['communityCheckIns'];
+  readonly total: number;
+} {
+  if (!Array.isArray(value)) return { items: [], total: 0 };
+  const seen = new Set<string>();
+  const items = value.flatMap((candidate) => {
+    if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) return [];
+    const checkIn = candidate as Readonly<Record<string, unknown>>;
+    const occurredAt =
+      typeof checkIn.when === 'string'
+        ? utc(checkIn.when)
+        : typeof checkIn.visited_at === 'string'
+          ? utc(checkIn.visited_at)
+          : null;
+    if (!occurredAt) return [];
+    const comment =
+      typeof checkIn.comment === 'string'
+        ? normalizeText(checkIn.comment).slice(0, MAXIMUM_COMMUNITY_COMMENT_LENGTH)
+        : '';
+    const identity = `${occurredAt}\u0000${comment}`;
+    if (seen.has(identity)) return [];
+    seen.add(identity);
+    return [{ occurredAt, comment }];
+  });
+  return {
+    total: items.length,
+    items: items
+      .sort((left, right) => right.occurredAt.localeCompare(left.occurredAt))
+      .slice(0, MAXIMUM_COMMUNITY_CHECK_INS),
+  };
+}
+
 function rawPlace(value: unknown): RawIoverlanderPlace | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   const item = value as Readonly<Record<string, unknown>>;
@@ -261,6 +304,7 @@ function rawPlace(value: unknown): RawIoverlanderPlace | null {
   ) {
     return null;
   }
+  const checkIns = communityCheckIns(item.check_ins);
   return {
     id: Number(item.id),
     guid: item.guid,
@@ -275,6 +319,12 @@ function rawPlace(value: unknown): RawIoverlanderPlace | null {
     deleted: item.deleted,
     open: normalizeText(item.open),
     revision: Number(item.revision),
+    communityDescription:
+      typeof item.description === 'string'
+        ? normalizeText(item.description).slice(0, MAXIMUM_COMMUNITY_DESCRIPTION_LENGTH)
+        : '',
+    communityCheckIns: checkIns.items,
+    communityCheckInCount: checkIns.total,
   };
 }
 
@@ -1403,6 +1453,9 @@ function privateAppFeature(source: PrivatePlaceSource): AppFeature {
       publicUse: `${source.raw.open || 'unknown'}; private reference; verify current access`,
       sourceUpdated: source.record.sourceUpdatedAt ?? '',
       origin: 'private-catalog',
+      communityDescription: source.raw.communityDescription,
+      communityCheckIns: source.raw.communityCheckIns,
+      communityCheckInCount: source.raw.communityCheckInCount,
     },
     geometry: {
       type: 'Point',
@@ -2149,8 +2202,8 @@ export async function buildIoverlanderPrivateCatalog(
       },
       privacy: {
         includesContributorIdentity: false,
-        includesDescriptions: false,
-        includesCheckInText: false,
+        includesDescriptions: true,
+        includesCheckInText: true,
         outputLocationPolicy,
       },
       compatibility: {
@@ -2187,7 +2240,7 @@ export async function buildIoverlanderPrivateCatalog(
         decisionBytes
           ? 'dedup-decisions.csv contains the applied decisions; dedup-review.csv contains only pending matches.'
           : 'dedup-review.csv contains uncertain matches that require a human decision.',
-        'Contributor identities, descriptions, and check-in text were not retained.',
+        'Community descriptions and check-in dates/comments are retained only in this private bundle; contributor identifiers are not retained.',
         '',
       ].join('\n'),
     );

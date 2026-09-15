@@ -413,7 +413,7 @@ function AppContent({
       {section === 'explore' || section === 'search' ? (
         <>
           <Text>Display only: there are no turn instructions, rerouting, or off-route alerts.</Text>
-          <OutdoorMap adapter={map} />
+          <OutdoorMap adapter={map} placeJournal={application?.placeJournal ?? null} />
           <AccessibleButton
             label="Land and camping legend"
             hint="Expand or collapse status explanations"

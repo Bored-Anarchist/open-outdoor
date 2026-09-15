@@ -89,4 +89,40 @@ segment: (1,
       expect(repository.exportSnapshot().userTrails).toHaveLength(2);
       expect(() => repository.saveUserTrail({ ...base, revision: 2 })).toThrow(PrivateStorageError);
     });
+
+    it('stores private notes and repeat check-ins against catalog feature ids', () => {
+      const repository = new InMemoryPrivateRepository();
+      repository.savePlaceJournal({
+        featureId: 'private:place-1',
+        featureName: 'Quiet campsite',
+        note: '  Return when the road is dry.  ',
+        checkIns: [
+          { id: 'checkin-1', occurredAt: '2026-09-15T12:00:00.000Z' },
+          { id: 'checkin-2', occurredAt: '2026-09-16T12:00:00.000Z' },
+        ],
+        updatedAt: '2026-09-16T12:00:00.000Z',
+      });
+
+      expect(repository.placeJournalFor('private:place-1')).toEqual({
+        featureId: 'private:place-1',
+        featureName: 'Quiet campsite',
+        note: 'Return when the road is dry.',
+        checkIns: [
+          { id: 'checkin-2', occurredAt: '2026-09-16T12:00:00.000Z' },
+          { id: 'checkin-1', occurredAt: '2026-09-15T12:00:00.000Z' },
+        ],
+        updatedAt: '2026-09-16T12:00:00.000Z',
+      });
+      expect(repository.listPlaceJournal()).toHaveLength(1);
+    });
+
+    it('migrates schema 3 snapshots with an empty place journal', () => {
+      const current = new InMemoryPrivateRepository().exportSnapshot();
+      const legacy = { ...current, schemaVersion: 3 } as typeof current;
+      delete (legacy as unknown as { placeJournal?: unknown }).placeJournal;
+      expect(new InMemoryPrivateRepository(legacy).exportSnapshot()).toMatchObject({
+        schemaVersion: 4,
+        placeJournal: [],
+      });
+    });
   }));

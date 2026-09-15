@@ -24,6 +24,13 @@ export interface OutdoorFeatureProperties {
   publicUse: string;
   sourceUpdated: string;
   origin?: 'public-catalog' | 'private-catalog';
+  sourceUrl?: string;
+  communityDescription?: string;
+  communityCheckIns?: readonly {
+    readonly occurredAt: string;
+    readonly comment: string;
+  }[];
+  communityCheckInCount?: number;
 }
 export interface OutdoorFeature {
   type: 'Feature';
@@ -130,12 +137,18 @@ export function createOutdoorPlaceCollection(
       const category = outdoorIoverlanderCategory(feature.properties.category);
       if (!matchesPlaceFilter(category, filter)) return [];
       const definition = ioverlanderCategoryDefinition(category);
+      const {
+        communityDescription: _communityDescription,
+        communityCheckIns: _communityCheckIns,
+        communityCheckInCount: _communityCheckInCount,
+        ...renderProperties
+      } = feature.properties;
       return [
         {
           type: 'Feature' as const,
           id: feature.id,
           properties: {
-            ...feature.properties,
+            ...renderProperties,
             ioverlanderCategory: category,
             categoryLabel: definition.label,
             placeIcon: definition.icon,

@@ -190,6 +190,38 @@ describe('real offline New York map', () => {
     expect(outdoorPlaceIcon('shorterm_parking')).toBe('P');
     expect(outdoorPlaceIcon('water')).toBe('≈');
   });
+  it('keeps private community narratives out of the MapLibre render source', () => {
+    const privateIndex: OutdoorFeatureIndex = {
+      schemaVersion: 1,
+      features: [
+        {
+          id: 'private:place-1',
+          bounds: [-74, 42, -74, 42],
+          properties: {
+            id: 'private:place-1',
+            kind: 'poi',
+            name: 'Private place',
+            sourceId: 'private-ioverlander',
+            unit: 'Private iOverlander reference',
+            category: 'campsite',
+            publicUse: 'unknown',
+            sourceUpdated: '2026-09-15T00:00:00.000Z',
+            origin: 'private-catalog',
+            communityDescription: 'Only the details card should receive this.',
+            communityCheckIns: [
+              { occurredAt: '2026-09-14T00:00:00.000Z', comment: 'Private community comment.' },
+            ],
+            communityCheckInCount: 1,
+          },
+        },
+      ],
+    };
+
+    const renderProperties = createOutdoorPlaceCollection(privateIndex).features[0]?.properties;
+    expect(renderProperties).not.toHaveProperty('communityDescription');
+    expect(renderProperties).not.toHaveProperty('communityCheckIns');
+    expect(renderProperties).not.toHaveProperty('communityCheckInCount');
+  });
   it('uses clusters, icons, then labels as the user zooms in', () => {
     expect(outdoorZoomPresentation(6.9)).toMatchObject({ band: 'regional' });
     expect(outdoorZoomPresentation(7)).toMatchObject({ band: 'clusters' });

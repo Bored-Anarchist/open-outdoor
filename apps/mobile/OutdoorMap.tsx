@@ -43,6 +43,7 @@ import {
   ioverlanderCategoryDefinitions,
   type IoverlanderCategory,
 } from '@open-outdoor/shared';
+import type { PlaceJournalEntry } from '@open-outdoor/storage';
 import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 import { ProductText as Text } from './accessibility';
 import { ProductButton, ProductCard, usePalette } from './ProductComponents';
@@ -56,6 +57,7 @@ import {
   mobileMapDataIndex as bundledIndex,
   mobileMapDataMetadata,
 } from '@open-outdoor/mobile-map-data';
+import type { PlaceJournalService } from './application';
 const featureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light'), {
   lang: 'en',
@@ -266,7 +268,13 @@ function PlaceKey({
   );
 }
 
-export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
+export function OutdoorMap({
+  adapter,
+  placeJournal,
+}: {
+  adapter: OutdoorMapAdapter;
+  placeJournal: PlaceJournalService | null;
+}) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
   const camera = useRef<CameraRef>(null);
   const mapView = useRef<MapRef>(null);
@@ -308,13 +316,7 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const [showLicenses, setShowLicenses] = useState(false);
   const selected =
     featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ?? null;
-  const selectedProperties = selected?.properties as
-    | (OutdoorFeatureSummary['properties'] & {
-        readonly publicUse?: string;
-        readonly sourceUrl?: string;
-        readonly origin?: string;
-      })
-    | undefined;
+  const selectedProperties = selected?.properties;
   const setSelected = (feature: OutdoorFeatureSummary | null) =>
     adapter.setSelectedFeature(feature?.id ?? null);
   const [loaded, setLoaded] = useState(false);
@@ -322,6 +324,9 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   const [outside, setOutside] = useState(false);
   const [followUser, setFollowUser] = useState(false);
   const [zoom, setZoom] = useState(state.camera.zoom);
+  const [journalEntry, setJournalEntry] = useState<PlaceJournalEntry | null>(null);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [journalStatus, setJournalStatus] = useState('');
   const placeData = useMemo(
     () => createOutdoorPlaceCollection(featureIndex, placeFilter),
     [placeFilter],
@@ -371,6 +376,12 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
     setLoaded(false);
     setFailed(false);
   }, [regionalOverviewUri]);
+  useEffect(() => {
+    const entry = selected && placeJournal ? placeJournal.get(selected.id) : null;
+    setJournalEntry(entry);
+    setNoteDraft(entry?.note ?? '');
+    setJournalStatus('');
+  }, [placeJournal, selected?.id]);
   function select(feature: OutdoorFeatureSummary) {
     setSelected(feature);
     const [west, south, east, north] = feature.bounds;
@@ -386,6 +397,40 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
   function changeZoom(direction: 'in' | 'out') {
     setFollowUser(false);
     camera.current?.zoomTo(nextOutdoorZoom(zoom, direction), { duration: 160 });
+  }
+  async function saveJournal(checkIn: boolean): Promise<void> {
+    if (!selected || !placeJournal) return;
+    const occurredAt = new Date().toISOString();
+    const prior = placeJournal.get(selected.id);
+    const entry: PlaceJournalEntry = {
+      featureId: selected.id,
+      featureName: selected.properties.name,
+      note: noteDraft,
+      checkIns: checkIn
+        ? [
+            ...(prior?.checkIns ?? []),
+            {
+              id: `checkin-${Date.now()}-${(prior?.checkIns.length ?? 0) + 1}`,
+              occurredAt,
+            },
+          ]
+        : (prior?.checkIns ?? []),
+      updatedAt: occurredAt,
+    };
+    setJournalStatus(checkIn ? 'Saving private check-in…' : 'Saving private note…');
+    try {
+      const saved = await placeJournal.save(entry);
+      setJournalEntry(saved);
+      setNoteDraft(saved.note);
+      setJournalStatus(
+        checkIn ? 'Checked in. Your note is saved privately.' : 'Your private note is saved.',
+      );
+    } catch (error) {
+      setJournalStatus(
+        `Could not save privately: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    }
   }
   return (
     <View>
@@ -739,6 +784,88 @@ export function OutdoorMap({ adapter }: { adapter: OutdoorMapAdapter }) {
           <Text>
             Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}
           </Text>
+          {selected.properties.sourceId === 'private-ioverlander' ? (
+            <View style={{ gap: 8 }}>
+              <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                iOverlander community information
+              </Text>
+              <Text>
+                {selectedProperties?.communityDescription || 'No community description provided.'}
+              </Text>
+              <Text>
+                {selectedProperties?.communityCheckInCount ?? 0} community check-ins available
+                {(selectedProperties?.communityCheckIns?.length ?? 0) <
+                (selectedProperties?.communityCheckInCount ?? 0)
+                  ? ` · showing the newest ${selectedProperties?.communityCheckIns?.length ?? 0}`
+                  : ''}
+              </Text>
+              {(selectedProperties?.communityCheckIns ?? []).slice(0, 10).map((checkIn, index) => (
+                <Text key={`${checkIn.occurredAt}-${index}`}>
+                  {new Date(checkIn.occurredAt).toLocaleDateString()} ·{' '}
+                  {checkIn.comment || 'No community note provided.'}
+                </Text>
+              ))}
+              {(selectedProperties?.communityCheckIns?.length ?? 0) > 10 ? (
+                <Text>Showing the 10 newest community check-ins.</Text>
+              ) : null}
+              <Text style={{ color: palette.muted }}>
+                Contributor identities are not stored. Community information may be outdated; verify
+                current conditions and access.
+              </Text>
+            </View>
+          ) : null}
+          <View style={{ gap: 8 }}>
+            <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+              Your private check-ins and notes
+            </Text>
+            <TextInput
+              accessibilityLabel={`Private note for ${selected.properties.name}`}
+              accessibilityHint="Stored only in this app's protected user data"
+              placeholder="Add a note for your next visit"
+              placeholderTextColor={palette.muted}
+              value={noteDraft}
+              onChangeText={setNoteDraft}
+              multiline
+              maxLength={5_000}
+              style={{
+                color: palette.text,
+                borderColor: palette.border,
+                borderWidth: 1,
+                borderRadius: 10,
+                minHeight: 96,
+                padding: 12,
+                textAlignVertical: 'top',
+              }}
+            />
+            <ProductButton
+              label="Check in now and save note"
+              hint="Save the current time and this note privately for the selected place"
+              disabled={placeJournal === null}
+              onPress={() => saveJournal(true)}
+            />
+            <ProductButton
+              label="Save note without checking in"
+              hint="Update your private place note without creating a check-in"
+              disabled={
+                placeJournal === null || noteDraft.trim() === (journalEntry?.note.trim() ?? '')
+              }
+              onPress={() => saveJournal(false)}
+            />
+            <Text accessibilityLiveRegion="polite">
+              {placeJournal === null
+                ? 'Private storage is not ready; map details remain available.'
+                : journalStatus ||
+                  `${journalEntry?.checkIns.length ?? 0} private check-ins saved on this device.`}
+            </Text>
+            {(journalEntry?.checkIns ?? []).slice(0, 5).map((checkIn) => (
+              <Text key={checkIn.id}>
+                Checked in {new Date(checkIn.occurredAt).toLocaleString()}
+              </Text>
+            ))}
+            {(journalEntry?.checkIns.length ?? 0) > 5 ? (
+              <Text>Showing your 5 newest check-ins.</Text>
+            ) : null}
+          </View>
           <ProductButton
             label="Clear map selection"
             hint="Remove the selected feature highlight"
