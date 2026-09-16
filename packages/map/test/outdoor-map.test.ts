@@ -260,13 +260,13 @@ describe('real offline New York map', () => {
   it('uses clusters, icons, then labels as the user zooms in', () => {
     expect(outdoorZoomPresentation(6.9)).toMatchObject({ band: 'regional' });
     expect(outdoorZoomPresentation(7)).toMatchObject({ band: 'clusters' });
-    expect(outdoorZoomPresentation(12.9)).toMatchObject({ band: 'clusters' });
-    expect(outdoorZoomPresentation(13)).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(11.9)).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(12)).toMatchObject({ band: 'icons' });
     expect(outdoorZoomPresentation(14)).toMatchObject({ band: 'labels' });
     expect(outdoorZoomPresentation(12, 'fewer')).toMatchObject({ band: 'clusters' });
-    expect(outdoorZoomPresentation(15, 'fewer')).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(14, 'fewer')).toMatchObject({ band: 'icons' });
     expect(outdoorZoomPresentation(16, 'fewer')).toMatchObject({ band: 'labels' });
-    expect(outdoorZoomPresentation(12, 'more')).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(11, 'more')).toMatchObject({ band: 'icons' });
     expect(nextOutdoorZoom(17.7, 'in')).toBe(18);
     expect(nextOutdoorZoom(3.2, 'out')).toBe(3);
 

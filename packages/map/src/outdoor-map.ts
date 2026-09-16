@@ -217,9 +217,9 @@ export function createOutdoorPlaceCollection(
 }
 
 export const outdoorMarkerDensityConfig = {
-  automatic: { minimumZoom: 7, clusterMaxZoom: 12, clusterRadius: 50, labelMinZoom: 14 },
-  fewer: { minimumZoom: 8, clusterMaxZoom: 14, clusterRadius: 72, labelMinZoom: 16 },
-  more: { minimumZoom: 6, clusterMaxZoom: 11, clusterRadius: 38, labelMinZoom: 13 },
+  automatic: { minimumZoom: 7, clusterMaxZoom: 11, clusterRadius: 50, labelMinZoom: 14 },
+  fewer: { minimumZoom: 8, clusterMaxZoom: 13, clusterRadius: 72, labelMinZoom: 16 },
+  more: { minimumZoom: 6, clusterMaxZoom: 10, clusterRadius: 38, labelMinZoom: 13 },
 } as const satisfies Record<
   OutdoorMarkerDensity,
   {
