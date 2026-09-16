@@ -77,7 +77,9 @@ export function parseMapDataset(input: string, id: string, name: string): Import
       );
     if (++positions > mapDatasetLimits.maximumPositions)
       throw new Error('Dataset exceeds 200,000 coordinates. Simplify it before importing.');
-    return [value[0] as number, value[1] as number];
+    return value.length === 3
+      ? [value[0] as number, value[1] as number, value[2] as number]
+      : [value[0] as number, value[1] as number];
   };
   const array = (value: unknown, minimum = 1): unknown[] => {
     if (!Array.isArray(value) || value.length < minimum)

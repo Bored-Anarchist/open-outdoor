@@ -42,7 +42,7 @@
     "test:design:browser": "node tools/design-browser-qa.mjs",
     "phase5:quality": "node tools/production-quality.mjs",
     "profile:desktop": "node tools/production-benchmark.mjs",
-    "test:release": "node --test tools/release-artifacts.test.mjs tools/release-audit.test.mjs tools/stage-private-mobile-map.test.mjs",
+    "test:release": "node --test tools/release-artifacts.test.mjs tools/release-audit.test.mjs tools/stage-private-mobile-map.test.mjs tools/acquire-hike-profiles.test.mjs",
     "release:artifacts": "node tools/release-artifacts.mjs",
     "release:sbom": "node tools/release-sbom.mjs",
     "phase5:audit": "node tools/release-audit.mjs",
@@ -52,7 +52,8 @@
     "nps:acquire:ny": "node --use-system-ca tools/acquire-nps-new-york.mjs",
     "federal:acquire:ny": "node --use-system-ca tools/acquire-federal-new-york.mjs",
     "map:private:stage": "node tools/stage-private-mobile-map.mjs --input \"PrivateData/catalogs/US/New York/current\"",
-    "test:map:browser": "node tools/outdoor-map-qa.mjs"
+    "test:map:browser": "node tools/outdoor-map-qa.mjs",
+    "map:acquire:hikes": "node --use-system-ca tools/acquire-hike-profiles.mjs"
   },
   "devDependencies": {
     "@types/node": "24.10.1",

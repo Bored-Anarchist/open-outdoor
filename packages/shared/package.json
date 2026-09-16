@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./outdoor-details": "./src/outdoor-details.ts"
+    "./outdoor-details": "./src/outdoor-details.ts",
+    "./hike-route": "./src/hike-route.ts"
   }
 }

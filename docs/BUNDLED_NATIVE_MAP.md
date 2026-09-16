@@ -32,6 +32,18 @@ USFS recreation points retain reported activities/services, water, restrooms, ca
 
 Descriptions and arrival text are capped at 4,000 characters. Amenities, hours and fees are capped at 20 entries of 500 characters each. HTML is rendered as plain text, unrelated source fields are discarded, and long visitor/community details are excluded from the marker payload. Original reference information remains in the offline feature index for selection.
 
+## Offline hike details
+
+Selecting a mapped trail shows its source path, mapped start/end markers, length, approximate elevation gain/loss, and an estimated walking time. **Show expected path** fits the selected geometry. Trails may be segments of a longer hike, rather than curated complete itineraries; separate MultiLineString parts are never connected or counted as distance/climbing across gaps. A mapped endpoint is not a verified trailhead. External directions for a hike target its first mapped endpoint instead of the center of its bounds.
+
+The elevation chart supports dragging and accessible increment/decrement actions. Selecting a chart point marks that coordinate on the map. Hike statistics and the chart can switch between miles/feet and kilometres/metres. Walking time assumes 4 km/h plus one hour per 600 m of sampled ascent, excluding stops, terrain and conditions; when ascent is unavailable the time estimate is based only on length. No difficulty, community rating or complete-route classification is invented.
+
+The public app bundles `new-york-hikes.json`, approximately 4.0 MiB of compact profiles for all 5,289 public DEC trail features. It uses Mapzen/Tilezen Terrarium terrain tiles at zoom 11, bilinear elevation interpolation, and path samples spaced approximately 100 m apart (coarser on long paths), capped at 128 samples per feature. These are terrain estimates, not surveyed trail-surface elevations. Short climbs and descents may be lost at this resolution. The phone needs no terrain download, API key, or connection to display them. Attribution to Mapzen, USGS and the Canadian Open Government Licence is shown in the map; source links, modifications and tile checksums are retained in `new-york-hikes.manifest.json`.
+
+Run `pnpm map:acquire:hikes` after refreshing the public geometry snapshot. The command accepts only the fixed, checksum-verified redistributable public asset; it never uses imported/private routes. Terrain tiles remain in an ignored local cache and are not bundled. Profiles are pinned to their source GeoJSON checksum; stale profiles are hidden and the asset test requires regeneration. No public geometry, feature ID, place journal or recorder data is replaced by this profile generation.
+
+Imported GeoJSON retains its optional third coordinate as elevation in metres. Line features compute their own bounded profiles entirely on the phone, and elevations survive restart. Two-dimensional or incompletely elevated imports show **Elevation unavailable** rather than a fabricated flat graph; their mapped path, length and endpoints remain usable. Private route coordinates are never sent to a terrain provider. Imported polygons and points retain their existing detail view.
+
 ## Import a dataset on iPhone
 
 In Explore, use **Import dataset** under **Your imported datasets**, then choose a UTF-8 `.geojson` or `.json` file from Files. Standard WGS84 GeoJSON FeatureCollections and individual Features are supported: Point, MultiPoint, LineString, MultiLineString, Polygon and MultiPolygon. Coordinates use `[longitude, latitude]`; custom CRS declarations, null geometries and GeometryCollections are rejected. Polygon rings must be closed. Import validation is all-or-nothing, with a limit of 20 MiB, 20,000 expanded features and 200,000 coordinate positions per dataset, five datasets and 50 MiB combined saved storage.
@@ -62,7 +74,7 @@ Imported GeoJSON may also supply `description`, `directionsInfo`, `amenities`, `
 
 1. Enable airplane mode before opening the app. Open Explore and confirm overview roads, town names, water, land cover, green DEC lands and blue DEC trail lines all appear.
 2. Force-quit and reopen while airplane mode remains enabled. Pan within New York and Canada through zoom 9, then pan to Europe or Asia above zoom 6 and confirm the overzoomed world overview remains visible without a network request.
-3. Search Slide, select a trail and confirm its real geometry is highlighted. Clear selection, pan, pinch and use both zoom buttons.
+3. Search Slide, select a trail and confirm its real geometry is highlighted. Confirm hike length, ascent/descent, walking estimate and offline elevation chart. Drag the chart and confirm the corresponding marker moves on the map; repeat using VoiceOver adjustable actions. Switch units, show the expected path, and confirm mapped start/end markers and the directions destination. Test an elevated GeoJSON hike across restart and a two-dimensional hike with elevation unavailable. Clear selection, pan, pinch and use both zoom buttons.
 4. Switch to Track and back. Confirm camera/selection persist. Text search and source details provide a non-gesture alternative.
 5. Record outdoors, pause, move, resume and return to Explore. Confirm the recorded route appears without connecting the pause gap. Show last recorded position must use the recorded point without starting a new sensor session.
 6. Perform the remaining guided accessibility, performance and endurance observations on this candidate. Automated tests do not count as these observations.

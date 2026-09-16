@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { hikeRouteDetails } from '@open-outdoor/shared/hike-route';
 import {
   parseMapDataset,
   restoreMapDatasets,
@@ -255,5 +256,25 @@ describe('on-device GeoJSON map datasets', () => {
     expect(() => restoreMapDatasets('{"schemaVersion":2,"datasets":[]}')).toThrow(/Unsupported/);
     expect(() => restoreMapDatasets('{"schemaVersion":1,"datasets":[{}]}')).toThrow();
     expect(restoreMapDatasets(null)).toEqual([]);
+  });
+});
+
+describe('imported hike elevations', () => {
+  it('retains coordinate elevations through save and restore for offline planning', () => {
+    const coordinates = [
+      [-74, 42, 100],
+      [-73.999, 42, 150],
+      [-73.998, 42, 120],
+    ];
+    const imported = parseMapDataset(
+      collection([feature({ type: 'LineString', coordinates }, { name: 'Synthetic hike' })]),
+      id,
+      'hike.geojson',
+    );
+    const restored = restoreMapDatasets(serializeMapDatasets([imported]))[0]!;
+    expect(restored.collection.features[0]!.geometry.coordinates).toEqual(coordinates);
+    const geometry = restored.collection.features[0]!.geometry;
+    if (geometry.type !== 'LineString') throw Error('Expected a line');
+    expect(hikeRouteDetails(geometry).elevationSource).toBe('dataset');
   });
 });

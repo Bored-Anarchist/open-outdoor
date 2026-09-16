@@ -1,3 +1,7 @@
+import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
+import { HikeDetails } from './HikeDetails';
+import publicHikes from '../../packages/map/src/assets/new-york-hikes.json';
+import publicMapManifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
 import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
 import licenses from './map-licenses.json';
 import offlineMapLicenses from './offline-map-licenses.json';
@@ -365,11 +369,72 @@ export function OutdoorMap({
   const [sourceLinkStatus, setSourceLinkStatus] = useState('');
   const selected =
     featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ?? null;
+  const selectedHike = useMemo<HikeRouteDetails | null>(() => {
+    if (!selected || selected.properties.kind !== 'trail') return null;
+    if (selected.properties.origin === 'private-catalog') {
+      const feature = imports.datasets
+        .filter((dataset) => dataset.visible)
+        .flatMap((dataset) => dataset.collection.features)
+        .find((feature) => feature.id === selected.id);
+      if (
+        feature &&
+        (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')
+      )
+        return hikeRouteDetails(feature.geometry);
+      return null;
+    }
+    if (publicHikes.sourceSha256 !== publicMapManifest.sha256) return null;
+    return (
+      (publicHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
+      null
+    );
+  }, [selected, imports.datasets]);
+  const [selectedHikeSample, setSelectedHikeSample] = useState<number | null>(null);
+  const hikeMarkers = useMemo(
+    () => ({
+      type: 'FeatureCollection' as const,
+      features: selectedHike
+        ? [
+            {
+              type: 'Feature' as const,
+              properties: { label: 'Mapped start', color: '#176b42' },
+              geometry: { type: 'Point' as const, coordinates: [...selectedHike.start] },
+            },
+            ...(!selectedHike.closedLoop
+              ? [
+                  {
+                    type: 'Feature' as const,
+                    properties: { label: 'Mapped end', color: '#a43913' },
+                    geometry: { type: 'Point' as const, coordinates: [...selectedHike.end] },
+                  },
+                ]
+              : []),
+            ...(selectedHikeSample !== null && selectedHike.samples[selectedHikeSample]
+              ? [
+                  {
+                    type: 'Feature' as const,
+                    properties: { label: 'Profile point', color: '#174cbd' },
+                    geometry: {
+                      type: 'Point' as const,
+                      coordinates: [
+                        selectedHike.samples[selectedHikeSample]![2],
+                        selectedHike.samples[selectedHikeSample]![3],
+                      ],
+                    },
+                  },
+                ]
+              : []),
+          ]
+        : [],
+    }),
+    [selectedHike, selectedHikeSample],
+  );
   const selectedProperties = selected?.properties;
   const selectedSourceUrl = outdoorSourceUrl(selectedProperties?.sourceUrl);
   useEffect(() => {
     setShowSourceDetails(false);
     setSourceLinkStatus('');
+    setSelectedHikeSample(null);
   }, [selected?.id]);
   useEffect(() => {
     if (state.selectedFeatureId !== null && selected === null) adapter.setSelectedFeature(null);
@@ -496,7 +561,9 @@ export function OutdoorMap({
   }
   async function shareDirectionsDestination(): Promise<void> {
     if (!selected) return;
-    const destination = outdoorDirectionsDestination(selected);
+    const destination = selectedHike
+      ? { name: `${selected.properties.name} mapped start`, coordinate: selectedHike.start }
+      : outdoorDirectionsDestination(selected);
     const coordinate = outdoorDirectionsCoordinateText(destination);
     try {
       await Share.share({
@@ -522,7 +589,9 @@ export function OutdoorMap({
   }
   async function chooseDirectionsApp(): Promise<void> {
     if (!selected) return;
-    const destination = outdoorDirectionsDestination(selected);
+    const destination = selectedHike
+      ? { name: `${selected.properties.name} mapped start`, coordinate: selectedHike.start }
+      : outdoorDirectionsDestination(selected);
     const coordinate = outdoorDirectionsCoordinateText(destination);
     setDirectionsStatus('Checking available map apps…');
 
@@ -766,7 +835,7 @@ export function OutdoorMap({
       </ProductCard>
       <View
         style={{
-          height: 520,
+          height: selectedHike ? 300 : 520,
           marginVertical: 12,
           borderWidth: 2,
           borderRadius: 16,
@@ -888,6 +957,33 @@ export function OutdoorMap({
                 filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
                 paint={{ 'line-color': '#a43913', 'line-width': 5 }}
               />
+              <GeoJSONSource id="hike-markers" data={hikeMarkers}>
+                <Layer
+                  id="hike-endpoints"
+                  type="circle"
+                  paint={{
+                    'circle-color': ['get', 'color'],
+                    'circle-radius': 7,
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 2,
+                  }}
+                />
+                <Layer
+                  id="hike-endpoint-labels"
+                  type="symbol"
+                  layout={{
+                    'text-field': ['get', 'label'],
+                    'text-font': ['Open Outdoor Noto Sans'],
+                    'text-size': 12,
+                    'text-offset': [0, 1.5],
+                  }}
+                  paint={{
+                    'text-color': '#173d2b',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 2,
+                  }}
+                />
+              </GeoJSONSource>
               <Layer
                 id="selection-point"
                 type="circle"
@@ -970,6 +1066,21 @@ export function OutdoorMap({
           <Text>
             {selected.properties.kind} · {selected.properties.unit || selected.properties.category}
           </Text>
+          {selectedHike ? (
+            <HikeDetails
+              key={selected.id}
+              route={selectedHike}
+              selectedSample={selectedHikeSample}
+              onSampleSelect={setSelectedHikeSample}
+              onShowRoute={() => {
+                setFollowUser(false);
+                camera.current?.fitBounds(selected.bounds, {
+                  padding: { top: 35, right: 35, bottom: 35, left: 35 },
+                  duration: 0,
+                });
+              }}
+            />
+          ) : null}
           <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
             {selectedProperties?.communityDescription ? 'Community description' : 'Description'}
           </Text>
@@ -1054,14 +1165,21 @@ export function OutdoorMap({
             </View>
           ) : null}
           <ProductButton
-            label="Get directions"
-            hint="Choose an installed maps app to route to this feature's coordinates"
+            label={selectedHike ? 'Get directions to mapped start' : 'Get directions'}
+            hint="Choose an installed maps app to route to the selected destination"
             onPress={chooseDirectionsApp}
           />
           <Text style={{ color: palette.muted }}>
-            Destination: {outdoorDirectionsCoordinateText(outdoorDirectionsDestination(selected))}.
-            Points use their exact coordinates; areas and trails use the center of their mapped
-            bounds.
+            Destination:{' '}
+            {outdoorDirectionsCoordinateText(
+              selectedHike
+                ? { name: selected.properties.name, coordinate: selectedHike.start }
+                : outdoorDirectionsDestination(selected),
+            )}
+            .
+            {selectedHike
+              ? 'Directions use the first mapped endpoint, which may not be a trailhead or accessible by road.'
+              : 'Points use their exact coordinates; areas use the center of their mapped bounds.'}
           </Text>
           {directionsStatus ? (
             <Text accessibilityLiveRegion="polite">{directionsStatus}</Text>
@@ -1222,8 +1340,9 @@ export function OutdoorMap({
       </Text>
       <Text>
         Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
-        Geometry simplified for display. MapLibre Native renderer. Public-use GIS data is provided
-        without warranty; boundaries are not legal surveys.
+        Hike elevations: {publicHikes.attribution}. Geometry simplified for display. MapLibre Native
+        renderer. Public-use GIS data is provided without warranty; boundaries are not legal
+        surveys.
       </Text>
       <ProductButton
         label="Map renderer licenses"

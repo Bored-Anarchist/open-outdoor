@@ -22,3 +22,5 @@ packages/map/src/assets/new-york-outdoors.index.json
 packages/map/src/assets/new-york-outdoors.manifest.json
 packages/map/src/assets/openfreemap-liberty.json
 packages/map/src/assets/openfreemap-liberty.manifest.json
+
+packages/map/src/assets/new-york-hikes.json
