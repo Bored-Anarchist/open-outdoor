@@ -200,3 +200,5 @@ export class FixtureMapAdapter implements MapAdapter {
 export * from './product-style';
 
 export * from './outdoor-map';
+
+export * from './imported-dataset';

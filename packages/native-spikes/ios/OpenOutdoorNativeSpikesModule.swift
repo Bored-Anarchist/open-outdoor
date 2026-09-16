@@ -4,6 +4,8 @@ import Foundation
 public final class OpenOutdoorNativeSpikesModule: Module {
   private lazy var tracker = OpenOutdoorTrackerSpike()
   private lazy var privateStore = try? OpenOutdoorStorageCoordinatorSpike()
+  private lazy var mapDatasetPicker = OpenOutdoorMapDatasetPicker()
+  private let mapDatasetQueue = DispatchQueue(label: "org.openoutdoor.map-datasets")
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -28,6 +30,18 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("OpenOutdoorNativeSpikes")
+
+    AsyncFunction("pickMapDataset") { (promise: Promise) in
+      self.mapDatasetPicker.pick(promise: promise)
+    }.runOnQueue(.main)
+
+    AsyncFunction("loadMapDatasets") { () -> String? in
+      try OpenOutdoorMapDatasetStore.load()
+    }.runOnQueue(mapDatasetQueue)
+
+    AsyncFunction("saveMapDatasets") { (payload: String) in
+      try OpenOutdoorMapDatasetStore.save(payload)
+    }.runOnQueue(mapDatasetQueue)
 
     Constant("policyVersion") {
       2

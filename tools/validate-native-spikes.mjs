@@ -264,7 +264,10 @@ for (const token of [
 for (const token of [
   'const map = useMemo(createOutdoorMapAdapter, []);',
   'createMobileApplication(map)',
-  '<OutdoorMap adapter={map} placeJournal={application?.placeJournal ?? null} />',
+  '<OutdoorMap',
+  'adapter={map}',
+  'placeJournal={application?.placeJournal ?? null}',
+  'imports={importedDatasets}',
 ]) {
   requireText(mobileApp, token, 'recorder-independent offline map startup');
 }

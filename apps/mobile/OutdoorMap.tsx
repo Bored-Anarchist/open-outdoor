@@ -10,6 +10,7 @@ import {
 } from 'react';
 import {
   ActionSheetIOS,
+  Alert,
   Linking,
   Platform,
   Pressable,
@@ -70,7 +71,8 @@ import {
   mobileMapDataMetadata,
 } from '@open-outdoor/mobile-map-data';
 import type { PlaceJournalService } from './application';
-const featureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
+import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
+const bundledFeatureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light'), {
   lang: 'en',
 }) as unknown as OutdoorBaseMapStyle['layers'];
@@ -283,15 +285,47 @@ function PlaceKey({
 export function OutdoorMap({
   adapter,
   placeJournal,
+  imports,
 }: {
   adapter: OutdoorMapAdapter;
   placeJournal: PlaceJournalService | null;
+  imports: ImportedMapDatasetsService;
 }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
   const camera = useRef<CameraRef>(null);
   const mapView = useRef<MapRef>(null);
   const placeSource = useRef<GeoJSONSourceRef>(null);
   const palette = usePalette();
+  const featureIndex = useMemo<OutdoorFeatureIndex>(
+    () => ({
+      schemaVersion: 1,
+      features: [
+        ...bundledFeatureIndex.features,
+        ...imports.datasets
+          .filter((dataset) => dataset.visible)
+          .flatMap((dataset) => dataset.index.features),
+      ],
+    }),
+    [imports.datasets],
+  );
+  const importedData = useMemo(
+    () => ({
+      type: 'FeatureCollection' as const,
+      features: imports.datasets
+        .filter((dataset) => dataset.visible)
+        .flatMap((dataset) => dataset.collection.features)
+        .map((feature) => ({
+          ...feature,
+          properties: {
+            id: feature.id,
+            kind: feature.properties.kind,
+            name: feature.properties.name,
+            category: feature.properties.category,
+          },
+        })),
+    }),
+    [imports.datasets],
+  );
   const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
   const [markerDensity, setMarkerDensity] = useState<OutdoorMarkerDensity>('automatic');
   const [openMenu, setOpenMenu] = useState<'places' | 'density' | null>(null);
@@ -329,6 +363,9 @@ export function OutdoorMap({
   const selected =
     featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ?? null;
   const selectedProperties = selected?.properties;
+  useEffect(() => {
+    if (state.selectedFeatureId !== null && selected === null) adapter.setSelectedFeature(null);
+  }, [adapter, selected, state.selectedFeatureId]);
   const setSelected = (feature: OutdoorFeatureSummary | null) =>
     adapter.setSelectedFeature(feature?.id ?? null);
   const [loaded, setLoaded] = useState(false);
@@ -342,7 +379,7 @@ export function OutdoorMap({
   const [directionsStatus, setDirectionsStatus] = useState('');
   const placeData = useMemo(
     () => createOutdoorPlaceCollection(featureIndex, placeFilter),
-    [placeFilter],
+    [featureIndex, placeFilter],
   );
   const placeLayers = useMemo(() => createOutdoorPlaceLayerStyles(markerDensity), [markerDensity]);
   const densityConfig = outdoorMarkerDensityConfig[markerDensity];
@@ -359,7 +396,10 @@ export function OutdoorMap({
           'other',
         ]
       : [placeFilter];
-  const results = useMemo(() => searchOutdoorFeatureIndex(featureIndex, query), [query]);
+  const results = useMemo(
+    () => searchOutdoorFeatureIndex(featureIndex, query),
+    [featureIndex, query],
+  );
   const track = useMemo(
     () => segmentedTrack(state.activeTrack, state.trackBreaks),
     [state.activeTrack, state.trackBreaks],
@@ -519,16 +559,33 @@ export function OutdoorMap({
       },
     );
   }
+  function showDatasetCoverage(dataset: ImportedMapDatasetsService['datasets'][number]) {
+    const bounds: [number, number, number, number] = [180, 90, -180, -90];
+    for (const feature of dataset.index.features) {
+      bounds[0] = Math.min(bounds[0], feature.bounds[0]);
+      bounds[1] = Math.min(bounds[1], feature.bounds[1]);
+      bounds[2] = Math.max(bounds[2], feature.bounds[2]);
+      bounds[3] = Math.max(bounds[3], feature.bounds[3]);
+    }
+    setFollowUser(false);
+    if (bounds[0] === bounds[2] && bounds[1] === bounds[3])
+      camera.current?.jumpTo({ center: [bounds[0], bounds[1]], zoom: 14 });
+    else
+      camera.current?.fitBounds(bounds, {
+        padding: { top: 25, right: 25, bottom: 25, left: 25 },
+        duration: 0,
+      });
+  }
   return (
     <View>
       <Text
         accessibilityRole="header"
         style={{ fontSize: 24, fontWeight: '700', color: palette.text }}
       >
-        New York outdoor map
+        Outdoor map
       </Text>
       <Text>
-        Stored map · {mobileMapDataMetadata.featureCount.toLocaleString()} geographic features ·{' '}
+        Stored map · {featureIndex.features.length.toLocaleString()} geographic features ·{' '}
         {mobileMapDataMetadata.label} · offline overview ·{' '}
         {(
           (worldBasemapManifest.archive.bytes + regionalBasemapManifest.archive.bytes) /
@@ -542,7 +599,7 @@ export function OutdoorMap({
         current permission to camp or enter.
       </Text>
       <TextInput
-        accessibilityLabel="Search New York lands, trails and campsites"
+        accessibilityLabel="Search lands, trails, campsites and imported features"
         placeholder="Search a trail, forest or campsite"
         placeholderTextColor={palette.muted}
         value={query}
@@ -607,6 +664,91 @@ export function OutdoorMap({
       <Text accessibilityLiveRegion="polite" style={{ color: palette.muted }}>
         {placeData.features.length.toLocaleString()} matching places · {zoomPresentation.label}
       </Text>
+      <ProductCard title="Your imported datasets">
+        <Text>
+          Add a GeoJSON file from Files. Points, lines and areas stay on this phone and work
+          offline. Up to five datasets, 20 MiB and 20,000 features per file.
+        </Text>
+        <ProductButton
+          label="Import dataset"
+          hint="Choose a GeoJSON dataset from Files and add its features to the map"
+          disabled={!imports.ready}
+          busy={imports.busy}
+          onPress={async () => {
+            const dataset = await imports.importDataset();
+            if (!dataset) return;
+            setPlaceFilter('all');
+            showDatasetCoverage(dataset);
+          }}
+        />
+        {imports.status ? <Text accessibilityLiveRegion="polite">{imports.status}</Text> : null}
+        {!imports.ready && imports.status && !imports.status.startsWith('Install the IPA') ? (
+          <ProductButton
+            label="Clear unreadable imported datasets"
+            hint="Remove only imported reference datasets so you can import your files again"
+            destructive
+            busy={imports.busy}
+            onPress={() =>
+              Alert.alert(
+                'Clear imported datasets?',
+                'Your place notes and recordings will be kept. You will need to import your dataset files again.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Clear datasets',
+                    style: 'destructive',
+                    onPress: () => {
+                      void imports.resetDatasets();
+                    },
+                  },
+                ],
+              )
+            }
+          />
+        ) : null}
+        {imports.datasets.map((dataset) => (
+          <View key={dataset.id} style={{ gap: 4, marginTop: 12 }}>
+            <Text>
+              {dataset.name} · {dataset.collection.features.length.toLocaleString()} features ·{' '}
+              {dataset.visible ? 'Shown' : 'Hidden'} · private on-device
+            </Text>
+            <ProductButton
+              label={dataset.visible ? `Hide ${dataset.name}` : `Show ${dataset.name}`}
+              hint="Save whether this dataset appears on the map and in search"
+              busy={imports.busy}
+              onPress={() => imports.toggleDataset(dataset.id)}
+            />
+            <ProductButton
+              label={`Show coverage of ${dataset.name}`}
+              hint="Fit all geographic features from this imported dataset"
+              disabled={!dataset.visible || imports.busy}
+              onPress={() => showDatasetCoverage(dataset)}
+            />
+            <ProductButton
+              label={`Remove ${dataset.name}`}
+              hint="Remove this reference dataset while keeping your place notes and recordings"
+              destructive
+              busy={imports.busy}
+              onPress={() =>
+                Alert.alert(
+                  'Remove dataset?',
+                  `Remove ${dataset.name} from this app? Your place notes and recordings will be kept.`,
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Remove',
+                      style: 'destructive',
+                      onPress: () => {
+                        void imports.removeDataset(dataset.id);
+                      },
+                    },
+                  ],
+                )
+              }
+            />
+          </View>
+        ))}
+      </ProductCard>
       <ProductCard title="Data on this map">
         {mobileMapDataMetadata.sources.map((source) => (
           <Text key={source.id}>
@@ -638,7 +780,7 @@ export function OutdoorMap({
               onPress={(event) => {
                 void mapView.current
                   ?.queryRenderedFeatures(event.nativeEvent.point, {
-                    layers: ['dec-land', 'dec-road', 'dec-trail'],
+                    layers: ['imported-area', 'imported-line', 'dec-land', 'dec-road', 'dec-trail'],
                   })
                   .then((features) => {
                     const id = features.find((feature) => feature.properties?.kind !== 'boundary')
@@ -699,6 +841,37 @@ export function OutdoorMap({
                     {...(placeLayer as unknown as ComponentProps<typeof Layer>)}
                   />
                 ))}
+              </GeoJSONSource>
+              <GeoJSONSource id="imported-datasets" data={importedData}>
+                <Layer
+                  id="imported-area"
+                  type="fill"
+                  filter={['==', ['geometry-type'], 'Polygon']}
+                  paint={{ 'fill-color': '#8060b0', 'fill-opacity': 0.3 }}
+                />
+                <Layer
+                  id="imported-line"
+                  type="line"
+                  filter={['!=', ['geometry-type'], 'Point']}
+                  paint={{ 'line-color': '#7251a4', 'line-width': 3 }}
+                />
+                <Layer
+                  id="imported-selection-outline"
+                  type="line"
+                  filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                  paint={{ 'line-color': '#a43913', 'line-width': 5 }}
+                />
+                <Layer
+                  id="imported-selection-point"
+                  type="circle"
+                  filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                  paint={{
+                    'circle-color': '#a43913',
+                    'circle-radius': 13,
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 3,
+                  }}
+                />
               </GeoJSONSource>
               <Layer
                 id="selection-outline"
@@ -806,7 +979,9 @@ export function OutdoorMap({
           : loaded
             ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
             : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
-        {outside ? ' Outside the bundled New York outdoor-overlay coverage.' : ''}
+        {outside
+          ? ' Outside the bundled New York public-overlay coverage; imported datasets may cover this area.'
+          : ''}
       </Text>
       <ProductButton
         label="Show all New York coverage"
@@ -884,10 +1059,13 @@ export function OutdoorMap({
           {directionsStatus ? (
             <Text accessibilityLiveRegion="polite">{directionsStatus}</Text>
           ) : null}
-          {selected.properties.sourceId === 'private-ioverlander' ? (
+          {selected.properties.sourceId === 'private-ioverlander' ||
+          selectedProperties?.communityDescription ? (
             <View style={{ gap: 8 }}>
               <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-                iOverlander community information
+                {selected.properties.sourceId === 'private-ioverlander'
+                  ? 'iOverlander community information'
+                  : 'Imported description'}
               </Text>
               <Text>
                 {selectedProperties?.communityDescription || 'No community description provided.'}

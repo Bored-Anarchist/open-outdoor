@@ -39,6 +39,7 @@ import {
   type MobileApplication,
 } from './application';
 import { OutdoorMap } from './OutdoorMap';
+import { useImportedMapDatasets } from './useImportedMapDatasets';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
@@ -81,6 +82,7 @@ function AppContent({
   const palette = usePalette();
   const styles = useMemo(() => createStyles(palette), [palette]);
   const map = useMemo(createOutdoorMapAdapter, []);
+  const importedDatasets = useImportedMapDatasets();
   const lastRenderedCheckpoint = useRef('');
   const [legendOpen, setLegendOpen] = useState(false);
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
@@ -413,7 +415,11 @@ function AppContent({
       {section === 'explore' || section === 'search' ? (
         <>
           <Text>Display only: there are no turn instructions, rerouting, or off-route alerts.</Text>
-          <OutdoorMap adapter={map} placeJournal={application?.placeJournal ?? null} />
+          <OutdoorMap
+            adapter={map}
+            placeJournal={application?.placeJournal ?? null}
+            imports={importedDatasets}
+          />
           <AccessibleButton
             label="Land and camping legend"
             hint="Expand or collapse status explanations"
