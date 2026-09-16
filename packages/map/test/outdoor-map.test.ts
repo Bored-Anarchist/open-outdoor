@@ -126,7 +126,7 @@ describe('real offline New York map', () => {
     }
     expect(manifest.catalogSources).toEqual([
       expect.objectContaining({ id: 'nys-dec', featureCount: 14_455 }),
-      expect.objectContaining({ id: 'nps', featureCount: 87 }),
+      expect.objectContaining({ id: 'nps', featureCount: 88 }),
       expect.objectContaining({ id: 'usfs', featureCount: 237 }),
       expect.objectContaining({ id: 'blm', featureCount: 0 }),
     ]);
@@ -162,6 +162,11 @@ describe('real offline New York map', () => {
             'sourceUpdated',
             'sourceUrl',
             'origin',
+            'description',
+            'directionsInfo',
+            'amenities',
+            'openingHours',
+            'fees',
           ].includes(name),
         ),
       ).toBe(true);
@@ -209,7 +214,7 @@ describe('real offline New York map', () => {
     const parking = createOutdoorPlaceCollection(index, 'shorterm_parking');
     const attractions = createOutdoorPlaceCollection(index, 'tourist_attraction');
     const other = createOutdoorPlaceCollection(index, 'other');
-    expect(all.features).toHaveLength(4640);
+    expect(all.features).toHaveLength(4641);
     expect(camping.features.length).toBeGreaterThan(2500);
     expect(parking.features.length).toBeGreaterThan(1500);
     expect(attractions.features.length).toBeGreaterThan(100);
@@ -332,7 +337,7 @@ describe('real offline New York map', () => {
       style.layers.findIndex((layer) => layer.type === 'symbol'),
     );
     expect(collection.features.filter((feature) => feature.properties.kind === 'poi')).toHaveLength(
-      4640,
+      4641,
     );
     expect(
       collection.features.filter((feature) =>

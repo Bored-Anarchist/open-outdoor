@@ -3,6 +3,54 @@ import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 
+import { normalizeOutdoorVisitorDetails } from '../packages/shared/src/outdoor-details.ts';
+
+function visitorDetails(item) {
+  const amenities = item.amenities && typeof item.amenities === 'object' ? item.amenities : {};
+  const amenityLabels = {
+    toilets: 'Toilets',
+    showers: 'Showers',
+    potableWater: 'Drinking water',
+    dumpStation: 'Dump station',
+    campStore: 'Camp store',
+    cellPhoneReception: 'Cell reception',
+    internetConnectivity: 'Internet',
+    laundry: 'Laundry',
+    firewoodForSale: 'Firewood',
+    iceAvailableForSale: 'Ice',
+    foodStorageLockers: 'Food storage lockers',
+  };
+  return normalizeOutdoorVisitorDetails({
+    description: item.description,
+    directionsInfo: item.directionsOverview ?? item.directionsInfo,
+    amenities: [
+      ...(Array.isArray(item.activities)
+        ? item.activities.map((activity) =>
+            typeof activity.name === 'string' ? `Activity: ${activity.name}` : '',
+          )
+        : []),
+      ...Object.entries(amenityLabels).flatMap(([key, label]) =>
+        (Array.isArray(amenities[key]) ? amenities[key] : [amenities[key]])
+          .filter((entry) => typeof entry === 'string' && entry.trim())
+          .map((entry) => `${label}: ${entry}`),
+      ),
+    ],
+    openingHours: (item.operatingHours ?? []).flatMap((hours) => [
+      hours.description,
+      ...Object.entries(hours.standardHours ?? {}).map(([day, time]) => `${day}: ${time}`),
+    ]),
+    fees: [...(item.entranceFees ?? []), ...(item.fees ?? [])].map((fee) =>
+      [
+        fee.title,
+        typeof fee.cost === 'string' && fee.cost ? `USD ${fee.cost}` : '',
+        fee.description,
+      ]
+        .filter(Boolean)
+        .join(' · '),
+    ),
+  });
+}
+
 const API_ROOT = 'https://developer.nps.gov/api/v1';
 const STATE_CODE = 'NY';
 
@@ -93,6 +141,7 @@ const rawAlerts = await fetchEndpoint('alerts');
 const parks = rawParks
   .map((item) => ({
     id: String(item.id),
+    visitorDetails: visitorDetails(item),
     parkCode: String(item.parkCode),
     fullName: String(item.fullName),
     latitude: String(item.latitude ?? ''),
@@ -105,6 +154,7 @@ const parks = rawParks
 const campgrounds = rawCampgrounds
   .map((item) => ({
     id: String(item.id),
+    visitorDetails: visitorDetails(item),
     parkCode: String(item.parkCode),
     name: String(item.name),
     latitude: String(item.latitude ?? ''),
@@ -117,6 +167,7 @@ const campgrounds = rawCampgrounds
 const alerts = rawAlerts
   .map((item) => ({
     id: String(item.id),
+    visitorDetails: visitorDetails(item),
     parkCode: String(item.parkCode),
     title: String(item.title),
     category: item.category ? String(item.category) : undefined,

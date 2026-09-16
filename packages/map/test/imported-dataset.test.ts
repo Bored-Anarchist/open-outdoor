@@ -55,6 +55,48 @@ describe('on-device GeoJSON map datasets', () => {
     );
   });
 
+  it('restores visitor information and source links without sending long details to the renderer', () => {
+    const dataset = parseMapDataset(
+      collection([
+        feature(
+          point,
+          {
+            name: 'Synthetic visitor site',
+            description: '<p>Quiet campground.</p>',
+            amenities: ['Water'],
+            openingHours: ['Summer only'],
+            fees: ['USD 10 per night'],
+            directionsInfo: 'Take the signed access road.',
+            sourceUrl: 'https://example.com/site',
+            username: 'discarded',
+          },
+          'visitor-1',
+        ),
+      ]),
+      id,
+      'visitors.geojson',
+    );
+    expect(restoreMapDatasets(serializeMapDatasets([dataset]))).toEqual([dataset]);
+    expect(dataset.index.features[0]?.properties).toMatchObject({
+      description: 'Quiet campground.',
+      amenities: ['Water'],
+      openingHours: ['Summer only'],
+      fees: ['USD 10 per night'],
+      directionsInfo: 'Take the signed access road.',
+      sourceUrl: 'https://example.com/site',
+    });
+    const rendered = createOutdoorPlaceCollection(dataset.index).features[0]?.properties;
+    for (const field of ['description', 'amenities', 'openingHours', 'fees', 'directionsInfo'])
+      expect(rendered).not.toHaveProperty(field);
+    expect(JSON.stringify(dataset)).not.toContain('discarded');
+    const invalidLink = parseMapDataset(
+      collection([feature(point, { sourceUrl: 'javascript:alert(1)' })]),
+      id,
+      'test',
+    );
+    expect(invalidLink.index.features[0]?.properties).not.toHaveProperty('sourceUrl');
+  });
+
   it('preserves feature IDs, visibility and journals after serializing and restarting, including MultiPoints', () => {
     const dataset = parseMapDataset(
       collection([

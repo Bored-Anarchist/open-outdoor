@@ -1,4 +1,8 @@
 import {
+  normalizeOutdoorVisitorDetails,
+  outdoorSourceUrl,
+} from '@open-outdoor/shared/outdoor-details';
+import {
   featureBounds,
   type OutdoorCollection,
   type OutdoorFeature,
@@ -183,11 +187,11 @@ export function parseMapDataset(input: string, id: string, name: string): Import
           ),
           sourceUpdated: text(properties.sourceUpdated, 'Not supplied'),
           origin: 'private-catalog',
-          communityDescription: text(
-            properties.communityDescription,
-            text(properties.description, '', 4_000),
-            4_000,
-          ),
+          ...normalizeOutdoorVisitorDetails(properties),
+          ...(outdoorSourceUrl(properties.sourceUrl)
+            ? { sourceUrl: outdoorSourceUrl(properties.sourceUrl)! }
+            : {}),
+          communityDescription: text(properties.communityDescription, '', 4_000),
           communityCheckIns: checkIns,
           communityCheckInCount:
             typeof properties.communityCheckInCount === 'number' &&

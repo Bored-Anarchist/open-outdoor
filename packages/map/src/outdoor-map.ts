@@ -8,13 +8,15 @@ import {
 } from '@open-outdoor/shared';
 import type { MapAdapter, MapCamera, MapFeature, MapRoute } from './index';
 
+import type { OutdoorVisitorDetails } from '@open-outdoor/shared/outdoor-details';
+
 const LOCAL_FILE_URI = /^file:\/\/\/.+/i;
 
 function isLocalFileUri(uri: string): boolean {
   return LOCAL_FILE_URI.test(uri) && !/[\r\n]/.test(uri);
 }
 
-export interface OutdoorFeatureProperties {
+export interface OutdoorFeatureProperties extends OutdoorVisitorDetails {
   id: string;
   kind: 'boundary' | 'land' | 'road' | 'trail' | 'poi';
   name: string;
@@ -191,6 +193,11 @@ export function createOutdoorPlaceCollection(
       if (!matchesPlaceFilter(category, filter)) return [];
       const definition = ioverlanderCategoryDefinition(category);
       const {
+        description: _description,
+        directionsInfo: _directionsInfo,
+        amenities: _amenities,
+        openingHours: _openingHours,
+        fees: _fees,
         communityDescription: _communityDescription,
         communityCheckIns: _communityCheckIns,
         communityCheckInCount: _communityCheckInCount,

@@ -1,3 +1,4 @@
+import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
 import licenses from './map-licenses.json';
 import offlineMapLicenses from './offline-map-licenses.json';
 import {
@@ -360,9 +361,16 @@ export function OutdoorMap({
   );
   const [query, setQuery] = useState('');
   const [showLicenses, setShowLicenses] = useState(false);
+  const [showSourceDetails, setShowSourceDetails] = useState(false);
+  const [sourceLinkStatus, setSourceLinkStatus] = useState('');
   const selected =
     featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ?? null;
   const selectedProperties = selected?.properties;
+  const selectedSourceUrl = outdoorSourceUrl(selectedProperties?.sourceUrl);
+  useEffect(() => {
+    setShowSourceDetails(false);
+    setSourceLinkStatus('');
+  }, [selected?.id]);
   useEffect(() => {
     if (state.selectedFeatureId !== null && selected === null) adapter.setSelectedFeature(null);
   }, [adapter, selected, state.selectedFeatureId]);
@@ -957,95 +965,94 @@ export function OutdoorMap({
           </View>
         )}
       </View>
-      <View
-        accessibilityLabel="iOverlander category icon key"
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
-      >
-        {legendCategories.map((category) => {
-          const definition = ioverlanderCategoryDefinition(category);
-          return (
-            <PlaceKey
-              key={category}
-              symbol={definition.icon}
-              label={definition.label}
-              color={definition.color}
-            />
-          );
-        })}
-      </View>
-      <Text accessibilityLiveRegion="polite">
-        {failed || assetError
-          ? 'Map could not render. Search and geographic details remain available.'
-          : loaded
-            ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
-            : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
-        {outside
-          ? ' Outside the bundled New York public-overlay coverage; imported datasets may cover this area.'
-          : ''}
-      </Text>
-      <ProductButton
-        label="Show all New York coverage"
-        hint="Fit the statewide geographic layers"
-        onPress={() =>
-          camera.current?.fitBounds([-79.7624, 40.4774, -71.7517, 45.0159], {
-            padding: { top: 15, right: 15, bottom: 15, left: 15 },
-            duration: 0,
-          })
-        }
-      />
-      <ProductButton
-        label={followUser ? 'Stop following my location' : 'Center on my location'}
-        hint={
-          followUser
-            ? 'Keep the live GPS dot visible without moving the map automatically'
-            : 'Center the map on the live GPS dot and follow your movement'
-        }
-        onPress={() => setFollowUser(!followUser)}
-      />
-      <Text accessibilityLiveRegion="polite">
-        {followUser
-          ? 'Following your live GPS position. Drag the map to stop following.'
-          : 'Your live position appears as a blue GPS dot when location access is allowed.'}
-      </Text>
-      <ProductButton
-        label="Show last recorded position"
-        hint="Uses only the most recent recording point; does not start location access"
-        disabled={!last}
-        onPress={() => {
-          if (last) camera.current?.jumpTo({ center: [...last], zoom: 14 });
-        }}
-      />
-      <Text>
-        Map key: green areas — DEC, NPS, USFS and BLM land references when present; blue lines —
-        trails; brown lines — roads; numbered orange circles — grouped places; colored symbols —
-        iOverlander categories; pink — recorded route; blue GPS dot — current position. Zooming in
-        expands groups into category-specific icons, then reveals names. Tap a group, feature, or
-        search result for details.
-      </Text>
       {selected && (
         <ProductCard title={selected.properties.name}>
           <Text>
             {selected.properties.kind} · {selected.properties.unit || selected.properties.category}
           </Text>
-          <Text>
-            Source: {selected.properties.sourceId}. Source update:{' '}
-            {selected.properties.sourceUpdated}.
+          <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+            {selectedProperties?.communityDescription ? 'Community description' : 'Description'}
           </Text>
+          <Text>
+            {selectedProperties?.communityDescription ||
+              selectedProperties?.description ||
+              'No description supplied by this dataset.'}
+          </Text>
+          {(
+            [
+              ['amenities', 'Amenities and activities'],
+              ['openingHours', 'Opening hours'],
+              ['fees', 'Fees'],
+            ] as const
+          ).map(([field, label]) =>
+            selectedProperties?.[field]?.length ? (
+              <View key={field} style={{ gap: 4 }}>
+                <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                  {label}
+                </Text>
+                {selectedProperties[field]!.map((entry, index) => (
+                  <Text key={`${field}-${index}`}>{entry}</Text>
+                ))}
+              </View>
+            ) : null,
+          )}
+          {selectedProperties?.directionsInfo ? (
+            <View style={{ gap: 4 }}>
+              <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                Getting there
+              </Text>
+              <Text>{selectedProperties.directionsInfo}</Text>
+            </View>
+          ) : null}
           <Text>
             Access note:{' '}
-            {selectedProperties?.publicUse ??
+            {selectedProperties?.publicUse ||
               'Current access and camping status are unverified; check the managing agency.'}
           </Text>
-          <Text>
-            Catalog:{' '}
-            {selectedProperties?.origin === 'private-catalog' ? 'private on-device' : 'public'}
-            {selectedProperties?.sourceUrl
-              ? ` · Official source: ${selectedProperties.sourceUrl}`
-              : ''}
+          {selectedSourceUrl ? (
+            <ProductButton
+              label={
+                selectedProperties?.origin === 'private-catalog'
+                  ? 'Open dataset source'
+                  : 'Open official source'
+              }
+              hint="Open the source website for current visitor information"
+              onPress={() => {
+                setSourceLinkStatus('');
+                void Linking.openURL(selectedSourceUrl).catch(() =>
+                  setSourceLinkStatus(
+                    'Could not open the source website. Check your connection or browser.',
+                  ),
+                );
+              }}
+            />
+          ) : null}
+          {sourceLinkStatus ? (
+            <Text accessibilityLiveRegion="polite">{sourceLinkStatus}</Text>
+          ) : null}
+          <Text style={{ color: palette.muted }}>
+            Source update: {selected.properties.sourceUpdated}. Hours, fees and access may change.
           </Text>
-          <Text>
-            Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}
-          </Text>
+          <ProductButton
+            label={
+              showSourceDetails ? 'Hide source and map details' : 'Show source and map details'
+            }
+            hint="Show the dataset source, classification and geographic bounds"
+            onPress={() => setShowSourceDetails(!showSourceDetails)}
+          />
+          {showSourceDetails ? (
+            <View style={{ gap: 4 }}>
+              <Text>Source: {selected.properties.sourceId}.</Text>
+              <Text>
+                Catalog:{' '}
+                {selectedProperties?.origin === 'private-catalog' ? 'private on-device' : 'public'}.
+              </Text>
+              {selectedSourceUrl ? <Text>Source website: {selectedSourceUrl}</Text> : null}
+              <Text>
+                Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}.
+              </Text>
+            </View>
+          ) : null}
           <ProductButton
             label="Get directions"
             hint="Choose an installed maps app to route to this feature's coordinates"
@@ -1060,15 +1067,12 @@ export function OutdoorMap({
             <Text accessibilityLiveRegion="polite">{directionsStatus}</Text>
           ) : null}
           {selected.properties.sourceId === 'private-ioverlander' ||
-          selectedProperties?.communityDescription ? (
+          (selectedProperties?.communityCheckIns?.length ?? 0) > 0 ? (
             <View style={{ gap: 8 }}>
               <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
                 {selected.properties.sourceId === 'private-ioverlander'
                   ? 'iOverlander community information'
-                  : 'Imported description'}
-              </Text>
-              <Text>
-                {selectedProperties?.communityDescription || 'No community description provided.'}
+                  : 'Imported community check-ins'}
               </Text>
               <Text>
                 {selectedProperties?.communityCheckInCount ?? 0} community check-ins available
@@ -1151,6 +1155,71 @@ export function OutdoorMap({
           />
         </ProductCard>
       )}
+      <View
+        accessibilityLabel="iOverlander category icon key"
+        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
+      >
+        {legendCategories.map((category) => {
+          const definition = ioverlanderCategoryDefinition(category);
+          return (
+            <PlaceKey
+              key={category}
+              symbol={definition.icon}
+              label={definition.label}
+              color={definition.color}
+            />
+          );
+        })}
+      </View>
+      <Text accessibilityLiveRegion="polite">
+        {failed || assetError
+          ? 'Map could not render. Search and geographic details remain available.'
+          : loaded
+            ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
+            : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
+        {outside
+          ? ' Outside the bundled New York public-overlay coverage; imported datasets may cover this area.'
+          : ''}
+      </Text>
+      <ProductButton
+        label="Show all New York coverage"
+        hint="Fit the statewide geographic layers"
+        onPress={() =>
+          camera.current?.fitBounds([-79.7624, 40.4774, -71.7517, 45.0159], {
+            padding: { top: 15, right: 15, bottom: 15, left: 15 },
+            duration: 0,
+          })
+        }
+      />
+      <ProductButton
+        label={followUser ? 'Stop following my location' : 'Center on my location'}
+        hint={
+          followUser
+            ? 'Keep the live GPS dot visible without moving the map automatically'
+            : 'Center the map on the live GPS dot and follow your movement'
+        }
+        onPress={() => setFollowUser(!followUser)}
+      />
+      <Text accessibilityLiveRegion="polite">
+        {followUser
+          ? 'Following your live GPS position. Drag the map to stop following.'
+          : 'Your live position appears as a blue GPS dot when location access is allowed.'}
+      </Text>
+      <ProductButton
+        label="Show last recorded position"
+        hint="Uses only the most recent recording point; does not start location access"
+        disabled={!last}
+        onPress={() => {
+          if (last) camera.current?.jumpTo({ center: [...last], zoom: 14 });
+        }}
+      />
+      <Text>
+        Map key: green areas — DEC, NPS, USFS and BLM land references when present; blue lines —
+        trails; brown lines — roads; numbered orange circles — grouped places; colored symbols —
+        iOverlander categories; pink — recorded route; blue GPS dot — current position. Zooming in
+        expands groups into category-specific icons, then reveals names. Tap a group, feature, or
+        search result for details.
+      </Text>
       <Text>
         Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
         Geometry simplified for display. MapLibre Native renderer. Public-use GIS data is provided

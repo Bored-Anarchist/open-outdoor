@@ -2,6 +2,10 @@ import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, realpath, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import {
+  normalizeOutdoorVisitorDetails,
+  outdoorSourceUrl,
+} from '@open-outdoor/shared/outdoor-details';
 import type { IoverlanderCategory } from '@open-outdoor/shared';
 import { DatabaseSync } from 'node:sqlite';
 import type { PlaceRecord, Position } from './canonical.js';
@@ -60,6 +64,7 @@ interface DecCollection {
 }
 
 interface NpsPark {
+  readonly visitorDetails?: unknown;
   readonly id: string;
   readonly parkCode: string;
   readonly fullName: string;
@@ -70,6 +75,7 @@ interface NpsPark {
 }
 
 interface NpsCampground {
+  readonly visitorDetails?: unknown;
   readonly id: string;
   readonly parkCode: string;
   readonly name: string;
@@ -80,6 +86,7 @@ interface NpsCampground {
 }
 
 interface NpsAlert {
+  readonly visitorDetails?: unknown;
   readonly id: string;
   readonly parkCode: string;
   readonly title: string;
@@ -1480,6 +1487,14 @@ export function npsNewYorkAppFeatures(value: unknown, generatedAt?: string): rea
       latitude <= NEW_YORK_DISPLAY_BOUNDS[3]
     );
   });
+  const visitorDetails = new Map<string, unknown>();
+  for (const [sourceId, items] of [
+    ['nps-parks-ny', snapshot.parks],
+    ['nps-campgrounds-ny', snapshot.campgrounds],
+    ['nps-alerts-ny', snapshot.alerts],
+  ] as const) {
+    items.forEach((item) => visitorDetails.set(`${sourceId}:${item.id}`, item.visitorDetails));
+  }
   const urls = new Map<string, string>();
   snapshot.parks.forEach((item) => item.url && urls.set(`nps-parks-ny:${item.id}`, item.url));
   snapshot.campgrounds.forEach(
@@ -1504,7 +1519,12 @@ export function npsNewYorkAppFeatures(value: unknown, generatedAt?: string): rea
           ? 'NPS alert snapshot; verify current status at nps.gov'
           : 'Official NPS public visitor information',
         sourceUpdated: record.sourceUpdatedAt ?? snapshot.retrievedAt,
-        sourceUrl: urls.get(`${sourceId}:${record.source.externalId}`) ?? 'https://www.nps.gov/',
+        ...normalizeOutdoorVisitorDetails(
+          visitorDetails.get(`${sourceId}:${record.source.externalId}`),
+        ),
+        sourceUrl:
+          outdoorSourceUrl(urls.get(`${sourceId}:${record.source.externalId}`)) ??
+          'https://www.nps.gov/',
         origin: 'public-catalog',
       },
       geometry: {
@@ -1536,6 +1556,10 @@ export function npsNewYorkAppFeatures(value: unknown, generatedAt?: string): rea
             kind: 'land',
             name,
             sourceId: 'nps-parks-ny',
+            ...normalizeOutdoorVisitorDetails(
+              snapshot.parks.find((park) => park.parkCode === feature.properties.parkCode)
+                ?.visitorDetails,
+            ),
             unit: name,
             category: 'NATIONAL PARK SERVICE',
             publicUse: 'Official NPS park boundary; verify current access at nps.gov',
@@ -1583,6 +1607,31 @@ export function federalNewYorkAppFeatures(
         unit: 'Finger Lakes National Forest',
         category: record.properties.category,
         publicUse: `Official USFS recreation site; ${status}; verify current access`,
+        ...normalizeOutdoorVisitorDetails({
+          description: feature?.properties.op_status_reason,
+          amenities: [
+            typeof feature?.properties.activity_type_list === 'string'
+              ? `Activities: ${feature.properties.activity_type_list}`
+              : '',
+            typeof feature?.properties.service_type_list === 'string'
+              ? `Services: ${feature.properties.service_type_list}`
+              : '',
+            typeof feature?.properties.water_availability === 'string'
+              ? `Water: ${feature.properties.water_availability}`
+              : '',
+            typeof feature?.properties.restroom_availability === 'string'
+              ? `Restrooms: ${feature.properties.restroom_availability}`
+              : '',
+            typeof feature?.properties.total_capacity === 'number' &&
+            feature.properties.total_capacity > 0
+              ? `Reported capacity: ${feature.properties.total_capacity}`
+              : '',
+          ],
+          fees:
+            typeof feature?.properties.fee_charged === 'string'
+              ? `Fee charged: ${feature.properties.fee_charged}`
+              : '',
+        }),
         sourceUpdated: record.sourceUpdatedAt ?? snapshot.retrievedAt,
         sourceUrl:
           normalizeText(String(feature?.properties.usda_portal_url ?? '')) ||
