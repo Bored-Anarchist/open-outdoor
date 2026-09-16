@@ -15,7 +15,7 @@ extension OpenOutdoorStorageCoordinatorSpike {
 
   private func migratePrivateStore(_ connection: OpenOutdoorSQLiteConnection) throws {
     let version = try connection.scalarInt("PRAGMA user_version")
-    guard version >= 0 && version <= 3 else {
+    guard version >= 0 && version <= 4 else {
       throw OpenOutdoorStorageError.sqlite(
         code: SQLITE_MISMATCH,
         message: "Private database schema is newer than this application"
@@ -38,8 +38,8 @@ extension OpenOutdoorStorageCoordinatorSpike {
         applied_at TEXT NOT NULL
       );
       INSERT OR IGNORE INTO migration_audit(version, applied_at)
-        VALUES (3, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
-      PRAGMA user_version=3;
+        VALUES (4, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'));
+      PRAGMA user_version=4;
       COMMIT;
       """)
     try applyUserDatabasePolicy()

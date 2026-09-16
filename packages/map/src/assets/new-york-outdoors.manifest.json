@@ -1,32 +1,38 @@
 {
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
-  "acquiredAt": "2026-09-12T02:15:47.778Z",
-  "sha256": "f8b923c0a804d3c6bbd83fb63c733281b2cd43fbd17dac006e333053ecc422e9",
-  "bytes": 11919050,
-  "indexSha256": "0acbd9a32e6e2d5bd67616d91c134ff73349081cc2460e89b999680f92de75f1",
-  "indexBytes": 4278872,
-  "featureCount": 14455,
+  "acquiredAt": "2026-09-15T07:55:00.000Z",
+  "sha256": "ca014eb4d7d432b4f38020a414b2f2c18b62857a1bd00280e1b752705bc78543",
+  "bytes": 13350074,
+  "indexSha256": "c04b5557b884980cee3b4bb2132ce60f13652705ffa6de9ae4ab9dc6b7e4540a",
+  "indexBytes": 4447587,
+  "featureCount": 14779,
   "coordinateReferenceSystem": "EPSG:4326",
   "simplificationDegrees": 0.00003,
   "geometryPrecision": 5,
-  "coverage": "New York State boundary and published DEC lands, roads, hiking trails and recreation points. Not a land-ownership survey, current-status feed or camping authorization.",
+  "coverage": "New York DEC lands, roads, trails and recreation points; official NPS parks, campgrounds, alerts and boundaries; official USFS Finger Lakes ownership, recreation and MVUM features; and official BLM managed-land coverage. Display-only and not current permission to camp or enter.",
   "rights": {
-    "license": "NYS public GIS data terms",
+    "license": "NYS public GIS terms and United States government public information",
     "offlineStorage": true,
     "redistribution": true,
     "derivedData": true,
     "attribution": [
       "NYS ITS Geospatial Services",
       "New York State Department of Environmental Conservation",
-      "OPEN-NY"
+      "OPEN-NY",
+      "National Park Service",
+      "USDA Forest Service",
+      "Bureau of Land Management"
     ],
     "terms": [
       "https://gis.ny.gov/disclaimer",
       "https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS",
-      "https://data.ny.gov/about"
+      "https://data.ny.gov/about",
+      "https://www.nps.gov/aboutus/disclaimer.htm",
+      "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "https://www.blm.gov/services/geospatial/GISData"
     ],
-    "reviewedAt": "2026-09-11"
+    "reviewedAt": "2026-09-15"
   },
   "sources": [
     {
@@ -1125,6 +1131,271 @@
         "url": "https://data.ny.gov/api/views/yvkb-z58x",
         "sha256": "cf94362a6f000ec4e0ff1c4fcbeb5f77478f423cb2238aafac28bfc76b12c32f"
       }
+    },
+    {
+      "id": "nps-parks-ny",
+      "kind": "land-and-poi",
+      "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "National Park Service",
+      "featureCount": 60,
+      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "pages": [
+        {
+          "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "count": 28
+        },
+        {
+          "url": "https://developer.nps.gov/api/v1/mapdata/parkboundaries/{parkCode}",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "count": 32
+        }
+      ]
+    },
+    {
+      "id": "nps-campgrounds-ny",
+      "kind": "poi",
+      "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "National Park Service",
+      "featureCount": 4,
+      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "pages": [
+        {
+          "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "count": 4
+        }
+      ]
+    },
+    {
+      "id": "nps-alerts-ny",
+      "kind": "poi",
+      "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "National Park Service",
+      "featureCount": 23,
+      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "pages": [
+        {
+          "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "count": 23
+        }
+      ]
+    },
+    {
+      "id": "usfs-surface-ownership-ny",
+      "kind": "land",
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_SurfaceOwnership_01/MapServer/0",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 200,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_SurfaceOwnership_01/MapServer/0",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 200
+        }
+      ]
+    },
+    {
+      "id": "usfs-recreation-sites-ny",
+      "kind": "poi",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 25,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 25
+        }
+      ]
+    },
+    {
+      "id": "usfs-mvum-roads-ny",
+      "kind": "road",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/1",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 12,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/1",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 12
+        }
+      ]
+    },
+    {
+      "id": "usfs-mvum-trails-ny",
+      "kind": "trail",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/2",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 0,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/2",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 0
+        }
+      ]
+    },
+    {
+      "id": "blm-managed-lands-ny",
+      "kind": "land",
+      "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin"
+      ],
+      "attribution": "Bureau of Land Management",
+      "featureCount": 0,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 0
+        }
+      ]
     }
-  ]
+  ],
+  "catalogSources": [
+    {
+      "id": "nys-dec",
+      "label": "NYS DEC",
+      "featureCount": 14455,
+      "status": "public offline snapshot"
+    },
+    {
+      "id": "nps",
+      "label": "National Park Service",
+      "featureCount": 87,
+      "status": "official parks, campgrounds, alerts and boundaries"
+    },
+    {
+      "id": "usfs",
+      "label": "US Forest Service",
+      "featureCount": 237,
+      "status": "official ownership, recreation and MVUM snapshot"
+    },
+    {
+      "id": "blm",
+      "label": "Bureau of Land Management",
+      "featureCount": 0,
+      "status": "official New York query verified; no managed-land features returned"
+    }
+  ],
+  "officialSnapshots": {
+    "nps": {
+      "file": "nps-new-york.json",
+      "bytes": 4149857,
+      "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "manifestFile": "manifest.json",
+      "manifestBytes": 719,
+      "manifestSha256": "5f24bed460e32f61559235f4bc698cd6badffcc3a1eb32d3911998d0dd903623"
+    },
+    "federal": {
+      "file": "federal-new-york.json",
+      "bytes": 200059,
+      "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "manifestFile": "manifest.json",
+      "manifestBytes": 1471,
+      "manifestSha256": "62025b8b7abed0042d9d5fdbf61697cb7f8a66666f8b8be7423c4b8a1b783852"
+    }
+  }
 }

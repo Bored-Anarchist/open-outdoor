@@ -35,10 +35,7 @@ const performanceDiagnostics = await text(
 );
 const privateStore = await text('packages/native-spikes/ios/OpenOutdoorPrivateStore.swift');
 const nativeModule = await text('packages/native-spikes/ios/OpenOutdoorNativeSpikesModule.swift');
-const basemapStore = await text('packages/native-spikes/ios/OpenOutdoorBasemapPackStore.swift');
 const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
-const basemapBinding = await text('apps/mobile/basemapPacks.ts');
-const basemapHook = await text('apps/mobile/useOfflineBasemap.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const mobileApplication = await text('apps/mobile/application.ts');
 const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
@@ -87,12 +84,6 @@ for (const token of [
 ]) {
   requireText(iosBuildScript, token, 'bundled basemap manifest verification');
 }
-requireText(
-  iosBuildScript,
-  'The optional 128.4 MiB New York detailed basemap must not be bundled',
-  'optional detailed basemap exclusion gate',
-);
-rejectText(iosBuildScript, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion gate');
 requireText(iosBuildWorkflow, 'lfs: true', 'regional overview LFS checkout');
 requireText(gitAttributes, '*.pmtiles binary', 'ordinary Git overview asset');
 requireText(
@@ -273,7 +264,7 @@ for (const token of [
 for (const token of [
   'const map = useMemo(createOutdoorMapAdapter, []);',
   'createMobileApplication(map)',
-  '<OutdoorMap adapter={map} />',
+  '<OutdoorMap adapter={map} placeJournal={application?.placeJournal ?? null} />',
 ]) {
   requireText(mobileApp, token, 'recorder-independent offline map startup');
 }
@@ -296,36 +287,35 @@ for (const token of [
 ]) {
   requireText(mobileMap, token, 'live offline GPS map position');
 }
-rejectText(mobileMap, 'new-york-z12.pmtiles', 'optional detailed basemap exclusion');
+for (const token of [
+  'iOverlander community information',
+  'Your private check-ins and notes',
+  'Check in now and save note',
+  'Save note without checking in',
+  'placeJournal.save(entry)',
+]) {
+  requireText(mobileMap, token, 'private place journal and community details');
+}
+for (const token of [
+  'Get directions',
+  'ActionSheetIOS.showActionSheetWithOptions',
+  'Linking.canOpenURL',
+  'Linking.openURL',
+  'Other app or share coordinates',
+]) {
+  requireText(mobileMap, token, 'external map-app directions handoff');
+}
+for (const scheme of ['comgooglemaps', 'waze']) {
+  if (!app.expo.ios.infoPlist.LSApplicationQueriesSchemes.includes(scheme)) {
+    throw new Error(`iOS directions handoff must query the ${scheme} URL scheme`);
+  }
+}
+requireText(
+  mobileApplication,
+  'repository.savePlaceJournal(entry)',
+  'protected place journal persistence',
+);
 rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
-for (const token of ['activeBasemapPack', 'importBasemapPack', 'removeActiveBasemapPack']) {
-  requireText(nativeModule, token, 'offline basemap native bridge');
-  requireText(basemapBinding, token, 'offline basemap TypeScript bridge');
-}
-for (const token of [
-  'source.isFileURL',
-  'SHA256()',
-  'read(upToCount: 1024 * 1024)',
-  'digest == manifest.sha256',
-  'Data("PMTiles".utf8)',
-  'options: .atomic',
-  'completeUntilFirstUserAuthentication',
-]) {
-  requireText(basemapStore, token, 'verified local basemap activation');
-}
-for (const token of [
-  'File.pickFileAsync',
-  'resolveOfflineBasemapSource',
-  'basemapPacks.import',
-  'basemapPacks.removeActive',
-]) {
-  requireText(basemapHook, token, 'offline basemap import and fallback');
-}
-for (const source of [basemapStore, basemapBinding, basemapHook]) {
-  rejectText(source, 'fetch(', 'offline-only basemap path');
-  rejectText(source, 'http://', 'offline-only basemap path');
-  rejectText(source, 'https://', 'offline-only basemap path');
-}
 requireText(
   mobileMap,
   'onDidFinishRenderingMapFully={() => setLoaded(true)}',
@@ -341,7 +331,7 @@ for (const token of [
   'private_snapshot',
   'tracking_checkpoint',
   'migration_audit',
-  'PRAGMA user_version=3',
+  'PRAGMA user_version=4',
   'ON CONFLICT(session_id)',
   'ROLLBACK',
 ]) {

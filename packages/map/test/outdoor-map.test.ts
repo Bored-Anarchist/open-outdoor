@@ -6,8 +6,18 @@ import {
   createOfflineVectorBasemapStyle,
   createTieredOfflineVectorBasemapStyle,
   createOutdoorMapStyle,
+  createOutdoorPlaceCollection,
+  createOutdoorPlaceLayerStyles,
   featureBounds,
   geometryPositions,
+  nextOutdoorZoom,
+  outdoorDirectionsCoordinateText,
+  outdoorDirectionsDestination,
+  outdoorDirectionsUrl,
+  outdoorIoverlanderCategory,
+  outdoorMarkerDensityConfig,
+  outdoorPlaceIcon,
+  outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
   searchOutdoorFeatures,
   segmentedTrack,
@@ -52,6 +62,38 @@ async function expectPinnedArchive(path: string, archive: { bytes: number; sha25
   expect(digest.digest('hex')).toBe(archive.sha256);
 }
 describe('real offline New York map', () => {
+  it('hands exact points and feature centers to installed map apps', () => {
+    const pointFeature = index.features.find(
+      (feature) =>
+        feature.bounds[0] === feature.bounds[2] && feature.bounds[1] === feature.bounds[3],
+    )!;
+    const pointDestination = outdoorDirectionsDestination(pointFeature);
+    expect(pointDestination.coordinate).toEqual([pointFeature.bounds[0], pointFeature.bounds[1]]);
+
+    const areaFeature = {
+      ...pointFeature,
+      properties: { ...pointFeature.properties, name: 'Moffitt Beach Campground' },
+      bounds: [-74.45, 43.53, -74.41, 43.57] as [number, number, number, number],
+    };
+    const destination = outdoorDirectionsDestination(areaFeature);
+    expect(destination.coordinate).toEqual([-74.43, 43.55]);
+    expect(outdoorDirectionsCoordinateText(destination)).toBe('43.550000,-74.430000');
+    expect(outdoorDirectionsUrl('apple', destination)).toBe(
+      'http://maps.apple.com/?daddr=43.550000%2C-74.430000&dirflg=d',
+    );
+    expect(outdoorDirectionsUrl('google', destination)).toBe(
+      'comgooglemaps://?daddr=43.550000%2C-74.430000&directionsmode=driving',
+    );
+    expect(outdoorDirectionsUrl('waze', destination)).toBe(
+      'https://waze.com/ul?ll=43.550000%2C-74.430000&navigate=yes&utm_source=org.openoutdoor.local',
+    );
+  });
+  it('rejects invalid destination bounds before opening another app', () => {
+    const feature = index.features[0]!;
+    expect(() => outdoorDirectionsDestination({ ...feature, bounds: [181, 42, 182, 43] })).toThrow(
+      RangeError,
+    );
+  });
   it('ships the complete checksum-pinned source inventories with rights/attribution', () => {
     expect(createHash('sha256').update(bytes).digest('hex')).toBe(manifest.sha256);
     expect(bytes.length).toBe(manifest.bytes);
@@ -67,22 +109,62 @@ describe('real offline New York map', () => {
         manifest.rights.redistribution &&
         manifest.rights.derivedData,
     ).toBe(true);
-    expect(manifest.rights.attribution).toHaveLength(3);
+    expect(manifest.rights.attribution).toEqual(
+      expect.arrayContaining([
+        'NYS ITS Geospatial Services',
+        'New York State Department of Environmental Conservation',
+        'National Park Service',
+        'USDA Forest Service',
+        'Bureau of Land Management',
+      ]),
+    );
     for (const source of manifest.sources) {
       expect(collection.features.filter((f) => f.properties.sourceId === source.id)).toHaveLength(
         source.featureCount,
       );
       expect(source.pages.reduce((n: number, p: any) => n + p.count, 0)).toBe(source.featureCount);
     }
+    expect(manifest.catalogSources).toEqual([
+      expect.objectContaining({ id: 'nys-dec', featureCount: 14_455 }),
+      expect.objectContaining({ id: 'nps', featureCount: 87 }),
+      expect.objectContaining({ id: 'usfs', featureCount: 237 }),
+      expect.objectContaining({ id: 'blm', featureCount: 0 }),
+    ]);
   });
   it('contains valid geographic geometries and only approved public fields', () => {
     for (const f of collection.features) {
       expect(['Polygon', 'MultiPolygon', 'LineString', 'MultiLineString', 'Point']).toContain(
         f.geometry.type,
       );
-      expect(Object.keys(f.properties).sort()).toEqual(
-        ['id', 'kind', 'name', 'sourceId', 'unit', 'category', 'publicUse', 'sourceUpdated'].sort(),
+      const propertyNames = Object.keys(f.properties);
+      expect(propertyNames).toEqual(
+        expect.arrayContaining([
+          'id',
+          'kind',
+          'name',
+          'sourceId',
+          'unit',
+          'category',
+          'publicUse',
+          'sourceUpdated',
+        ]),
       );
+      expect(
+        propertyNames.every((name) =>
+          [
+            'id',
+            'kind',
+            'name',
+            'sourceId',
+            'unit',
+            'category',
+            'publicUse',
+            'sourceUpdated',
+            'sourceUrl',
+            'origin',
+          ].includes(name),
+        ),
+      ).toBe(true);
       const [w, s, e, n] = featureBounds(f);
       expect(w).toBeGreaterThan(-80);
       expect(e).toBeLessThan(-71);
@@ -90,6 +172,24 @@ describe('real offline New York map', () => {
       expect(n).toBeLessThan(46);
     }
   }, 15_000);
+  it('includes official federal sources in the redistributable public catalog', () => {
+    const sourceIds = new Set(collection.features.map((feature) => feature.properties.sourceId));
+    expect([...sourceIds]).toEqual(
+      expect.arrayContaining([
+        'nps-parks-ny',
+        'nps-campgrounds-ny',
+        'nps-alerts-ny',
+        'usfs-surface-ownership-ny',
+        'usfs-recreation-sites-ny',
+        'usfs-mvum-roads-ny',
+      ]),
+    );
+    expect(sourceIds.has('blm-managed-lands-ny')).toBe(false);
+    expect(manifest.catalogSources.find((source: any) => source.id === 'blm')).toMatchObject({
+      featureCount: 0,
+      status: expect.stringContaining('verified'),
+    });
+  });
   it('finds real named trails without synthetic preserve substitution', () => {
     expect(searchOutdoorFeatures(collection, 'Slide').length).toBeGreaterThan(0);
     expect(
@@ -102,6 +202,100 @@ describe('real offline New York map', () => {
     );
     expect(index.features.every((feature) => feature.bounds.length === 4)).toBe(true);
     expect(collection.features.some((f) => f.properties.name === 'Hemlock Loop')).toBe(false);
+  });
+  it('builds filterable point collections with stable category icons', () => {
+    const all = createOutdoorPlaceCollection(index);
+    const camping = createOutdoorPlaceCollection(index, 'campsite');
+    const parking = createOutdoorPlaceCollection(index, 'shorterm_parking');
+    const attractions = createOutdoorPlaceCollection(index, 'tourist_attraction');
+    const other = createOutdoorPlaceCollection(index, 'other');
+    expect(all.features).toHaveLength(4640);
+    expect(camping.features.length).toBeGreaterThan(2500);
+    expect(parking.features.length).toBeGreaterThan(1500);
+    expect(attractions.features.length).toBeGreaterThan(100);
+    expect(other.features.length).toBeGreaterThan(150);
+    expect(camping.features.every((feature) => feature.geometry.type === 'Point')).toBe(true);
+    expect(
+      camping.features.every((feature) => feature.properties.ioverlanderCategory === 'campsite'),
+    ).toBe(true);
+    expect(outdoorIoverlanderCategory('LEAN-TO')).toBe('campsite');
+    expect(outdoorIoverlanderCategory('wild_campsite')).toBe('wild_campsite');
+    expect(outdoorPlaceIcon('campsite')).toBe('C');
+    expect(outdoorPlaceIcon('wild_campsite')).toBe('▲');
+    expect(outdoorPlaceIcon('shorterm_parking')).toBe('P');
+    expect(outdoorPlaceIcon('water')).toBe('≈');
+  });
+  it('keeps private community narratives out of the MapLibre render source', () => {
+    const privateIndex: OutdoorFeatureIndex = {
+      schemaVersion: 1,
+      features: [
+        {
+          id: 'private:place-1',
+          bounds: [-74, 42, -74, 42],
+          properties: {
+            id: 'private:place-1',
+            kind: 'poi',
+            name: 'Private place',
+            sourceId: 'private-ioverlander',
+            unit: 'Private iOverlander reference',
+            category: 'campsite',
+            publicUse: 'unknown',
+            sourceUpdated: '2026-09-15T00:00:00.000Z',
+            origin: 'private-catalog',
+            communityDescription: 'Only the details card should receive this.',
+            communityCheckIns: [
+              { occurredAt: '2026-09-14T00:00:00.000Z', comment: 'Private community comment.' },
+            ],
+            communityCheckInCount: 1,
+          },
+        },
+      ],
+    };
+
+    const renderProperties = createOutdoorPlaceCollection(privateIndex).features[0]?.properties;
+    expect(renderProperties).not.toHaveProperty('communityDescription');
+    expect(renderProperties).not.toHaveProperty('communityCheckIns');
+    expect(renderProperties).not.toHaveProperty('communityCheckInCount');
+  });
+  it('uses clusters, icons, then labels as the user zooms in', () => {
+    expect(outdoorZoomPresentation(6.9)).toMatchObject({ band: 'regional' });
+    expect(outdoorZoomPresentation(7)).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(12.9)).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(13)).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(14)).toMatchObject({ band: 'labels' });
+    expect(outdoorZoomPresentation(12, 'fewer')).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(15, 'fewer')).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(16, 'fewer')).toMatchObject({ band: 'labels' });
+    expect(outdoorZoomPresentation(12, 'more')).toMatchObject({ band: 'icons' });
+    expect(nextOutdoorZoom(17.7, 'in')).toBe(18);
+    expect(nextOutdoorZoom(3.2, 'out')).toBe(3);
+
+    const layers = createOutdoorPlaceLayerStyles();
+    expect(layers.map((layer) => layer.id)).toEqual([
+      'place-clusters',
+      'place-cluster-count',
+      'place-marker',
+      'place-icon',
+      'place-label',
+    ]);
+    expect(layers.find((layer) => layer.id === 'place-clusters')?.minzoom).toBe(
+      outdoorMarkerDensityConfig.automatic.minimumZoom,
+    );
+    expect(layers.find((layer) => layer.id === 'place-marker')?.minzoom).toBe(
+      outdoorMarkerDensityConfig.automatic.clusterMaxZoom + 1,
+    );
+    expect(layers.find((layer) => layer.id === 'place-label')?.minzoom).toBe(
+      outdoorMarkerDensityConfig.automatic.labelMinZoom,
+    );
+    expect(JSON.stringify(layers)).toContain('Open Outdoor Noto Sans');
+  });
+  it('can remove legacy unclustered point layers when a clustered source owns places', () => {
+    const style = createOutdoorMapStyle(collection, undefined, { includePlaces: false });
+    const ids = style.layers.map((layer) => layer.id);
+    expect(ids).not.toContain('dec-poi');
+    expect(ids).not.toContain('dec-camping');
+    expect(ids).toContain('dec-trail');
+    expect(ids).toContain('dec-land');
   });
   it('loads bundled geography and all base layers as one atomic native style', () => {
     const style = createOutdoorMapStyle(collection);
@@ -138,7 +332,7 @@ describe('real offline New York map', () => {
       style.layers.findIndex((layer) => layer.type === 'symbol'),
     );
     expect(collection.features.filter((feature) => feature.properties.kind === 'poi')).toHaveLength(
-      4560,
+      4640,
     );
     expect(
       collection.features.filter((feature) =>
@@ -225,6 +419,21 @@ describe('real offline New York map', () => {
     unsubscribe();
     adapter.setSelectedFeature(null);
     expect(updates).toBe(2);
+  });
+  it('preserves private catalog origin when querying a composed collection', () => {
+    const privateFeature = {
+      ...collection.features.find((feature) => feature.properties.kind === 'poi')!,
+      properties: {
+        ...collection.features.find((feature) => feature.properties.kind === 'poi')!.properties,
+        origin: 'private-catalog' as const,
+      },
+    };
+    const adapter = new OutdoorMapAdapter({
+      type: 'FeatureCollection',
+      features: [privateFeature],
+    });
+    const point = featureBounds(privateFeature);
+    expect(adapter.queryFeatures([point[0], point[1]])[0]?.origin).toBe('private-catalog');
   });
   it('never joins paused/recovered recording segments or mutates the input', () => {
     const points: [number, number][] = [

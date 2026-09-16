@@ -82,7 +82,7 @@ async function publicRawStore(): Promise<RawArtifactStore> {
 
 describe('WP-206 through WP-208 New York authoritative connectors', () => {
   it('T-INT-003-C01 registers active official sources with redistributable rights and attribution', async () => {
-    expect(NEW_YORK_SOURCE_REGISTRY).toHaveLength(11);
+    expect(NEW_YORK_SOURCE_REGISTRY).toHaveLength(14);
     for (const source of NEW_YORK_SOURCE_REGISTRY) {
       expect(() => assertNewYorkSourceReady(source, '2026-09-01T00:00:00.000Z')).not.toThrow();
       expect(source.endpoint).toMatch(/^https:\/\//);

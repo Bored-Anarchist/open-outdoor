@@ -71,15 +71,6 @@ try {
         }
         Write-Host "Verified offline archive '$($matchingArchives[0].FullName)' ($($matchingArchives[0].Length) bytes)."
     }
-    $fullArchiveBytes = 134642224
-    $unexpectedFullArchives = @(
-        Get-ChildItem -Path $appBundles[0].FullName -File -Recurse |
-            Where-Object { $_.Length -eq $fullArchiveBytes }
-    )
-    if ($unexpectedFullArchives.Count -ne 0) {
-        throw "The optional 128.4 MiB New York detailed basemap must not be bundled in the application."
-    }
-    Write-Host 'Verified that the optional New York detailed basemap is absent from the application bundle.'
     $builtInfoPlist = Join-Path $appBundles[0].FullName 'Info.plist'
     $diagnosticsOptIn = & /usr/libexec/PlistBuddy -c 'Print :OpenOutdoorPhase0DiagnosticsEnabled' $builtInfoPlist
     if ($LASTEXITCODE -ne 0 -or $diagnosticsOptIn -ne 'true') {

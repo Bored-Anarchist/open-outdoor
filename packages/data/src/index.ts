@@ -5,6 +5,7 @@ export * from './camping.js';
 export * from './connector.js';
 export * from './entity-resolution.js';
 export * from './ingestion.js';
+export * from './ioverlander-private.js';
 export * from './new-york.js';
 export * from './public-pack.js';
 export * from './production-pack.js';

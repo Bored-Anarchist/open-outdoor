@@ -1,7 +1,7 @@
 import { assertCoordinate, type Coordinate } from '@open-outdoor/shared';
 
-export const PRIVATE_SCHEMA_VERSION = 3;
-export const PRIVATE_SCHEMA_PREVIOUS_VERSION = 2;
+export const PRIVATE_SCHEMA_VERSION = 4;
+export const PRIVATE_SCHEMA_PREVIOUS_VERSION = 3;
 
 export type ActivityLifecycle = 'recording' | 'paused' | 'finished' | 'recovered';
 
@@ -93,6 +93,19 @@ export interface CatalogInventoryRecord {
   readonly private: boolean;
 }
 
+export interface PlaceCheckIn {
+  readonly id: string;
+  readonly occurredAt: string;
+}
+
+export interface PlaceJournalEntry {
+  readonly featureId: string;
+  readonly featureName: string;
+  readonly note: string;
+  readonly checkIns: readonly PlaceCheckIn[];
+  readonly updatedAt: string;
+}
+
 export interface PrivateDatabaseSnapshot {
   readonly schemaVersion: number;
   readonly activities: readonly RecordedActivity[];
@@ -103,6 +116,7 @@ export interface PrivateDatabaseSnapshot {
   readonly importExportHistory: readonly ImportExportHistoryRecord[];
   readonly settings: readonly PrivateSettingRecord[];
   readonly catalogInventory: readonly CatalogInventoryRecord[];
+  readonly placeJournal: readonly PlaceJournalEntry[];
 }
 
 export const privateSchemaMigrations: Readonly<Record<number, readonly string[]>> = {
@@ -125,10 +139,17 @@ export const privateSchemaMigrations: Readonly<Record<number, readonly string[]>
     'CREATE TABLE tracking_checkpoint (session_id TEXT PRIMARY KEY, highest_sequence INTEGER NOT NULL, updated_at TEXT NOT NULL)',
     'CREATE TABLE migration_audit (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)',
   ],
+  4: [
+    'CREATE TABLE place_journal (feature_id TEXT PRIMARY KEY, feature_name TEXT NOT NULL, note TEXT NOT NULL, check_ins_json TEXT NOT NULL, updated_at TEXT NOT NULL)',
+  ],
 };
 
 function validInstant(value: string): boolean {
   return Number.isFinite(Date.parse(value));
+}
+
+function validUtcInstant(value: string): boolean {
+  return validInstant(value) && new Date(value).toISOString() === value;
 }
 
 function requireId(value: string, label: string): void {
@@ -179,6 +200,7 @@ export function migratePrivateSnapshot(snapshot: PrivateDatabaseSnapshot): Priva
     importExportHistory: migrated.importExportHistory ?? [],
     settings: migrated.settings ?? [],
     catalogInventory: migrated.catalogInventory ?? [],
+    placeJournal: migrated.placeJournal ?? [],
   };
 }
 
@@ -192,6 +214,7 @@ const emptySnapshot: PrivateDatabaseSnapshot = {
   importExportHistory: [],
   settings: [],
   catalogInventory: [],
+  placeJournal: [],
 };
 
 function samplesEqual(left: ImmutableActivitySample, right: ImmutableActivitySample): boolean {
@@ -366,6 +389,56 @@ export class InMemoryPrivateRepository {
     this.transaction((draft) => ({ ...draft, revisions: [...draft.revisions, revision] }));
     return structuredClone(revision);
   }
+
+  savePlaceJournal(entry: PlaceJournalEntry): PlaceJournalEntry {
+    requireId(entry.featureId, 'journal feature id');
+    if (
+      typeof entry.featureName !== 'string' ||
+      entry.featureName.trim().length === 0 ||
+      entry.featureName.length > 500 ||
+      typeof entry.note !== 'string' ||
+      entry.note.length > 5_000 ||
+      !validUtcInstant(entry.updatedAt) ||
+      !Array.isArray(entry.checkIns) ||
+      entry.checkIns.length > 10_000
+    ) {
+      throw new PrivateStorageError('VALIDATION_FAILED', 'place journal entry is invalid');
+    }
+    const checkInIds = new Set<string>();
+    for (const checkIn of entry.checkIns) {
+      requireId(checkIn.id, 'check-in id');
+      if (!validUtcInstant(checkIn.occurredAt) || checkInIds.has(checkIn.id)) {
+        throw new PrivateStorageError('VALIDATION_FAILED', 'place journal check-in is invalid');
+      }
+      checkInIds.add(checkIn.id);
+    }
+    const saved = structuredClone({
+      ...entry,
+      featureName: entry.featureName.trim(),
+      note: entry.note.trim(),
+      checkIns: [...entry.checkIns].sort((left, right) =>
+        right.occurredAt.localeCompare(left.occurredAt),
+      ),
+    });
+    this.transaction((draft) => ({
+      ...draft,
+      placeJournal: [
+        ...draft.placeJournal.filter(({ featureId }) => featureId !== saved.featureId),
+        saved,
+      ],
+    }));
+    return structuredClone(saved);
+  }
+
+  placeJournalFor(featureId: string): PlaceJournalEntry | null {
+    return structuredClone(
+      this.data.placeJournal.find((entry) => entry.featureId === featureId) ?? null,
+    );
+  }
+
+  listPlaceJournal(): readonly PlaceJournalEntry[] {
+    return structuredClone(this.data.placeJournal);
+  }
 }
 export type PrivateRepository = Pick<
   InMemoryPrivateRepository,
@@ -378,4 +451,7 @@ export type PrivateRepository = Pick<
   | 'saveAssociation'
   | 'saveOverlay'
   | 'saveDerivedRevision'
+  | 'savePlaceJournal'
+  | 'placeJournalFor'
+  | 'listPlaceJournal'
 >;
