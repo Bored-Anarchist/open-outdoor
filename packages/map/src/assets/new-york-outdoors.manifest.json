@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
-  "acquiredAt": "2026-09-15T07:55:00.000Z",
-  "sha256": "ca014eb4d7d432b4f38020a414b2f2c18b62857a1bd00280e1b752705bc78543",
-  "bytes": 13350074,
-  "indexSha256": "c04b5557b884980cee3b4bb2132ce60f13652705ffa6de9ae4ab9dc6b7e4540a",
-  "indexBytes": 4447587,
-  "featureCount": 14779,
+  "acquiredAt": "2026-09-16T09:29:28.517Z",
+  "sha256": "7cb23968cb60b3933219e47bc54d13f28aa05d89d9ef0dc98a35ae571358739d",
+  "bytes": 13469628,
+  "indexSha256": "e781af1db5d144a98a5431c4780f35f78270780bcd2fd8eafdd3ca82c06e4d7a",
+  "indexBytes": 4567116,
+  "featureCount": 14780,
   "coordinateReferenceSystem": "EPSG:4326",
   "simplificationDegrees": 0.00003,
   "geometryPrecision": 5,
@@ -32,7 +32,7 @@
       "https://data.fs.usda.gov/geodata/edw/datasets.php",
       "https://www.blm.gov/services/geospatial/GISData"
     ],
-    "reviewedAt": "2026-09-15"
+    "reviewedAt": "2026-09-16"
   },
   "sources": [
     {
@@ -1146,20 +1146,25 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "National Park Service",
       "featureCount": 60,
-      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
       "pages": [
         {
           "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY",
-          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
           "count": 28
         },
         {
           "url": "https://developer.nps.gov/api/v1/mapdata/parkboundaries/{parkCode}",
-          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
           "count": 32
         }
       ]
@@ -1178,15 +1183,20 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "National Park Service",
       "featureCount": 4,
-      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
       "pages": [
         {
           "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY",
-          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
           "count": 4
         }
       ]
@@ -1205,16 +1215,21 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "National Park Service",
-      "featureCount": 23,
-      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "featureCount": 24,
+      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
       "pages": [
         {
           "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY",
-          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
-          "count": 23
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "count": 24
         }
       ]
     },
@@ -1232,7 +1247,12 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 200,
@@ -1259,7 +1279,12 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 25,
@@ -1286,7 +1311,12 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 12,
@@ -1313,7 +1343,12 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 0,
@@ -1340,7 +1375,12 @@
         "publicUse",
         "sourceUpdated",
         "sourceUrl",
-        "origin"
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
       ],
       "attribution": "Bureau of Land Management",
       "featureCount": 0,
@@ -1364,7 +1404,7 @@
     {
       "id": "nps",
       "label": "National Park Service",
-      "featureCount": 87,
+      "featureCount": 88,
       "status": "official parks, campgrounds, alerts and boundaries"
     },
     {
@@ -1383,11 +1423,11 @@
   "officialSnapshots": {
     "nps": {
       "file": "nps-new-york.json",
-      "bytes": 4149857,
-      "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+      "bytes": 4217600,
+      "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
       "manifestFile": "manifest.json",
       "manifestBytes": 719,
-      "manifestSha256": "5f24bed460e32f61559235f4bc698cd6badffcc3a1eb32d3911998d0dd903623"
+      "manifestSha256": "718a9a01f0924c1a38af61c2144b5b34bfa7bf5c9b2b1a4efdb62393b02d83ef"
     },
     "federal": {
       "file": "federal-new-york.json",

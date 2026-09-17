@@ -5,7 +5,8 @@
   "type": "module",
   "dependencies": {
     "@open-outdoor/storage": "workspace:*",
-    "@open-outdoor/tracking": "workspace:*"
+    "@open-outdoor/tracking": "workspace:*",
+    "@open-outdoor/shared": "workspace:*"
   },
   "exports": "./src/index.ts"
 }

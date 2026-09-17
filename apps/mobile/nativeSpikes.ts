@@ -94,6 +94,13 @@ export interface Phase0PhysicalDiagnosticReport {
 }
 
 interface OpenOutdoorNativeSpikesModule {
+  readonly pickMapDataset: () => Promise<{
+    readonly id: string;
+    readonly name: string;
+    readonly text: string;
+  } | null>;
+  readonly loadMapDatasets: () => Promise<string | null>;
+  readonly saveMapDatasets: (payload: string) => Promise<void>;
   readonly policyVersion: number;
   readonly phase0DiagnosticsEnabled: boolean;
   readonly requestAlwaysAuthorization: () => Promise<void>;
@@ -145,6 +152,10 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 }
 
 export const nativeSpikes = {
+  mapImportAvailable: typeof module?.pickMapDataset === 'function',
+  pickMapDataset: () => requiredModule().pickMapDataset(),
+  loadMapDatasets: (): Promise<string | null> => requiredModule().loadMapDatasets(),
+  saveMapDatasets: (payload: string): Promise<void> => requiredModule().saveMapDatasets(payload),
   available: module !== null,
   loadError: module === null ? unavailableMessage : null,
   policyVersion: module?.policyVersion ?? null,

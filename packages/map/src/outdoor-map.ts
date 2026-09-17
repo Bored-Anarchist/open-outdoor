@@ -8,13 +8,15 @@ import {
 } from '@open-outdoor/shared';
 import type { MapAdapter, MapCamera, MapFeature, MapRoute } from './index';
 
+import type { OutdoorVisitorDetails } from '@open-outdoor/shared/outdoor-details';
+
 const LOCAL_FILE_URI = /^file:\/\/\/.+/i;
 
 function isLocalFileUri(uri: string): boolean {
   return LOCAL_FILE_URI.test(uri) && !/[\r\n]/.test(uri);
 }
 
-export interface OutdoorFeatureProperties {
+export interface OutdoorFeatureProperties extends OutdoorVisitorDetails {
   id: string;
   kind: 'boundary' | 'land' | 'road' | 'trail' | 'poi';
   name: string;
@@ -191,6 +193,11 @@ export function createOutdoorPlaceCollection(
       if (!matchesPlaceFilter(category, filter)) return [];
       const definition = ioverlanderCategoryDefinition(category);
       const {
+        description: _description,
+        directionsInfo: _directionsInfo,
+        amenities: _amenities,
+        openingHours: _openingHours,
+        fees: _fees,
         communityDescription: _communityDescription,
         communityCheckIns: _communityCheckIns,
         communityCheckInCount: _communityCheckInCount,
@@ -217,9 +224,9 @@ export function createOutdoorPlaceCollection(
 }
 
 export const outdoorMarkerDensityConfig = {
-  automatic: { minimumZoom: 7, clusterMaxZoom: 12, clusterRadius: 50, labelMinZoom: 14 },
-  fewer: { minimumZoom: 8, clusterMaxZoom: 14, clusterRadius: 72, labelMinZoom: 16 },
-  more: { minimumZoom: 6, clusterMaxZoom: 11, clusterRadius: 38, labelMinZoom: 13 },
+  automatic: { minimumZoom: 7, clusterMaxZoom: 11, clusterRadius: 50, labelMinZoom: 14 },
+  fewer: { minimumZoom: 8, clusterMaxZoom: 13, clusterRadius: 72, labelMinZoom: 16 },
+  more: { minimumZoom: 6, clusterMaxZoom: 10, clusterRadius: 38, labelMinZoom: 13 },
 } as const satisfies Record<
   OutdoorMarkerDensity,
   {

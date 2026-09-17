@@ -3,5 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": "./src/index.ts"
+  "exports": {
+    ".": "./src/index.ts",
+    "./outdoor-details": "./src/outdoor-details.ts",
+    "./hike-route": "./src/hike-route.ts"
+  }
 }

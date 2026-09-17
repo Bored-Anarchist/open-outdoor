@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   applyManualReviewDecisions,
   federalNewYorkAppFeatures,
+  npsNewYorkAppFeatures,
+  outdoorAppIndex,
   manualReviewDecisionsFromCsv,
   processIoverlanderPrivateData,
 } from '../src/ioverlander-private.js';
@@ -117,6 +119,10 @@ const federal = {
           public_site_name: 'Official Forest Camp',
           site_type: 'CAMPGROUND',
           seasonal_operational_status: 'OPEN',
+          op_status_reason: 'Open for the summer season.',
+          water_availability: 'POTABLE',
+          restroom_availability: 'VAULT',
+          fee_charged: 'YES',
           edw_last_modify: Date.parse(generatedAt),
         },
         geometry: { type: 'Point', coordinates: [-74.25, 42.25] },
@@ -292,6 +298,73 @@ describe('private iOverlander processing', () => {
     ]);
   });
 
+  it('retains public visitor details through NPS conversion and map indexing', () => {
+    const features = npsNewYorkAppFeatures({
+      schemaVersion: 1,
+      stateCode: 'NY',
+      retrievedAt: generatedAt,
+      parks: [
+        {
+          id: 'park-1',
+          parkCode: 'test',
+          fullName: 'Synthetic National Park',
+          latitude: '42.5',
+          longitude: '-74.5',
+          visitorDetails: {
+            description: 'A wooded park.',
+            openingHours: ['Daily: 09:00–17:00'],
+            fees: ['Entry: USD 5'],
+          },
+        },
+      ],
+      campgrounds: [
+        {
+          id: 'camp-1',
+          parkCode: 'test',
+          name: 'Synthetic Campground',
+          latitude: '42.25',
+          longitude: '-74.25',
+          visitorDetails: {
+            description: '<p>Lake camping.</p>',
+            amenities: ['Potable water'],
+            directionsInfo: 'Use the south gate.',
+            contributor: 'discarded',
+          },
+        },
+      ],
+      alerts: [
+        {
+          id: 'alert-1',
+          parkCode: 'test',
+          title: 'Synthetic trail closure',
+          visitorDetails: { description: 'Bridge repairs through October.' },
+        },
+      ],
+      boundaries: [],
+    });
+    const index = outdoorAppIndex(features);
+    expect(
+      index.features.find((feature) => feature.properties.sourceId === 'nps-campgrounds-ny')
+        ?.properties,
+    ).toMatchObject({
+      description: 'Lake camping.',
+      amenities: ['Potable water'],
+      directionsInfo: 'Use the south gate.',
+    });
+    expect(
+      index.features.find((feature) => feature.properties.sourceId === 'nps-parks-ny')?.properties,
+    ).toMatchObject({
+      description: 'A wooded park.',
+      openingHours: ['Daily: 09:00–17:00'],
+      fees: ['Entry: USD 5'],
+    });
+    expect(
+      index.features.find((feature) => feature.properties.sourceId === 'nps-alerts-ny')?.properties
+        .description,
+    ).toBe('Bridge repairs through October.');
+    expect(JSON.stringify(index)).not.toContain('discarded');
+  });
+
   it('deduplicates private campgrounds against official NPS campground points', () => {
     const nps = {
       schemaVersion: 1,
@@ -393,6 +466,11 @@ describe('private iOverlander processing', () => {
       'poi',
     ]);
     expect(features.at(-1)?.properties.category).toBe('campsite');
+    expect(features.at(-1)?.properties).toMatchObject({
+      description: 'Open for the summer season.',
+      amenities: ['Water: POTABLE', 'Restrooms: VAULT'],
+      fees: ['Fee charged: YES'],
+    });
   });
 
   it('reuses USFS points promoted into the public base without ambiguous duplicate matches', () => {

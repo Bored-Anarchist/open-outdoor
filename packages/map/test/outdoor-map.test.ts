@@ -126,7 +126,7 @@ describe('real offline New York map', () => {
     }
     expect(manifest.catalogSources).toEqual([
       expect.objectContaining({ id: 'nys-dec', featureCount: 14_455 }),
-      expect.objectContaining({ id: 'nps', featureCount: 87 }),
+      expect.objectContaining({ id: 'nps', featureCount: 88 }),
       expect.objectContaining({ id: 'usfs', featureCount: 237 }),
       expect.objectContaining({ id: 'blm', featureCount: 0 }),
     ]);
@@ -162,6 +162,11 @@ describe('real offline New York map', () => {
             'sourceUpdated',
             'sourceUrl',
             'origin',
+            'description',
+            'directionsInfo',
+            'amenities',
+            'openingHours',
+            'fees',
           ].includes(name),
         ),
       ).toBe(true);
@@ -209,7 +214,7 @@ describe('real offline New York map', () => {
     const parking = createOutdoorPlaceCollection(index, 'shorterm_parking');
     const attractions = createOutdoorPlaceCollection(index, 'tourist_attraction');
     const other = createOutdoorPlaceCollection(index, 'other');
-    expect(all.features).toHaveLength(4640);
+    expect(all.features).toHaveLength(4641);
     expect(camping.features.length).toBeGreaterThan(2500);
     expect(parking.features.length).toBeGreaterThan(1500);
     expect(attractions.features.length).toBeGreaterThan(100);
@@ -260,13 +265,13 @@ describe('real offline New York map', () => {
   it('uses clusters, icons, then labels as the user zooms in', () => {
     expect(outdoorZoomPresentation(6.9)).toMatchObject({ band: 'regional' });
     expect(outdoorZoomPresentation(7)).toMatchObject({ band: 'clusters' });
-    expect(outdoorZoomPresentation(12.9)).toMatchObject({ band: 'clusters' });
-    expect(outdoorZoomPresentation(13)).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(11.9)).toMatchObject({ band: 'clusters' });
+    expect(outdoorZoomPresentation(12)).toMatchObject({ band: 'icons' });
     expect(outdoorZoomPresentation(14)).toMatchObject({ band: 'labels' });
     expect(outdoorZoomPresentation(12, 'fewer')).toMatchObject({ band: 'clusters' });
-    expect(outdoorZoomPresentation(15, 'fewer')).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(14, 'fewer')).toMatchObject({ band: 'icons' });
     expect(outdoorZoomPresentation(16, 'fewer')).toMatchObject({ band: 'labels' });
-    expect(outdoorZoomPresentation(12, 'more')).toMatchObject({ band: 'icons' });
+    expect(outdoorZoomPresentation(11, 'more')).toMatchObject({ band: 'icons' });
     expect(nextOutdoorZoom(17.7, 'in')).toBe(18);
     expect(nextOutdoorZoom(3.2, 'out')).toBe(3);
 
@@ -332,7 +337,7 @@ describe('real offline New York map', () => {
       style.layers.findIndex((layer) => layer.type === 'symbol'),
     );
     expect(collection.features.filter((feature) => feature.properties.kind === 'poi')).toHaveLength(
-      4640,
+      4641,
     );
     expect(
       collection.features.filter((feature) =>
