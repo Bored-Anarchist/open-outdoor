@@ -10,7 +10,6 @@ import {
   appearances,
   accessibleAppearance,
   ForegroundTask,
-  boundedDisplayPoints,
   designTokens as t,
   type Appearance,
   type Palette,
@@ -25,7 +24,9 @@ import {
   ProductMetric,
   usePalette,
 } from './ProductComponents';
-import { calculateDistanceRevision, calculateElevationRevision } from '@open-outdoor/tracking';
+import { recordedHikeDisplay, storedHikeObservations } from '@open-outdoor/recorder';
+import type { RecordedActivity } from '@open-outdoor/storage';
+import type { HikeCaptureView } from './HikeCaptureControls';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState, ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
 import {
@@ -89,6 +90,12 @@ function AppContent({
   const [section, setSection] = useState<AppSection>('explore');
   const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
   const [recovery, setRecovery] = useState<NativeTrackingInspection | null>(null);
+  const captureOperation = useRef(false);
+  const [captureBusy, setCaptureBusy] = useState(false);
+  const captureMetadata = useRef<Pick<HikeCaptureView, 'id' | 'name' | 'plannedFeatureId'> | null>(
+    null,
+  );
+  const [captureView, setCaptureView] = useState<HikeCaptureView | null>(null);
   const [savedActivities, setSavedActivities] = useState<
     readonly { readonly id: string; readonly finalSequence: number }[]
   >([]);
@@ -110,6 +117,66 @@ function AppContent({
 
   useAnnouncement(status);
 
+  function showStoredCapture(
+    app: MobileApplication,
+    activity: RecordedActivity,
+    state: HikeCaptureView['state'],
+  ): void {
+    const snapshot = app.repository.exportSnapshot();
+    const plannedFeatureId =
+      snapshot.associations.find((association) => association.id === `hike-plan-${activity.id}`)
+        ?.catalogTrailId ?? undefined;
+    const revision =
+      state === 'saved'
+        ? snapshot.revisions
+            .filter((revision) => revision.activityId === activity.id)
+            .sort((a, b) => b.revision - a.revision)[0]
+        : undefined;
+    const display = recordedHikeDisplay(storedHikeObservations(activity), revision);
+    captureMetadata.current = {
+      id: activity.id,
+      name: activity.name,
+      ...(plannedFeatureId ? { plannedFeatureId } : {}),
+    };
+    setCaptureView({ ...captureMetadata.current, state, display });
+    app.map.setActiveTrack(display.coordinates, display.breaks);
+    app.map.setSelectedFeature(plannedFeatureId ?? null);
+    lastRenderedCheckpoint.current = '';
+  }
+
+  function refreshCapturedDisplay(state: 'recording' | 'paused'): void {
+    if (!application || !captureMetadata.current) return;
+    const display = recordedHikeDisplay(application.recorder.stateMachine.committedObservations);
+    application.map.setActiveTrack(display.coordinates, display.breaks);
+    setCaptureView({ ...captureMetadata.current, state, display });
+    setLiveStats({
+      sequence: display.sequence,
+      distanceM: display.route?.distanceM ?? 0,
+      ascentM: display.route?.ascentM ?? 0,
+      gpsQuality: display.gpsQuality,
+    });
+  }
+
+  async function showSavedCapture(id: string): Promise<void> {
+    if (!application || recorderState !== 'idle' || captureOperation.current) return;
+    const activity = application.library.list().find((activity) => activity.id === id);
+    if (!activity) return;
+    showStoredCapture(application, activity, 'saved');
+    setSection('explore');
+    setStatus('Saved private hike opened on the map.');
+  }
+
+  async function drainPausedCapture(): Promise<void> {
+    if (!application) return;
+    for (let batch = 0; batch < 10_000; batch++) {
+      const state = application.recorder.stateMachine.state;
+      const before = state.kind === 'paused' ? state.highestCommittedSequence : 0;
+      const after = await application.recorder.synchronize();
+      if (after === before) return;
+    }
+    throw new Error('Tracking spool exceeded the bounded drain limit');
+  }
+
   useEffect(() => {
     if (!nativeSpikes.available) return;
     void createMobileApplication(map)
@@ -126,6 +193,10 @@ function AppContent({
           setRecovery(inspection);
           setRecorderState('recoverable');
           setStatus('An interrupted recording is ready to recover.');
+          const interrupted = nextApplication.library
+            .list()
+            .find((activity) => activity.id === `activity-${inspection.sessionId}`);
+          if (interrupted) showStoredCapture(nextApplication, interrupted, 'recoverable');
         }
       })
       .catch((error: unknown) => setStatus('Private store startup failed: ' + errorMessage(error)));
@@ -135,37 +206,15 @@ function AppContent({
     let cancelled = false;
     const synchronize = async (): Promise<void> => {
       try {
+        if (captureOperation.current) return;
         await application.recorder.synchronize();
         if (cancelled || AppState.currentState !== 'active') return;
         const state = application.recorder.stateMachine.state;
         if (state.kind !== 'recording') return;
         const revision = state.sessionId + ':' + state.highestCommittedSequence;
         if (lastRenderedCheckpoint.current === revision) return;
-        const observations = application.recorder.stateMachine.committedObservations;
-        const distance = calculateDistanceRevision(observations);
-        const elevation = calculateElevationRevision(observations);
-        const accuracy = observations.at(-1)?.horizontalAccuracyM;
-        const display = boundedDisplayPoints(observations);
-        application.map.setActiveTrack(
-          display.map(({ coordinate }) => coordinate),
-          display.flatMap((point, index) =>
-            index > 0 && point.segment !== display[index - 1]?.segment ? [index] : [],
-          ),
-        );
+        refreshCapturedDisplay('recording');
         lastRenderedCheckpoint.current = revision;
-        setLiveStats({
-          sequence: observations.at(-1)?.sequence ?? 0,
-          distanceM: distance.distanceM,
-          ascentM: elevation.ascentM,
-          gpsQuality:
-            accuracy === undefined
-              ? 'Waiting'
-              : accuracy <= 10
-                ? 'Good'
-                : accuracy <= 50
-                  ? 'Degraded'
-                  : 'Poor',
-        });
       } catch (error) {
         if (!cancelled) setStatus('Checkpoint failed: ' + errorMessage(error));
       }
@@ -192,24 +241,43 @@ function AppContent({
     }
   }
 
-  async function start(): Promise<boolean> {
+  async function start(name = 'Recorded hike', plannedFeatureId?: string): Promise<boolean> {
+    if (captureOperation.current) return false;
+    captureOperation.current = true;
+    setCaptureBusy(true);
     try {
       if (application === null) throw new Error('Private recorder is still loading');
-      const activity = await application.recorder.start(mode);
+      const activity = await application.recorder.start(
+        mode,
+        name,
+        new Date().toISOString(),
+        plannedFeatureId,
+      );
+      showStoredCapture(application, activity, 'recording');
+      setLiveStats({ sequence: 0, distanceM: 0, ascentM: 0, gpsQuality: 'Waiting' });
       setRecorderState('recording');
       setStatus('Recording ' + modeLabels[mode] + ' activity ' + activity.id + ' offline.');
       return true;
     } catch (error) {
       setStatus('Start failed: ' + errorMessage(error));
       return false;
+    } finally {
+      captureOperation.current = false;
+      setCaptureBusy(false);
     }
   }
 
   async function pause(): Promise<boolean> {
+    if (captureOperation.current) return false;
+    captureOperation.current = true;
+    setCaptureBusy(true);
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       await application.recorder.synchronize();
       await application.recorder.pause();
+      setRecorderState('paused');
+      await drainPausedCapture();
+      refreshCapturedDisplay('paused');
       const state = application.recorder.stateMachine.state;
       const sequence = state.kind === 'paused' ? state.highestCommittedSequence : 0;
       setRecorderState('paused');
@@ -218,13 +286,20 @@ function AppContent({
     } catch (error) {
       setStatus('Pause failed: ' + errorMessage(error));
       return false;
+    } finally {
+      captureOperation.current = false;
+      setCaptureBusy(false);
     }
   }
 
   async function resume(): Promise<boolean> {
+    if (captureOperation.current) return false;
+    captureOperation.current = true;
+    setCaptureBusy(true);
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       await application.recorder.resume();
+      refreshCapturedDisplay('recording');
       const state = application.recorder.stateMachine.state;
       const sequence = state.kind === 'recording' ? state.highestCommittedSequence : 0;
       setRecorderState('recording');
@@ -233,13 +308,20 @@ function AppContent({
     } catch (error) {
       setStatus('Resume failed: ' + errorMessage(error));
       return false;
+    } finally {
+      captureOperation.current = false;
+      setCaptureBusy(false);
     }
   }
 
   async function finish(): Promise<number | null> {
+    if (captureOperation.current) return null;
+    captureOperation.current = true;
+    setCaptureBusy(true);
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       const summary = await application.recorder.finish();
+      showStoredCapture(application, summary.activity, 'saved');
       setSavedActivities(
         application.library.list().map((activity) => ({
           id: activity.id,
@@ -259,14 +341,21 @@ function AppContent({
     } catch (error) {
       setStatus('Finish failed: ' + errorMessage(error));
       return null;
+    } finally {
+      captureOperation.current = false;
+      setCaptureBusy(false);
     }
   }
 
   async function recover(reason: RecoveryReason = 'process-termination'): Promise<void> {
+    if (captureOperation.current) return;
+    captureOperation.current = true;
+    setCaptureBusy(true);
     try {
       if (application === null) throw new Error('Private recorder is still loading');
       const activity = await application.recorder.recover(new Date().toISOString(), reason);
       if (activity === null) throw new Error('No interrupted recording is available');
+      showStoredCapture(application, activity, 'recording');
       setMode(activity.mode);
       setRecovery(null);
       setRecorderState('recording');
@@ -277,6 +366,9 @@ function AppContent({
       );
     } catch (error) {
       setStatus('Recovery failed: ' + errorMessage(error));
+    } finally {
+      captureOperation.current = false;
+      setCaptureBusy(false);
     }
   }
 
@@ -379,6 +471,9 @@ function AppContent({
               .then(() => {
                 setRecovery(null);
                 setRecorderState('idle');
+                setCaptureView(null);
+                captureMetadata.current = null;
+                map.setActiveTrack([]);
                 setStatus('Interrupted recording discarded.');
               })
               .catch((error: unknown) => setStatus('Discard failed: ' + errorMessage(error)));
@@ -419,6 +514,20 @@ function AppContent({
             adapter={map}
             placeJournal={application?.placeJournal ?? null}
             imports={importedDatasets}
+            capture={{
+              state: recorderState,
+              available: application !== null,
+              busy: captureBusy,
+              view: captureView,
+              status,
+              onStart: start,
+              onPause: pause,
+              onResume: resume,
+              onFinish: finish,
+              onRecover: () => recover(),
+              onDiscard: confirmDiscard,
+              onRequestPermission: requestPermission,
+            }}
           />
           <AccessibleButton
             label="Land and camping legend"
@@ -506,38 +615,38 @@ function AppContent({
             <AccessibleButton
               label="Start recording"
               hint="Starts offline location and elevation recording"
-              disabled={application === null || recorderState !== 'idle'}
+              disabled={application === null || recorderState !== 'idle' || captureBusy}
               onPress={start}
             />
             <AccessibleButton
               label="Pause recording"
               hint="Stops sensors and excludes paused distance and elevation"
-              disabled={recorderState !== 'recording'}
+              disabled={recorderState !== 'recording' || captureBusy}
               onPress={pause}
             />
             <AccessibleButton
               label="Resume recording"
               hint="Restarts sensors in a new activity segment"
-              disabled={recorderState !== 'paused'}
+              disabled={recorderState !== 'paused' || captureBusy}
               onPress={resume}
             />
             <AccessibleButton
               label="Finish and save recording"
               hint="Stops sensors and saves the private activity"
-              disabled={!active}
+              disabled={!active || captureBusy}
               onPress={finish}
             />
             <AccessibleButton
               label="Recover interrupted recording"
               hint="Continues from the last durable checkpoint"
-              disabled={recorderState !== 'recoverable' || recovery === null}
+              disabled={recorderState !== 'recoverable' || recovery === null || captureBusy}
               onPress={() => recover()}
             />
             <AccessibleButton
               label="Discard interrupted recording"
               hint="Requires confirmation before permanently discarding recovery"
               destructive
-              disabled={recorderState !== 'recoverable' || recovery === null}
+              disabled={recorderState !== 'recoverable' || recovery === null || captureBusy}
               onPress={confirmDiscard}
             />
           </View>
@@ -606,6 +715,12 @@ function AppContent({
                 <Text style={styles.copy}>
                   {activity.id} · {activity.finalSequence} durable observations
                 </Text>
+                <AccessibleButton
+                  label="View hike on map"
+                  hint="Open this saved private hike and its recorded elevation profile"
+                  disabled={active || recorderState === 'recoverable' || captureBusy}
+                  onPress={() => showSavedCapture(activity.id)}
+                />
               </ProductCard>
             ))
           )}

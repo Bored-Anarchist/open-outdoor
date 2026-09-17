@@ -169,7 +169,13 @@ export class RecorderCoordinator {
     mode: TrackingMode,
     name = 'Recorded hike',
     startedAt = new Date().toISOString(),
+    plannedFeatureId?: string,
   ): Promise<RecordedActivity> {
+    if (
+      plannedFeatureId !== undefined &&
+      (!plannedFeatureId.trim() || plannedFeatureId.length > 4096)
+    )
+      throw new Error('Invalid expected hike reference');
     const { sessionId } = await this.tracker.start(mode);
     this.stateMachine.start(sessionId, mode, startedAt);
     const activity = this.repository.createActivity({
@@ -180,6 +186,14 @@ export class RecorderCoordinator {
       startedAt,
       finishedAt: null,
     });
+    if (plannedFeatureId !== undefined)
+      this.repository.saveAssociation({
+        id: `hike-plan-${activity.id}`,
+        activityId: activity.id,
+        catalogTrailId: plannedFeatureId,
+        userTrailId: null,
+        state: 'resolved',
+      });
     await this.persist(sessionId, 0);
     return activity;
   }
@@ -436,3 +450,5 @@ export class DestructiveConfirmation {
     this.pending = null;
   }
 }
+
+export * from './hike-display';

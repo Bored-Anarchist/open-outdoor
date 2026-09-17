@@ -1,3 +1,4 @@
+import { HikeCaptureControls, type HikeCaptureActions } from './HikeCaptureControls';
 import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
 import { HikeDetails } from './HikeDetails';
 import publicHikes from '../../packages/map/src/assets/new-york-hikes.json';
@@ -291,10 +292,12 @@ export function OutdoorMap({
   adapter,
   placeJournal,
   imports,
+  capture,
 }: {
   adapter: OutdoorMapAdapter;
   placeJournal: PlaceJournalService | null;
   imports: ImportedMapDatasetsService;
+  capture: HikeCaptureActions;
 }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
   const camera = useRef<CameraRef>(null);
@@ -390,6 +393,46 @@ export function OutdoorMap({
     );
   }, [selected, imports.datasets]);
   const [selectedHikeSample, setSelectedHikeSample] = useState<number | null>(null);
+  const [graphic, setGraphic] = useState<'planned' | 'recorded'>('planned');
+  const [capturedSample, setCapturedSample] = useState<number | null>(null);
+  const captured = capture.view;
+  useEffect(() => {
+    setCapturedSample(null);
+    if (captured) setGraphic('recorded');
+  }, [captured?.id]);
+  const capturedProfilePoint =
+    capturedSample === null ? undefined : captured?.display.route?.samples[capturedSample];
+  const capturedProfileMarker = {
+    type: 'FeatureCollection' as const,
+    features:
+      capturedProfilePoint && graphic === 'recorded'
+        ? [
+            {
+              type: 'Feature' as const,
+              properties: {},
+              geometry: {
+                type: 'Point' as const,
+                coordinates: [capturedProfilePoint[2], capturedProfilePoint[3]],
+              },
+            },
+          ]
+        : [],
+  };
+  function showCapturedPath(): void {
+    const bounds = captured?.display.bounds;
+    if (!bounds) return;
+    setFollowUser(false);
+    if (bounds[0] === bounds[2] && bounds[1] === bounds[3])
+      camera.current?.jumpTo({ center: [bounds[0], bounds[1]], zoom: 14 });
+    else
+      camera.current?.fitBounds([...bounds], {
+        padding: { top: 35, right: 35, bottom: 35, left: 35 },
+        duration: 0,
+      });
+  }
+  const capturePlan = captured?.plannedFeatureId
+    ? featureIndex.features.find((feature) => feature.id === captured.plannedFeatureId)
+    : null;
   const hikeMarkers = useMemo(
     () => ({
       type: 'FeatureCollection' as const,
@@ -409,7 +452,9 @@ export function OutdoorMap({
                   },
                 ]
               : []),
-            ...(selectedHikeSample !== null && selectedHike.samples[selectedHikeSample]
+            ...((!captured || graphic === 'planned') &&
+            selectedHikeSample !== null &&
+            selectedHike.samples[selectedHikeSample]
               ? [
                   {
                     type: 'Feature' as const,
@@ -427,7 +472,7 @@ export function OutdoorMap({
           ]
         : [],
     }),
-    [selectedHike, selectedHikeSample],
+    [selectedHike, selectedHikeSample, captured?.id, graphic],
   );
   const selectedProperties = selected?.properties;
   const selectedSourceUrl = outdoorSourceUrl(selectedProperties?.sourceUrl);
@@ -835,7 +880,7 @@ export function OutdoorMap({
       </ProductCard>
       <View
         style={{
-          height: selectedHike ? 300 : 520,
+          height: selectedHike || captured ? 300 : 520,
           marginVertical: 12,
           borderWidth: 2,
           borderRadius: 16,
@@ -1003,6 +1048,18 @@ export function OutdoorMap({
                   paint={{ 'line-color': '#b80d44', 'line-width': 4 }}
                 />
               </GeoJSONSource>
+              <GeoJSONSource id="captured-profile-point" data={capturedProfileMarker}>
+                <Layer
+                  id="captured-profile-marker"
+                  type="circle"
+                  paint={{
+                    'circle-color': '#b80d44',
+                    'circle-radius': 10,
+                    'circle-stroke-width': 3,
+                    'circle-stroke-color': '#ffffff',
+                  }}
+                />
+              </GeoJSONSource>
               <GeoJSONSource id="recorded-position" data={point}>
                 <Layer
                   id="last-recorded"
@@ -1061,12 +1118,84 @@ export function OutdoorMap({
           </View>
         )}
       </View>
+      <ProductCard title="Hike capture">
+        <HikeCaptureControls
+          capture={capture}
+          plan={
+            selectedHike && selected
+              ? { id: selected.id, name: selected.properties.name }
+              : undefined
+          }
+        />
+        {captured ? (
+          <>
+            <Text style={{ fontWeight: '700' }}>
+              {captured.name} · {captured.state} · private on-device
+            </Text>
+            <Text>
+              Captured path: pink. Expected path: orange when selected. GPS:{' '}
+              {captured.display.gpsQuality}.
+            </Text>
+            <Text>
+              Elevation source:{' '}
+              {captured.display.elevationConfidence === 'barometer-fused'
+                ? 'Filtered barometer, with GPS calibration where available'
+                : captured.display.elevationConfidence === 'gps'
+                  ? 'Filtered GPS (lower confidence)'
+                  : 'Waiting for usable elevations'}
+              .
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <ProductButton
+                label="Captured hike graphic"
+                hint="Show your captured path statistics and sensor elevation chart"
+                selected={graphic === 'recorded'}
+                onPress={() => setGraphic('recorded')}
+              />
+              <ProductButton
+                label="Expected hike graphic"
+                hint="Restore the associated expected path and its terrain profile"
+                selected={graphic === 'planned'}
+                disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
+                onPress={() => {
+                  if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
+                  setGraphic('planned');
+                }}
+              />
+            </View>
+            {captured.plannedFeatureId && !capturePlan ? (
+              <Text>
+                The associated expected path is unavailable here. Show or reimport its dataset to
+                compare it with this captured hike.
+              </Text>
+            ) : null}
+            {graphic === 'recorded' ? (
+              captured.display.route ? (
+                <HikeDetails
+                  key={captured.id}
+                  route={captured.display.route}
+                  selectedSample={capturedSample}
+                  onSampleSelect={setCapturedSample}
+                  onShowRoute={showCapturedPath}
+                  recordedSeconds={captured.display.recordedSeconds}
+                  relativeElevation={captured.display.relativeElevation}
+                />
+              ) : (
+                <Text>
+                  Waiting for the first usable captured position. Keep recording; the path and
+                  profile will appear here.
+                </Text>
+              )
+            ) : null}
+          </>
+        ) : null}
+      </ProductCard>
       {selected && (
         <ProductCard title={selected.properties.name}>
           <Text>
             {selected.properties.kind} · {selected.properties.unit || selected.properties.category}
           </Text>
-          {selectedHike ? (
+          {selectedHike && (!captured || graphic === 'planned') ? (
             <HikeDetails
               key={selected.id}
               route={selectedHike}

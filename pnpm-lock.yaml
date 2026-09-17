@@ -148,6 +148,9 @@ importers:
 
   packages/recorder:
     dependencies:
+      '@open-outdoor/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@open-outdoor/storage':
         specifier: workspace:*
         version: link:../storage

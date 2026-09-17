@@ -12,7 +12,7 @@ export interface HikeRouteDetails {
   readonly start: readonly [number, number];
   readonly end: readonly [number, number];
   readonly samples: readonly HikeProfileSample[];
-  readonly elevationSource: 'dataset' | 'terrain-model' | 'unavailable';
+  readonly elevationSource: 'dataset' | 'terrain-model' | 'recorded' | 'unavailable';
   readonly ascentM?: number;
   readonly descentM?: number;
   readonly minimumElevationM?: number;

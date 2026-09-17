@@ -9,13 +9,19 @@ export function HikeDetails({
   selectedSample,
   onSampleSelect,
   onShowRoute,
+  recordedSeconds,
+  relativeElevation = false,
 }: {
   readonly route: HikeRouteDetails;
   readonly selectedSample: number | null;
   readonly onSampleSelect: (index: number) => void;
   readonly onShowRoute: () => void;
+  readonly recordedSeconds?: number;
+  readonly relativeElevation?: boolean;
 }) {
   const palette = usePalette();
+  const recorded = recordedSeconds !== undefined;
+  const chartColor = recorded ? palette.route : palette.accent;
   const [metric, setMetric] = useState(false);
   const [width, setWidth] = useState(300);
   const distance = (meters: number) =>
@@ -43,15 +49,18 @@ export function HikeDetails({
   const select = (locationX: number) =>
     onSampleSelect(hikeSampleIndex(route, (locationX - 6) / Math.max(1, width - 12)));
   const stats = [
-    ['Mapped length', distance(route.distanceM)],
+    [recorded ? 'Recorded distance' : 'Mapped length', distance(route.distanceM)],
     ['Elevation gain', route.ascentM === undefined ? 'Unavailable' : elevation(route.ascentM)],
     ['Elevation loss', route.descentM === undefined ? 'Unavailable' : elevation(route.descentM)],
-    ['Est. walking time', time],
+    [
+      recorded ? 'Recorded time' : 'Est. walking time',
+      recorded ? `${Math.floor(recordedSeconds! / 60)} min ${recordedSeconds! % 60} s` : time,
+    ],
   ];
   return (
     <View style={{ gap: 12 }}>
       <Text accessibilityRole="header" style={{ fontWeight: '700', fontSize: 20 }}>
-        Hike overview
+        {recorded ? 'Captured hike' : 'Hike overview'}
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         {stats.map(([label, value]) => (
@@ -71,7 +80,7 @@ export function HikeDetails({
         ))}
       </View>
       <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-        Elevation profile
+        {relativeElevation ? 'Elevation change profile' : 'Elevation profile'}
       </Text>
       {chartAvailable ? (
         <>
@@ -82,7 +91,9 @@ export function HikeDetails({
           <View
             accessible
             accessibilityRole="adjustable"
-            accessibilityLabel="Hike elevation profile"
+            accessibilityLabel={
+              recorded ? 'Captured hike elevation profile' : 'Hike elevation profile'
+            }
             accessibilityHint="Drag across the chart to inspect the path. Swipe up or down with a screen reader to move along it."
             accessibilityValue={{
               min: 0,
@@ -140,7 +151,7 @@ export function HikeDetails({
                         top: Math.max(top, bottom),
                         width: Math.max(1, right - left),
                         height: height - Math.max(top, bottom),
-                        backgroundColor: palette.accent,
+                        backgroundColor: chartColor,
                         opacity: 0.16,
                       }}
                     />
@@ -151,7 +162,7 @@ export function HikeDetails({
                         top: (top + bottom) / 2 - 1.5,
                         width: length,
                         height: 3,
-                        backgroundColor: palette.accent,
+                        backgroundColor: chartColor,
                         transform: [{ rotate: `${Math.atan2(bottom - top, right - left)}rad` }],
                       }}
                     />
@@ -201,19 +212,22 @@ export function HikeDetails({
             </Text>
           ) : null}
           <Text style={{ color: palette.muted }}>
-            {route.elevationSource === 'terrain-model'
-              ? 'Approximate terrain elevations; the trail surface and actual climb may differ.'
-              : 'Profile from the elevations supplied in your dataset.'}
+            {recorded
+              ? 'Filtered sensor profile. Missing elevation samples and paused segments remain gaps.'
+              : route.elevationSource === 'terrain-model'
+                ? 'Approximate terrain elevations; the trail surface and actual climb may differ.'
+                : 'Profile from the elevations supplied in your dataset.'}
           </Text>
         </>
       ) : (
         <Text>
-          No complete elevation profile is available for this path. Import a GeoJSON route with
-          elevations to show its profile.
+          {recorded
+            ? 'Waiting for usable sensor elevations. Captured distance and path remain available.'
+            : 'No complete elevation profile is available for this path. Import a GeoJSON route with elevations to show its profile.'}
         </Text>
       )}
       <Text>
-        Mapped path:{' '}
+        {recorded ? 'Captured path:' : 'Mapped path:'}{' '}
         {route.segmentCount > 1
           ? `${route.segmentCount} separate segments`
           : route.closedLoop
@@ -222,14 +236,21 @@ export function HikeDetails({
         .
       </Text>
       <ProductButton
-        label="Show expected path"
-        hint="Fit the selected mapped trail and its endpoint markers"
+        label={recorded ? 'Show captured path' : 'Show expected path'}
+        hint={
+          recorded
+            ? 'Fit your captured hike on the map'
+            : 'Fit the selected mapped trail and its endpoint markers'
+        }
         onPress={onShowRoute}
       />
       <Text style={{ color: palette.muted }}>
-        This is the source’s mapped trail, which may be one section of a longer hike. A mapped
-        endpoint is not a verified trailhead. Walking time assumes 4 km/h plus one hour per 600 m
-        climbed; it excludes stops and conditions.
+        {recorded
+          ? 'This private view uses durable recorder samples. Recorded time excludes pause gaps and is based on captured observations.'
+          : 'This is the source’s mapped trail, which may be one section of a longer hike. A mapped endpoint is not a verified trailhead. Walking time assumes 4 km/h plus one hour per 600 m climbed; it excludes stops and conditions.'}
+        {relativeElevation
+          ? ' Elevations have a relative sensor baseline, not a verified height above sea level.'
+          : ''}
       </Text>
       <ProductButton
         label={metric ? 'Use miles and feet' : 'Use kilometres and metres'}
