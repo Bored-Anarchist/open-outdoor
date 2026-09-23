@@ -5,8 +5,6 @@ import {
   useAnnouncement,
 } from './accessibility';
 
-import { campingLegend } from '@open-outdoor/map';
-
 import { StatusBar } from 'expo-status-bar';
 
 import {
@@ -124,8 +122,6 @@ function AppContent({
   const importedDatasets = useImportedMapDatasets();
 
   const lastRenderedCheckpoint = useRef('');
-
-  const [legendOpen, setLegendOpen] = useState(false);
 
   const [appearanceOpen, setAppearanceOpen] = useState(false);
 
@@ -706,6 +702,8 @@ function AppContent({
 
   const active = recorderState === 'recording' || recorderState === 'paused';
 
+  const savedPlaces = application?.repository.listPlaceJournal() ?? [];
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.background }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -744,6 +742,8 @@ function AppContent({
             <OutdoorMap
               adapter={map}
 
+              section={section}
+
               placeJournal={application?.placeJournal ?? null}
 
               imports={importedDatasets}
@@ -774,56 +774,18 @@ function AppContent({
                 onRequestPermission: requestPermission,
               }}
             />
-
-            <AccessibleButton
-              label="Land and camping legend"
-
-              hint="Expand or collapse status explanations"
-
-              expanded={legendOpen}
-
-              onPress={() => setLegendOpen(!legendOpen)}
-            />
-
-            {legendOpen ? (
-              <ProductCard title="Land and camping status">
-                {campingLegend.map((entry) => (
-                  <Text key={entry.id} style={styles.copy}>
-                    {entry.mark} · {entry.label}: {entry.explanation}
-                  </Text>
-                ))}
-              </ProductCard>
-            ) : null}
           </>
         ) : null}
 
-        <Text accessibilityLiveRegion="polite" style={styles.status}>
-          {status}
-        </Text>
+        {section === 'track' || active || recorderState === 'recoverable' ? (
+          <Text accessibilityLiveRegion="polite" style={styles.status}>
+            {status}
+          </Text>
+        ) : null}
 
         {recorderState !== 'idle' ? <FieldNotice state={recorderState} /> : null}
 
-        {active ? (
-          <ProductCard title="Recording statistics">
-            <Text style={styles.activityHeading}>Committed checkpoint {liveStats.sequence}</Text>
-
-            <ProductMetric label="Distance" value={`${liveStats.distanceM.toFixed(0)} m`} />
-
-            <ProductMetric label="Ascent" value={`${liveStats.ascentM.toFixed(0)} m`} />
-
-            <ProductMetric
-              label="GPS"
-
-              value={liveStats.gpsQuality}
-
-              degraded={liveStats.gpsQuality === 'Degraded' || liveStats.gpsQuality === 'Poor'}
-            />
-
-            <ProductMetric label="Recording mode" value={modeLabels[mode]} />
-          </ProductCard>
-        ) : null}
-
-        {!nativeSpikes.available ? (
+        {section === 'track' && !nativeSpikes.available ? (
           <View accessibilityRole="alert" style={styles.alert}>
             <Text style={styles.alertHeading}>Native capability unavailable</Text>
 
@@ -847,6 +809,81 @@ function AppContent({
 
         {section === 'track' ? (
           <>
+            <ProductCard
+              title={
+                recorderState === 'recording'
+                  ? 'Recording now'
+                  : recorderState === 'paused'
+                    ? 'Recording paused'
+                    : recorderState === 'recoverable'
+                      ? 'Continue your hike'
+                      : 'Ready to record'
+              }
+            >
+              {active ? (
+                <Text style={styles.activityHeading}>
+                  Committed checkpoint {liveStats.sequence}
+                </Text>
+              ) : null}
+
+              <View style={styles.metricGrid}>
+                <ProductMetric
+                  label="Distance"
+                  value={active ? `${liveStats.distanceM.toFixed(0)} m` : null}
+                />
+
+                <ProductMetric
+                  label="Ascent"
+                  value={active ? `${liveStats.ascentM.toFixed(0)} m` : null}
+                />
+
+                <ProductMetric
+                  label="GPS"
+                  value={active ? liveStats.gpsQuality : null}
+                  degraded={
+                    active &&
+                    (liveStats.gpsQuality === 'Degraded' || liveStats.gpsQuality === 'Poor')
+                  }
+                />
+
+                <ProductMetric label="Recording mode" value={modeLabels[mode]} />
+              </View>
+
+              {recorderState === 'idle' ? (
+                <AccessibleButton
+                  label="Start recording"
+                  hint="Starts offline location and elevation recording"
+                  primary
+                  disabled={application === null || captureBusy}
+                  onPress={start}
+                />
+              ) : recorderState === 'recording' ? (
+                <AccessibleButton
+                  label="Pause recording"
+                  hint="Stops sensors and excludes paused distance and elevation"
+                  primary
+                  disabled={captureBusy}
+                  onPress={pause}
+                />
+              ) : recorderState === 'paused' ? (
+                <AccessibleButton
+                  label="Resume recording"
+                  hint="Restarts sensors in a new activity segment"
+                  primary
+                  disabled={captureBusy}
+                  onPress={resume}
+                />
+              ) : (
+                <AccessibleButton
+                  label="Recover interrupted recording"
+                  hint="Continues from the last durable checkpoint"
+                  primary
+                  disabled={recovery === null || captureBusy}
+                  onPress={() => recover()}
+                />
+              )}
+            </ProductCard>
+
             <Text accessibilityRole="header" style={styles.sectionHeading}>
               Tracking mode
             </Text>
@@ -874,81 +911,37 @@ function AppContent({
             </View>
 
             <Text accessibilityRole="header" style={styles.sectionHeading}>
-              Recorder controls
+              Other recording actions
             </Text>
 
             <View style={styles.controls}>
-              <AccessibleButton
-                label="Request Always Location"
+              {recorderState === 'idle' ? (
+                <AccessibleButton
+                  label="Request Always Location"
+                  hint="Opens the iOS location permission prompt"
+                  disabled={!nativeSpikes.available}
+                  onPress={requestPermission}
+                />
+              ) : null}
 
-                hint="Opens the iOS location permission prompt"
+              {active ? (
+                <AccessibleButton
+                  label="Finish and save recording"
+                  hint="Stops sensors and saves the private activity"
+                  disabled={captureBusy}
+                  onPress={finish}
+                />
+              ) : null}
 
-                disabled={!nativeSpikes.available || active}
-
-                onPress={requestPermission}
-              />
-
-              <AccessibleButton
-                label="Start recording"
-
-                hint="Starts offline location and elevation recording"
-
-                disabled={application === null || recorderState !== 'idle' || captureBusy}
-
-                onPress={start}
-              />
-
-              <AccessibleButton
-                label="Pause recording"
-
-                hint="Stops sensors and excludes paused distance and elevation"
-
-                disabled={recorderState !== 'recording' || captureBusy}
-
-                onPress={pause}
-              />
-
-              <AccessibleButton
-                label="Resume recording"
-
-                hint="Restarts sensors in a new activity segment"
-
-                disabled={recorderState !== 'paused' || captureBusy}
-
-                onPress={resume}
-              />
-
-              <AccessibleButton
-                label="Finish and save recording"
-
-                hint="Stops sensors and saves the private activity"
-
-                disabled={!active || captureBusy}
-
-                onPress={finish}
-              />
-
-              <AccessibleButton
-                label="Recover interrupted recording"
-
-                hint="Continues from the last durable checkpoint"
-
-                disabled={recorderState !== 'recoverable' || recovery === null || captureBusy}
-
-                onPress={() => recover()}
-              />
-
-              <AccessibleButton
-                label="Discard interrupted recording"
-
-                hint="Requires confirmation before permanently discarding recovery"
-
-                destructive
-
-                disabled={recorderState !== 'recoverable' || recovery === null || captureBusy}
-
-                onPress={confirmDiscard}
-              />
+              {recorderState === 'recoverable' ? (
+                <AccessibleButton
+                  label="Discard interrupted recording"
+                  hint="Requires confirmation before permanently discarding recovery"
+                  destructive
+                  disabled={recovery === null || captureBusy}
+                  onPress={confirmDiscard}
+                />
+              ) : null}
             </View>
 
             {nativeSpikes.phase0DiagnosticsEnabled ? (
@@ -1026,14 +1019,43 @@ function AppContent({
         {section === 'saved' ? (
           <>
             <Text accessibilityRole="header" style={styles.sectionHeading}>
-              Saved activities
+              Saved places
+            </Text>
+
+            {savedPlaces.length === 0 ? (
+              <Text style={styles.copy}>Your private place notes will appear here.</Text>
+            ) : (
+              savedPlaces.map((place) => (
+                <ProductCard key={place.featureId} title={place.featureName}>
+                  <OriginBadge origin="user" />
+
+                  {place.note ? <Text style={styles.copy}>{place.note}</Text> : null}
+
+                  <Text style={styles.copy}>
+                    {place.checkIns.length} private check-ins saved on this device
+                  </Text>
+
+                  <AccessibleButton
+                    label="Find on current map"
+                    hint="Opens Explore and selects this place if its dataset is loaded"
+                    onPress={() => {
+                      map.setSelectedFeature(place.featureId);
+                      setSection('explore');
+                    }}
+                  />
+                </ProductCard>
+              ))
+            )}
+
+            <Text accessibilityRole="header" style={styles.sectionHeading}>
+              Recorded hikes
             </Text>
 
             {savedActivities.length === 0 ? (
               <FieldNotice
                 state="empty"
 
-                detail="No saved activities yet. Start a recording from Track to create a private activity."
+                detail="No recorded hikes yet. Start a recording from Track to create a private activity."
               />
             ) : (
               savedActivities.map((activity) => (
@@ -1056,6 +1078,14 @@ function AppContent({
                 </ProductCard>
               ))
             )}
+            {savedPlaces.length === 0 && savedActivities.length === 0 ? (
+              <AccessibleButton
+                label="Explore places"
+                hint="Open the offline map to find a place"
+                primary
+                onPress={() => setSection('explore')}
+              />
+            ) : null}
           </>
         ) : null}
 
@@ -1163,6 +1193,8 @@ function createStyles(p: Palette) {
     intro: { color: p.muted, fontSize: 16, lineHeight: 24, marginBottom: 24 },
 
     controls: { gap: t.space.md },
+
+    metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: t.space.md },
 
     copy: {
       color: p.text,

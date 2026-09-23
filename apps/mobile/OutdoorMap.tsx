@@ -50,6 +50,7 @@ import {
 } from '@maplibre/maplibre-react-native';
 
 import {
+  campingLegend,
   createOutdoorPlaceCollection,
   createOutdoorPlaceLayerStyles,
   createOutdoorMapStyle,
@@ -426,6 +427,8 @@ export function OutdoorMap({
   imports,
 
   capture,
+
+  section,
 }: {
   adapter: OutdoorMapAdapter;
 
@@ -434,6 +437,8 @@ export function OutdoorMap({
   imports: ImportedMapDatasetsService;
 
   capture: HikeCaptureActions;
+
+  section: 'explore' | 'search';
 }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
 
@@ -444,6 +449,8 @@ export function OutdoorMap({
   const placeSource = useRef<GeoJSONSourceRef>(null);
 
   const palette = usePalette();
+
+  const [legendOpen, setLegendOpen] = useState(false);
 
   const featureIndex = useMemo<OutdoorFeatureIndex>(
     () => ({
@@ -1033,7 +1040,7 @@ export function OutdoorMap({
 
         style={{ fontSize: 24, fontWeight: '700', color: palette.text }}
       >
-        Explore the outdoors
+        {section === 'search' ? 'Search the offline map' : 'Explore the map'}
       </Text>
 
       <Text
@@ -1048,54 +1055,59 @@ export function OutdoorMap({
         Offline map · {featureIndex.features.length.toLocaleString()} geographic features
       </Text>
 
-      <TextInput
-        accessibilityLabel="Search lands, trails, campsites and imported features"
+      {section === 'search' ? (
+        <>
+          <TextInput
+            accessibilityLabel="Search lands, trails, campsites and imported features"
 
-        placeholder="Search a trail, forest or campsite"
+            placeholder="Search a trail, forest or campsite"
 
-        placeholderTextColor={palette.muted}
+            placeholderTextColor={palette.muted}
 
-        value={query}
+            value={query}
 
-        onChangeText={setQuery}
+            onChangeText={setQuery}
 
-        style={{
-          color: palette.text,
+            style={{
+              color: palette.text,
 
-          borderColor: palette.border,
+              borderColor: palette.border,
 
-          borderWidth: 1,
+              borderWidth: 1,
 
-          borderRadius: 16,
+              borderRadius: 16,
 
-          backgroundColor: palette.surface,
+              backgroundColor: palette.surface,
 
-          minHeight: 56,
+              minHeight: 56,
 
-          padding: 12,
+              padding: 12,
 
-          marginVertical: 8,
-        }}
-      />
+              marginVertical: 8,
+            }}
+          />
 
-      {query.trim() && (
-        <Text accessibilityLiveRegion="polite">
-          {results.length}
-          {results.length === 30 ? ' or more' : ''} results. Select a result to show it on the map.
-        </Text>
-      )}
+          {query.trim() && (
+            <Text accessibilityLiveRegion="polite">
+              {results.length}
+              {results.length === 30 ? ' or more' : ''} results. Select a result to show it on the
+              map.
+            </Text>
+          )}
 
-      {results.slice(0, 10).map((feature) => (
-        <ProductButton
-          key={feature.id}
+          {results.slice(0, 10).map((feature) => (
+            <ProductButton
+              key={feature.id}
 
-          label={`${feature.properties.name} · ${feature.properties.kind}`}
+              label={`${feature.properties.name} · ${feature.properties.kind}`}
 
-          hint="Fit this real geographic feature in the offline map"
+              hint="Fit this real geographic feature in the offline map"
 
-          onPress={() => select(feature)}
-        />
-      ))}
+              onPress={() => select(feature)}
+            />
+          ))}
+        </>
+      ) : null}
 
       <View
         style={{
@@ -1529,100 +1541,22 @@ export function OutdoorMap({
         access or camping permission.
       </Text>
 
-      <ProductCard title="Hike capture">
-        <HikeCaptureControls
-          capture={capture}
+      <ProductButton
+        label="Land and camping legend"
+        hint="Expand or collapse status explanations"
+        expanded={legendOpen}
+        onPress={() => setLegendOpen(!legendOpen)}
+      />
 
-          plan={
-            selectedHike && selected
-              ? { id: selected.id, name: selected.properties.name }
-              : undefined
-          }
-        />
-
-        {captured ? (
-          <>
-            <Text style={{ fontWeight: '700' }}>
-              {captured.name} · {captured.state} · private on-device
+      {legendOpen ? (
+        <ProductCard title="Land and camping status">
+          {campingLegend.map((entry) => (
+            <Text key={entry.id} style={{ color: palette.text, fontSize: 16, lineHeight: 24 }}>
+              {entry.mark} {entry.label}: {entry.explanation}
             </Text>
-
-            <Text>
-              Captured path: pink. Expected path: orange when selected. GPS:{' '}
-              {captured.display.gpsQuality}.
-            </Text>
-
-            <Text>
-              Elevation source:{' '}
-              {captured.display.elevationConfidence === 'barometer-fused'
-                ? 'Filtered barometer, with GPS calibration where available'
-                : captured.display.elevationConfidence === 'gps'
-                  ? 'Filtered GPS (lower confidence)'
-                  : 'Waiting for usable elevations'}
-              .
-            </Text>
-
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <ProductButton
-                label="Captured hike graphic"
-
-                hint="Show your captured path statistics and sensor elevation chart"
-
-                selected={graphic === 'recorded'}
-
-                onPress={() => setGraphic('recorded')}
-              />
-
-              <ProductButton
-                label="Expected hike graphic"
-
-                hint="Restore the associated expected path and its terrain profile"
-
-                selected={graphic === 'planned'}
-
-                disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
-
-                onPress={() => {
-                  if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
-
-                  setGraphic('planned');
-                }}
-              />
-            </View>
-
-            {captured.plannedFeatureId && !capturePlan ? (
-              <Text>
-                The associated expected path is unavailable here. Show or reimport its dataset to
-                compare it with this captured hike.
-              </Text>
-            ) : null}
-
-            {graphic === 'recorded' ? (
-              captured.display.route ? (
-                <HikeDetails
-                  key={captured.id}
-
-                  route={captured.display.route}
-
-                  selectedSample={capturedSample}
-
-                  onSampleSelect={setCapturedSample}
-
-                  onShowRoute={showCapturedPath}
-
-                  recordedSeconds={captured.display.recordedSeconds}
-
-                  relativeElevation={captured.display.relativeElevation}
-                />
-              ) : (
-                <Text>
-                  Waiting for the first usable captured position. Keep recording; the path and
-                  profile will appear here.
-                </Text>
-              )
-            ) : null}
-          </>
-        ) : null}
-      </ProductCard>
+          ))}
+        </ProductCard>
+      ) : null}
 
       {selected && (
         <ProductCard title={selected.properties.name}>
@@ -1905,6 +1839,101 @@ export function OutdoorMap({
           />
         </ProductCard>
       )}
+
+      <ProductCard title="Hike capture">
+        <HikeCaptureControls
+          capture={capture}
+
+          plan={
+            selectedHike && selected
+              ? { id: selected.id, name: selected.properties.name }
+              : undefined
+          }
+        />
+
+        {captured ? (
+          <>
+            <Text style={{ fontWeight: '700' }}>
+              {captured.name} · {captured.state} · private on-device
+            </Text>
+
+            <Text>
+              Captured path: pink. Expected path: orange when selected. GPS:{' '}
+              {captured.display.gpsQuality}.
+            </Text>
+
+            <Text>
+              Elevation source:{' '}
+              {captured.display.elevationConfidence === 'barometer-fused'
+                ? 'Filtered barometer, with GPS calibration where available'
+                : captured.display.elevationConfidence === 'gps'
+                  ? 'Filtered GPS (lower confidence)'
+                  : 'Waiting for usable elevations'}
+              .
+            </Text>
+
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <ProductButton
+                label="Captured hike graphic"
+
+                hint="Show your captured path statistics and sensor elevation chart"
+
+                selected={graphic === 'recorded'}
+
+                onPress={() => setGraphic('recorded')}
+              />
+
+              <ProductButton
+                label="Expected hike graphic"
+
+                hint="Restore the associated expected path and its terrain profile"
+
+                selected={graphic === 'planned'}
+
+                disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
+
+                onPress={() => {
+                  if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
+
+                  setGraphic('planned');
+                }}
+              />
+            </View>
+
+            {captured.plannedFeatureId && !capturePlan ? (
+              <Text>
+                The associated expected path is unavailable here. Show or reimport its dataset to
+                compare it with this captured hike.
+              </Text>
+            ) : null}
+
+            {graphic === 'recorded' ? (
+              captured.display.route ? (
+                <HikeDetails
+                  key={captured.id}
+
+                  route={captured.display.route}
+
+                  selectedSample={capturedSample}
+
+                  onSampleSelect={setCapturedSample}
+
+                  onShowRoute={showCapturedPath}
+
+                  recordedSeconds={captured.display.recordedSeconds}
+
+                  relativeElevation={captured.display.relativeElevation}
+                />
+              ) : (
+                <Text>
+                  Waiting for the first usable captured position. Keep recording; the path and
+                  profile will appear here.
+                </Text>
+              )
+            ) : null}
+          </>
+        ) : null}
+      </ProductCard>
 
       <View
         accessibilityLabel="iOverlander category icon key"

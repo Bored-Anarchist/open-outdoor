@@ -95,6 +95,7 @@ export interface ProductButtonProps {
   readonly disabled?: boolean;
 
   readonly selected?: boolean;
+  readonly primary?: boolean;
 
   readonly destructive?: boolean;
 
@@ -115,6 +116,8 @@ export function ProductButton({
   disabled = false,
 
   selected = false,
+
+  primary = false,
 
   destructive = false,
 
@@ -140,7 +143,7 @@ export function ProductButton({
 
   const unavailable = disabled || busy || pending;
 
-  const color = destructive ? p.danger : selected ? p.onAccent : p.text;
+  const color = destructive ? p.danger : selected || primary ? p.onAccent : p.text;
 
   return (
     <Pressable
@@ -189,9 +192,15 @@ export function ProductButton({
 
         borderWidth: selected || focused ? t.border.selected : t.border.normal,
 
-        borderColor: focused ? p.focus : destructive ? p.danger : selected ? p.accent : p.border,
+        borderColor: focused
+          ? p.focus
+          : destructive
+            ? p.danger
+            : selected || primary
+              ? p.accent
+              : p.border,
 
-        backgroundColor: selected ? p.accent : pressed ? p.selected : p.surface,
+        backgroundColor: selected || primary ? p.accent : pressed ? p.selected : p.surface,
 
         paddingHorizontal: t.space.lg,
 
@@ -370,7 +379,14 @@ export function ProductMetric({
     <View
       accessible
       accessibilityLabel={`${label}: ${value ?? 'Unknown'}${degraded ? '. Reduced confidence' : ''}`}
-      style={{ backgroundColor: p.background, borderRadius: 16, padding: 16, gap: 6 }}
+      style={{
+        backgroundColor: p.background,
+        borderRadius: 16,
+        padding: 16,
+        gap: 6,
+        flexBasis: '45%',
+        flexGrow: 1,
+      }}
     >
       <Text style={{ color: p.muted, fontSize: 14, fontWeight: '600' }}>{label}</Text>
       <Text
