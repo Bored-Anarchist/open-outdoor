@@ -1,6 +1,6 @@
 # WP-501 Product design system
 
-Status: implemented and automatically validated; physical production acceptance remains gated.
+Status: visual direction revised and styling integrated. Automated acceptance for this revision was not run; physical production acceptance remains gated.
 
 ## Decomposition and flows
 
@@ -8,7 +8,7 @@ WP-501 is XL. Before styling, it is decomposed into: A shared original tokens an
 
 Low-fidelity flow baseline (reading order, before visual treatment):
 
-- Explore: primary navigation → field status → map and legend → selected place → source, origin, coverage, freshness, restrictions and uncertainty → Track action.
+- Explore: compact brand and section introduction → map and legend → selected place evidence and provenance → Track action.
 - Search: navigation → labeled query and filters → result count/empty state → result detail retaining map context.
 - Track: navigation → recording/checkpoint status → glanceable metrics → start or resume → pause → deliberate finish/save. Recovery retains a separate discard confirmation.
 - Saved: navigation → private origin notice → saved list or empty state → activity detail.
@@ -18,14 +18,16 @@ Each surface must wrap at narrow widths and increased text size. Native recorder
 
 ## Brand and asset provenance
 
-The visual direction uses warm paper, slate blue, restrained plum route emphasis and angular open-ridge geometry. These are project-authored tokens and 24-unit line icons, created with AI assistance for Open Outdoor under Apache-2.0. No source-service logo, palette, layout, font, photo, map style or icon pack was used as a reference or copied. The system uses the platform system font. This is an original implementation/provenance record, not a trademark clearance opinion.
+The visual direction pairs deep forest green with warm linen, pale sage, and restrained ochre. Map route and location marks keep separate semantic colors. Nature apps such as AllTrails informed familiar discovery patterns for maps, route details, search, and saved outings. Open Outdoor keeps project-authored brand tokens, illustration, icon geometry, and map styles; external logos, photos, downloaded fonts, and icon packs were not reused. The app uses the platform system typeface. This record describes asset provenance, not trademark clearance.
+
+
 
 | Asset | Source of truth | Rights / dependencies |
 | --- | --- | --- |
 | Brand, color, type, spacing, radius, border, elevation, motion and haptic tokens | `packages/shared/src/design-system.ts` | Original, Apache-2.0 |
 | Eleven coherent line icons | `iconPaths` in the shared system | Original, Apache-2.0; SVG on browser, native View line segments on iOS |
 | Light, dark and high-contrast map documents | `packages/map/src/product-style.ts` | Original, Apache-2.0; no remote glyphs, sprites, fonts or styles |
-| Schematic preview geometry | `apps/browser-fixture/src/main.ts` | Original synthetic QA; never geographic evidence |
+| Schematic map and mountain illustration | `apps/browser-fixture/src/main.ts` | Original synthetic QA map and project artwork; never geographic evidence |
 | Browser QA dependency | Playwright 1.62.1 | Apache-2.0; development only, pinned in lockfile |
 
 ## Component contract and state coverage

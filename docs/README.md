@@ -19,6 +19,9 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Project scope](../PROJECT_SCOPE.md) | Normative product, architecture, privacy, and delivery boundary | Product owner |
 | [Documentation audit](DOCUMENTATION_AUDIT.md) | Identified issues, implemented resolutions, and validation record | Quality lead |
 | [Product and release definition](PRODUCT_RELEASE_DEFINITION.md) | iOS/platform boundary, release vocabulary, exact M4 Product MVP, and exclusions | Product owner |
+| [Product design system](PRODUCT_DESIGN_SYSTEM.md) | Shared visual tokens, components, appearances, map semantics, and field states | Design owner |
+| [Visual direction notes](design/visual-direction.md) | Whole-app screen structure, phone and desktop layout, screenshot index, and art provenance | Design owner |
+| [Visual design and layout guide](<design/Open Outdoor Visual Design Guide.docx>) | Human-readable screen hierarchy, palette, and field-ready interface guidance | Product/design owner |
 | [Work-package breakdown](WORK_PACKAGE_BREAKDOWN.md) | Implementable units, dependencies, outputs, and exit criteria | Technical lead |
 | [Implementation roadmap](IMPLEMENTATION_ROADMAP.md) | Phase sequence, milestones, gates, and evidence | Product/technical lead |
 | [Resource and RACI plan](RESOURCE_AND_RACI_PLAN.md) | Accountability, staffing, capacity, hardware, and cost categories | Project owner |
