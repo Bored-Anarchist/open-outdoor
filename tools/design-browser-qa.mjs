@@ -36,6 +36,9 @@ try {
     await page.setViewportSize({ width, height: 900 });
     for (const appearance of ['light', 'dark', 'high-contrast']) {
       await page.goto(base);
+      await page.locator('details.design-tools').evaluate((element) => {
+        element.open = true;
+      });
       await page.locator('#appearance').selectOption(appearance);
       await page.evaluate(() => {
         document.documentElement.style.fontSize = '34px';
@@ -86,22 +89,24 @@ try {
   await page.getByLabel('Place or trail name').fill('Hemlock');
   assert((await page.locator('#results button').count()) > 0);
   await page.locator('#results button').first().click();
-  for (const label of [
-    'Source',
-    'Coverage',
-    'Freshness',
-    'Restrictions',
-    'Uncertainty',
-    'Provenance',
-  ])
+  for (const label of ['Coverage', 'Freshness', 'Restrictions'])
     assert((await page.locator('#selected-detail dt').allTextContents()).includes(label));
-  await page.getByLabel('Feature type').selectOption('land');
+  assert.match(await page.locator('#selected-detail .access-note').innerText(), /Access unknown/);
+  await page.locator('#selected-detail .source-details').evaluate((element) => {
+    element.open = true;
+  });
+  for (const label of ['Source', 'Provenance'])
+    assert((await page.locator('#selected-detail dt').allTextContents()).includes(label));
+  await page.getByLabel('Explore by type').selectOption('land');
   assert.equal(await page.locator('#results button').count(), 0);
   await page.getByRole('button', { name: 'Track', exact: true }).click();
   await page.getByRole('button', { name: 'Start recording', exact: true }).click();
   assert.match(await page.locator('#action-status').innerText(), /unavailable/);
   await page.getByRole('button', { name: 'Saved', exact: true }).click();
-  assert.match(await page.locator('#surface').innerText(), /Private activity/);
+  assert.match(await page.locator('#surface').innerText(), /Your activities stay on your device/);
+  await page.locator('details.design-tools').evaluate((element) => {
+    element.open = true;
+  });
   for (const state of ['closure', 'private-unavailable', 'rights-excluded', 'checkpoint-error']) {
     await page.locator('#field-state').selectOption(state);
     assert.equal(await page.locator(`#field-notice [data-state="${state}"]`).count(), 1);
@@ -131,6 +136,9 @@ try {
   for (const appearance of ['light', 'dark', 'high-contrast']) {
     await page.goto(base);
     await page.addScriptTag({ path: require.resolve('axe-core/axe.min.js') });
+    await page.locator('details.design-tools').evaluate((element) => {
+      element.open = true;
+    });
     await page.locator('#appearance').selectOption(appearance);
     for (const section of ['Explore', 'Search', 'Track', 'Saved']) {
       await page.getByRole('button', { name: section, exact: true }).click();

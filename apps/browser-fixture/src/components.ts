@@ -29,5 +29,5 @@ export function button(label: string, attributes = '', iconName?: IconName): str
 }
 
 export function detailCard(detail: DetailPresentation): string {
-  return `<article class="card"><h2>${escapeHtml(detail.name)}</h2>${badge(detail.origin)}<dl>${(['source', 'coverage', 'freshness', 'restrictions', 'uncertainty', 'provenance'] as const).map((key) => `<div><dt>${key[0]!.toUpperCase() + key.slice(1)}</dt><dd>${escapeHtml(detail[key])}</dd></div>`).join('')}</dl></article>`;
+  return `<article class="card place-detail"><div class="place-banner" aria-hidden="true">${icon('explore')}<span>A place to explore</span></div><h2>${escapeHtml(detail.name)}</h2>${badge(detail.origin)}<div class="access-note">${icon('info')}<p>${escapeHtml(detail.uncertainty)}</p></div><dl>${(['coverage', 'freshness', 'restrictions'] as const).map((key) => `<div><dt>${key[0]!.toUpperCase() + key.slice(1)}</dt><dd>${escapeHtml(detail[key])}</dd></div>`).join('')}</dl><details class="source-details"><summary>Source &amp; provenance</summary><dl><div><dt>Source</dt><dd>${escapeHtml(detail.source)}</dd></div><div><dt>Provenance</dt><dd>${escapeHtml(detail.provenance)}</dd></div></dl></details></article>`;
 }
