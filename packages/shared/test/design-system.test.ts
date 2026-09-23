@@ -105,15 +105,10 @@ describe('T-E2E-001-D01 WP-501 design contracts', () => {
     });
     expect(html).not.toContain('<img');
     expect(html).toContain('&lt;img');
-    for (const label of [
-      'Source',
-      'Coverage',
-      'Freshness',
-      'Restrictions',
-      'Uncertainty',
-      'Provenance',
-    ])
+    for (const label of ['Coverage', 'Freshness', 'Restrictions', 'Source', 'Provenance'])
       expect(html).toContain(`<dt>${label}</dt>`);
+    expect(html).toContain('<div class="access-note">');
+    expect(html).toContain('<p>&lt;img');
     expect(notice('error', attack)).not.toContain('<img');
   });
 });
