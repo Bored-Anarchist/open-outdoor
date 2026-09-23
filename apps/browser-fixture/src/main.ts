@@ -187,15 +187,36 @@ function updateSearch(): void {
     : `<li>${notice('empty')}</li>`;
 
   root.querySelector('#selected-detail')!.replaceChildren();
-
-  list.querySelectorAll<HTMLButtonElement>('[data-place]').forEach((control) =>
-    control.addEventListener('click', () => {
-      const place = filtered.find((item) => item.id === control.dataset.place)!;
-
-      root.querySelector('#selected-detail')!.innerHTML = resultDetail(place.name);
-    }),
-  );
 }
+
+root.addEventListener('click', (event) => {
+  const target = event.target;
+
+  if (!(target instanceof Element)) return;
+
+  if (target.closest('#start')) {
+    root.querySelector('#action-status')!.textContent =
+      'Native tracking is unavailable in this browser fixture. Use a physical iPhone build.';
+    root.querySelector('#action-status')?.scrollIntoView({ block: 'nearest' });
+
+    return;
+  }
+
+  if (target.closest('#destructive-example')) {
+    root.querySelector('#button-demo')!.textContent =
+      'Example only. A real discard requires a separate confirmation naming the affected recording.';
+
+    return;
+  }
+
+  const control = target.closest<HTMLButtonElement>('#results [data-place]');
+
+  if (!control) return;
+
+  const place = places.find((item) => item.id === control.dataset.place);
+
+  if (place) root.querySelector('#selected-detail')!.innerHTML = resultDetail(place.name);
+});
 
 function render(): void {
   const expanded = new Set(
@@ -256,20 +277,9 @@ function render(): void {
     root.querySelector('#field-notice')!.innerHTML = notice(selectedState);
   });
 
-  root.querySelector('#start')?.addEventListener('click', () => {
-    root.querySelector('#action-status')!.textContent =
-      'Native tracking is unavailable in this browser fixture. Use a physical iPhone build.';
-    root.querySelector('#action-status')?.scrollIntoView({ block: 'nearest' });
-  });
-
   root.querySelector('#query')?.addEventListener('input', updateSearch);
 
   root.querySelector('#kind')?.addEventListener('change', updateSearch);
-
-  root.querySelector('#destructive-example')?.addEventListener('click', () => {
-    root.querySelector('#button-demo')!.textContent =
-      'Example only. A real discard requires a separate confirmation naming the affected recording.';
-  });
 
   root.querySelectorAll('details').forEach((element) => {
     element.open = expanded.has(element.querySelector('summary')?.textContent ?? '');

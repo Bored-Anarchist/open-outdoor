@@ -1537,8 +1537,8 @@ export function OutdoorMap({
       </View>
 
       <Text style={{ color: palette.muted, fontSize: 13, lineHeight: 20, marginBottom: 20 }}>
-        Map display only · No turn instructions or off-route alerts. Mapped places do not establish
-        access or camping permission.
+        Map display only · No turn instructions, rerouting, or off-route alerts. Mapped places do
+        not establish access or camping permission.
       </Text>
 
       <ProductButton

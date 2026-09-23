@@ -351,10 +351,15 @@ for (const token of [
   'Alert.alert',
   'ProductButton as AccessibleButton',
   'AppearanceContext.Provider',
-  'no turn instructions, rerouting, or',
 ]) {
   requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
 }
+const outdoorMap = await text('apps/mobile/OutdoorMap.tsx');
+requireText(
+  outdoorMap,
+  'No turn instructions, rerouting, or off-route alerts.',
+  'native map safety notice',
+);
 const productComponents = await text('apps/mobile/ProductComponents.tsx');
 for (const token of [
   'minHeight: t.target.minimum',
