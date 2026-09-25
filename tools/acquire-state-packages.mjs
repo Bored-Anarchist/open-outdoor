@@ -795,6 +795,11 @@ async function writeTracker(states, packageRows) {
     const row = packageRows.get(state.code);
     return row ?? `| ${state.code} | ${state.name} | ${state.forestryAgency} | — | — | — | Not acquired | Not queried |`;
   });
+  const agencyRows = registry.states.map((state) => {
+    const parksAgency = `[${state.parksAgency}](${state.parksAgencyUrl})`;
+    const forestryAgency = `[${state.forestryAgency}](${state.agencyUrl})`;
+    return `| ${state.code} | ${state.name} | ${parksAgency} | ${state.parksLayerStatus} | ${forestryAgency} | ${state.forestryLayerStatus} |`;
+  });
   const content = [
     '# State Outdoor Data Package Tracker',
     '',
@@ -815,9 +820,17 @@ async function writeTracker(states, packageRows) {
     '| --- | --- | --- | --- | ---: | --- | --- | --- |',
     ...rows,
     '',
+    '## State parks and forestry agency tracking',
+    '',
+    'These links identify the state agencies responsible for parks and forestry. Agency identification does not mean the agency\'s GIS layers have been acquired. For every state, discover relevant GIS sources, review dataset terms and rights, assess coverage, and record source metadata before integration. New York has an existing package; its coverage against these state agency sources still needs review.',
+    '',
+    '| Code | State | Parks agency and official page | Parks data status | Forestry agency and official page | Forestry data status |',
+    '| --- | --- | --- | --- | --- | --- |',
+    ...agencyRows,
+    '',
     '## Acceptance / follow-up',
     '',
-    '- Per-state direct forestry and state parks/trails/roads/facility sources: not yet integrated.',
+    '- Per-state direct forestry and state parks/trails/roads/facility sources: discover, rights-review, and integrate as tracked above.',
     '- Rights terms have been recorded for the national public datasets; state-specific dataset terms are required before a direct layer is added.',
     '- Camping rules, seasonal closures, fire restrictions, and current conditions are intentionally not inferred from land ownership or this snapshot.',
     '- Refresh packages using `pnpm map:acquire:states`; the script rewrites this tracker after every completed state package.',
