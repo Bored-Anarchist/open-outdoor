@@ -281,7 +281,7 @@ const curatedVisitorFeeds = {
     ['Hawaii State Parks Campsites MapServer layer 31', 'https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/31', 'api', 'State Parks-sourced point layer for permitted campsites, cabins and related units; May 12, 2025 source records were ground-truthed by State Parks staff. Coverage is only the State Parks system.'],
   ],
   'ID:parks': [
-    ['Idaho Recreation Trails FeatureServer layer 128', 'https://services1.arcgis.com/CNPdEkvnGl65jCX8/arcgis/rest/services/Idaho_Recreation_Trails/FeatureServer/128', 'api', 'Current IDPR-hosted 57,989-line statewide routes layer, with 2026 edits and companion POI/closure layers. It spans multiple managers; filter and verify park routes. Item terms prohibit commercial use and require attribution in third-party apps, so offline public redistribution remains blocked pending permission.'],
+    ['Idaho Recreation Trails FeatureServer layer 128', 'https://services1.arcgis.com/CNPdEkvnGl65jCX8/arcgis/rest/services/Idaho_Recreation_Trails/FeatureServer/128', 'api', 'Current IDPR-hosted 57,989-line statewide routes layer, with 2026 edits and companion POI/closure layers. It spans multiple managers; filter and verify park routes. The noncommercial reference build fits the item’s commercial-use limit if source attribution is shown in the app. Confirm offline redistribution and derivation rights before a public bundle.'],
   ],
   'ID:forestry': [
     ['Idaho Department of Lands Trails FeatureServer layer 2', 'https://gis1.idl.idaho.gov/arcgis/rest/services/Portal/IDLTrails/FeatureServer/2', 'api', 'IDL trail lines expose trail name, jurisdiction, and supervisory area, including a State jurisdiction code. Use the jurisdiction/land manager fields to isolate state-managed routes.'],
@@ -350,7 +350,7 @@ const additionalCandidateFeeds = {
     ['Georgia Forestry Commission State Managed Forests', 'https://gatrees.org/forest-management-conservation/state-managed-forests/', 'info', 'Official current forest-by-forest directory lists GFC-managed tracts, map sheets, recreation opportunities, and forest-specific camping/access rules. It is a completeness and operations reference, not a bulk GIS feed.'],
   ],
   'VA:parks': [
-    ['Virginia State Parks SP Boundary FeatureServer layer 3', 'https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3', 'api', 'Official 44-polygon State Parks boundary layer, edited June 2026. Its item prohibits redistribution for profit; public offline reuse needs review. Boundaries do not convey trail access, campsites, or closures.'],
+    ['Virginia State Parks SP Boundary FeatureServer layer 3', 'https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3', 'api', 'Official 44-polygon State Parks boundary layer, edited June 2026. Its no-profit redistribution condition is compatible with the noncommercial reference build, subject to DCR credit and review of offline and derived-bundle use. Boundaries do not convey trail access, campsites, or closures.'],
     ['Virginia State Parks park trail maps', 'https://www.dcr.virginia.gov/state-parks/park-trail-maps', 'info', 'Reachable official park-by-park trail map page links PDF/Avenza maps. The raw PDF directory returned HTTP 403 to automation; use this maintained page as the visitor map reference, not a statewide vector feed.'],
   ],
   'SD:forestry': [
