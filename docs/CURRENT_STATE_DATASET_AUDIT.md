@@ -2,6 +2,8 @@
 
 **Reviewed:** 2026-09-26. **Scope:** the 50 state agency rows in `config/us-state-forestry-agencies.json`, the 49 built state packages, the New York outdoor package, and OSM-derived map inputs. This is an inventory and source-selection audit, not a new acquisition or a certification of permission, current access, or redistribution rights.
 
+**AR/ID/SD rights update:** See the [dataset-specific redistribution check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md). Arkansas Outdoor Recreational Facilities has an affirmative no-use-limitations statement; other planned agency datasets for those three states remain unconfirmed for public offline redistribution. Geofabrik OSM extracts have explicit ODbL redistribution rights and obligations. No state-agency features were added to public packages.
+
 ## What the app actually uses
 
 | Product/data plane | Current source | Finding |
