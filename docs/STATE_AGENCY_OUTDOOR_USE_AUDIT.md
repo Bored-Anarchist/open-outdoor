@@ -4,6 +4,7 @@
 **Scope:** 49 states other than New York; all 98 parks and forestry agency source records in the agency registry.
 **Evidence level:** The source records were checked against agency portals and live service descriptions where available. The [initial endpoint, completeness, and rights validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) records 98 primary and 44 named supplemental source checks; the [eight-URL follow-up](EIGHT_SOURCE_ENDPOINT_FOLLOWUP_2026-09-26.md) documents corrections. These remain conservative fit/readiness judgments, not field-by-field certification of every record, closure, or access rule.
 **Question:** Does the recorded agency source help someone find or navigate campsites, trails, trailheads, visitor facilities, or the land manager—and what is still missing before it can be treated as an iOverlander-style POI or route source?
+**AR/ID/SD correction:** Use the [2026-09-26 deep dive](ID_AR_SD_AGENCY_DATASET_DEEP_DIVE_2026-09-26.md) for these agencies. In particular, Arkansas's facility inventory is primarily AGFC-owned; `owner='ASP'` yields 180 park points and `owner='AFC'` yields 47 Forestry points, mostly old Poison Springs campsite records. Idaho's 27 park points include a welcome marker. South Dakota's newly located GFP park polygons need class filtering. These facts supersede the broad visitor-fit descriptions in the affected rows below.
 
 ## Finding
 
