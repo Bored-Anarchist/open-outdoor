@@ -1,6 +1,7 @@
 # New York State Agency Source Coverage Audit
 
 **Audit date:** 2026-09-25<br>
+**Complete inventory:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists all 13 existing New York package source records and eight identified OPRHP service candidates alongside the other states. This audit retains the New York-specific coverage, reuse, and freshness decisions.<br>
 **Scope:** The two New York agencies in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json): NYS DEC Division of Lands and Forests and the NYS Office of Parks, Recreation and Historic Preservation (OPRHP).<br>
 **Bundle reviewed:** [`new-york-outdoors.manifest.json`](../packages/map/src/assets/new-york-outdoors.manifest.json), acquired 2026-09-16.
 

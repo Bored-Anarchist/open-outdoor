@@ -1,5 +1,7 @@
 # Idaho, Arkansas, and South Dakota agency dataset deep dive
 
+The [all-datasets tracker](ALL_DATASETS_TRACKER.md) includes every selected layer below, the shipped source families, and the remaining state/OSM registry roles. These layers are candidates and have not been added to the shipped state packages.
+
 **Checked:** 2026-09-26. **Purpose:** select land, trail, camping, and visitor-location inputs for the offline public project. Counts below are live ArcGIS `returnCountOnly` results on this date, not proof of complete or current coverage. None of these newly identified agency records has been copied into a public package.
 
 The [project scope](../PROJECT_SCOPE.md) allows publicly redistributed source data only when its independent terms cover storage and redistribution. Noncommercial operation satisfies a noncommercial condition but does not supply a missing redistribution grant. An empty ArcGIS `licenseInfo` is **unknown**, not open licensing.

@@ -1,6 +1,7 @@
 # State Agency Direct-Source Coverage Audit
 
 **Audit date:** 2026-09-26
+**Complete source index:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) enumerates every current registry role alongside shipped federal/New York sources, OSM fallbacks, and selected three-state additions. Its POI section records the mapping and app-import gates; source discovery in this audit is not POI integration.
 **Scope:** The parks and forestry agencies identified in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json) for the 49 states other than New York (98 agency-source checks).
 **Finding:** A source-discovery result is recorded for every agency. This is not a claim that data have been integrated, are complete, are current, or may be redistributed.
 **Visitor usefulness:** A separate [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) assesses all 98 records against camping, hiking, visitor facilities, and POI/route needs.

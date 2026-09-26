@@ -2,11 +2,13 @@
 
 **Scope:** the 49 states other than New York. Each state is produced as its own GeoJSON, search index, and source manifest package.
 
+**Complete source index and POI readiness:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists all nine shipped national source families, all 13 New York package sources, every 212 non-New-York registry source-role entries (including OSM), the 19 selected Arkansas/Idaho/South Dakota plan rows, and eight New York OPRHP candidates. It also reports POI category and import-limit results for each of the 49 state packages. The three shipped federal point feeds currently leave 62,408 of 71,523 package POI entries in the map's Other category; 17 state files exceed the current user-import size or feature limit. These are integration gates, separate from rights review.
+
 ## Build policy
 
 - The app already has the detailed New York overlay. This tracker covers the other 49 states.
 - Each package uses USGS PAD-US state-managed/public-land inventory with per-feature source lineage, NPS public trails and POIs, USFS trails/recreation/MVUM layers, and BLM surface-management boundaries where present.
-- A state package is an independently importable GeoJSON overlay; it is not added to the default app binary.
+- A state package is a separate GeoJSON overlay and is not added to the default app binary. Seventeen files exceed the current user-import limit; see the [per-state compatibility table](ALL_DATASETS_TRACKER.md#state-package-poi-and-import-status) before describing a package as importable in the app.
 - Every access, season, closure, or recreation status remains source-attributed and must be confirmed with the managing agency. Ownership alone is never treated as permission to enter or camp.
 - Parks and forestry source discovery for the 49 states is recorded in the [agency source audit](STATE_AGENCY_SOURCE_AUDIT.md); New York is covered by its [separate source audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Dataset integration, rights, and freshness review remain open.
 - The [current agency redistribution rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md) checks all 98 primary and 44 non-OSM supplemental source-role records. It records exact publisher terms and public Git/offline decisions; a positive rights result still requires separate freshness, coverage, and access review before packaging.

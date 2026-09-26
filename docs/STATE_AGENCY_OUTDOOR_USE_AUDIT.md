@@ -1,6 +1,7 @@
 # State Agency Outdoor Dataset Use Audit
 
 **Audit date:** 2026-09-26
+**Complete source index and POI mapping:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) includes all current registered agency and OSM roles plus shipped sources. The shipped NPS, USFS, and BLM point feeds need category mapping for current POI filters; candidate usefulness in this audit does not imply that a feed has been mapped into the canonical place schema.
 **Scope:** 49 states other than New York; all 98 parks and forestry agency source records in the agency registry.
 **Evidence level:** The source records were checked against agency portals and live service descriptions where available. The [initial endpoint, completeness, and rights validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) records 98 primary and 44 named supplemental source checks; the [eight-URL follow-up](EIGHT_SOURCE_ENDPOINT_FOLLOWUP_2026-09-26.md) documents corrections. These remain conservative fit/readiness judgments, not field-by-field certification of every record, closure, or access rule.
 **Current redistribution decisions:** See the [142-record agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md) for publisher evidence after URL corrections; visitor usefulness here does not authorize offline bundling.

@@ -1,5 +1,7 @@
 # Redistribution rights check: Arkansas, Idaho, and South Dakota
 
+The [all-datasets tracker](ALL_DATASETS_TRACKER.md) indexes every selected three-state layer alongside the complete state registry and shipped sources. Rights decisions here do not by themselves establish POI category mapping or readiness for app import.
+
 **Checked:** 2026-09-26. **Release question:** may Open Outdoor store the data in public Git/release artifacts and distribute a processed offline app extract? This check covers the Arkansas, Idaho, and South Dakota sources in the [planned-layer tracker](STATE_DATA_PACKAGE_TRACKER.md#planned-arkansas-idaho-and-south-dakota-agency-inputs). It separates public availability, in-app use, and redistribution of source records. Rights status is per dataset, not per state or ArcGIS host.
 
 | Dataset(s) in plan | Publisher evidence | Public Git and offline extract decision |
