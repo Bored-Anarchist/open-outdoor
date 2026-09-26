@@ -822,7 +822,7 @@ async function writeTracker(states, packageRows) {
     '',
     '## State parks and forestry agency tracking',
     '',
-    'These links identify the state agencies responsible for parks and forestry. Agency identification does not mean the agency\'s GIS layers have been acquired. For every state, discover relevant GIS sources, review dataset terms and rights, assess coverage, and record source metadata before integration. New York has an existing package; its coverage against these state agency sources still needs review.',
+    'These links identify the state agencies responsible for parks and forestry. Agency identification does not mean the agency\'s GIS layers have been acquired. For every state, discover relevant GIS sources, review dataset terms and rights, assess coverage, and record source metadata before integration. New York agency sources have been inventoried and coverage-audited in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md); layer integration and rights decisions remain open as recorded there.',
     '',
     '| Code | State | Parks agency and official page | Parks data status | Forestry agency and official page | Forestry data status |',
     '| --- | --- | --- | --- | --- | --- |',

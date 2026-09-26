@@ -1,0 +1,56 @@
+# New York State Agency Source Coverage Audit
+
+**Audit date:** 2026-09-25<br>
+**Scope:** The two New York agencies in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json): NYS DEC Division of Lands and Forests and the NYS Office of Parks, Recreation and Historic Preservation (OPRHP).<br>
+**Bundle reviewed:** [`new-york-outdoors.manifest.json`](../packages/map/src/assets/new-york-outdoors.manifest.json), acquired 2026-09-16.
+
+## Result
+
+| Agency | Finding | Bundle evidence |
+| --- | --- | --- |
+| NYS DEC | **Partially covered.** The package already has DEC land polygons, one DEC road layer, one hiking-trail layer, and DEC land points of interest. The identified direct DEC catalog contains other road and trail classes, land-activity layers, and current operational information not represented by those four source records. | 3,297 DEC Lands polygons; 1,308 DEC Road features; 5,289 Hiking Trails features; 4,560 DEC land POIs. The hiking count is only layer 2, not all DEC transportation/trail layers. |
+| NYS OPRHP | **Direct sources found; no OPRHP layer is currently bundled.** Public ArcGIS feature services cover park boundaries, trails/transportation, facilities, points, camping, and selected time-sensitive conditions. Their source vintage and permitted reuse need review before offline packaging. | The current bundle has no OPRHP source record. NPS features in it are federal park data, not OPRHP parks. |
+
+These are source-presence and layer-scope findings; feature counts alone do not establish complete geographic coverage, public access, current conditions, or legal permission to enter or camp.
+
+## Direct sources and coverage
+
+### NYS Department of Environmental Conservation
+
+| Topic | Direct source and access | Audit notes |
+| --- | --- | --- |
+| DEC-managed lands | [DEC Lands, ArcGIS MapServer layer 2](https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2) | Polygon feature layer for lands under DEC care, custody, and control, including Wildlife Management Areas, Unique Areas, State Forests, and Forest Preserve. The REST query supports GeoJSON. Already bundled as `nys-dec-lands` (3,297). |
+| DEC roads and trail classes | [DEC Info Locator trails MapServer](https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer) and the [DEC_Trails FeatureServer](https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/DEC_Trails/FeatureServer) | The Info Locator service exposes 13 layers: DEC Road (0), DEC Roads (1), two Hiking Trails layers (2–3), two Cross Country Ski Trails (4–5), two Horse Trails (6–7), two Mountain Bike Trails (8–9), two Snowmobile Trails (10–11), and MAPPWD Route (12). The bundle uses only layer 0 (1,308 road features) and layer 2 (5,289 hiking features). Thus it does **not** yet include the full discovered road/trail inventory. The layer query endpoints support GeoJSON; the newer FeatureServer supports query and conversion/export operations and exposes road, hiking, cross-country ski, horse, mountain-bike, snowmobile, and MAPPWD route layers. The Info Locator service description says it was updated in 2020, so check actual layer edit dates and source lineage before switching feeds or claiming freshness. |
+| DEC recreation assets | [Points of Interest on DEC Lands dataset](https://data.ny.gov/d/yvkb-z58x) · [JSON API](https://data.ny.gov/resource/yvkb-z58x.json) · [CSV download](https://data.ny.gov/resource/yvkb-z58x.csv) · [dataset metadata and download resources](https://catalog.data.gov/dataset/points-of-interest-on-department-of-environmental-conservation-lands) | Public State Open Data dataset for maintained assets such as lean-tos, parking, primitive campsites, privies, trail structures, fire towers, scenic vistas, picnic sites, boat launches, and accessible assets. The bundle uses this source as `nys-dec-poi` (4,560 records). The catalog reports the dataset last updated 2026-04-03; retain the acquisition date and compare last-edited fields on refresh. |
+| Land activities and access context | [DEC Info Locator land-activities MapServer](https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_land_activities/MapServer) · [DECinfo Locator](https://dec.ny.gov/maps/interactive-maps/decinfo-locator) · [DECinfo Locator layer descriptions and update frequencies](https://dec.ny.gov/maps/interactive-maps/decinfo-locator/layers) | The service lists DEC lands, conservation easements, Wildlife Management Areas and boundaries, Wildlife Management Units, hunting on DEC-managed lands, and hunting zones. These are queryable map layers, but a mapped land or activity designation is not a complete or current permission/rule feed. DEC land pages also publish property-specific GeoPDF/PDF maps and visitor/rules information; those are property-level documents rather than a single statewide structured download. |
+
+### NYS Office of Parks, Recreation and Historic Preservation
+
+| Topic | Direct source and access | Audit notes |
+| --- | --- | --- |
+| OPRHP service directory | [NYS OPRHP ArcGIS REST service directory](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services) | Agency-hosted public feature services. FeatureServer layers expose query and convert-format operations; query endpoints can return GeoJSON where listed in the layer metadata. Use each service's own metadata, last-edit fields, and constraints rather than treating directory visibility as a redistribution license. |
+| Park boundaries | [NYS Park Polygons, layer 0](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NYS_Park_Polygons/FeatureServer/0) | Polygon data for OPRHP properties. The REST description says boundaries are approximate and cites an August 2022 vintage; the linked ArcGIS item metadata cites October 2025. Because the published vintage information conflicts, ask OPRHP to confirm the current authoritative geometry before packaging. |
+| Trails and internal transportation | [NY State Parks Trails, layer 0](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Trails/FeatureServer/0) | Queryable polyline view containing marked/unmarked trails, roads, and sidewalks with access/activity and status fields. Its layer description still says “Data Merged 3/4/2021,” while the REST metadata reports data last edited 2026-09-22. Confirm with OPRHP what that recent edit represents and validate trail coverage before treating it as current statewide coverage. |
+| Facilities, points, and camping | [NY State Park Facilities](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Park_Facilities/FeatureServer) · [NY State Parks Camping](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Camping/FeatureServer) · [NY State Park Points public view](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Park_Points_(public_view)/FeatureServer) | Direct feature-service APIs listed in OPRHP's directory. Assess schema, duplicates, park coverage, currentness, and content terms per service. No OPRHP features from these services are in the New York bundle. |
+| Conditions and closures | [Temporary trail closures](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Temporary_Trail_Closure/FeatureServer) · [Beach status](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Beach_Status/FeatureServer) · [2025–26 snowmobile data view](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/2025_2026_Snowmobile_Data_view/FeatureServer) | Candidate APIs for short-lived status or seasonal routes. No verified update interval or service-level freshness guarantee was established in this audit. Treat as a separate refreshable feed and retain status timestamps; do not use a stale offline snapshot to imply a trail or facility is open. |
+| Visitor maps and park information | [NYS Parks Explorer App information](https://staffportal.parks.ny.gov/explorer-app/) · [Minnewaska/Sam's Point park page and maps](https://parks.ny.gov/visit/state-parks/minnewaska-state-park-preserve-sams-point-area) | OPRHP provides park-level trail PDFs and offline map downloads plus visitor information. These are useful visitor references but are not a complete statewide vector-data export or a substitute for the feature-service metadata. |
+
+## Reuse, freshness, and integration decisions
+
+- Keep DEC's four existing source records, but describe DEC coverage as partial until the unmatched DEC road and trail classes are reconciled against current layer schemas, counts, and `UPDATED` values. The exposed `PUBLICUSE`, route/activity, and access fields require field-level review; they do not establish a blanket permission to enter or camp.
+- Do not mark OPRHP covered merely because its ArcGIS services are publicly queryable. The [park-boundary item metadata](https://www.arcgis.com/sharing/rest/content/items/bb2dfa2ccec0462ebe40e4efd8e2252f/info/metadata/metadata.xml?format=default&output=html) says “Do not redistribute”; OPRHP's [public Parks overview item](https://www.arcgis.com/home/item.html?id=b4e838a7e5ac449294be3b3f0f67e4aa) also limits use to informational, non-commercial purposes and requires attribution. Treat offline redistribution as prohibited pending explicit permission for each source to be used.
+- Resolve the OPRHP boundary vintage conflict and the trail layer's conflicting 2021 merge description / 2026 edit date directly with the agency. Record source edition/date, geometry count/checksum, and a refresh policy for every layer accepted into a bundle.
+- Keep temporary closures, beach status, and other operational conditions separate from durable trail/property geometry. Their age should be visible and their stale-state behavior defined before product use.
+- Continue treating every mapped feature as informational. Confirm access, camping rules, closure status, and conditions with the responsible agency; neither ownership nor a trail line proves current permission or availability.
+
+## Audit references
+
+- [NYS DEC GIS services and Mapping Gateway](https://dec.ny.gov/environmental-protection/environmental-justice/gis-tools)
+- [DECinfo Locator layer descriptions and update frequencies](https://dec.ny.gov/maps/interactive-maps/decinfo-locator/layers)
+- [NYS DEC lands layer metadata](https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2)
+- [NYS DEC trails service metadata](https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer)
+- [NYS DEC data catalog record for land POIs](https://catalog.data.gov/dataset/points-of-interest-on-department-of-environmental-conservation-lands)
+- [NYS OPRHP ArcGIS REST catalog](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services)
+- [NYS OPRHP park-boundary service metadata](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NYS_Park_Polygons/FeatureServer/0)
+- [NYS OPRHP trail-service metadata](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Trails/FeatureServer/0)
+- [OPRHP Parks overview item and use terms](https://www.arcgis.com/home/item.html?id=b4e838a7e5ac449294be3b3f0f67e4aa)
