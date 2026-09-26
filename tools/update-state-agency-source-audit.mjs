@@ -33,7 +33,7 @@ const sources = {
     ['CAL FIRE FRAP GIS mapping and data', 'https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/gis-mapping-and-data-analytics', 'catalog', 'Agency GIS/data catalog for forest assessment and fire/resource layers; select an individual dataset and check its vintage and lineage.'],
   ],
   CO: [
-    ['Colorado State Parks Trails public-domain dataset', 'https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr', 'download', 'Named Colorado Information Marketplace dataset of trails in Colorado State Parks, provided by DNR/CPW and exposed through download/API options. Useful route layer; verify trail-use fields, actual downloadable format, current coverage, and terms against dataset metadata before ingest.'],
+    ['Colorado State Parks Trails public-domain dataset', 'https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr', 'download', 'Colorado Information Marketplace identifies DNR/CPW as provider, last updated the dataset on 2026-02-18, and labels its license Public Domain. Download/API options provide a park-trail route candidate; verify route classes, park-by-park coverage, access, and closure status before ingest.'],
     ['Colorado State Forest Service Data & Tools / GIS Open Data Portal', 'https://csfs.colostate.edu/data/', 'catalog', 'Official CSFS portal provides searchable, streamable forest and wildfire datasets; select and validate the relevant resource.'],
   ],
   CT: [
@@ -50,7 +50,7 @@ const sources = {
   ],
   GA: [
     ['Georgia DNR Managed Lands dataset metadata/download record', 'https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.html', 'download', 'DNR-managed land polygons include parks; metadata says published 2019 at 1:24,000 and warns boundaries are not legal descriptions.'],
-    ['Georgia Forestry Commission ArcGIS Portal', 'https://gfcarcserver.gfc.state.ga.us/portal/sharing/rest/portals/self', 'catalog', 'Official Commission ArcGIS portal verified; locate and assess public forest, fire, and recreation datasets within the catalog.'],
+    ['Georgia Forestry Commission ArcGIS Portal', 'https://gfcarcserver.gfc.state.ga.us/portal/sharing/rest/portals/self', 'catalog', 'Commission ArcGIS portal lead returned HTTP 500 in the 2026-09-26 check. The dated Georgia Public Lands layer and current GFC state-managed forest directory are recorded as complements; an exact current public forest GIS export remains unresolved.'],
   ],
   HI: [
     ['Hawaii State Parks MapServer State Parks layer 16', 'https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/16', 'api', 'Direct park boundary layer with agency attribution; source notes boundaries are general reference and may vary from surveyed parcels.'],
@@ -121,7 +121,7 @@ const sources = {
     ['High-resolution land cover of Nebraska (2014), RDS-2019-0038', 'https://www.fs.usda.gov/rds/archive/catalog/RDS-2019-0038', 'download', 'USDA Forest Service Research Data Archive provides 1-meter rural land-cover/tree-cover data derived from 2014 NAIP imagery; developed with Nebraska forestry/agroforestry partners. Excludes cities and towns and is a 2014 snapshot, not a current Nebraska Forest Service stand or ownership inventory.'],
   ],
   NV: [
-    ['Nevada SCORP nonmotorized trails master FeatureServer', 'https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/SCORP_NonMoto_Trails_Master/FeatureServer/0', 'api', 'Statewide queryable line inventory for nonmotorized trails assembled for Nevada SCORP from federal, state, and local agency sources. Useful hiking/biking route coverage, but mixed stewards and compilation purpose mean it is not a live Nevada State Parks inventory; verify route status and access with the land manager.'],
+    ['Nevada Division of State Parks NDSP State Park Boundaries FeatureServer', 'https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/NDSP_State_Park_Bondaries/FeatureServer/1', 'api', 'Division of State Parks-maintained polygon layer has 30 park boundaries and records updates through January 2026; the service had a June 2026 layer edit. It is display/planning geometry, not a survey or a trail, campsite, closure, or camping-permission inventory. Offline redistribution terms are not explicit.'],
     ['Nevada Division of Forestry GIS Services and NNRFIP', 'https://forestry.nv.gov/gis-mapping', 'catalog', 'Agency GIS page links to statewide natural-resource/fire portal and public DCNR data hub; exact public forestry layer not resolved.'],
   ],
   NH: [
@@ -150,7 +150,7 @@ const sources = {
   ],
   OK: [
     ['Oklahoma DOT State Parks KML (52 location placemarks; 2018)', 'https://www.odot.org/maps/state/KML/stateparks.kml', 'download', 'Official ODOT KML has 52 points: 45 park-symbol features and 7 other federal recreation/refuge sites; its HTTP Last-Modified date is 2018-08-10. OTRD’s current parks page reports 38 parks. This older mixed-site point file has no park boundaries and should be reconciled against OTRD’s current listings, not treated as a current park inventory. The OTRD 2019 CSV is only names/addresses. No current OTRD GIS API or bulk export was found.'],
-    ['Oklahoma Forestry Services EcoInventory FeatureServer layer 68', 'https://services3.arcgis.com/yrIZ0Nv0mSGTWJsH/arcgis/rest/services/Eco_Inventory_view/FeatureServer/68', 'api', 'OFS GIS metadata identifies this as its EcoInventory point layer (10,578 features; data process dated 2022); it is not a forest-boundary layer and must be checked for currentness and terms.'],
+    ['Oklahoma Forestry Services EcoInventory FeatureServer layer 68', 'https://services3.arcgis.com/yrIZ0Nv0mSGTWJsH/arcgis/rest/services/Eco_Inventory_view/FeatureServer/68', 'api', 'OFS GIS metadata identifies an EcoInventory point layer; a live query returned 379 features on 2026-09-26, whereas earlier metadata cited 10,578. This is not a forest-boundary layer. Reconcile the count, coverage, currentness, and terms before use.'],
   ],
   OR: [
     ['Oregon State Parks FeatureServer layer 0', 'https://maps.prd.state.or.us/arcgis/rest/services/Land_ownership/Oregon_State_Parks/FeatureServer/0', 'api', 'Queryable OPRD polygon layer represents approximate real-property boundaries for lands owned or managed by State Parks and returns GeoJSON. Useful for managed-land discovery only; it does not identify trails, campsite/amenity locations, public access, or current camping rules. Pair with park-specific visitor maps/reservation data.'],
@@ -165,7 +165,7 @@ const sources = {
     ['RIDEM Conserved_Land_in_RI_v2 MapServer state conservation land layer', 'https://risegis.ri.gov/hosting/rest/services/RIDEM/Conserved_Land_in_RI_v2/MapServer/3', 'api', 'Shared RIDEM layer covers state-managed conservation land; verify which sites are forests versus parks and access status.'],
   ],
   SC: [
-    ['South Carolina State Parks FeatureServer layer', 'https://services.arcgis.com/ycIuRaoIC4UuCDAS/ArcGIS/rest/services/SC_State_Parks/FeatureServer/0', 'api', 'Queryable state-park polygon layer; service description says its source shapefile was received from South Carolina Department of Parks, Recreation & Tourism staff on 2022-03-16. This is an agency-sourced snapshot, with no published update cadence or use terms located.'],
+    ['South Carolina State Parks FeatureServer layer', 'https://services.arcgis.com/ycIuRaoIC4UuCDAS/ArcGIS/rest/services/SC_State_Parks/FeatureServer/0', 'api', 'Queryable 55-feature state-park POINT layer, despite metadata describing a source polygon shapefile received from South Carolina Department of Parks, Recreation & Tourism staff on 2022-03-16. Suitable only as a dated park-location lead. A public authoritative boundary export, refresh cadence, and redistribution terms remain unresolved.'],
     ['South Carolina Forestry Commission State Lands visitor maps', 'https://www.scfc.gov/state-lands/', 'info', 'Official State Lands information links forest-by-forest visitor maps and access information; no current statewide public route/POI API or download was verified. Use individual map sheets only with current site rules and closures.'],
   ],
   SD: [
@@ -189,7 +189,7 @@ const sources = {
     ['Vermont ANR Atlas FPR MapServer', 'https://anrmaps.vermont.gov/arcgis/rest/services/map_services/MAP_ANR_ANRATLASFPR_WM_NOCACHE/MapServer', 'api', 'Shared agency MapServer covers FPR-managed forests and parks; its parks layers include trails, roads, and visitor facilities. Review layer-level update cadence and use limits before integrating either agency record.'],
   ],
   VA: [
-    ['Virginia State Parks park-specific GIS/Avenza map downloads', 'https://www.dcr.virginia.gov/state-parks/document/data/', 'download', 'Direct agency map files are park-specific PDFs/GeoPDFs, not a verified statewide vector layer.'],
+    ['Virginia State Parks SP_Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0', 'api', 'Direct State Parks trail polyline layer was queryable and edited in September 2026. Service description still says 2022; confirm whether recent edits changed route data, compare park coverage and closures, and resolve redistribution terms. It does not provide park boundaries or campsite points.'],
     ['Virginia Department of Forestry State Forest map downloads', 'https://www.dof.virginia.gov/education-and-recreation/state-forests/', 'download', 'Agency offers forest-specific offline maps, generally PDFs/Avenza maps; no statewide public vector API was verified.'],
   ],
   WA: [
@@ -331,10 +331,10 @@ const curatedVisitorFeeds = {
     ['Utah Trails and Pathways FeatureServer layer 0', 'https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0', 'api', 'UGRC statewide hiking/pedestrian/bike route layer with use-class attributes and a download/service endpoint; coverage is explicitly incomplete and spans many public/private stewards.'],
   ],
   'VA:parks': [
-    ['Virginia State Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHn/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0', 'api', 'Statewide designated long-distance trail line layer with route name/designation attributes and GeoJSON query support; it complements, but does not replace, park-specific local trail maps.'],
+    ['Virginia State Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0', 'api', 'Statewide designated long-distance trail line layer with route name/designation attributes and GeoJSON query support; it complements, but does not replace, park-specific local trail maps.'],
   ],
   'VA:forestry': [
-    ['Virginia State Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHn/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0', 'api', 'State-designated multiuse corridor route lines are a statewide supplement, not a complete Virginia Department of Forestry local trail inventory; pair with forest-specific official maps.'],
+    ['Virginia State Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0', 'api', 'State-designated multiuse corridor route lines are a statewide supplement, not a complete Virginia Department of Forestry local trail inventory; pair with forest-specific official maps.'],
   ],
   'WA:parks': [
     ['Washington State Parks Open Campsites and Open Trails FeatureServer', 'https://services2.arcgis.com/6Miy5NqQWjMYTGFY/arcgis/rest/services/WA_State_Parks_WFL1/FeatureServer', 'api', 'Agency service contains Open Campsites (layer 0), Open Trails (layer 1), park layers and a closed-parks layer; query/download support. Check current conditions and data-item lineage before operational use.'],
@@ -348,6 +348,28 @@ const curatedVisitorFeeds = {
 };
 
 const additionalCandidateFeeds = {
+  'GA:forestry': [
+    ['Georgia Public Lands managed-lands metadata and download', 'https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.html', 'download', '2019 mixed public-lands polygons include Georgia Forestry Commission manager code 3200. Filter to GFC tracts, then reconcile with the current GFC state-managed forest list; this is a dated boundary proxy, not a visitor-feature or current access feed.'],
+    ['Georgia Forestry Commission State Managed Forests', 'https://gatrees.org/forest-management-conservation/state-managed-forests/', 'info', 'Official current forest-by-forest directory lists GFC-managed tracts, map sheets, recreation opportunities, and forest-specific camping/access rules. It is a completeness and operations reference, not a bulk GIS feed.'],
+  ],
+  'VA:parks': [
+    ['Virginia State Parks park-specific GIS/Avenza map downloads', 'https://www.dcr.virginia.gov/state-parks/document/data/', 'info', 'Official park-specific PDF/GeoPDF map directory is a site-level reference, not a statewide vector layer; this automated check received HTTP 403, so verify in a browser or with the agency.'],
+  ],
+  'NV:parks': [
+    ['Nevada SCORP nonmotorized trails master FeatureServer', 'https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/SCORP_NonMoto_Trails_Master/FeatureServer/0', 'api', 'Statewide 6,686-line nonmotorized trail compilation from federal, state and local stewards; filter to park-managed routes and verify access/status with each manager. It is not a live park trail inventory.'],
+  ],
+  'PA:parks': [
+    ['PA DCNR State Park Boundaries MapServer layer 9', 'https://www.gis.dcnr.pa.gov/agsprod/rest/services/Parks/State_Parks/MapServer/9', 'api', 'Official state park boundary polygons complement the existing hiking trails; check feature counts, update history, and public offline redistribution terms before packaging.'],
+  ],
+  'MD:parks': [
+    ['Maryland DNR Owned Properties MapServer layer 14', 'https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/14', 'api', 'DNR-owned property polygons complement the campsites and trail service. Filter to parks, compare against the current park directory, and verify completeness and reuse terms.'],
+  ],
+  'WI:parks': [
+    ['Wisconsin DNR WSPS Properties MapServer layer 0', 'https://dnrmaps.wi.gov/arcgis2/rest/services/PR_Recreation/PR_WSPS_Property_Info_WTM_Ext/MapServer/0', 'api', 'DNR property polygons include state parks and state forests; filter the property-type field and pair with the separate state trails layer. This is not a campground, local trail, or closure feed.'],
+  ],
+  'TX:parks': [
+    ['Texas Parks and Wildlife State Park Boundaries ZIP', 'https://tpwd.texas.gov/gis/data/baselayers/state-park-boundaries-zip/view', 'download', 'Official TPWD park-boundary download complements the current trails service, but its catalog record dates to 2015. Reconcile boundaries against the current park list and verify reuse terms before packaging.'],
+  ],
   'TN:parks': [
     ['TDEC State Park Boundaries FeatureServer layer 0', 'https://services5.arcgis.com/bPacKTm9cauMXVfn/arcgis/rest/services/TN_State_Parks_Boundaries/FeatureServer/0', 'api', 'Agency-owned representational state-park polygons with irregular updates and a no-sale condition. Compare against the existing combined Natural Areas and State Parks layer before choosing a boundary authority; confirm offline redistribution rights.'],
   ],
@@ -413,7 +435,7 @@ for (const state of states) {
 }
 
 registry.schemaVersion = 4;
-registry.stateAgencyLayerStatusGuide.remaining_49_audited = 'Direct source, official portal, or information-only discovery result is recorded for each parks and forestry agency in docs/STATE_AGENCY_SOURCE_AUDIT.md. Discovery is not integration or a rights/currentness approval.';
+registry.stateAgencyLayerStatusGuide.remaining_49_audited = 'Direct source, official portal, or information-only discovery result is recorded for each parks and forestry agency in docs/STATE_AGENCY_SOURCE_AUDIT.md. Endpoint, completeness, and rights checks are dated in docs/STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md. Discovery is not integration or a rights/currentness approval.';
 registry.stateAgencyLayerStatusGuide.visitor_use_gap_sources = 'The 70 rows previously lacking direct visitor features now record one or more government visitor datasets where verified plus a state-level OpenStreetMap extract as an explicitly non-agency, community-contributed fallback. These are candidates requiring access, completeness, freshness, and ODbL checks; they are not permission or closure feeds.';
 const registryHeader = JSON.stringify({ ...registry, states: [] }, null, 2)
   .replace(/,\n  "states": \[\]\n\}\s*$/, '');
@@ -620,7 +642,7 @@ const outdoorUseAudit = [
   '',
   '**Audit date:** 2026-09-26',
   '**Scope:** 49 states other than New York; all 98 parks and forestry agency source records in the agency registry.',
-  '**Evidence level:** The source records were checked against agency portals and live service descriptions where available. These are conservative fit/readiness judgments, not a full 98-source field-by-field validation of every record, reuse license, geometry, freshness, closure, or access rule.',
+  `**Evidence level:** The source records were checked against agency portals and live service descriptions where available. The [dated endpoint, completeness, and rights validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) records all 98 primary and ${curatedSupplementalFeedCount} named supplemental source checks. These remain conservative fit/readiness judgments, not field-by-field certification of every record, closure, or access rule.`,
   '**Question:** Does the recorded agency source help someone find or navigate campsites, trails, trailheads, visitor facilities, or the land manager—and what is still missing before it can be treated as an iOverlander-style POI or route source?',
   '',
   '## Finding',
@@ -662,7 +684,7 @@ const outdoorUseAudit = [
   '',
   'The existing 49-state packages already contain national/state-managed land records from PAD-US plus NPS trails/POIs, USFS trails/recreation sites/MVUM, and BLM recreation records where those sources return data. The state-agency register is an additional-source audit: direct agency records have not been integrated into those packages yet. Keep broad land polygons as land units, route features as trails/roads, and amenity/campground points as places, with source lineage retained. The [package tracker](STATE_DATA_PACKAGE_TRACKER.md) describes the current layers and limits.',
   '',
-  'The fit labels reflect the recorded agency source and the reviewed feature descriptions. They remain conservative where a portal, old map, or land-only layer is all that is public. See the [49-state direct-source audit](STATE_AGENCY_SOURCE_AUDIT.md) for source dates, completeness caveats, and stewardship notes. New York is covered separately in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
+  'The fit labels reflect the recorded agency source and the reviewed feature descriptions. They remain conservative where a portal, old map, or land-only layer is all that is public. See the [49-state direct-source audit](STATE_AGENCY_SOURCE_AUDIT.md) and [dated validation and rights audit](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) for source checks, completeness caveats, and stewardship notes. New York is covered separately in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
   '',
 ].join('\n');
 await writeFile(outdoorUseAuditPath, outdoorUseAudit, 'utf8');
@@ -674,6 +696,7 @@ const audit = [
   '**Scope:** The parks and forestry agencies identified in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json) for the 49 states other than New York (98 agency-source checks).',
   '**Finding:** A source-discovery result is recorded for every agency. This is not a claim that data have been integrated, are complete, are current, or may be redistributed.',
   '**Visitor usefulness:** A separate [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) assesses all 98 records against camping, hiking, visitor facilities, and POI/route needs.',
+  '**Live validation and rights:** The [2026-09-26 source validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) records endpoint response, geometry/count where exposed, timestamps, completeness gaps, and reuse-rights status for every primary and named supplemental candidate.',
   '',
   '## Coverage summary',
   '',
@@ -721,7 +744,7 @@ if (sectionStart < 0 || sectionEnd < 0) throw new Error('Could not locate agency
 const trackingSection = [
   '## State parks and forestry agency tracking',
   '',
-  'The table links each identified agency to its discovered direct source, official catalog, or public map/information page. The [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) classifies all 98 records for camping/hiking and POI/route relevance. Full source notes and known limitations are in the [49-state agency source audit](STATE_AGENCY_SOURCE_AUDIT.md). New York remains in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Source discovery does not mean data have been integrated or rights/currentness have been approved.',
+  'The table links each identified agency to its discovered direct source, official catalog, or public map/information page. The [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) classifies all 98 records for camping/hiking and POI/route relevance. Full source notes and known limitations are in the [49-state agency source audit](STATE_AGENCY_SOURCE_AUDIT.md), with live endpoint, completeness, and rights results in the [dated source validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md). New York remains in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Source discovery does not mean data have been integrated or rights/currentness have been approved.',
   '',
   '| Code | State | Parks agency | Parks source | Parks status | Forestry agency | Forestry source | Forestry status |',
   '| --- | --- | --- | --- | --- | --- | --- | --- |',

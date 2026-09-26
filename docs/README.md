@@ -30,6 +30,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Bootstrap and environment specification](BOOTSTRAP_AND_ENVIRONMENT.md) | Pinned toolchain, Windows/macOS/device prerequisites, and repository bootstrap | Build owner |
 | [Canonical data specification](CANONICAL_DATA_SPEC.md) | CRS, coordinates, time, units, IDs, geometry, nulls, provenance, and evolution | Data architecture owner |
 | [Current state dataset audit](CURRENT_STATE_DATASET_AUDIT.md) | Bundled state and OSM source inventory, candidate upgrades, and acquisition gates | Data architecture owner |
+| [State agency source validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) | Live checks, completeness limits, and reuse-rights findings for 98 primary and 45 supplemental agency sources | Data architecture owner |
 | [Requirements traceability](REQUIREMENTS_TRACEABILITY.md) | Requirement IDs mapped to work packages and verification | Quality lead |
 | [Test and acceptance plan](TEST_AND_ACCEPTANCE_PLAN.md) | Test levels, environments, evidence, and release gates | Quality lead |
 | [Non-functional budgets](NON_FUNCTIONAL_BUDGETS.md) | Numeric performance, durability, size, accuracy, memory, and energy limits | Performance/quality owner |
