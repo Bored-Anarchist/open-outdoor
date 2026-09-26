@@ -6,6 +6,7 @@ const root = join(fileURLToPath(new URL('..', import.meta.url)));
 const registryPath = join(root, 'config/us-state-forestry-agencies.json');
 const trackerPath = join(root, 'docs/STATE_DATA_PACKAGE_TRACKER.md');
 const auditPath = join(root, 'docs/STATE_AGENCY_SOURCE_AUDIT.md');
+const outdoorUseAuditPath = join(root, 'docs/STATE_AGENCY_OUTDOOR_USE_AUDIT.md');
 
 // Each row is parks [name, url, kind, audit note], then forestry [name, url, kind, audit note].
 // "catalog" means an official portal/tool identifies a useful dataset or layer, but a direct data endpoint may remain unresolved.
@@ -28,7 +29,7 @@ const sources = {
     ['Arkansas Spatial Data Infrastructure', 'https://gis.arkansas.gov/', 'catalog', 'Official statewide GIS catalog verified; an exact Forestry Division public layer was not located in this audit.'],
   ],
   CA: [
-    ['California State Parks GIS downloads and live feature services', 'https://www.parks.ca.gov/?page_id=29682', 'download', 'Agency publishes park boundaries, routes, buildings, structures, day-use, campgrounds, parking, and entry points; page reports monthly updates and gives terms.'],
+    ['California State Parks GIS downloads and live feature services', 'https://www.parks.ca.gov/?page_id=29682', 'download', 'Agency publishes park boundaries, routes, buildings, structures, day-use areas, campgrounds, parking, and entry points as downloads and live services; its page lists September 2026 vintages and monthly updates. Free distribution is allowed for personal/public-sector use with attribution; commercial use requires prior approval, and the agency disclaims accuracy, completeness, and timeliness warranties.'],
     ['CAL FIRE FRAP GIS mapping and data', 'https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/gis-mapping-and-data-analytics', 'catalog', 'Agency GIS/data catalog for forest assessment and fire/resource layers; select an individual dataset and check its vintage and lineage.'],
   ],
   CO: [
@@ -185,7 +186,7 @@ const sources = {
   ],
   VT: [
     ['Vermont ANR Atlas FPR MapServer', 'https://anrmaps.vermont.gov/arcgis/rest/services/map_services/MAP_ANR_ANRATLASFPR_WM_NOCACHE/MapServer', 'api', 'Direct REST service includes State Park, Reserve Forest, managed lands, trails, roads, and facilities.'],
-    ['Vermont ANR Atlas FPR MapServer', 'https://anrmaps.vermont.gov/arcgis/rest/services/map_services/MAP_ANR_ANRATLASFPR_WM_NOCACHE/MapServer', 'api', 'Shared agency service covers FPR-managed forests and parks; layer-level update cadence and use limits should be reviewed.'],
+    ['Vermont ANR Atlas FPR MapServer', 'https://anrmaps.vermont.gov/arcgis/rest/services/map_services/MAP_ANR_ANRATLASFPR_WM_NOCACHE/MapServer', 'api', 'Shared agency MapServer covers FPR-managed forests and parks; its parks layers include trails, roads, and visitor facilities. Review layer-level update cadence and use limits before integrating either agency record.'],
   ],
   VA: [
     ['Virginia State Parks park-specific GIS/Avenza map downloads', 'https://www.dcr.virginia.gov/state-parks/document/data/', 'download', 'Direct agency map files are park-specific PDFs/GeoPDFs, not a verified statewide vector layer.'],
@@ -286,12 +287,185 @@ const deepDiveRows = deepDives.map(([stateCode, agencyIndex, finding]) => {
   return `| ${stateCode} | ${agency} | [${source[0]}](${source[1]}) | ${finding} |`;
 });
 
+// Outdoor-use classifications describe what the recorded state-agency source
+// can support based on the audited source notes. A portal lead is not counted
+// as a usable dataset until its exact item/layer has been selected.
+const outdoorUseAssignments = {
+  visitor_feature_candidate: [
+    'AK:parks', 'AZ:parks', 'CA:parks', 'FL:parks', 'IA:parks', 'MA:parks',
+    'MN:parks', 'MS:parks', 'NJ:parks', 'OH:parks', 'OK:parks',
+    'VT:parks', 'VT:forestry',
+  ],
+  visitor_source_lead: [
+    'CO:parks', 'HI:forestry', 'MD:parks', 'MI:parks', 'ND:parks',
+    'PA:forestry', 'SC:forestry', 'WI:parks', 'TX:parks', 'OH:forestry',
+  ],
+  destination_land_context: [
+    'AR:parks', 'AL:forestry', 'AK:forestry', 'CT:parks', 'CT:forestry', 'DE:parks', 'FL:forestry',
+    'GA:parks', 'HI:parks', 'ID:parks', 'IN:parks', 'IN:forestry', 'KS:parks',
+    'KY:parks', 'KY:forestry', 'LA:parks', 'ME:parks', 'MA:forestry',
+    'MT:parks', 'MO:parks', 'MO:forestry', 'NH:parks', 'NH:forestry',
+    'NJ:forestry', 'NM:parks', 'ND:forestry', 'OR:forestry', 'PA:parks',
+    'RI:parks', 'RI:forestry', 'SC:parks', 'SD:parks', 'WA:parks',
+    'WV:parks', 'WV:forestry', 'WY:parks', 'WY:forestry',
+  ],
+  forest_resource_context: [
+    'CA:forestry', 'ID:forestry', 'KS:forestry', 'LA:forestry', 'MN:forestry',
+    'NE:forestry', 'NC:forestry', 'NM:forestry', 'OK:forestry',
+  ],
+  site_map_only: ['VA:parks', 'VA:forestry'],
+  unresolved_dataset: [
+    'AL:parks', 'AZ:forestry', 'AR:forestry', 'CO:forestry',
+    'DE:forestry', 'GA:forestry', 'IL:parks', 'IL:forestry', 'IA:forestry',
+    'ME:forestry', 'MD:forestry', 'MI:forestry', 'MS:forestry', 'MT:forestry',
+    'NV:parks', 'NV:forestry', 'NC:parks', 'NE:parks', 'SD:forestry',
+    'TN:parks', 'TN:forestry', 'TX:forestry', 'UT:parks', 'UT:forestry',
+    'WA:forestry', 'WI:forestry', 'OR:parks',
+  ],
+};
+const outdoorUseDescriptions = {
+  visitor_feature_candidate: {
+    label: 'Visitor features identified',
+    utility: 'The source description identifies a potentially visitor-relevant feature type. It is a plausible hiking/camping map input, subject to the source-specific limits in the direct-source audit.',
+    gap: 'Confirm feature geometry and fields, coverage, refresh date, terms, and whether access, camping permission, and closures are explicitly represented before import.',
+  },
+  visitor_source_lead: {
+    label: 'Visitor-data lead; exact layer unresolved',
+    utility: 'The agency source or catalog points to trails, facilities, park recreation, or other visitor data.',
+    gap: 'Select and record the exact downloadable dataset or queryable feature layer and inspect its geometry, attributes, coverage, update cadence, and terms before import.',
+  },
+  destination_land_context: {
+    label: 'Destination / land-context candidate',
+    utility: 'Park, forest, managed-land, or open-space geometry could help users discover a land unit and its manager, once the recorded source is confirmed as a production dataset.',
+    gap: 'Land geometry is not a campground, trail, trailhead, amenity, access permission, or camping rule. Pair it with visitor features and current agency rules.',
+  },
+  forest_resource_context: {
+    label: 'Forest / planning context',
+    utility: 'Canopy, forest stands, fire, forest health, or assessment data may describe the landscape or resource-management context.',
+    gap: 'These are not visitor POIs, maintained trails, recreation facilities, current conditions, or permission/access records.',
+  },
+  site_map_only: {
+    label: 'Site-specific offline map',
+    utility: 'A visitor may use the published PDF/GeoPDF/Avenza map for orientation at an individual park or forest.',
+    gap: 'The recorded source is not a verified statewide, searchable vector layer or POI feed; individual maps and current rules still need checking.',
+  },
+  unresolved_dataset: {
+    label: 'Exact visitor dataset not established',
+    utility: 'The recorded source is a broad catalog/service lead or lacks enough feature detail to establish a usable camping/hiking dataset.',
+    gap: 'Resolve a named public dataset/layer, geometry, visitor-relevant fields, coverage, update cadence, and reuse terms. Do not treat the portal itself as a POI dataset.',
+  },
+};
+const outdoorUseByAgency = new Map();
+for (const [classification, agencyKeys] of Object.entries(outdoorUseAssignments)) {
+  for (const agencyKey of agencyKeys) {
+    if (outdoorUseByAgency.has(agencyKey)) throw new Error(`Duplicate outdoor-use classification for ${agencyKey}`);
+    outdoorUseByAgency.set(agencyKey, classification);
+  }
+}
+if (outdoorUseByAgency.size !== states.length * 2) {
+  throw new Error(`Expected ${states.length * 2} outdoor-use classifications; found ${outdoorUseByAgency.size}`);
+}
+for (const state of states) {
+  for (const prefix of ['parks', 'forestry']) {
+    const key = `${state.code}:${prefix}`;
+    if (!outdoorUseByAgency.has(key)) throw new Error(`Missing outdoor-use classification for ${key}`);
+  }
+}
+const outdoorUseCounts = Object.fromEntries(
+  Object.keys(outdoorUseDescriptions).map((classification) => [classification, outdoorUseAssignments[classification].length]),
+);
+const visitorSourceNotes = states.flatMap((state) => ['parks', 'forestry']
+  .filter((prefix) => ['visitor_feature_candidate', 'visitor_source_lead'].includes(outdoorUseByAgency.get(`${state.code}:${prefix}`)))
+  .map((prefix) => state[`${prefix}DataSourceNotes`] ?? ''));
+const visitorFeatureMentionCounts = {
+  camping: visitorSourceNotes.filter((note) => /campground|camping area|campsite/i.test(note)).length,
+  trails: visitorSourceNotes.filter((note) => /trail/i.test(note)).length,
+  facilities: visitorSourceNotes.filter((note) => /facilit|amenit|picnic|parking|entry point/i.test(note)).length,
+  points: visitorSourceNotes.filter((note) => /\bpoints?\b|\bpoi\b|placemark/i.test(note)).length,
+};
+function documentedFeatureEvidence(note) {
+  const evidence = [];
+  if (/campground|camping area|campsite/i.test(note)) evidence.push('campgrounds/camping areas');
+  if (/trail/i.test(note)) evidence.push('trails');
+  if (/route/i.test(note)) evidence.push('routes');
+  if (/\broads?\b/i.test(note)) evidence.push('roads');
+  if (/facilit|amenit|picnic|parking|entry point|building|structure/i.test(note)) evidence.push('visitor facilities/parking/entries');
+  if (/\bpoints?\b|\bpoi\b|placemark/i.test(note)) evidence.push('visitor/location points');
+  return [...new Set(evidence)].join(', ');
+}
+const outdoorUseRows = states.flatMap((state) => ['parks', 'forestry'].map((prefix) => {
+  const classification = outdoorUseByAgency.get(`${state.code}:${prefix}`);
+  const description = outdoorUseDescriptions[classification];
+  const agency = prefix === 'parks' ? state.parksAgency : state.forestryAgency;
+  const source = sources[state.code][prefix === 'parks' ? 0 : 1];
+  const type = kindLabel[source[2]];
+  const sourceCell = `[${source[0]}](${source[1]})<br>${type}`;
+  const featureEvidence = ['visitor_feature_candidate', 'visitor_source_lead'].includes(classification)
+    ? documentedFeatureEvidence(source[3])
+    : '';
+  const evidenceText = featureEvidence
+    ? ` Source notes name: ${featureEvidence}.`
+    : '';
+  return `| ${state.code} | ${prefix === 'parks' ? 'Parks' : 'Forestry'} | [${agency}](${prefix === 'parks' ? state.parksAgencyUrl : state.agencyUrl}) | ${sourceCell} | **${description.label}.** ${description.utility}${evidenceText} | ${description.gap} |`;
+}));
+
+const outdoorUseAudit = [
+  '# State Agency Outdoor Dataset Use Audit',
+  '',
+  '**Audit date:** 2026-09-25',
+  '**Scope:** 49 states other than New York; all 98 parks and forestry agency source records in the agency registry.',
+  '**Evidence level:** Classifications use each registry entry’s named source, type, and audited description. They are conservative source-scope checks, not 98 independent field-by-field schema, license, or live-condition validations.',
+  '**Question:** Does the recorded agency source help someone find or navigate campsites, trails, trailheads, visitor facilities, or the land manager—and what is still missing before it can be treated as an iOverlander-style POI or route source?',
+  '',
+  '## Finding',
+  '',
+  `- ${outdoorUseCounts.visitor_feature_candidate} sources describe visitor locations/routes/facilities directly enough to be candidate hiking/camping inputs; this is a content-fit result, not a rights, schema, freshness, completeness, or integration approval.`,
+  `- ${outdoorUseCounts.visitor_source_lead} more source records identify likely visitor data but still need the exact public dataset/layer selected.`,
+  `- ${outdoorUseCounts.destination_land_context} records describe or point to park/forest/open-space land context only; they do not establish trails, amenities, campgrounds, or permission to enter/camp.`,
+  `- ${outdoorUseCounts.forest_resource_context} records are forest/resource/planning data rather than visitor POIs.`,
+  `- ${outdoorUseCounts.site_map_only} records provide site-specific static maps but not a statewide queryable visitor dataset.`,
+  `- ${outdoorUseCounts.unresolved_dataset} records do not establish an exact visitor-use dataset from the source description currently in the registry.`,
+  `- Within the ${visitorSourceNotes.length} visitor-feature candidates/leads, source notes explicitly mention campground/camping features in ${visitorFeatureMentionCounts.camping} record(s), trails in ${visitorFeatureMentionCounts.trails}, facilities/amenities in ${visitorFeatureMentionCounts.facilities}, and visitor points in ${visitorFeatureMentionCounts.points}. These are overlapping text references; a mention in a catalog lead is not field-level confirmation.`,
+  '',
+  '## Fit criteria',
+  '',
+  '- **Direct visitor-feature candidate:** the recorded API/download description identifies at least one potentially useful location or route class, such as campgrounds, recreation points, trails, roads, parking, amenities, or park facilities. Before import, verify actual geometry, field quality, update date, coverage, terms, and any access/status attributes.',
+  '- **Visitor-data lead:** an agency catalog, viewer, map, or source note points to visitor features, but the exact reusable dataset or layer is not recorded. The lead is not yet a dataset integration candidate.',
+  '- **Destination / land context:** a park, forest, protected-land, or open-space boundary identifies where a managed land unit is. It is not itself a camping or hiking POI and cannot prove public entry or overnight use.',
+  '- **Forest / planning context:** forest cover, stands, health, wildfire, or action-plan data help describe a landscape but do not tell visitors where to camp or hike.',
+  '- **Site-specific offline map:** a park/forest PDF or GeoPDF can help with local orientation but is not a statewide structured layer for search or POI matching.',
+  '- **Unresolved:** the source is a catalog/service lead or its feature content is underspecified. Select the exact layer and review it before calling it useful for visitors.',
+  '',
+  '## Agency-by-agency results',
+  '',
+  '| State | Agency role | Agency | Recorded source | Visitor usefulness and evidence | Gap before POI/route use |',
+  '| --- | --- | --- | --- | --- | --- |',
+  ...outdoorUseRows,
+  '',
+  '## What a useful camping / hiking layer still needs',
+  '',
+  '- Prioritize established campground and individual campsite locations, trail lines and trailheads, water, toilets/showers, dump stations, parking, shelters, and usable visitor access details when those records are published by a land manager.',
+  '- For trails, retain the trail-use class, surface/accessibility, seasonal status, managing unit, source date, and source link where available. A drawn endpoint is not automatically a verified trailhead.',
+  '- For campsites, separate campground or designated-site geometry from informal/wild camping reports; do not infer dispersed-camping permission from a forest or public-land boundary.',
+  '- Keep closures, fire rules, operating status, fees/reservations, and other time-sensitive conditions tied to an authoritative, refreshable source. Do not infer them from ownership or static maps.',
+  '- State parks/forestry agencies do not normally provide the full iOverlander service mix (fuel, propane, repairs, shops, lodging, community reports). Keep those categories sourced separately and do not claim this audit covers them.',
+  '',
+  '## Package implication',
+  '',
+  'The existing 49-state packages already contain national/state-managed land records from PAD-US plus NPS trails/POIs, USFS trails/recreation sites/MVUM, and BLM recreation records where those sources return data. The state-agency register is an additional-source audit: direct agency records have not been integrated into those packages yet. Keep broad land polygons as land units, route features as trails/roads, and amenity/campground points as places, with source lineage retained. The [package tracker](STATE_DATA_PACKAGE_TRACKER.md) describes the current layers and limits.',
+  '',
+  'The content labels above use the source descriptions already recorded in the [49-state direct-source audit](STATE_AGENCY_SOURCE_AUDIT.md). They are deliberately conservative where the record is a catalog or the geometry/attributes were not specified. See that audit for source-specific dates, completeness caveats, and stewardship notes. New York is covered separately in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
+  '',
+].join('\n');
+await writeFile(outdoorUseAuditPath, outdoorUseAudit, 'utf8');
+
 const audit = [
   '# State Agency Direct-Source Coverage Audit',
   '',
   '**Audit date:** 2026-09-25',
   '**Scope:** The parks and forestry agencies identified in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json) for the 49 states other than New York (98 agency-source checks).',
   '**Finding:** A source-discovery result is recorded for every agency. This is not a claim that data have been integrated, are complete, are current, or may be redistributed.',
+  '**Visitor usefulness:** A separate [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) assesses all 98 records against camping, hiking, visitor facilities, and POI/route needs.',
   '',
   '## Coverage summary',
   '',
@@ -338,7 +512,7 @@ if (sectionStart < 0 || sectionEnd < 0) throw new Error('Could not locate agency
 const trackingSection = [
   '## State parks and forestry agency tracking',
   '',
-  'The table links each identified agency to its discovered direct source, official catalog, or public map/information page. Full source notes and known limitations are in the [49-state agency source audit](STATE_AGENCY_SOURCE_AUDIT.md). New York remains in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Source discovery does not mean data have been integrated or rights/currentness have been approved.',
+  'The table links each identified agency to its discovered direct source, official catalog, or public map/information page. The [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) classifies all 98 records for camping/hiking and POI/route relevance. Full source notes and known limitations are in the [49-state agency source audit](STATE_AGENCY_SOURCE_AUDIT.md). New York remains in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Source discovery does not mean data have been integrated or rights/currentness have been approved.',
   '',
   '| Code | State | Parks agency | Parks source | Parks status | Forestry agency | Forestry source | Forestry status |',
   '| --- | --- | --- | --- | --- | --- | --- | --- |',
