@@ -786,7 +786,7 @@ function trackerRow(state, manifest, relativeDirectory) {
   const sourceIssues = manifest.sources
     .filter((source) => (source.unreturnedFeatureCount ?? 0) > 0 || (source.filteredFeatureCount ?? 0) > 0)
     .map((source) => `${source.id}: ${source.unreturnedFeatureCount ?? 0} unavailable IDs, ${source.filteredFeatureCount ?? 0} filtered features`);
-  const status = `Package built${sourceIssues.length ? `; source reconciliation: ${sourceIssues.join(', ')}` : ''}; direct state forestry GIS and state-run recreation layers still need state-specific integration.`;
+  const status = `Package built${sourceIssues.length ? `; source reconciliation: ${sourceIssues.join(', ')}` : ''}; agency source candidates are inventoried in the source audit; selection, rights/freshness review, and integration remain open.`;
   return `| ${state.code} | ${state.name} | ${state.forestryAgency} | [${relativeDirectory.replaceAll('\\', '/')}/outdoors.geojson](${relativeDirectory.replaceAll('\\', '/')}/outdoors.geojson) | ${total} | ${counts} | ${status} | ${sourceNames || 'No source features'}${zeroSources ? ` (0 results: ${zeroSources})` : ''} |`;
 }
 
@@ -798,7 +798,13 @@ async function writeTracker(states, packageRows) {
   const agencyRows = registry.states.map((state) => {
     const parksAgency = `[${state.parksAgency}](${state.parksAgencyUrl})`;
     const forestryAgency = `[${state.forestryAgency}](${state.agencyUrl})`;
-    return `| ${state.code} | ${state.name} | ${parksAgency} | ${state.parksLayerStatus} | ${forestryAgency} | ${state.forestryLayerStatus} |`;
+    const parksSource = state.parksDataSourceUrl
+      ? `[${state.parksDataSourceName}](${state.parksDataSourceUrl})<br>${state.parksDataSourceNotes}`
+      : `[NYS agency source audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md)`;
+    const forestrySource = state.forestryDataSourceUrl
+      ? `[${state.forestryDataSourceName}](${state.forestryDataSourceUrl})<br>${state.forestryDataSourceNotes}`
+      : `[NYS agency source audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md)`;
+    return `| ${state.code} | ${state.name} | ${parksAgency} | ${parksSource} | ${state.parksLayerStatus} | ${forestryAgency} | ${forestrySource} | ${state.forestryLayerStatus} |`;
   });
   const content = [
     '# State Outdoor Data Package Tracker',
@@ -811,7 +817,7 @@ async function writeTracker(states, packageRows) {
     '- Each package uses USGS PAD-US state-managed/public-land inventory with per-feature source lineage, NPS public trails and POIs, USFS trails/recreation/MVUM layers, and BLM surface-management boundaries where present.',
     '- A state package is an independently importable GeoJSON overlay; it is not added to the default app binary.',
     '- Every access, season, closure, or recreation status remains source-attributed and must be confirmed with the managing agency. Ownership alone is never treated as permission to enter or camp.',
-    '- The forestry agency is identified per state. Direct agency GIS sources for forest tracts, trails, roads, facilities, rules, and closures are a tracked follow-up because there is no shared nationwide state-forestry service.',
+    '- Parks and forestry source discovery for the 49 states is recorded in the [agency source audit](STATE_AGENCY_SOURCE_AUDIT.md); New York is covered by its [separate source audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Dataset integration, rights, and freshness review remain open.',
     '- Empty federal layers are recorded as zero-result coverage; missing layers are not fabricated.',
     '',
     '## State-by-state progress',
@@ -822,15 +828,15 @@ async function writeTracker(states, packageRows) {
     '',
     '## State parks and forestry agency tracking',
     '',
-    'These links identify the state agencies responsible for parks and forestry. Agency identification does not mean the agency\'s GIS layers have been acquired. For every state, discover relevant GIS sources, review dataset terms and rights, assess coverage, and record source metadata before integration. New York agency sources have been inventoried and coverage-audited in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md); layer integration and rights decisions remain open as recorded there.',
+    'This table links each identified agency to its discovered direct source, official catalog, or public map/information page. Full source notes and known limitations are in the [49-state agency source audit](STATE_AGENCY_SOURCE_AUDIT.md). New York remains in the [NYS agency source coverage audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). Source discovery does not mean data have been integrated or rights/currentness have been approved.',
     '',
-    '| Code | State | Parks agency and official page | Parks data status | Forestry agency and official page | Forestry data status |',
-    '| --- | --- | --- | --- | --- | --- |',
+    '| Code | State | Parks agency | Parks source | Parks status | Forestry agency | Forestry source | Forestry status |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- |',
     ...agencyRows,
     '',
     '## Acceptance / follow-up',
     '',
-    '- Per-state direct forestry and state parks/trails/roads/facility sources: discover, rights-review, and integrate as tracked above.',
+    '- Review dataset terms, rights, freshness, and coverage for the sources in the agency audit; integrate selected state parks and forestry sources into each package.',
     '- Rights terms have been recorded for the national public datasets; state-specific dataset terms are required before a direct layer is added.',
     '- Camping rules, seasonal closures, fire restrictions, and current conditions are intentionally not inferred from land ownership or this snapshot.',
     '- Refresh packages using `pnpm map:acquire:states`; the script rewrites this tracker after every completed state package.',
