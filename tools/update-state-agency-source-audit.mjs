@@ -132,8 +132,8 @@ const sources = {
     ['NJDEP Open Space MapServer layer 65', 'https://mapsdep.nj.gov/arcgis/rest/services/Features/Land/MapServer/65', 'api', 'Direct queryable DEP fee-simple open-space polygons include parks, forests, historic sites, and other lands; vintage and accuracy vary, notably for older parcels.'],
   ],
   NM: [
-    ['New Mexico Forestry Division GIS and Maps', 'https://www.emnrd.nm.gov/sfd/gis-and-maps/', 'catalog', 'Official page publishes forestry maps and forest-treatment viewer; its treatment layer is partner compiled, so confirm download endpoint and steward.'],
     ['New Mexico State Parks maps and information', 'https://www.emnrd.nm.gov/spd/', 'info', 'Agency visitor maps/information found; no direct statewide State Parks data API/download was verified.'],
+    ['New Mexico Forestry Division GIS and Maps', 'https://www.emnrd.nm.gov/sfd/gis-and-maps/', 'catalog', 'Official page publishes forestry maps and forest-treatment viewer; its treatment layer is partner compiled, so confirm download endpoint and steward.'],
   ],
   NC: [
     ['North Carolina OneMap statewide geospatial catalog', 'https://www.nconemap.gov/', 'catalog', 'Official state data portal is the discovery route for State Parks layers; exact current agency dataset was not verified in this audit.'],
