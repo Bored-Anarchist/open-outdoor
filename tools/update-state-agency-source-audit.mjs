@@ -141,7 +141,7 @@ const sources = {
     ['NC Forest Action Plan 2020 GIS data layers', 'https://www.ncmhtd.com/ncfs/ncfap/', 'download', 'NC Forest Service geospatial viewer page offers a roughly 445-MB zipped file geodatabase, including forest ownership/species, tree canopy, forest types, easements, and stewardship priority layers. Statewide planning data with 2020 vintage, not a live operational inventory.'],
   ],
   ND: [
-    ['North Dakota Recreation Asset Viewer', 'https://www.parkrec.nd.gov/business/planning/rec-assets', 'info', 'Official public inventory/map covers park sites, trails, camp/tent/RV assets and visitor amenities; useful for discovering attractions, but a bulk export/API for all viewer features was not confirmed. Check site-level current operations and reservations.'],
+    ['North Dakota GIS Hub State Parks FeatureServer layer 0', 'https://services1.arcgis.com/GOcSXpzwBHyk2nog/ArcGIS/rest/services/NDGISHUB_State_Parks/FeatureServer/0', 'api', 'ND Parks and Recreation Department-attributed park, recreation-area, preserve, and natural-area polygons. The layer records June 2026 changes and supports GeoJSON queries; its description warns coverage may be incomplete. Use the Recreation Asset Viewer separately for trails, camping, and amenities, and verify redistribution terms before bundling.'],
     ['North Dakota State Forest MapServer layer', 'https://gis.dmr.nd.gov/dmrpublicservices/rest/services/State_Forest/MapServer/0', 'api', 'Direct queryable North Dakota State Forest polygon layer; confirm steward and update metadata.'],
   ],
   OH: [
@@ -347,14 +347,27 @@ const curatedVisitorFeeds = {
   ],
 };
 
+const additionalCandidateFeeds = {
+  'TN:parks': [
+    ['TDEC State Park Boundaries FeatureServer layer 0', 'https://services5.arcgis.com/bPacKTm9cauMXVfn/arcgis/rest/services/TN_State_Parks_Boundaries/FeatureServer/0', 'api', 'Agency-owned representational state-park polygons with irregular updates and a no-sale condition. Compare against the existing combined Natural Areas and State Parks layer before choosing a boundary authority; confirm offline redistribution rights.'],
+  ],
+  'TN:forestry': [
+    ['Tennessee Statewide Trails Points Public', 'https://www.arcgis.com/home/item.html?id=87d9ef12e5344055874217c73dec1aa1', 'catalog', 'Partner point compilation includes trailheads and locations where line data were unavailable; its item identifies the Division of Forestry among contributors and an April 2026 data update. Filter to forestry-managed locations, resolve feature-service endpoint and terms, and do not mistake point locations for route geometry or current access.'],
+  ],
+};
+
 const stateSlug = (name) => name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
 const visitorGapSet = new Set(visitorGapAgencyKeys);
 function supplementalVisitorSources(state, prefix) {
   const key = `${state.code}:${prefix}`;
-  if (!visitorGapSet.has(key)) return [];
+  const additions = (additionalCandidateFeeds[key] ?? []).map(([name, url, kind, notes]) => ({
+    name, url, kind, notes, steward: 'See dataset-specific notes for publisher and partner attribution',
+  }));
+  if (!visitorGapSet.has(key)) return additions;
   const osmSlug = stateSlug(state.name);
   const feeds = curatedVisitorFeeds[key] ?? [];
   return [
+    ...additions,
     ...feeds.map(([name, url, kind, notes]) => ({ name, url, kind, notes, steward: 'See dataset-specific notes for publisher and partner attribution' })),
     {
       name: `OpenStreetMap ${state.name} outdoor routes and POIs state extract`,
@@ -388,7 +401,11 @@ for (const state of states) {
     const visitorFeeds = state[`${prefix}SupplementalDataSources`];
     if (visitorFeeds.length) {
       const curatedCount = visitorFeeds.filter((feed) => feed.steward !== 'OpenStreetMap contributors; distributed by Geofabrik').length;
-      state[statusField] = `Existing agency source: ${statusFor(source[2])} Additional visitor feeds recorded: ${curatedCount} state/partner dataset(s) plus a state OpenStreetMap extract. Check lineage, completeness, reuse terms, access, and current conditions before import.`;
+      const hasOsm = visitorFeeds.some((feed) => feed.steward === 'OpenStreetMap contributors; distributed by Geofabrik');
+      const supplementStatus = hasOsm
+        ? `Additional visitor feeds recorded: ${curatedCount} state/partner dataset(s) plus a state OpenStreetMap extract.`
+        : `Additional candidate sources recorded: ${curatedCount} state/partner dataset(s).`;
+      state[statusField] = `Existing agency source: ${statusFor(source[2])} ${supplementStatus} Check lineage, completeness, reuse terms, access, and current conditions before import.`;
     } else {
       state[statusField] = statusFor(source[2]);
     }
@@ -601,7 +618,7 @@ const outdoorUseRows = states.flatMap((state) => ['parks', 'forestry'].map((pref
 const outdoorUseAudit = [
   '# State Agency Outdoor Dataset Use Audit',
   '',
-  '**Audit date:** 2026-09-25',
+  '**Audit date:** 2026-09-26',
   '**Scope:** 49 states other than New York; all 98 parks and forestry agency source records in the agency registry.',
   '**Evidence level:** The source records were checked against agency portals and live service descriptions where available. These are conservative fit/readiness judgments, not a full 98-source field-by-field validation of every record, reuse license, geometry, freshness, closure, or access rule.',
   '**Question:** Does the recorded agency source help someone find or navigate campsites, trails, trailheads, visitor facilities, or the land manager—and what is still missing before it can be treated as an iOverlander-style POI or route source?',
@@ -653,7 +670,7 @@ await writeFile(outdoorUseAuditPath, outdoorUseAudit, 'utf8');
 const audit = [
   '# State Agency Direct-Source Coverage Audit',
   '',
-  '**Audit date:** 2026-09-25',
+  '**Audit date:** 2026-09-26',
   '**Scope:** The parks and forestry agencies identified in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json) for the 49 states other than New York (98 agency-source checks).',
   '**Finding:** A source-discovery result is recorded for every agency. This is not a claim that data have been integrated, are complete, are current, or may be redistributed.',
   '**Visitor usefulness:** A separate [outdoor dataset use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md) assesses all 98 records against camping, hiking, visitor facilities, and POI/route needs.',
@@ -664,7 +681,7 @@ const audit = [
   `- ${counts.download} dataset/download endpoints or download pages were identified; some are partner/federal proxies rather than agency-maintained products.`,
   `- ${counts.catalog} official data catalogs/tools were identified; exact layers or direct API/download endpoints may still need resolution.`,
   `- ${counts.info} agency map/information pages were identified; a statewide reusable dataset/API was not verified in this audit.`,
-  `- Added ${supplementalFeedCount} visitor-use supplements across the 70 previously deficient agency rows: ${curatedSupplementalFeedCount} named government/official-partner GIS datasets plus 70 per-state OpenStreetMap downloads.`,
+  `- Registry contains ${supplementalFeedCount} supplemental source references: ${curatedSupplementalFeedCount} named government/official-partner candidates and 70 per-state OpenStreetMap references (the latter are discovery fallbacks, not integrated layers).`,
   '- API and download entries may still be partial, stale, generalized, or subject to limits; each notes a specific known caveat where found.',
   '',
   '## Deep dive: 12 prior information-only agency gaps',

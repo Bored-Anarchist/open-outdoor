@@ -29,6 +29,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Threat model](THREAT_MODEL.md) | Assets, trust boundaries, threats, mitigations, and residual-risk rules | Security owner |
 | [Bootstrap and environment specification](BOOTSTRAP_AND_ENVIRONMENT.md) | Pinned toolchain, Windows/macOS/device prerequisites, and repository bootstrap | Build owner |
 | [Canonical data specification](CANONICAL_DATA_SPEC.md) | CRS, coordinates, time, units, IDs, geometry, nulls, provenance, and evolution | Data architecture owner |
+| [Current state dataset audit](CURRENT_STATE_DATASET_AUDIT.md) | Bundled state and OSM source inventory, candidate upgrades, and acquisition gates | Data architecture owner |
 | [Requirements traceability](REQUIREMENTS_TRACEABILITY.md) | Requirement IDs mapped to work packages and verification | Quality lead |
 | [Test and acceptance plan](TEST_AND_ACCEPTANCE_PLAN.md) | Test levels, environments, evidence, and release gates | Quality lead |
 | [Non-functional budgets](NON_FUNCTIONAL_BUDGETS.md) | Numeric performance, durability, size, accuracy, memory, and energy limits | Performance/quality owner |
