@@ -8,7 +8,7 @@ const trackerPath = join(root, 'docs/STATE_DATA_PACKAGE_TRACKER.md');
 const auditPath = join(root, 'docs/STATE_AGENCY_SOURCE_AUDIT.md');
 
 // Each row is parks [name, url, kind, audit note], then forestry [name, url, kind, audit note].
-// "catalog" means an official discovery portal was verified, but a specific public layer was not.
+// "catalog" means an official portal/tool identifies a useful dataset or layer, but a direct data endpoint may remain unresolved.
 // "info" means an agency map or information page was found, but not a reusable statewide feed.
 const sources = {
   AL: [
@@ -45,7 +45,7 @@ const sources = {
   ],
   FL: [
     ['Florida DEP State Parks PARKS_BOUNDARIES MapServer', 'https://ca.dep.state.fl.us/arcgis/rest/services/OpenData/PARKS_BOUNDARIES/MapServer', 'api', 'Direct service contains boundaries, trails, roads, facilities, and management zones; boundary layer metadata says September 1, 2017, so freshness must be resolved.'],
-    ['Florida Forest Service agency maps and GIS information', 'https://www.fdacs.gov/Forest-Wildfire/Florida-Forest-Service', 'info', 'Agency information page found; an exact current public forestry boundary/API export was not verified here. DEP publishes a separate managed-lands service that may help discovery.'],
+    ['Florida State Forest boundaries (March 2025) ZIP', 'https://fgdl.org/zips/geospatial_data/current/state_forests_mar25.zip', 'download', 'Florida Forest Service boundary layer distributed by FGDL; map metadata identifies STATE_FORESTS_MAR25 as current through March 2025. Generalized administrative boundaries only: not surveyed/legal parcels and excludes internal features.'],
   ],
   GA: [
     ['Georgia DNR Managed Lands dataset metadata/download record', 'https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.html', 'download', 'DNR-managed land polygons include parks; metadata says published 2019 at 1:24,000 and warns boundaries are not legal descriptions.'],
@@ -56,7 +56,7 @@ const sources = {
     ['Hawaii DOFAW Forest Reserve GIS/data reference', 'https://dlnr.hawaii.gov/forestry/frs/permitting/research/', 'catalog', 'DOFAW identifies forest reserves, trails, and roads as available through the State Geospatial Data Portal; the exact DOFAW dataset URL remains to be selected.'],
   ],
   ID: [
-    ['Idaho State Parks Interactive Map', 'https://parksandrecreation.idaho.gov/elementor-48425/', 'info', 'Agency public interactive map found; no direct statewide park feature service or downloadable vector layer was verified.'],
+    ['Idaho Parks & Recreation ORFI IDPR_Managed_Land layer 19', 'https://gis2.idaho.gov/arcgis/rest/services/ADM/Orfi/MapServer/19', 'api', 'Direct queryable layer in the IDPR-built Outdoor Recreation Facility Inventory. It is a recreation inventory/managed-land layer, not a certified parcel inventory; a layer-specific edit date was not located.'],
     ['Idaho IDL Forest Action Plan datasets MapServer', 'https://gis1.idl.idaho.gov/arcgis/rest/services/Portal/Forest_Action_Plan_Datasets/MapServer', 'api', 'Direct forestry service includes forest health, fire hazard, priority landscapes, and other assessment layers; downloadable geodatabase is linked in service metadata.'],
   ],
   IL: [
@@ -72,16 +72,16 @@ const sources = {
     ['Iowa DNR GIS Analysis & Support / web services', 'https://www.iowadnr.gov/programs-services/gis-analysis-support', 'catalog', 'DNR states public GIS is distributed through Iowa GeoData and DNR web services; find forestry inventory or tract layers in those catalogs.'],
   ],
   KS: [
-    ['Kansas Department of Wildlife and Parks maps/data', 'https://ksoutdoors.com/', 'info', 'Agency visitor and mapping information located; a direct statewide State Parks GIS export/API was not verified.'],
-    ['Kansas Forest Service', 'https://www.kansasforests.org/', 'info', 'Agency forestry information located; no direct public statewide forest GIS dataset or download was verified.'],
+    ['KDWP Ecological Review Tool public lands layer', 'https://ert.ksoutdoors.gov/help', 'catalog', 'Selected layer: KDWPpubland_PADUS_merge6May24, updated 2024-02-22; merges PAD-US with KDWP-digitized known public-land boundaries and includes state parks. Useful statewide screening layer, not a park-only/legal boundary inventory; public help names the layer but does not expose its REST/download URL.'],
+    ['High-resolution land cover of Kansas (2015), RDS-2017-0025', 'https://www.fs.usda.gov/rds/archive/catalog/RDS-2017-0025', 'download', 'Kansas Forest Service and USDA Forest Service partnership; downloadable 1-meter tree-cover mapping derived from 2015 aerial photography, including narrow windbreaks. High-resolution but now dated; tree cover is not ownership or a state-forest boundary layer.'],
   ],
   KY: [
     ['Kentucky State Parks boundaries MapServer layer 8', 'https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_State_Parks_Features_WGS84WM/MapServer/8', 'api', 'Direct queryable state park polygon layer attributed to the Kentucky Department of Parks.'],
     ['Kentucky State Forests MapServer', 'https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_StateForests_WGS84WM/MapServer', 'api', 'Direct queryable forest boundary layer attributed to the Kentucky Department of Forestry.'],
   ],
   LA: [
-    ['Louisiana State Parks visitor maps and information', 'https://www.lastateparks.com/', 'info', 'Agency visitor information found; no direct public statewide State Parks GIS dataset/API was verified.'],
-    ['Louisiana Office of Forestry', 'https://www.ldaf.la.gov/forestry', 'info', 'Agency information found; no direct public statewide forestry GIS dataset/API was verified. Louisiana State Lands downloads are a separate steward and do not substitute for Forestry layers.'],
+    ['Louisiana State Parks Boundary File FeatureServer layer 4', 'https://services6.arcgis.com/1fGAZVgZnPx4zcNH/ArcGIS/rest/services/Fidelis/FeatureServer/4', 'api', 'Queryable polygon layer named Louisiana State Parks Boundary File; the service reports data last edited 2021-07-29 and is hosted outside the State Parks site. No update schedule, legal-boundary guarantee, or redistribution terms were found; treat as a dated boundary snapshot.'],
+    ['USFS Science Tree Canopy Cover (2025 product suite)', 'https://data.fs.usda.gov/geodata/rastergateway/treecanopycover/', 'download', 'Best current statewide forest-cover proxy found: USFS 30-meter tree-canopy product with annual values through 2025. It covers all ownerships and is not an LDAF/Office of Forestry-maintained inventory or forest-management boundary dataset. The current LDAF Forestry page links reports/programs but no public statewide GIS feed.'],
   ],
   ME: [
     ['Maine Bureau of Parks and Lands GIS/Mapping', 'https://www.maine.gov/dacf/parks/about/gis_mapping.shtml', 'catalog', 'Agency confirms it maintains park/public-land GIS layers; browse the Maine GeoLibrary for public datasets and verify which layers are downloadable.'],
@@ -117,7 +117,7 @@ const sources = {
   ],
   NE: [
     ['Nebraska Game and Parks Commission Spatial Data Portal', 'https://www.nebraska.gov/government/open-data/', 'catalog', 'State portal entry confirms NGPC provides a public GIS data platform; search it for park boundaries, trails, and facilities.'],
-    ['Nebraska Forest Service', 'https://nfs.unl.edu/', 'info', 'Agency forestry information found; a public statewide forestry data API/download was not located. Search NGPC/State GIS catalogs only as discovery leads, not as Forest Service data.'],
+    ['High-resolution land cover of Nebraska (2014), RDS-2019-0038', 'https://www.fs.usda.gov/rds/archive/catalog/RDS-2019-0038', 'download', 'USDA Forest Service Research Data Archive provides 1-meter rural land-cover/tree-cover data derived from 2014 NAIP imagery; developed with Nebraska forestry/agroforestry partners. Excludes cities and towns and is a 2014 snapshot, not a current Nebraska Forest Service stand or ownership inventory.'],
   ],
   NV: [
     ['Nevada State Parks / DCNR Data Hub', 'https://parks.nv.gov/', 'catalog', 'Agency site links into Nevada DCNR public GIS data hub; exact current state park dataset should be selected there.'],
@@ -132,12 +132,12 @@ const sources = {
     ['NJDEP Open Space MapServer layer 65', 'https://mapsdep.nj.gov/arcgis/rest/services/Features/Land/MapServer/65', 'api', 'Direct queryable DEP fee-simple open-space polygons include parks, forests, historic sites, and other lands; vintage and accuracy vary, notably for older parcels.'],
   ],
   NM: [
-    ['New Mexico State Parks maps and information', 'https://www.emnrd.nm.gov/spd/', 'info', 'Agency visitor maps/information found; no direct statewide State Parks data API/download was verified.'],
+    ['New Mexico State Parks 2023 boundary layer', 'https://nhnm-gisweb.unm.edu/arcgis/rest/services/NMEDB/NM_State_Parks/MapServer/0', 'api', 'Direct queryable polygon layer (34 features) hosted by UNM; State Parks staff reviewed/vetted it and metadata records 2023 updates. Important limitation: metadata says complete boundaries are as of 2009, geometry is generalized/approximate, portions may be missing, and it must not define legal ownership/jurisdiction.'],
     ['New Mexico Forestry Division GIS and Maps', 'https://www.emnrd.nm.gov/sfd/gis-and-maps/', 'catalog', 'Official page publishes forestry maps and forest-treatment viewer; its treatment layer is partner compiled, so confirm download endpoint and steward.'],
   ],
   NC: [
     ['North Carolina OneMap statewide geospatial catalog', 'https://www.nconemap.gov/', 'catalog', 'Official state data portal is the discovery route for State Parks layers; exact current agency dataset was not verified in this audit.'],
-    ['North Carolina Forest Service', 'https://www.ncforestservice.gov/', 'info', 'Agency information and maps located; a public statewide forestry vector API/download was not verified.'],
+    ['NC Forest Action Plan 2020 GIS data layers', 'https://www.ncmhtd.com/ncfs/ncfap/', 'download', 'NC Forest Service geospatial viewer page offers a roughly 445-MB zipped file geodatabase, including forest ownership/species, tree canopy, forest types, easements, and stewardship priority layers. Statewide planning data with 2020 vintage, not a live operational inventory.'],
   ],
   ND: [
     ['ND Parks Recreation Asset Viewer and GIS Hub', 'https://www.parkrec.nd.gov/business/planning/rec-assets', 'catalog', 'Official park viewer covers parks, trails, amenities, and facilities; use the linked ND GIS Hub to identify direct export/API records.'],
@@ -148,7 +148,7 @@ const sources = {
     ['ODNR Ohio_POI MapServer layer 0 and GIS data catalog', 'https://apps.ohiodnr.gov/gims/response.asp?category=Select&county=Statewide', 'catalog', 'ODNR GIS catalog exposes separate Parks/Forestry trails and points, while the public POI layer is explicitly incomplete.'],
   ],
   OK: [
-    ['Oklahoma State Parks map and park information', 'https://www.travelok.com/at/state_parks', 'info', 'Official state parks map and visitor information found; no direct statewide State Parks vector download/API was verified.'],
+    ['Oklahoma State Parks official CSV', 'https://data.ok.gov/dataset/08830e47-e651-4dc6-b753-79d5383a1389/resource/72a040b6-a838-40c4-9c5b-ed5fa4dd6cdc/download/data-oklahoma-state-parks.csv', 'download', 'Official OTRD-published park list CSV; catalog says last updated 2019-10-31 and describes names/addresses only. It is useful as a historical location list, but has no park polygons and is too stale to serve as the current statewide boundary or facilities dataset.'],
     ['Oklahoma Forestry Services EcoInventory FeatureServer layer 68', 'https://services3.arcgis.com/yrIZ0Nv0mSGTWJsH/arcgis/rest/services/Eco_Inventory_view/FeatureServer/68', 'api', 'OFS GIS metadata identifies this as its EcoInventory point layer (10,578 features; data process dated 2022); it is not a forest-boundary layer and must be checked for currentness and terms.'],
   ],
   OR: [
@@ -164,7 +164,7 @@ const sources = {
     ['RIDEM Conserved_Land_in_RI_v2 MapServer state conservation land layer', 'https://risegis.ri.gov/hosting/rest/services/RIDEM/Conserved_Land_in_RI_v2/MapServer/3', 'api', 'Shared RIDEM layer covers state-managed conservation land; verify which sites are forests versus parks and access status.'],
   ],
   SC: [
-    ['South Carolina State Parks visitor maps and information', 'https://southcarolinaparks.com/', 'info', 'Agency visitor maps found; no direct statewide parks API/download was verified.'],
+    ['South Carolina State Parks FeatureServer layer', 'https://services.arcgis.com/ycIuRaoIC4UuCDAS/ArcGIS/rest/services/SC_State_Parks/FeatureServer/0', 'api', 'Queryable state-park polygon layer; service description says its source shapefile was received from South Carolina Department of Parks, Recreation & Tourism staff on 2022-03-16. This is an agency-sourced snapshot, with no published update cadence or use terms located.'],
     ['South Carolina Forestry Commission GIS layer inventory', 'https://dc.statelibrary.sc.gov/bitstreams/069a4c87-080a-4334-9f1a-fbe89e9c3809/download', 'catalog', 'State GIS Council inventory lists State Forest boundaries, roads, facilities, and operational layers, but a public download/service endpoint was not verified.'],
   ],
   SD: [
@@ -205,21 +205,21 @@ const sources = {
   ],
   WY: [
     ['Wyoming State Parks WyoStateParks MapServer layer 26', 'https://gis2.statelands.wyo.gov/arcgis/rest/services/WyoStateParks/MapServer/26', 'api', 'Direct queryable service represents Wyoming State Parks; confirm division stewardship and layer metadata.'],
-    ['Wyoming State Forestry Division Forest Action Plan maps', 'https://wsfd.wyo.gov/', 'info', 'Agency publishes a Forest Action Plan interactive map and forest information; a direct public statewide forest GIS download/API was not verified.'],
+    ['USFS Science Tree Canopy Cover (2025 product suite)', 'https://data.fs.usda.gov/geodata/rastergateway/treecanopycover/', 'download', 'Best current statewide forest-cover proxy found: USFS 30-meter tree-canopy product with annual values through 2025. It covers all ownerships and is not a WSFD-maintained forested-trust-land inventory. WSFD publishes a Forest Action Plan interactive map, but no public GIS export for its management inventory was confirmed.'],
   ],
 };
 
 const kindLabel = {
   api: 'Direct GIS API',
-  download: 'Agency data/download page',
-  catalog: 'Official GIS catalog or data portal',
+  download: 'Direct dataset/download page',
+  catalog: 'Official GIS catalog or agency map tool',
   info: 'Agency maps or information page',
 };
 
 function statusFor(kind) {
   if (kind === 'api') return 'Direct GIS API found; verify completeness, terms, and freshness before integration.';
-  if (kind === 'download') return 'Agency download found; verify scope, terms, and data vintage before integration.';
-  if (kind === 'catalog') return 'Official catalog found; select the exact dataset and verify terms/freshness before integration.';
+  if (kind === 'download') return 'Downloadable dataset found; verify steward, scope, terms, and data vintage before integration.';
+  if (kind === 'catalog') return 'Official catalog/tool or named layer found; verify endpoint, scope, terms, and freshness before integration.';
   return 'Agency maps/information found; a statewide reusable GIS API/download was not verified.';
 }
 
@@ -265,6 +265,27 @@ const agencyRows = states.map((state) => {
   return `| ${state.code} | ${state.name} | [${state.parksAgency}](${state.parksAgencyUrl}) | ${sourceCell('parks')} | [${state.forestryAgency}](${state.agencyUrl}) | ${sourceCell('forestry')} |`;
 });
 
+const deepDives = [
+  ['FL', 1, 'Recent state-forest boundary candidate with a March 2025 vintage. Generalized administrative polygons; not a surveyed/legal parcel source or a facilities/trails feed.'],
+  ['ID', 0, 'IDPR-built, queryable ORFI managed-land layer. Its specific edit date and completeness are unclear, so verify park-by-park coverage before treating it as a full title inventory.'],
+  ['KS', 0, 'KDWP names this protected-lands layer in its ERT help as updated 2024-02-22 and merged from PAD-US plus KDWP digitized boundaries. It includes parks but is not park-only; public help does not reveal a direct REST/export URL.'],
+  ['KS', 1, 'KFS-USFS 1-meter rural tree-cover work is high resolution and includes windbreaks, but depicts 2015 cover rather than current forest ownership or state-held forest boundaries.'],
+  ['LA', 0, 'A queryable state-park boundary layer was found; its data last edit is 2021-07-29. It is hosted outside State Parks and has no published refresh schedule or legal-boundary/redistribution terms.'],
+  ['LA', 1, 'USFS 30-meter tree-canopy data through 2025 is the best current statewide cover proxy found. It is not an LDAF dataset, says nothing about ownership, and is not a forestry-management inventory.'],
+  ['NE', 1, 'The 1-meter Nebraska tree-cover layer uses 2014 rural imagery and excludes urban areas. It is detailed but dated and does not map Nebraska Forest Service program holdings or operational stands.'],
+  ['NM', 0, 'The 34-polygon service has 2023 updates and State Parks staff review, but metadata says coverage is complete only as of January 2009; boundaries are generalized, may omit portions, and are not legal.'],
+  ['NC', 1, 'NC Forest Service offers a statewide 2020 Forest Action Plan geodatabase (about 445 MB zipped) with ownership/species, canopy, forest type, easement, and priority layers. Useful planning data, not a live operations feed.'],
+  ['OK', 0, 'OTRD’s official CSV is a names-and-addresses list last updated 2019-10-31. It has no geometry and is too old for a reliable current park-location/boundary package; this remains an unresolved spatial-data gap.'],
+  ['SC', 0, 'The feature service traces to a shapefile received from SC Parks, Recreation & Tourism staff on 2022-03-16. It is a usable boundary snapshot, but no refresh cadence or redistribution terms were found.'],
+  ['WY', 1, 'USFS 30-meter tree-canopy data through 2025 provides current statewide cover, not WSFD-managed forest boundaries. WSFD links a Forest Action Plan map, but a public GIS export for its management inventory was not confirmed.'],
+];
+const deepDiveRows = deepDives.map(([stateCode, agencyIndex, finding]) => {
+  const state = states.find((candidate) => candidate.code === stateCode);
+  const source = sources[stateCode][agencyIndex];
+  const agency = agencyIndex === 0 ? state.parksAgency : state.forestryAgency;
+  return `| ${stateCode} | ${agency} | [${source[0]}](${source[1]}) | ${finding} |`;
+});
+
 const audit = [
   '# State Agency Direct-Source Coverage Audit',
   '',
@@ -275,10 +296,18 @@ const audit = [
   '## Coverage summary',
   '',
   `- ${counts.api} direct GIS API endpoints were identified.`,
-  `- ${counts.download} agency data/download pages or dataset downloads were identified.`,
-  `- ${counts.catalog} official data catalogs/portals were identified where an exact dataset still needs to be selected.`,
+  `- ${counts.download} dataset/download endpoints or download pages were identified; some are partner/federal proxies rather than agency-maintained products.`,
+  `- ${counts.catalog} official data catalogs/tools were identified; exact layers or direct API/download endpoints may still need resolution.`,
   `- ${counts.info} agency map/information pages were identified; a statewide reusable dataset/API was not verified in this audit.`,
   '- API and download entries may still be partial, stale, generalized, or subject to limits; each notes a specific known caveat where found.',
+  '',
+  '## Deep dive: 12 prior information-only agency gaps',
+  '',
+  'A specific dataset or named GIS layer is now recorded for each of the 12 prior information-only entries. For this audit, a reliable current-use candidate needs a traceable steward, suitable geometry/scope, and a defensible vintage or refresh path. Source discovery does not certify these conditions. Louisiana and Wyoming forestry use the best current USFS tree-cover proxy found, not an agency-maintained forest inventory. Oklahoma still lacks a usable statewide park geometry source in the public material located.',
+  '',
+  '| State | Agency | Best dataset/layer found | Reliability and scope finding |',
+  '| --- | --- | --- | --- |',
+  ...deepDiveRows,
   '',
   '## State-by-state agency sources',
   '',
