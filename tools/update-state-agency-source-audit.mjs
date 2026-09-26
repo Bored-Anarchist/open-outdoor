@@ -224,6 +224,148 @@ function statusFor(kind) {
   return 'Agency maps/information found; a statewide reusable GIS API/download was not verified.';
 }
 
+// Seventy agency rows previously had only a boundary/resource layer, a map,
+// an unselected catalog, or no confirmed visitor-use feed. Keep the agency
+// source as the ownership/management anchor and add a state-specific visitor
+// data fallback. Curated government feeds are added where a suitable one was
+// verified; an OSM state extract remains available as a supplemental source.
+const visitorGapAgencyKeys = [
+  'AK:forestry', 'AZ:forestry', 'AR:parks', 'AR:forestry', 'CA:forestry',
+  'CO:parks', 'CO:forestry', 'CT:parks', 'CT:forestry', 'DE:parks', 'DE:forestry',
+  'FL:forestry', 'GA:parks', 'GA:forestry', 'HI:parks', 'HI:forestry',
+  'ID:parks', 'ID:forestry', 'IL:parks', 'IL:forestry', 'IN:parks', 'IN:forestry',
+  'KS:parks', 'KS:forestry', 'KY:parks', 'KY:forestry', 'LA:parks',
+  'LA:forestry', 'ME:parks', 'ME:forestry', 'MD:forestry', 'MA:forestry',
+  'MN:forestry', 'MS:forestry', 'MO:parks', 'MO:forestry', 'MT:parks',
+  'MT:forestry', 'NE:forestry', 'NV:forestry', 'NH:parks', 'NH:forestry',
+  'NJ:forestry', 'NM:parks', 'NM:forestry', 'NC:parks', 'NC:forestry',
+  'ND:parks', 'ND:forestry', 'OK:parks', 'OK:forestry', 'OR:parks',
+  'OR:forestry', 'RI:parks', 'RI:forestry', 'SC:parks', 'SC:forestry',
+  'SD:forestry', 'TN:forestry', 'TX:forestry', 'UT:parks', 'UT:forestry',
+  'VA:parks', 'VA:forestry', 'WA:parks', 'WV:parks', 'WV:forestry',
+  'WI:forestry', 'WY:parks', 'WY:forestry',
+];
+if (new Set(visitorGapAgencyKeys).size !== 70) {
+  throw new Error(`Expected 70 agency rows needing visitor-use supplementation; found ${new Set(visitorGapAgencyKeys).size}`);
+}
+
+const curatedVisitorFeeds = {
+  'AR:parks': [
+    ['Arkansas Statewide Trails FeatureServer layer 22', 'https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Environment/FeatureServer/22', 'api', 'Arkansas GIS Office queryable trail lines attributed to Arkansas State Parks and the Natural Heritage Commission; GeoJSON is supported. Metadata cautions that coverage and accuracy vary and updates may occur without notice.'],
+    ['Arkansas outdoor recreation facilities layer 24', 'https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24', 'api', 'Point inventory with names, recreation category/type, owner, description, county, and verification date; use the Arkansas State Parks owner values and retain source verification dates.'],
+  ],
+  'AR:forestry': [
+    ['Arkansas Forestry Commission recreation access layer 25', 'https://www.geostor.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Transportation/MapServer/25', 'api', 'Statewide public outdoor-access points include a coded owner field; filter owner = AFC for Arkansas Forestry Commission features and validate route/site access with the manager.'],
+    ['Arkansas Statewide Trails FeatureServer layer 22', 'https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Environment/FeatureServer/22', 'api', 'Partner trail-line inventory attributed to Arkansas State Parks and the Natural Heritage Commission; use only where geometry/manager attributes support an Arkansas Forestry match.'],
+  ],
+  'CO:parks': [
+    ['Colorado CPW Trail Segments FeatureServer layer 2', 'https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2', 'api', 'CPW-maintained route inventory records designated uses (hiking, biking, OHV and others) on CPW properties; source describes a 466-trail inventory across 37 state parks and ongoing GIS maintenance.'],
+  ],
+  'CT:parks': [
+    ['Connecticut DEEP Trails Set line layer', 'https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3', 'api', 'Statewide DEEP trail lines describe single/multi-use trails, connectors and regional routes; accompanying layers include trail access points and optional trail points of interest. Download formats include GeoJSON and Shapefile.'],
+    ['Connecticut DEEP Property Access Locations', 'https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore', 'catalog', 'Named, status-bearing access points for DEEP properties; includes activity and campsite-related attributes. Verify geometry and individual field semantics before ingest.'],
+  ],
+  'CT:forestry': [
+    ['Connecticut DEEP Trails Set line layer', 'https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3', 'api', 'Statewide DEEP trail lines describe single/multi-use trails, connectors and regional routes; the statewide database also exposes trail access points and optional trail points of interest.'],
+    ['Connecticut DEEP Property Access Locations', 'https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore', 'catalog', 'Named DEEP forest/property access records include use/status fields; retain the DEEP manager and check current property rules.'],
+  ],
+  'DE:parks': [
+    ['Delaware Trails and Pathways MapServer layer 28', 'https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Transportation/DE_Multimodal/MapServer/28', 'api', 'Delaware State Parks-attributed statewide compilation of public recreational trails and pathways, queryable as a GIS line layer with managing agency, use, surface, name, status and mileage fields; the public endpoint is on the FirstMap test host, so verify the production endpoint before integration. Coverage and accuracy warranties are disclaimed by the state.'],
+  ],
+  'DE:forestry': [
+    ['Delaware Trails and Pathways MapServer layer 28', 'https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Transportation/DE_Multimodal/MapServer/28', 'api', 'Statewide public recreational trail/pathway compilation includes managing agency/use/surface/status fields and can add route geometry near State Forest tracts; the exposed endpoint is on the FirstMap test host, so verify its production equivalent. Keep route steward distinct and confirm DFS site access separately.'],
+  ],
+  'FL:forestry': [
+    ['Florida Existing Trails FeatureServer layer 3', 'https://cadev.dep.state.fl.us/arcgis/rest/services/OpenData/OGT/MapServer/3', 'api', 'Florida DEP Office of Greenways and Trails compiles existing public hiking, biking, equestrian, paddling and motorized recreational trails from local, state and federal providers; retain the provider/steward where available.'],
+  ],
+  'HI:parks': [
+    ['Hawaii State Parks Campsites MapServer layer 31', 'https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/31', 'api', 'State Parks-sourced point layer for permitted campsites, cabins and related units; May 12, 2025 source records were ground-truthed by State Parks staff. Coverage is only the State Parks system.'],
+  ],
+  'ID:parks': [
+    ['Idaho Outdoor Recreation Facility Inventory MapServer', 'https://gis2.idaho.gov/arcgis/rest/services/ADM/Orfi/MapServer', 'api', 'IDPR-built recreation inventory exposes campground layer 2, Centennial Trail layer 8, snowmobile trails layer 13, and managed-land layer 19. Queryable GeoJSON; confirm item-level freshness and avoid treating the inventory as a title survey.'],
+  ],
+  'ID:forestry': [
+    ['Idaho Department of Lands Trails FeatureServer layer 2', 'https://gis1.idl.idaho.gov/arcgis/rest/services/Portal/IDLTrails/FeatureServer/2', 'api', 'IDL trail lines expose trail name, jurisdiction, and supervisory area, including a State jurisdiction code. Use the jurisdiction/land manager fields to isolate state-managed routes.'],
+    ['Idaho Trails Map MapServer', 'https://gis2.idaho.gov/arcgis/rest/services/DPR/Idaho_Trails_Map/MapServer', 'api', 'Statewide trail map service integrates state, USFS, BLM and other partner routes; use manager fields and preserve route-status limitations.'],
+  ],
+  'IN:parks': [
+    ['Indiana AllOpenTrails FeatureServer layer 0', 'https://gisdata.in.gov/server/rest/services/Hosted/Trails_AGOL_RO/FeatureServer/0', 'api', 'Indiana DNR statewide public off-road trail inventory with route status and provider mix; planned/potential lines must not be presented as open trails, and the agency advises checking field status.'],
+  ],
+  'IN:forestry': [
+    ['Indiana AllOpenTrails FeatureServer layer 0', 'https://gisdata.in.gov/server/rest/services/Hosted/Trails_AGOL_RO/FeatureServer/0', 'api', 'Indiana DNR statewide public off-road trail inventory aggregates state/local/federal/nonprofit providers; retain managing organization and route status, and verify current field access.'],
+  ],
+  'KY:parks': [
+    ['Kentucky State Parks visitor features MapServer', 'https://kygisserver.ky.gov/arcgis/rest/services/WGS84WM_Services/Ky_State_Parks_Features_WGS84WM/MapServer', 'api', 'Direct State Parks service exposes trailheads, campsites, lodges, cottages, information sites, campground features, public structures, park boundaries and trail lines (layers 0–9).'],
+  ],
+  'MA:forestry': [
+    ['MassGIS DCR Roads & Trails download', 'https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails', 'download', 'DCR GIS line/point dataset covers legal roads and trails identified by agency staff/consultants on DCR properties. Published vintage is June 2015; use as a dated official baseline and supplement/check current park maps.'],
+  ],
+  'MN:forestry': [
+    ['Minnesota State Forest Campgrounds GIS download', 'https://gisdata.mn.gov/dataset/struc-state-forest-campgrounds', 'download', 'MNDNR campground/visitor facility point layer includes state-forest and administering-unit attributes; downloadable shapefile with DNR data-license terms. Pair with agency state-forest roads/trail maps and current weekly closure information.'],
+  ],
+  'MO:parks': [
+    ['Missouri Parks Trails Inventory System public GIS downloads', 'https://apps5.mo.gov/trails/fullMap.action', 'catalog', 'Official Parks Trails Inventory System supports park/trail search, use filters, and a GIS-file download. Missouri DNR disclaims accuracy warranties; verify trail/park-specific conditions.'],
+  ],
+  'MO:forestry': [
+    ['Missouri Department of Conservation Camping Sites MapServer layer 0', 'https://gisblue.mdc.mo.gov/arcgis/rest/services/Infrastructure/Camping/MapServer/0', 'api', 'MDC-published public camping-site point layer for conservation areas; primitive camping coverage, not full-service campground amenities. Pair with conservation-area manager/access attributes and verify area regulations.'],
+  ],
+  'NH:parks': [
+    ['New Hampshire Recreational Trails and Trailhead-Parking FeatureServer', 'https://services8.arcgis.com/hg1B9Egwk1I5p300/ArcGIS/rest/services/NH_Recreational_Trails/FeatureServer', 'api', 'Statewide multi-source trail lines and trailhead/parking locations, intended for planning approximation. Trail status can change or close with landowner consent/conditions; verify with managers.'],
+  ],
+  'NH:forestry': [
+    ['New Hampshire Recreational Trails and Trailhead-Parking FeatureServer', 'https://services8.arcgis.com/hg1B9Egwk1I5p300/ArcGIS/rest/services/NH_Recreational_Trails/FeatureServer', 'api', 'Statewide multi-source trail lines and trailhead/parking points add visitor routes across state lands; source is a planning approximation and requires land-manager verification.'],
+  ],
+  'NJ:forestry': [
+    ['NJDEP State Park trails and open-space points MapServer', 'https://mapsdep.nj.gov/arcgis/rest/services/Applications/DEP_Trails/MapServer', 'api', 'DEP service exposes State Park Service trails, open-space activity records, and open-space points of interest. Use manager/agency attributes to identify Division of Parks and Forestry properties; closures/status come from separate live notices.'],
+  ],
+  'RI:parks': [
+    ['RIDEM Outdoor Recreation Map FeatureServer', 'https://risegis.ri.gov/hosting/rest/services/RIDEM/Outdoor_Recreation_Map_v4/FeatureServer', 'api', 'RIDEM editable/queryable outdoor recreation service includes trails, bikeways, barriers, state campgrounds, managed recreation lands, public access and other outdoor features; filter by layer and manager.'],
+  ],
+  'RI:forestry': [
+    ['RIDEM Outdoor Recreation Map FeatureServer', 'https://risegis.ri.gov/hosting/rest/services/RIDEM/Outdoor_Recreation_Map_v4/FeatureServer', 'api', 'RIDEM recreation service includes state campgrounds, trails and managed recreation lands; layer records are broader than forestry holdings, so preserve manager/primary-use attributes.'],
+  ],
+  'UT:parks': [
+    ['Utah Trails and Pathways FeatureServer layer 0', 'https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0', 'api', 'UGRC statewide line GIS layer for hiking/pedestrian/bike trails and pathways with facility/use classes; last updated July 15, 2026. The state calls the inventory substantial but incomplete and requests steward review.'],
+  ],
+  'UT:forestry': [
+    ['Utah Trails and Pathways FeatureServer layer 0', 'https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0', 'api', 'UGRC statewide hiking/pedestrian/bike route layer with use-class attributes and a download/service endpoint; coverage is explicitly incomplete and spans many public/private stewards.'],
+  ],
+  'VA:parks': [
+    ['Virginia State Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHn/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0', 'api', 'Statewide designated long-distance trail line layer with route name/designation attributes and GeoJSON query support; it complements, but does not replace, park-specific local trail maps.'],
+  ],
+  'VA:forestry': [
+    ['Virginia State Trails FeatureServer layer 0', 'https://services1.arcgis.com/PxUNqSbaWFvFgHn/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0', 'api', 'State-designated multiuse corridor route lines are a statewide supplement, not a complete Virginia Department of Forestry local trail inventory; pair with forest-specific official maps.'],
+  ],
+  'WA:parks': [
+    ['Washington State Parks Open Campsites and Open Trails FeatureServer', 'https://services2.arcgis.com/6Miy5NqQWjMYTGFY/arcgis/rest/services/WA_State_Parks_WFL1/FeatureServer', 'api', 'Agency service contains Open Campsites (layer 0), Open Trails (layer 1), park layers and a closed-parks layer; query/download support. Check current conditions and data-item lineage before operational use.'],
+  ],
+  'WV:parks': [
+    ['West Virginia publicly accessible recreational trails MapServer', 'https://services.wvgis.wvu.edu/arcgis/rest/services/Applications/trails_trailService/MapServer', 'api', 'WVU GIS Technical Center and Marshall University inventory statewide publicly accessible recreation trails with manager categories, including a parks layer; public feedback is used to correct missing/incorrect trails. Check edit dates and access status.'],
+  ],
+  'WV:forestry': [
+    ['West Virginia publicly accessible recreational trails MapServer', 'https://services.wvgis.wvu.edu/arcgis/rest/services/Applications/trails_trailService/MapServer', 'api', 'Statewide public recreation trail network provides route geometry near state forests; retain public-access/manager category and confirm trails are actually on or access forestry-managed lands.'],
+  ],
+};
+
+const stateSlug = (name) => name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, '');
+const visitorGapSet = new Set(visitorGapAgencyKeys);
+function supplementalVisitorSources(state, prefix) {
+  const key = `${state.code}:${prefix}`;
+  if (!visitorGapSet.has(key)) return [];
+  const osmSlug = stateSlug(state.name);
+  const feeds = curatedVisitorFeeds[key] ?? [];
+  return [
+    ...feeds.map(([name, url, kind, notes]) => ({ name, url, kind, notes, steward: 'See dataset-specific notes for publisher and partner attribution' })),
+    {
+      name: `OpenStreetMap ${state.name} outdoor routes and POIs state extract`,
+      url: `https://download.geofabrik.de/north-america/us/${osmSlug}-latest.osm.pbf`,
+      kind: 'download',
+      steward: 'OpenStreetMap contributors; distributed by Geofabrik',
+      notes: `State-level PBF extract normally refreshed daily ([Geofabrik state extracts](https://download.geofabrik.de/north-america/us.html)). Filter mapped hiking/path/route features, campgrounds/campsites, trailhead or parking access, shelters, toilets, water and other visitor POIs, then spatially join to the agency land layer. This is community-contributed coverage, not an agency-verified inventory; feature completeness, access legality, conditions and closures vary. Preserve OpenStreetMap attribution and [ODbL 1.0](https://www.openstreetmap.org/copyright) obligations; verify access and rules with the managing agency.`,
+    },
+  ];
+}
+
 const registry = JSON.parse(await readFile(registryPath, 'utf8'));
 const states = registry.states.filter((state) => state.code !== 'NY');
 if (states.length !== 49 || Object.keys(sources).length !== 49) {
@@ -242,12 +384,20 @@ for (const state of states) {
     state[`${prefix}DataSourceUrl`] = source[1];
     state[`${prefix}DataSourceType`] = source[2];
     state[`${prefix}DataSourceNotes`] = source[3];
-    state[statusField] = statusFor(source[2]);
+    state[`${prefix}SupplementalDataSources`] = supplementalVisitorSources(state, prefix);
+    const visitorFeeds = state[`${prefix}SupplementalDataSources`];
+    if (visitorFeeds.length) {
+      const curatedCount = visitorFeeds.filter((feed) => feed.steward !== 'OpenStreetMap contributors; distributed by Geofabrik').length;
+      state[statusField] = `Existing agency source: ${statusFor(source[2])} Additional visitor feeds recorded: ${curatedCount} state/partner dataset(s) plus a state OpenStreetMap extract. Check lineage, completeness, reuse terms, access, and current conditions before import.`;
+    } else {
+      state[statusField] = statusFor(source[2]);
+    }
   }
 }
 
-registry.schemaVersion = 3;
+registry.schemaVersion = 4;
 registry.stateAgencyLayerStatusGuide.remaining_49_audited = 'Direct source, official portal, or information-only discovery result is recorded for each parks and forestry agency in docs/STATE_AGENCY_SOURCE_AUDIT.md. Discovery is not integration or a rights/currentness approval.';
+registry.stateAgencyLayerStatusGuide.visitor_use_gap_sources = 'The 70 rows previously lacking direct visitor features now record one or more government visitor datasets where verified plus a state-level OpenStreetMap extract as an explicitly non-agency, community-contributed fallback. These are candidates requiring access, completeness, freshness, and ODbL checks; they are not permission or closure feeds.';
 const registryHeader = JSON.stringify({ ...registry, states: [] }, null, 2)
   .replace(/,\n  "states": \[\]\n\}\s*$/, '');
 const registryText = `${registryHeader},\n  "states": [\n${registry.states.map((state) => `    ${JSON.stringify(state)}`).join(',\n')}\n  ]\n}\n`;
@@ -255,13 +405,22 @@ await writeFile(registryPath, registryText, 'utf8');
 
 const counts = { api: 0, download: 0, catalog: 0, info: 0 };
 for (const pair of Object.values(sources)) for (const source of pair) counts[source[2]]++;
+const supplementalFeedCount = states.reduce((total, state) => total
+  + (state.parksSupplementalDataSources?.length ?? 0)
+  + (state.forestrySupplementalDataSources?.length ?? 0), 0);
+const curatedSupplementalFeedCount = states.reduce((total, state) => total
+  + [...(state.parksSupplementalDataSources ?? []), ...(state.forestrySupplementalDataSources ?? [])]
+    .filter((feed) => feed.steward !== 'OpenStreetMap contributors; distributed by Geofabrik').length, 0);
 const agencyRows = states.map((state) => {
   const sourceCell = (prefix) => {
     const url = state[`${prefix}DataSourceUrl`];
     const name = state[`${prefix}DataSourceName`];
     const kind = state[`${prefix}DataSourceType`];
     const notes = state[`${prefix}DataSourceNotes`];
-    return `[${name}](${url})<br>${kindLabel[kind]}<br>${notes} | ${state[`${prefix}LayerStatus`]}`;
+    const supplemental = (state[`${prefix}SupplementalDataSources`] ?? [])
+      .map((feed) => `Supplement: [${feed.name}](${feed.url}) (${kindLabel[feed.kind]}; steward: ${feed.steward})<br>${feed.notes}`)
+      .join('<br>');
+    return `[${name}](${url})<br>${kindLabel[kind]}<br>${notes}${supplemental ? `<br>${supplemental}` : ''} | ${state[`${prefix}LayerStatus`]}`;
   };
   return `| ${state.code} | ${state.name} | [${state.parksAgency}](${state.parksAgencyUrl}) | ${sourceCell('parks')} | [${state.forestryAgency}](${state.agencyUrl}) | ${sourceCell('forestry')} |`;
 });
@@ -327,6 +486,11 @@ const outdoorUseDescriptions = {
     utility: 'The recorded source identifies at least one concrete visitor route, campsite, trailhead, or facility class. It is a plausible hiking/camping map input, subject to the coverage and source-specific limits in the direct-source audit.',
     gap: 'Confirm feature geometry and fields, coverage, refresh date, terms, and whether access, camping permission, and closures are explicitly represented before import.',
   },
+  partner_visitor_feature_candidate: {
+    label: 'Partner visitor-feature candidate',
+    utility: 'The agency source is paired with one or more state or community GIS datasets that describe outdoor routes, campsites, trail access, or visitor POIs. This provides useful discovery geometry, but does not mean the agency verified every feature.',
+    gap: 'Retain the actual route/site manager, source date, and license; check coverage and each feature with the land manager. OpenStreetMap additions require ODbL attribution/share-alike review and must not be used to infer camping permission, current access, or closures.',
+  },
   visitor_source_lead: {
     label: 'Visitor information lead; not data-ready',
     utility: 'The agency provides useful visitor-facing map or GIS information, but a reusable, current data extract or sufficiently described layer is not established.',
@@ -360,6 +524,17 @@ for (const [classification, agencyKeys] of Object.entries(outdoorUseAssignments)
     outdoorUseByAgency.set(agencyKey, classification);
   }
 }
+const originalVisitorGapKeys = [...outdoorUseByAgency.entries()]
+  .filter(([, classification]) => classification !== 'visitor_feature_candidate')
+  .map(([agencyKey]) => agencyKey)
+  .sort();
+if (JSON.stringify(originalVisitorGapKeys) !== JSON.stringify([...visitorGapAgencyKeys].sort())) {
+  throw new Error('Visitor source supplements must cover exactly the agency rows previously lacking direct visitor-feature candidates.');
+}
+for (const agencyKey of visitorGapAgencyKeys) {
+  if (!outdoorUseByAgency.has(agencyKey)) throw new Error(`Supplemented agency has no original classification: ${agencyKey}`);
+  outdoorUseByAgency.set(agencyKey, 'partner_visitor_feature_candidate');
+}
 if (outdoorUseByAgency.size !== states.length * 2) {
   throw new Error(`Expected ${states.length * 2} outdoor-use classifications; found ${outdoorUseByAgency.size}`);
 }
@@ -370,7 +545,8 @@ for (const state of states) {
   }
 }
 const outdoorUseCounts = Object.fromEntries(
-  Object.keys(outdoorUseDescriptions).map((classification) => [classification, outdoorUseAssignments[classification].length]),
+  Object.keys(outdoorUseDescriptions).map((classification) => [classification,
+    [...outdoorUseByAgency.values()].filter((value) => value === classification).length]),
 );
 function positiveFeatureText(note) {
   // Exclude sentences that negate, omit, or limit feature coverage so a caveat
@@ -380,8 +556,11 @@ function positiveFeatureText(note) {
     .join(' ');
 }
 const visitorSourceNotes = states.flatMap((state) => ['parks', 'forestry']
-  .filter((prefix) => ['visitor_feature_candidate', 'visitor_source_lead'].includes(outdoorUseByAgency.get(`${state.code}:${prefix}`)))
-  .map((prefix) => positiveFeatureText(state[`${prefix}DataSourceNotes`] ?? '')));
+  .filter((prefix) => ['visitor_feature_candidate', 'visitor_source_lead', 'partner_visitor_feature_candidate'].includes(outdoorUseByAgency.get(`${state.code}:${prefix}`)))
+  .map((prefix) => positiveFeatureText([
+    state[`${prefix}DataSourceNotes`] ?? '',
+    ...(state[`${prefix}SupplementalDataSources`] ?? []).map((feed) => feed.notes),
+  ].join(' '))));
 const visitorFeatureMentionCounts = {
   camping: visitorSourceNotes.filter((note) => /campground|camping area|campsite/i.test(note)).length,
   trails: visitorSourceNotes.filter((note) => /trail/i.test(note)).length,
@@ -405,9 +584,13 @@ const outdoorUseRows = states.flatMap((state) => ['parks', 'forestry'].map((pref
   const agency = prefix === 'parks' ? state.parksAgency : state.forestryAgency;
   const source = sources[state.code][prefix === 'parks' ? 0 : 1];
   const type = kindLabel[source[2]];
-  const sourceCell = `[${source[0]}](${source[1]})<br>${type}`;
-  const featureEvidence = ['visitor_feature_candidate', 'visitor_source_lead'].includes(classification)
-    ? documentedFeatureEvidence(source[3])
+  const supplemental = state[`${prefix}SupplementalDataSources`] ?? [];
+  const supplementalCell = supplemental
+    .map((feed) => `[${feed.name}](${feed.url})<br>${kindLabel[feed.kind]} · ${feed.steward}: ${feed.notes}`)
+    .join('<br>');
+  const sourceCell = `[${source[0]}](${source[1]})<br>${type}${supplementalCell ? `<br>${supplementalCell}` : ''}`;
+  const featureEvidence = ['visitor_feature_candidate', 'visitor_source_lead', 'partner_visitor_feature_candidate'].includes(classification)
+    ? documentedFeatureEvidence([source[3], ...supplemental.map((feed) => feed.notes)].join(' '))
     : '';
   const evidenceText = featureEvidence
     ? ` Source notes name: ${featureEvidence}.`
@@ -426,6 +609,7 @@ const outdoorUseAudit = [
   '## Finding',
   '',
   `- ${outdoorUseCounts.visitor_feature_candidate} sources describe visitor locations/routes/facilities directly enough to be candidate hiking/camping inputs; this is a content-fit result, not a rights, schema, freshness, completeness, or integration approval.`,
+  `- ${outdoorUseCounts.partner_visitor_feature_candidate} rows now have additional state/community visitor datasets paired with the agency source. They are useful discovery candidates, not verified agency inventories; community coverage and access/currentness vary.`,
   `- ${outdoorUseCounts.visitor_source_lead} more source records identify likely visitor data but still need the exact public dataset/layer selected.`,
   `- ${outdoorUseCounts.destination_land_context} records describe or point to park/forest/open-space land context only; they do not establish trails, amenities, campgrounds, or permission to enter/camp.`,
   `- ${outdoorUseCounts.forest_resource_context} records are forest/resource/planning data rather than visitor POIs.`,
@@ -436,6 +620,7 @@ const outdoorUseAudit = [
   '## Fit criteria',
   '',
   '- **Direct visitor-feature candidate:** the recorded API/download description identifies at least one potentially useful location or route class, such as campgrounds, recreation points, trails, roads, parking, amenities, or park facilities. Before import, verify actual geometry, field quality, update date, coverage, terms, and any access/status attributes.',
+  '- **Partner visitor-feature candidate:** the agency land/source record is paired with official statewide partner visitor data and a state-specific OpenStreetMap extract. These are useful discovery candidates, not agency-verified or automatically access-compliant. Keep official partner data prioritized; use community records as a separately attributed supplement and validate access/status with the land manager.',
   '- **Visitor information lead:** an official visitor map, database, viewer, or GIS description is useful for discovery, but a current reusable download/API or enough layer detail to use it as an app feed is not established.',
   '- **Destination / land context:** a park, forest, protected-land, or open-space boundary identifies where a managed land unit is. It is not itself a camping or hiking POI and cannot prove public entry or overnight use.',
   '- **Forest / planning context:** forest cover, stands, health, wildfire, or action-plan data help describe a landscape but do not tell visitors where to camp or hike.',
@@ -479,6 +664,7 @@ const audit = [
   `- ${counts.download} dataset/download endpoints or download pages were identified; some are partner/federal proxies rather than agency-maintained products.`,
   `- ${counts.catalog} official data catalogs/tools were identified; exact layers or direct API/download endpoints may still need resolution.`,
   `- ${counts.info} agency map/information pages were identified; a statewide reusable dataset/API was not verified in this audit.`,
+  `- Added ${supplementalFeedCount} visitor-use supplements across the 70 previously deficient agency rows: ${curatedSupplementalFeedCount} named government/official-partner GIS datasets plus 70 per-state OpenStreetMap downloads.`,
   '- API and download entries may still be partial, stale, generalized, or subject to limits; each notes a specific known caveat where found.',
   '',
   '## Deep dive: 12 prior information-only agency gaps',
