@@ -2,6 +2,8 @@
 
 **Checked:** 2026-09-26. **Coverage:** 98 primary agency records and 45 named supplemental sources for 49 states other than New York. This table preserves the initial endpoint snapshot; see the [follow-up on its eight failed URLs](EIGHT_SOURCE_ENDPOINT_FOLLOWUP_2026-09-26.md) for current replacements and corrected source attribution. [New York has its own agency audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). [Current bundle and OpenStreetMap audit](CURRENT_STATE_DATASET_AUDIT.md).
 
+**Rights update:** Use the [current 142-record agency redistribution matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md) for release decisions. The `Redistribution` column below is the earlier metadata snapshot and includes superseded URLs and findings.
+
 This is a metadata and endpoint audit for candidate sources. It did not compare every named park or forest with an agency master list, inspect every child layer, or establish current closure, camping permission, or route access. None of these state-agency candidates has been added to the 49 shipped state packages. A service item modification date can reflect metadata only; the table labels it **item** rather than a data edit. A live feature count is a query result on the check date, not a statewide completeness measure.
 
 **Live result:** 135/143 URLs responded to this automated check; 8 were unavailable or returned an ArcGIS error. A single failed check is not proof a source has been retired. Specific source and coverage caveats remain in the [agency source audit](STATE_AGENCY_SOURCE_AUDIT.md) and [outdoor use audit](STATE_AGENCY_OUTDOOR_USE_AUDIT.md).

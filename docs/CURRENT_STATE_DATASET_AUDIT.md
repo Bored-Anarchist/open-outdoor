@@ -4,6 +4,8 @@
 
 **AR/ID/SD rights update:** See the [dataset-specific redistribution check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md). Arkansas Outdoor Recreational Facilities has an affirmative no-use-limitations statement; other planned agency datasets for those three states remain unconfirmed for public offline redistribution. Geofabrik OSM extracts have explicit ODbL redistribution rights and obligations. No state-agency features were added to public packages.
 
+**All-agency rights update:** The [142-record current-source matrix and New York addendum](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md) supersede earlier generic rights assumptions. In particular, the DEC Trails FeatureServer states that its data are not for distribution to third parties; matching road/hiking records are already in the New York package. Treat its manifest's blanket redistributable classification as unverified and hold further public distribution of those DEC line layers pending agency permission or removal. DEC lands and POI bulk rights also need confirmation.
+
 ## What the app actually uses
 
 | Product/data plane | Current source | Finding |

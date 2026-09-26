@@ -4,6 +4,8 @@
 **Scope:** The two New York agencies in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json): NYS DEC Division of Lands and Forests and the NYS Office of Parks, Recreation and Historic Preservation (OPRHP).<br>
 **Bundle reviewed:** [`new-york-outdoors.manifest.json`](../packages/map/src/assets/new-york-outdoors.manifest.json), acquired 2026-09-16.
 
+**Rights recheck (2026-09-26):** The [all-agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md#new-york-agency-addendum) found that the newer DEC Trails FeatureServer expressly bars third-party distribution. Its road and hiking layers match the bundled MapServer source in feature counts and the first five ordered record IDs/names. Treat the 1,308 bundled roads and 5,289 bundled hiking lines as **redistribution held** pending a DEC grant or removal from future public builds. DEC lands and POI bulk redistribution remain unconfirmed. This supersedes any blanket “NYS public GIS terms” statement in the package manifest; it is a rights finding, not a change to the current asset.
+
 ## Result
 
 | Agency | Finding | Bundle evidence |
@@ -37,7 +39,7 @@ These are source-presence and layer-scope findings; feature counts alone do not 
 
 ## Reuse, freshness, and integration decisions
 
-- Keep DEC's four existing source records, but describe DEC coverage as partial until the unmatched DEC road and trail classes are reconciled against current layer schemas, counts, and `UPDATED` values. The exposed `PUBLICUSE`, route/activity, and access fields require field-level review; they do not establish a blanket permission to enter or camp.
+- The four DEC source records remain in the historical package manifest, but **do not treat its rights flag as verified**. The newer [DEC Trails item terms](https://services6.arcgis.com/DZHaqZm9cxOD4CWM/arcgis/rest/services/DEC_Trails/FeatureServer/info/iteminfo) prohibit third-party distribution, and the bundled road/hiking MapServer layers appear to contain the same records. Hold further redistribution of those line layers pending DEC permission or removal from future public packages. Independently verify the DEC lands and POI grant. Coverage is also partial until unmatched road/trail classes are reconciled; exposed access fields do not establish permission to enter or camp.
 - Do not mark OPRHP covered merely because its ArcGIS services are publicly queryable. The [park-boundary item metadata](https://www.arcgis.com/sharing/rest/content/items/bb2dfa2ccec0462ebe40e4efd8e2252f/info/metadata/metadata.xml?format=default&output=html) says “Do not redistribute”; OPRHP's [public Parks overview item](https://www.arcgis.com/home/item.html?id=b4e838a7e5ac449294be3b3f0f67e4aa) also limits use to informational, non-commercial purposes and requires attribution. Treat offline redistribution as prohibited pending explicit permission for each source to be used.
 - Resolve the OPRHP boundary vintage conflict and the trail layer's conflicting 2021 merge description / 2026 edit date directly with the agency. Record source edition/date, geometry count/checksum, and a refresh policy for every layer accepted into a bundle.
 - Keep temporary closures, beach status, and other operational conditions separate from durable trail/property geometry. Their age should be visible and their stale-state behavior defined before product use.
