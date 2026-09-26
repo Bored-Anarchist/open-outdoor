@@ -32,6 +32,8 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Current state dataset audit](CURRENT_STATE_DATASET_AUDIT.md) | Bundled state and OSM source inventory, candidate upgrades, and acquisition gates | Data architecture owner |
 | [State agency source validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) | Live checks, completeness limits, and reuse-rights findings for 98 primary and 45 supplemental agency sources | Data architecture owner |
 | [Eight failed source URL follow-up](EIGHT_SOURCE_ENDPOINT_FOLLOWUP_2026-09-26.md) | Diagnoses, replacements, and outstanding rights/completeness gates for the failed agency links | Data architecture owner |
+| [State package and planned-layer tracker](STATE_DATA_PACKAGE_TRACKER.md) | Package counts plus exact Arkansas, Idaho, and South Dakota agency/OSM candidates, filters, and release gates | Data architecture owner |
+| [Arkansas, Idaho, and South Dakota agency deep dive](ID_AR_SD_AGENCY_DATASET_DEEP_DIVE_2026-09-26.md) | Source, completeness, currency, and rights evidence behind the three-state plan | Data architecture owner |
 | [Requirements traceability](REQUIREMENTS_TRACEABILITY.md) | Requirement IDs mapped to work packages and verification | Quality lead |
 | [Test and acceptance plan](TEST_AND_ACCEPTANCE_PLAN.md) | Test levels, environments, evidence, and release gates | Quality lead |
 | [Non-functional budgets](NON_FUNCTIONAL_BUDGETS.md) | Numeric performance, durability, size, accuracy, memory, and energy limits | Performance/quality owner |
