@@ -6,13 +6,13 @@
       "parentId": "registry-ga-parks-d8134b1089",
       "url": "https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.zip",
       "format": "zip",
-      "reason": "Exact DNR managed-lands shapefile archive linked to the source metadata; agency filter needed"
+      "reason": "Exact DNR lands shapefile archive linked to the source metadata; derived private layer selects DNR-owned names ending SP"
     },
     {
       "parentId": "registry-ga-forestry-d8134b1089",
       "url": "https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.zip",
       "format": "zip",
-      "reason": "Same managed-lands archive; filter forestry manager code separately"
+      "reason": "Same lands archive; derived private layer selects Forestry Commission owner code 3200; visitor access unverified"
     },
     {
       "parentId": "registry-id-forestry-d4f272bf30",
@@ -67,7 +67,7 @@
       "parentId": "registry-tx-parks-supplement-54a5d37923",
       "url": "https://tpwd.texas.gov/gis/data/baselayers/state-park-boundaries-zip/at_download/file",
       "format": "zip",
-      "reason": "Exact TPWD state-park boundary ZIP linked from source page; dated 2015"
+      "reason": "Exact TPWD state-park boundary ZIP linked from source page; derived private layer selects Open for Public Use; dated 2015"
     },
     {
       "parentId": "registry-va-forestry-64d38891a6",

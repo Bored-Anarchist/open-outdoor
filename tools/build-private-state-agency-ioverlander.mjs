@@ -179,12 +179,30 @@ function agencyFeature(source, feature, index) {
   if (!kind) return null;
   const fields = feature.properties ?? {};
   const externalId = String(
-    fields.OBJECTID ?? fields.ObjectID ?? fields.objectid ?? fields.FID ?? feature.id ?? index,
+    fields.OBJECTID ??
+      fields.ObjectID ??
+      fields.objectid ??
+      fields.DNR20A_ID ??
+      fields.FID ??
+      feature.id ??
+      index,
   );
-  const sourceHash = sha256(source.sourceUrl).slice(0, 12);
+  const sourceHash = sha256(`${source.sourceUrl}#${source.sourcePartition ?? ''}`).slice(0, 12);
   const id = `private-agency:${sourceHash}:${externalId}`;
   const name =
-    ['NAME', 'Name', 'name', 'PARK_NAME', 'TRAIL_NAME', 'UNIT_NAME', 'FACILITY_NAME']
+    [
+      'NAME',
+      'Name',
+      'name',
+      'PARK_NAME',
+      'TRAIL_NAME',
+      'UNIT_NAME',
+      'FACILITY_NAME',
+      'FEE_SIMPLE_NAME',
+      'FEATURE_NAME',
+      'Land_owner_openspace_pt.NAME_LABEL',
+      'Land_owner_openspace_pt.FACILITY_LABEL',
+    ]
       .map((key) => fields[key])
       .find((value) => typeof value === 'string' && value.trim())
       ?.trim() ?? `Agency feature ${externalId}`;
@@ -205,6 +223,66 @@ function agencyFeature(source, feature, index) {
       publicUse: 'Private validation only; verify visitor access and publisher terms',
     },
   };
+}
+
+const njVisitorUses = new Set([
+  'State Park',
+  'Trail',
+  'State Forest',
+  'Historic Site',
+  'Natural Area',
+  'Recreation Area',
+  'State Preserve',
+]);
+
+export function privateAgencySelection(receipt, features, resolution) {
+  let selected = features;
+  const filters = [];
+  if (resolution?.filter) {
+    selected = selected.filter((feature) =>
+      Object.entries(resolution.filter).every(
+        ([field, value]) => feature.properties?.[field] === value,
+      ),
+    );
+    filters.push(resolution.filter);
+  }
+  if (receipt.sourceFilter) filters.push(receipt.sourceFilter);
+  const njFilters = {
+    'registry-nj-forestry-cecb5c0cc2': {
+      predicate: (p) =>
+        p.MANAGED_BY === 'Division of Parks and Forestry' &&
+        p.ACCESS_TYPE === 'Public Access' &&
+        njVisitorUses.has(p.USE_LABEL),
+      description: 'Parks and Forestry managed; Public Access; visitor-use labels',
+    },
+    'resolved-registry-nj-parks-fbd88e5b9e': {
+      predicate: (p) => p.TRL_ACCESS === 'Yes' && p.OWNERSHIP === 'State',
+      description: 'TRL_ACCESS=Yes; OWNERSHIP=State',
+    },
+    'child-nj-forestry-supplement-0-d5700aeef8': {
+      predicate: (p) => p.TRL_ACCESS === 'Yes' && p.OWNERSHIP === 'State',
+      description: 'TRL_ACCESS=Yes; OWNERSHIP=State',
+    },
+    'child-nj-forestry-supplement-25-8100840e6b': {
+      predicate: (p) =>
+        p['Land_owner_openspace_pt.PUBLIC_ACCESS'] === 'Yes' &&
+        p['Land_owner_openspace_pt.MANAGED_BY'] === 'Division of Parks and Forestry',
+      description: 'PUBLIC_ACCESS=Yes; MANAGED_BY=Division of Parks and Forestry',
+    },
+    'child-nj-forestry-supplement-31-3e3440a95d': {
+      predicate: (p) =>
+        p.OWNERSHIP === 'State' &&
+        p.LAND_MANAGER === 'NJ State Parks, Forests and Historic Sites' &&
+        !['Restricted Access', 'Closed to Public', 'Closed'].includes(p.OPNS_STAT),
+      description: 'State-owned State Parks POI; excludes restricted and closed',
+    },
+  };
+  const nj = receipt.state === 'NJ' ? njFilters[receipt.sourceId] : null;
+  if (nj) {
+    selected = selected.filter((feature) => nj.predicate(feature.properties ?? {}));
+    filters.push(nj.description);
+  }
+  return { selected, filters };
 }
 
 async function readAgency(code) {
@@ -239,7 +317,7 @@ async function readAgency(code) {
       ) ||
       receipt.publicDistribution !== false ||
       receipt.validationStatus === 'rejected-subject' ||
-      seenUrls.has(receipt.sourceUrl) ||
+      seenUrls.has(`${receipt.sourceUrl}#${receipt.sourcePartition ?? ''}`) ||
       receipt.rawFilename !== 'raw.geojson'
     ) {
       continue;
@@ -252,19 +330,15 @@ async function readAgency(code) {
     if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
       throw new Error(`${directory}: invalid staged GeoJSON`);
     }
-    seenUrls.add(receipt.sourceUrl);
-    const selected = resolution?.filter
-      ? collection.features.filter((feature) =>
-          Object.entries(resolution.filter).every(
-            ([field, value]) => feature.properties?.[field] === value,
-          ),
-        )
-      : collection.features;
+    seenUrls.add(`${receipt.sourceUrl}#${receipt.sourcePartition ?? ''}`);
+    const { selected, filters } = privateAgencySelection(receipt, collection.features, resolution);
     sources.push({
       sourceId: receipt.sourceId,
       sourceUrl: receipt.sourceUrl,
       count: selected.length,
-      ...(resolution?.filter ? { filter: resolution.filter } : {}),
+      ...(receipt.sourcePartition ? { sourcePartition: receipt.sourcePartition } : {}),
+      ...(receipt.inputSha256 ? { inputSha256: receipt.inputSha256 } : {}),
+      ...(filters.length ? { filters } : {}),
     });
     selected.forEach((feature, index) => {
       const converted = agencyFeature(receipt, feature, index);

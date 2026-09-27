@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { ioverlanderFeature, pointInGeometry } from './build-private-state-agency-ioverlander.mjs';
+import {
+  ioverlanderFeature,
+  pointInGeometry,
+  privateAgencySelection,
+} from './build-private-state-agency-ioverlander.mjs';
 
 test('state boundary filtering excludes holes and neighboring tiles', () => {
   const boundary = {
@@ -44,4 +48,60 @@ test('private iOverlander conversion omits contributor identities', () => {
   assert.equal(feature.properties.communityCheckIns[0].comment, 'Open');
   assert.equal(JSON.stringify(feature).includes('private-person'), false);
   assert.equal(JSON.stringify(feature).includes('another-person'), false);
+});
+
+test('New Jersey private overlay keeps only managed public access visitor parcels', () => {
+  const receipt = { state: 'NJ', sourceId: 'registry-nj-forestry-cecb5c0cc2' };
+  const base = {
+    MANAGED_BY: 'Division of Parks and Forestry',
+    ACCESS_TYPE: 'Public Access',
+    USE_LABEL: 'State Forest',
+  };
+  const features = [
+    base,
+    { ...base, ACCESS_TYPE: 'No Access' },
+    { ...base, MANAGED_BY: 'Private' },
+    { ...base, USE_LABEL: 'Conservation Easement' },
+  ].map((properties) => ({ properties }));
+  assert.deepEqual(privateAgencySelection(receipt, features).selected, [features[0]]);
+});
+
+test('New Jersey trail, open space, and POI selections exclude closed and nonstate records', () => {
+  const cases = [
+    {
+      sourceId: 'child-nj-forestry-supplement-0-d5700aeef8',
+      allowed: { TRL_ACCESS: 'Yes', OWNERSHIP: 'State' },
+      rejected: { TRL_ACCESS: 'No', OWNERSHIP: 'State' },
+    },
+    {
+      sourceId: 'child-nj-forestry-supplement-25-8100840e6b',
+      allowed: {
+        'Land_owner_openspace_pt.PUBLIC_ACCESS': 'Yes',
+        'Land_owner_openspace_pt.MANAGED_BY': 'Division of Parks and Forestry',
+      },
+      rejected: {
+        'Land_owner_openspace_pt.PUBLIC_ACCESS': 'No',
+        'Land_owner_openspace_pt.MANAGED_BY': 'Division of Parks and Forestry',
+      },
+    },
+    {
+      sourceId: 'child-nj-forestry-supplement-31-3e3440a95d',
+      allowed: {
+        OWNERSHIP: 'State',
+        LAND_MANAGER: 'NJ State Parks, Forests and Historic Sites',
+        OPNS_STAT: 'na',
+      },
+      rejected: {
+        OWNERSHIP: 'State',
+        LAND_MANAGER: 'NJ State Parks, Forests and Historic Sites',
+        OPNS_STAT: 'Closed to Public',
+      },
+    },
+  ];
+  for (const { sourceId, allowed, rejected } of cases) {
+    const features = [allowed, rejected].map((properties) => ({ properties }));
+    assert.deepEqual(privateAgencySelection({ state: 'NJ', sourceId }, features).selected, [
+      features[0],
+    ]);
+  }
 });
