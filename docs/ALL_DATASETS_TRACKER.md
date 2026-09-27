@@ -183,7 +183,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | IN | forestry | [OpenStreetMap Indiana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/indiana-latest.osm.pbf) | download | OSM fallback; no agency import |
 | IA | parks | [Iowa DNR State_Parks MapServer](https://programs.iowadnr.gov/geospatial/rest/services/Recreation/State_Parks/MapServer) | api | Primary candidate; no agency import |
 | IA | forestry | [Iowa DNR State_Parks recreation MapServer](https://programs.iowadnr.gov/geospatial/rest/services/Recreation/State_Parks/MapServer) | api | Primary candidate; no agency import |
-| KS | parks | [KDWP Ecological Review Tool public lands layer](https://ert.ksoutdoors.gov/help) | catalog | Primary candidate; no agency import |
+| KS | parks | [KDWP Spatial Directory Kansas Public Land layer 4 (state park subset)](https://services1.arcgis.com/q2CglofYX6ACNEeu/arcgis/rest/services/KDWP_Spatial_Directory_WFL1/FeatureServer/4) | api | Primary candidate; no agency import |
 | KS | parks | [OpenStreetMap Kansas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/kansas-latest.osm.pbf) | download | OSM fallback; no agency import |
 | KS | forestry | [High-resolution land cover of Kansas (2015), RDS-2017-0025](https://www.fs.usda.gov/rds/archive/catalog/RDS-2017-0025) | download | Primary candidate; no agency import |
 | KS | forestry | [OpenStreetMap Kansas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/kansas-latest.osm.pbf) | download | OSM fallback; no agency import |
@@ -277,7 +277,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | RI | forestry | [OpenStreetMap Rhode Island outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf) | download | OSM fallback; no agency import |
 | SC | parks | [South Carolina State Parks FeatureServer layer](https://services.arcgis.com/ycIuRaoIC4UuCDAS/ArcGIS/rest/services/SC_State_Parks/FeatureServer/0) | api | Primary candidate; no agency import |
 | SC | parks | [OpenStreetMap South Carolina outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/south-carolina-latest.osm.pbf) | download | OSM fallback; no agency import |
-| SC | forestry | [South Carolina Forestry Commission State Lands visitor maps](https://www.scfc.gov/state-lands/) | info | Primary candidate; no agency import |
+| SC | forestry | [SCDOT Government Property MapServer layer 5 (SCFC forest subset)](https://gis.scdot.org/hosting/rest/services/Government_Property_RO/MapServer/5) | api | Primary candidate; no agency import |
 | SC | forestry | [OpenStreetMap South Carolina outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/south-carolina-latest.osm.pbf) | download | OSM fallback; no agency import |
 | SD | parks | [South Dakota GFP Recreational Trails MapServer layer 0](https://ert.gfp.sd.gov/arcgis/rest/services/SD_Public/RecreationalTrails/MapServer/0) | api | Primary candidate; no agency import |
 | SD | forestry | [South Dakota GIS Portal](https://sdgis.sd.gov/portal/home/) | catalog | Primary candidate; no agency import |
