@@ -4,10 +4,6 @@ import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hi
 
 import { HikeDetails } from './HikeDetails';
 
-import publicHikes from '../../packages/map/src/assets/new-york-hikes.json';
-
-import publicMapManifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
-
 import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
 
 import licenses from './map-licenses.json';
@@ -99,6 +95,7 @@ import {
   mobileMapDataAsset as outdoorDataAsset,
   mobileMapDataIndex as bundledIndex,
   mobileMapDataMetadata,
+  mobileHikeData as bundledHikes,
 } from '@open-outdoor/mobile-map-data';
 
 import type { PlaceJournalService } from './application';
@@ -583,10 +580,10 @@ export function OutdoorMap({
       return null;
     }
 
-    if (publicHikes.sourceSha256 !== publicMapManifest.sha256) return null;
+    if (bundledHikes.sourceSha256 !== mobileMapDataMetadata.sha256) return null;
 
     return (
-      (publicHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
+      (bundledHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
       null
     );
   }, [selected, imports.datasets]);
@@ -2023,8 +2020,8 @@ export function OutdoorMap({
 
       <Text>
         Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
-        Hike elevations: {publicHikes.attribution}. Geometry simplified for display. MapLibre Native
-        renderer. Public-use GIS data is provided without warranty; boundaries are not legal
+        Hike elevations: {bundledHikes.attribution}. Geometry simplified for display. MapLibre
+        Native renderer. Public-use GIS data is provided without warranty; boundaries are not legal
         surveys.
       </Text>
 

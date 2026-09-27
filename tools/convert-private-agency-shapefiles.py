@@ -23,6 +23,16 @@ from pyproj import CRS, Transformer  # noqa: E402
 
 SOURCES = (
     {
+        "state": "FL",
+        "parent_id": "registry-fl-forestry-158eb959ff",
+        "input_id": "registry-fl-forestry-158eb959ff",
+        "member": "state_forests_mar25",
+        "partition": "fl-named-state-forest-polygons",
+        "selection": "Nonempty DESCRIPT; March 2025 forest boundaries; visitor access unverified",
+        "accept": lambda p: bool(str(p.get("DESCRIPT") or "").strip()),
+        "expected_count": 76,
+    },
+    {
         "state": "GA",
         "parent_id": "registry-ga-parks-d8134b1089",
         "member": "dnr20a",
@@ -51,6 +61,7 @@ SOURCES = (
 )
 
 STATE_BOUNDS = {
+    "FL": (-87.7, 24.0, -79.7, 31.2),
     "GA": (-85.7, 30.2, -80.7, 35.2),
     "TX": (-106.8, 25.6, -93.3, 36.7),
 }
@@ -73,13 +84,15 @@ def transform_coordinates(value, transformer: Transformer, bounds):
 def convert(source: dict) -> dict:
     parent = source["parent_id"]
     state = source["state"]
-    directory = ROOT / "PrivateData" / "agency-feeds" / "US" / state / f"resolved-{parent}"
+    input_id = source.get("input_id", f"resolved-{parent}")
+    directory = ROOT / "PrivateData" / "agency-feeds" / "US" / state / input_id
     receipt = json.loads((directory / "receipt.json").read_text(encoding="utf-8-sig"))
     if (
-        receipt["sourceId"] != f"resolved-{parent}"
+        receipt["sourceId"] != input_id
         or receipt["state"] != state
         or receipt["rightsStatus"] != "Unconfirmed"
         or receipt["publicDistribution"] is not False
+        or receipt.get("provisionalPrivateValidation") is not True
         or receipt["rawFilename"] != "raw.zip"
     ):
         raise ValueError(f"{parent}: unexpected input receipt")
@@ -115,11 +128,16 @@ def convert(source: dict) -> dict:
                         geometry["coordinates"], transformer, STATE_BOUNDS[state]
                     ),
                 },
-                "properties": properties,
+                "properties": {
+                    key: value.isoformat() if hasattr(value, "isoformat") else value
+                    for key, value in properties.items()
+                },
             }
         )
     if not features:
         raise ValueError(f"{parent}: source filter selected no features")
+    if "expected_count" in source and len(features) != source["expected_count"]:
+        raise ValueError(f"{parent}: unexpected selected feature inventory")
     output = ROOT / "PrivateData" / "agency-feeds" / "US" / state / f"converted-{parent}"
     output.mkdir(parents=True, exist_ok=True)
     data = (json.dumps({"type": "FeatureCollection", "features": features}, separators=(",", ":")) + "\n").encode()
@@ -151,8 +169,8 @@ def convert(source: dict) -> dict:
 
 if __name__ == "__main__":
     requested = {argument.upper() for argument in sys.argv[1:]}
-    if requested and not requested <= {"GA", "TX"}:
-        raise SystemExit("usage: convert-private-agency-shapefiles.py [GA] [TX]")
+    if requested and not requested <= {"FL", "GA", "TX"}:
+        raise SystemExit("usage: convert-private-agency-shapefiles.py [FL] [GA] [TX]")
     for item in SOURCES:
         if not requested or item["state"] in requested:
             print(json.dumps(convert(item)))

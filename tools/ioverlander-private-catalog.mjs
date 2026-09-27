@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { resolve } from 'node:path';
 import { buildIoverlanderPrivateCatalog } from '../packages/data/dist/ioverlander-private.js';
+import { packagePrivateNewYorkHikes } from './package-private-new-york-hikes.mjs';
 
 function argumentsByName(values) {
   const parsed = new Map();
@@ -20,7 +21,7 @@ const inputDirectory = args.get('input');
 const outputDirectory = args.get('output');
 if (!inputDirectory || !outputDirectory) {
   throw new Error(
-    'usage: pnpm catalog:private:ioverlander -- --input <directory> --output <directory> [--dec <geojson>] [--nps <snapshot.json>] [--federal <snapshot.json>] [--review <csv>] [--generated-at <UTC>]',
+    'usage: pnpm catalog:private:ioverlander -- --input <directory> --output <directory> [--dec <geojson>] [--profiles <preserved profile directory>] [--nps <snapshot.json>] [--federal <snapshot.json>] [--review <csv>] [--generated-at <UTC>]',
   );
 }
 
@@ -36,6 +37,11 @@ const result = await buildIoverlanderPrivateCatalog({
   publicCheckout: process.cwd(),
   reviewCsvPath: args.get('review') ? resolve(args.get('review')) : undefined,
   generatedAt: args.get('generated-at'),
+});
+
+await packagePrivateNewYorkHikes({
+  catalogDirectory: result.outputDirectory,
+  ...(args.get('profiles') ? { profileDirectory: resolve(args.get('profiles')) } : {}),
 });
 
 process.stdout.write(

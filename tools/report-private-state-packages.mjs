@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { verifyPrivateHikeProfiles } from './package-private-new-york-hikes.mjs';
 
 const repository = resolve('.');
 const root = join(repository, 'PrivateData/catalogs/US');
@@ -57,6 +58,37 @@ for (const state of registry.states) {
   ) {
     throw new Error('NY: private catalog includes public source features');
   }
+  let hikeProfiles = 0;
+  if (ny) {
+    const profileFiles = ['new-york-hikes.private.json', 'new-york-hikes.private.manifest.json'];
+    const assets = [];
+    for (const file of profileFiles) {
+      const descriptor = manifest.artifacts.find((item) => item.file === file);
+      const data = await readFile(join(current, file));
+      if (!descriptor || descriptor.bytes !== data.length || descriptor.sha256 !== sha256(data)) {
+        throw new Error(`NY: ${file} checksum mismatch`);
+      }
+      assets.push({ bytes: data, value: JSON.parse(data) });
+    }
+    const [profiles, profileManifest] = assets;
+    if (
+      profiles.value.sourceSha256 !== artifact.sha256 ||
+      profileManifest.value.sourceSha256 !== artifact.sha256 ||
+      profileManifest.value.sha256 !== sha256(profiles.bytes) ||
+      profileManifest.value.bytes !== profiles.bytes.length ||
+      profileManifest.value.classification !== 'PRIVATE_USER' ||
+      profileManifest.value.publicDistribution !== false
+    ) {
+      throw new Error('NY: private profile provenance mismatch');
+    }
+    hikeProfiles = verifyPrivateHikeProfiles(profiles.value.hikes, collection);
+    if (
+      hikeProfiles !== profileManifest.value.featureCount ||
+      hikeProfiles !== manifest.hikeProfiles?.featureCount
+    ) {
+      throw new Error('NY: private profile count mismatch');
+    }
+  }
   rows.push({
     state: state.code,
     name: state.name,
@@ -68,6 +100,7 @@ for (const state of registry.states) {
     agency,
     ioverlander,
     total: collection.features.length,
+    hikeProfiles,
     sha256: artifact.sha256,
   });
 }
@@ -79,8 +112,9 @@ const totals = rows.reduce(
     agency: result.agency + row.agency,
     ioverlander: result.ioverlander + row.ioverlander,
     features: result.features + row.total,
+    hikeProfiles: result.hikeProfiles + row.hikeProfiles,
   }),
-  { agency: 0, ioverlander: 0, features: 0 },
+  { agency: 0, ioverlander: 0, features: 0, hikeProfiles: 0 },
 );
 const inventory = {
   schemaVersion: 1,
@@ -126,6 +160,8 @@ await writeFile(
     'The inventory verifier checks each package checksum and its feature counts against the manifest. Forty-three packages contain agency + iOverlander data, New York contains DEC + iOverlander only, and six packages use iOverlander alone because no eligible staged agency records are available.',
     '',
     `Totals: **${format(totals.agency)} agency/DEC features**, **${format(totals.ioverlander)} iOverlander places**, and **${format(totals.features)} features**. Counts do not establish current access, source completeness, or permission to redistribute.`,
+    '',
+    `New York also packages **${format(totals.hikeProfiles)} DEC trail elevation profiles**, verified against every packaged trail sample and statistic. Profiles describe existing trail features and are not added to the feature total. Florida includes 76 converted forest polygons; Oklahoma includes 44 historical state-park location points. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md).`,
     '',
     'California combines both source packages. Connecticut and Massachusetts use their shared source package, filtered to each state boundary. The six fallback packages can add eligible agency data on a later rebuild; their agency permissions remain unchanged.',
     '',

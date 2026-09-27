@@ -4,7 +4,9 @@
 
 The inventory verifier checks each package checksum and its feature counts against the manifest. Forty-three packages contain agency + iOverlander data, New York contains DEC + iOverlander only, and six packages use iOverlander alone because no eligible staged agency records are available.
 
-Totals: **446,402 agency/DEC features**, **63,333 iOverlander places**, and **509,735 features**. Counts do not establish current access, source completeness, or permission to redistribute.
+Totals: **446,522 agency/DEC features**, **63,333 iOverlander places**, and **509,855 features**. Counts do not establish current access, source completeness, or permission to redistribute.
+
+New York also packages **5,289 DEC trail elevation profiles**, verified against every packaged trail sample and statistic. Profiles describe existing trail features and are not added to the feature total. Florida includes 76 converted forest polygons; Oklahoma includes 44 historical state-park location points. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md).
 
 California combines both source packages. Connecticut and Massachusetts use their shared source package, filtered to each state boundary. The six fallback packages can add eligible agency data on a later rebuild; their agency permissions remain unchanged.
 
@@ -18,7 +20,7 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | Colorado (CO) | Agency + iOverlander | 2,129 | 3,696 | 5,825 |
 | Connecticut (CT) | iOverlander only | 0 | 176 | 176 |
 | Delaware (DE) | Agency + iOverlander | 7,681 | 61 | 7,742 |
-| Florida (FL) | Agency + iOverlander | 16,458 | 2,446 | 18,904 |
+| Florida (FL) | Agency + iOverlander | 16,534 | 2,446 | 18,980 |
 | Georgia (GA) | Agency + iOverlander | 6,262 | 815 | 7,077 |
 | Hawaii (HI) | Agency + iOverlander | 600 | 79 | 679 |
 | Idaho (ID) | Agency + iOverlander | 70,975 | 1,975 | 72,950 |
@@ -45,7 +47,7 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | North Carolina (NC) | Agency + iOverlander | 48 | 1,019 | 1,067 |
 | North Dakota (ND) | Agency + iOverlander | 48 | 389 | 437 |
 | Ohio (OH) | Agency + iOverlander | 11,572 | 611 | 12,183 |
-| Oklahoma (OK) | Agency + iOverlander | 379 | 563 | 942 |
+| Oklahoma (OK) | Agency + iOverlander | 423 | 563 | 986 |
 | Oregon (OR) | Agency + iOverlander | 1,114 | 3,486 | 4,600 |
 | Pennsylvania (PA) | Agency + iOverlander | 2,286 | 797 | 3,083 |
 | Rhode Island (RI) | Agency + iOverlander | 3,244 | 71 | 3,315 |

@@ -3,6 +3,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, parse, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { verifyPrivateHikeProfiles } from './package-private-new-york-hikes.mjs';
 
 const GEOJSON_FILE = 'new-york-outdoors.composed.geojson';
 const INDEX_FILE = 'new-york-outdoors.composed.index.json';
@@ -187,6 +188,31 @@ export async function stagePrivateMobileMap({
     schemaVersion: 1,
     features: [...publicIndex.features, ...index.features],
   };
+  const profileBytes = await verifyArtifact(
+    input,
+    artifactByName(manifest, 'new-york-hikes.private.json'),
+  );
+  const profileManifestBytes = await verifyArtifact(
+    input,
+    artifactByName(manifest, 'new-york-hikes.private.manifest.json'),
+  );
+  const profiles = JSON.parse(profileBytes);
+  const profileManifest = JSON.parse(profileManifestBytes);
+  if (
+    profiles.sourceSha256 !== sha256(geoBytes) ||
+    profileManifest.sourceSha256 !== sha256(geoBytes) ||
+    profileManifest.sha256 !== sha256(profileBytes) ||
+    profileManifest.bytes !== profileBytes.length ||
+    profileManifest.classification !== 'PRIVATE_USER' ||
+    profileManifest.publicDistribution !== false
+  ) {
+    throw new Error('private hike profiles do not match the private map and manifest');
+  }
+  const profileCount = verifyPrivateHikeProfiles(profiles.hikes, geojson);
+  if (profileCount !== profileManifest.featureCount)
+    throw new Error('private hike profile count mismatch');
+  const combinedGeoBytes = Buffer.from(`${JSON.stringify(combinedGeojson)}\n`);
+  const stagedProfiles = { ...profiles, sourceSha256: sha256(combinedGeoBytes) };
 
   const metadata = {
     schemaVersion: 1,
@@ -194,6 +220,8 @@ export async function stagePrivateMobileMap({
     hasPrivateData: true,
     label: 'Public New York + private DEC + iOverlander catalog',
     featureCount: combinedGeojson.features.length,
+    sha256: sha256(combinedGeoBytes),
+    hikeProfileCount: profileCount,
     acquiredAt: manifest.generatedAt,
     attribution: `NYS DEC; private iOverlander catalog; ${publicManifest.rights.attribution.join('; ')}`,
     sources: [
@@ -218,16 +246,21 @@ export async function stagePrivateMobileMap({
   await mkdir(temporary, { recursive: false });
   try {
     await Promise.all([
-      writeFile(join(temporary, GEOJSON_FILE), `${JSON.stringify(combinedGeojson)}\n`, {
+      writeFile(join(temporary, GEOJSON_FILE), combinedGeoBytes, {
         flag: 'wx',
       }),
       writeFile(join(temporary, INDEX_FILE), `${JSON.stringify(combinedIndex)}\n`, { flag: 'wx' }),
+      writeFile(
+        join(temporary, 'new-york-hikes.private.json'),
+        `${JSON.stringify(stagedProfiles)}\n`,
+        { flag: 'wx' },
+      ),
       writeFile(join(temporary, 'mobile-manifest.json'), `${JSON.stringify(metadata, null, 2)}\n`, {
         flag: 'wx',
       }),
       writeFile(
         join(temporary, 'mapData.private.ts'),
-        `import mobileMapDataAsset from './${GEOJSON_FILE}';\nimport mobileMapDataIndex from './${INDEX_FILE}';\nimport mobileMapDataMetadata from './mobile-manifest.json';\n\nexport { mobileMapDataAsset, mobileMapDataIndex, mobileMapDataMetadata };\n`,
+        `import mobileMapDataAsset from './${GEOJSON_FILE}';\nimport mobileMapDataIndex from './${INDEX_FILE}';\nimport mobileMapDataMetadata from './mobile-manifest.json';\nimport mobileHikeData from './new-york-hikes.private.json';\n\nexport { mobileMapDataAsset, mobileMapDataIndex, mobileMapDataMetadata, mobileHikeData };\n`,
         { flag: 'wx' },
       ),
     ]);

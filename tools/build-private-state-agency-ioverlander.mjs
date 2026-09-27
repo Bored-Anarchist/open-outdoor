@@ -195,6 +195,7 @@ function agencyFeature(source, feature, index) {
       fields.ObjectID ??
       fields.objectid ??
       fields.DNR20A_ID ??
+      fields.AUTOID ??
       fields.FID ??
       feature.id ??
       index,
@@ -212,6 +213,7 @@ function agencyFeature(source, feature, index) {
       'FACILITY_NAME',
       'FEE_SIMPLE_NAME',
       'FEATURE_NAME',
+      'DESCRIPT',
       'Land_owner_openspace_pt.NAME_LABEL',
       'Land_owner_openspace_pt.FACILITY_LABEL',
     ]
@@ -226,7 +228,10 @@ function agencyFeature(source, feature, index) {
       id,
       kind,
       name,
-      category: 'other',
+      category:
+        source.parentSourceId === 'registry-ok-parks-71807f407a' && kind === 'poi'
+          ? 'tourist_attraction'
+          : 'other',
       origin: 'private-catalog',
       sourceId: source.sourceId,
       sourceUrl: source.sourceUrl,

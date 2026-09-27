@@ -36,7 +36,7 @@ for (const state of registry.states.filter((item) => item.code !== 'NY')) {
       role,
       link(state[`${role}DataSourceName`], state[`${role}DataSourceUrl`]),
       state[`${role}DataSourceType`],
-      'Primary candidate; no agency import',
+      'Primary candidate; no public agency import; private staging tracked separately',
     ]);
     for (const source of state[`${role}SupplementalDataSources`] ?? []) {
       const osm = /openstreetmap|geofabrik/i.test(`${source.name} ${source.url}`);
@@ -45,7 +45,9 @@ for (const state of registry.states.filter((item) => item.code !== 'NY')) {
         role,
         link(source.name, source.url),
         source.kind,
-        osm ? 'OSM fallback; no agency import' : 'Supplemental candidate; no agency import',
+        osm
+          ? 'OSM fallback; no public agency import'
+          : 'Supplemental candidate; no public agency import',
       ]);
     }
   }
@@ -214,7 +216,7 @@ const sections = [
   '',
   '**Feed connectors:** The [gated agency feed connector](STATE_AGENCY_FEED_CONNECTORS.md) exposes these registry entries and selected three-state layers as source definitions. Exact ArcGIS layers and direct downloads require a source-specific private approval before feature or file acquisition. No agency records are included in public packages by that code.',
   '',
-  '**Private state packages:** The [verified private package inventory](PRIVATE_STATE_PACKAGE_INVENTORY_2026-09-27.md) records 50 active packages: 43 agency+iOverlander, New York DEC+iOverlander, and six iOverlander-only packages for CA, CT, MA, MI, MN, and NE. Private package files remain Git-ignored.',
+  '**Private state packages:** The [verified private package inventory](PRIVATE_STATE_PACKAGE_INVENTORY_2026-09-27.md) records 50 active packages: 43 agency+iOverlander, New York DEC+iOverlander, and six iOverlander-only packages for CA, CT, MA, MI, MN, and NE. Florida includes 76 converted forest polygons, Oklahoma includes 44 historical state-park points, and New York includes 5,289 verified DEC elevation profiles. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md). Private package files remain Git-ignored.',
   '',
   '## POI-system gate',
   '',
@@ -254,7 +256,7 @@ const sections = [
   '',
   '## Shipped New York package sources',
   '',
-  'The current public manifest lists the NYS civil boundary and federal feeds. DEC records and trail-derived profiles are held under ignored PrivateData pending rights review; see the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
+  'The current public manifest lists the NYS civil boundary and federal feeds. DEC records and 5,289 trail-derived profiles are packaged in the active ignored PrivateData catalog; the private mobile loader verifies their map binding. Public redistribution remains held; see the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
   '',
   table(
     ['Source ID', 'Dataset', 'Stage'],
@@ -319,7 +321,7 @@ const sections = [
           ' · ' +
           link('Mapzen terrain source', 'https://registry.opendata.aws/terrain-tiles/'),
         `${hikes.featureCount} public trail profiles after moving DEC derivatives to PrivateData`,
-        'The historical 5,289 DEC trail profiles are retained only in the private archive.',
+        'The preserved 5,289 DEC trail profiles are verified and packaged in the active private catalog, with their original provenance retained in the private archive.',
       ],
       [
         link(
