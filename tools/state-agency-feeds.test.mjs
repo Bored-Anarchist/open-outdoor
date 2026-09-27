@@ -69,7 +69,7 @@ test('every registered and selected source has a fail-closed feed definition', a
   assert.equal(feeds.length, 231);
   assert.equal(feeds.filter((feed) => feed.origin === 'registry').length, 212);
   assert.equal(feeds.filter((feed) => feed.origin === 'selected-plan').length, 19);
-  assert.equal(feeds.filter((feed) => feed.sourceType === 'arcgis-layer').length, 95);
+  assert.equal(feeds.filter((feed) => feed.sourceType === 'arcgis-layer').length, 97);
   assert.equal(new Set(feeds.map((feed) => feed.id)).size, feeds.length);
   for (const feed of feeds) {
     assert.throws(() => assertPrivateAcquisitionApproved(feed, undefined));

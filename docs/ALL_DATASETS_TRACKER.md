@@ -135,7 +135,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | CO | parks | [Colorado State Parks Trails public-domain dataset](https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr) | download | Primary candidate; no agency import |
 | CO | parks | [Colorado CPW Trail Segments FeatureServer layer 2](https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2) | api | Supplemental candidate; no agency import |
 | CO | parks | [OpenStreetMap Colorado outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/colorado-latest.osm.pbf) | download | OSM fallback; no agency import |
-| CO | forestry | [Colorado State Forest Service Data & Tools / GIS Open Data Portal](https://csfs.colostate.edu/data/) | catalog | Primary candidate; no agency import |
+| CO | forestry | [Colorado CPW Managed Properties (public access) layer 5: State Forest State Park](https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/5) | api | Primary candidate; no agency import |
 | CO | forestry | [OpenStreetMap Colorado outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/colorado-latest.osm.pbf) | download | OSM fallback; no agency import |
 | CT | parks | [Connecticut DEEP Property FeatureServer layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0) | api | Primary candidate; no agency import |
 | CT | parks | [Connecticut DEEP Trails Set line layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3) | api | Supplemental candidate; no agency import |
@@ -290,7 +290,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | TN | forestry | [OpenStreetMap Tennessee outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/tennessee-latest.osm.pbf) | download | OSM fallback; no agency import |
 | TX | parks | [Texas State Parks Trails MapServer layer 0](https://tpwd.texas.gov/arcgis/rest/services/Parks/TexasStateParksTrails/MapServer/0) | api | Primary candidate; no agency import |
 | TX | parks | [Texas Parks and Wildlife State Park Boundaries ZIP](https://tpwd.texas.gov/gis/data/baselayers/state-park-boundaries-zip/view) | download | Supplemental candidate; no agency import |
-| TX | forestry | [Texas A&M Forest Service Texas Forest Information and GIS services](https://tfsgis.tfs.tamu.edu/arcgis/rest/services) | catalog | Primary candidate; no agency import |
+| TX | forestry | [Texas A&M Forest Service Public Lands layer 4: state forest tracts](https://services5.arcgis.com/ELI1iJkCzTIagHkp/arcgis/rest/services/Public_Lands/FeatureServer/4) | api | Primary candidate; no agency import |
 | TX | forestry | [OpenStreetMap Texas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/texas-latest.osm.pbf) | download | OSM fallback; no agency import |
 | UT | parks | [Utah State Park Management Areas layer 0](https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/Utah_State_Park_Management_Areas/FeatureServer/0) | api | Primary candidate; no agency import |
 | UT | parks | [Utah Trails and Pathways FeatureServer layer 0](https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0) | api | Supplemental candidate; no agency import |
