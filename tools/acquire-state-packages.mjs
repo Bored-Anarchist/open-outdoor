@@ -842,7 +842,25 @@ async function writeTracker(states, packageRows) {
     '- Refresh packages using `pnpm map:acquire:states`; the script rewrites this tracker after every completed state package.',
     '',
   ].join('\n');
-  await writeFile(trackerPath, content, 'utf8');
+  let updated = content;
+  try {
+    const existing = await readFile(trackerPath, 'utf8');
+    const startHeading = '## State-by-state progress';
+    const endHeading = '## Acceptance / follow-up';
+    const existingStart = existing.indexOf(startHeading);
+    const existingEnd = existing.indexOf(endHeading, existingStart);
+    const generatedStart = content.indexOf(startHeading);
+    const generatedEnd = content.indexOf(endHeading, generatedStart);
+    if ([existingStart, existingEnd, generatedStart, generatedEnd].some((index) => index < 0)) {
+      throw new Error('state tracker headings changed; refusing to overwrite manual source plans');
+    }
+    updated = existing.slice(0, existingStart)
+      + content.slice(generatedStart, generatedEnd)
+      + existing.slice(existingEnd);
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  await writeFile(trackerPath, updated, 'utf8');
 }
 
 async function loadExistingTrackerRows(states) {

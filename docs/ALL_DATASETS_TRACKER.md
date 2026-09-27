@@ -4,6 +4,8 @@
 
 **Inventory counts:** 49 state packages; 9 national source families; 13 New York package source records; 212 registry source-role entries (98 primary agency, 44 non-OSM supplements, 70 OSM fallbacks); 19 selected AR/ID/SD plan rows; 8 OPRHP service candidates; two offline basemap manifests, one derived hike-profile manifest, one connected style manifest, and a proposed New York OSM extract. Rights findings remain in the [agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md), [three-state rights check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md), and [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
 
+**Feed connectors:** The [gated agency feed connector](STATE_AGENCY_FEED_CONNECTORS.md) exposes these registry entries and selected three-state layers as source definitions. Exact ArcGIS layers and direct downloads require a source-specific private approval before feature or file acquisition. No agency records are included in public packages by that code.
+
 ## POI-system gate
 
 The shipped 49 state packages contain **71,523 point-of-interest entries**. The current map category mapper displays **62,408 (87.3%)** as Other because source categories were not mapped to the display taxonomy. This is a category/filter/icon problem, not a geometry failure. These counts are package entries, so cross-border duplicate features can appear in more than one state. The state packages are map GeoJSON/index assets, not canonical PlaceRecord envelopes. Before accepting a new agency or OSM point feed, map its categories to the canonical place taxonomy and current display filters, retain raw category/provenance, validate names/coordinates/status, and keep closures/restrictions in their separate temporal records.

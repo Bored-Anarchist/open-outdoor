@@ -4,6 +4,8 @@
 
 **Complete source index and POI readiness:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists all nine shipped national source families, all 13 New York package sources, every 212 non-New-York registry source-role entries (including OSM), the 19 selected Arkansas/Idaho/South Dakota plan rows, and eight New York OPRHP candidates. It also reports POI category and import-limit results for each of the 49 state packages. The three shipped federal point feeds currently leave 62,408 of 71,523 package POI entries in the map's Other category; 17 state files exceed the current user-import size or feature limit. These are integration gates, separate from rights review.
 
+**Agency feed code:** The [gated connector plan](STATE_AGENCY_FEED_CONNECTORS.md) registers all 231 current registry/selected-plan source roles. Exact ArcGIS layers and direct files can be staged only with a source-specific private approval; no agency data were added to public packages. Service roots, download pages, OSM extracts, and information leads retain the adapter or source-selection gates described there.
+
 ## Build policy
 
 - The app already has the detailed New York overlay. This tracker covers the other 49 states.
