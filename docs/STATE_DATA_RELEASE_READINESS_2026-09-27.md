@@ -1,0 +1,37 @@
+# State dataset release readiness — 2026-09-27
+
+This is a release decision from the [complete source tracker](ALL_DATASETS_TRACKER.md), [agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md), [last-17 source audit](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md), and [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md). It does not change any source's rights classification or add agency records to public packages. The source and rights observations were made on September 26–27; recheck endpoints and item terms at acquisition time.
+
+## Release decision
+
+| Data | Current decision | Evidence and next gate |
+| --- | --- | --- |
+| Existing 49 non-New-York state package files | **Published as data files; app activation is held.** | The [tracker](ALL_DATASETS_TRACKER.md#poi-system-gate) counts 71,523 POI entries, 62,408 (87.3%) displayed as Other, and 17 state GeoJSON files over the current 20 MiB or 20,000-feature user-import limit. The remaining files have not passed every parser limit. Map categories and add a package loader or split large files before presenting the packages as in-app imports. |
+| Non-New-York agency candidates with Supported terms | **Eligible for source validation; none is approved for public package import yet.** | The [rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md) has 17 Supported source roles representing 11 distinct URLs. Repeated roles must not cause duplicate ingestion. Each source still needs current endpoint/terms, steward, geometry, coverage, freshness, attribution, and product checks. |
+| Minnesota DNR candidates | **Conditional derivative path; acquisition held.** | Three roles have rights sign-off for credited, filtered/modified derivatives, excluding the complete raw datasets. Resolve current exact downloads and item-specific terms; forest stands are not visitor POIs. See the [rights recheck](STATE_AGENCY_RIGHTS_AND_LEADS_RECHECK_2026-09-26.md#minnesota-derivative-decision-and-arkansas-currency). |
+| Virginia DCR candidates | **Conditional; hold pending a distribution plan that meets its noncommercial, credit, and separate-notice terms.** | Three roles represent two distinct URLs; the trails supplement duplicates the parks trail source. See the [rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). |
+| Other non-New-York agency candidates | **Hold.** | The 142-role matrix has 111 Unconfirmed, one Restricted, one Permission required, and six Lead only roles in addition to Supported/Conditional roles. A public endpoint or download button is not an affirmative grant for a modified offline derivative. |
+| Existing New York DEC roads and hiking lines | **Redistribution held; resolve before another public package build.** | The [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md#reuse-freshness-and-integration-decisions) identifies 1,308 roads and 5,289 hiking lines matching a newer DEC service whose item terms bar third-party distribution. Obtain a DEC grant covering the bundled records or remove those lines from future public packages. DEC lands and POI bulk rights need separate confirmation. OPRHP sources are not bundled and their inspected terms do not permit the planned offline distribution. |
+
+These are release gates, not a claim that the existing public files have been withdrawn. Ownership polygons, routes, and facility points do not establish current entry, camping, or closure status.
+
+## First agency pilot: Connecticut
+
+Connecticut has the cleanest rights starting point among the selected agency candidates: the DEEP Property, DEEP Trails Set, and DEEP Property Access Locations items are recorded as CC0 in the [matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). Six parks/forestry role rows refer to these **three distinct feeds**. The existing Connecticut national-source package has **zero POI entries** in the [tracker](ALL_DATASETS_TRACKER.md#state-package-poi-and-import-status), so access locations offer a measurable visitor-data improvement. This is a pilot choice, not a current import approval.
+
+Acceptance checklist:
+
+1. Recheck each exact item, CC0 statement, source steward and third-party lineage; record a dated acquisition receipt with URL, item ID, fields, counts, edit dates, extent, checksum, and attribution/provenance.
+2. Match property units and access points to the current DEEP directory; inspect trails for manager, type, status, and duplicates. Use one acquisition per distinct feed even when parks and forestry roles both reference it.
+3. Keep property boundaries, trail lines, and visitor access points as separate feature types. Map usable point categories to the canonical place taxonomy, preserve raw categories and source IDs, and leave access/closure claims unknown unless an authoritative current field supports them.
+4. Stage through the [gated connector](STATE_AGENCY_FEED_CONNECTORS.md) with source-specific private approvals. Build a Connecticut-only derivative, update its manifest and CC0 provenance, then check the app parser, category filters, geometry, duplicate handling, and package size before release.
+
+## Next decisions in order
+
+1. **New York rights correction:** obtain source-specific DEC permission for the bundled line records or prepare a package rebuild without them. Confirm lands and POI terms separately; do not add OPRHP layers under their inspected redistribution terms.
+2. **49-state app integration:** map the 62,408 Other POI entries and handle the 17 over-limit files. This work affects the already published packages regardless of which agency feed is added.
+3. **Connecticut pilot:** complete the acceptance checklist above, then use the same receipt and validation process for other Supported sources. Arkansas's 227 facility points remain freshness-held; CAL FIRE's 2024 forests need a current forest/access check; Minnesota remains limited to modified derivatives.
+4. **Kansas and South Carolina partial layers:** the [download-point audit](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md) found 25 of 29 Kansas parks and five of six South Carolina forests. Acquire current official complements for the missing Kansas units and Old Beech Hill, verify names and manager fields, and obtain derivative redistribution terms before describing either as complete.
+5. **Six remaining leads:** AZ, MS, NV, NM, and two SD forestry roles remain explicit source gaps. Ask the responsible agencies whether they manage visitor lands and, where applicable, request exact public forest/facility extracts. Do not substitute private forestry, forest treatments, trust parcels, or easements for visitor lands.
+
+The [rights follow-up](STATE_AGENCY_RIGHTS_AND_LEADS_RECHECK_2026-09-26.md#recheck-of-the-original-93-rights-entries) includes publisher-request text covering public Git and offline derivative redistribution. No agency contact or new grant is recorded in this release decision.

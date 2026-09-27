@@ -1,5 +1,7 @@
 # State Outdoor Data Package Tracker
 
+**Release decision (2026-09-27):** See the [release-readiness review](STATE_DATA_RELEASE_READINESS_2026-09-27.md) for the current public-package, agency-rights, New York redistribution, and app-import gates. Connecticut's three distinct CC0 agency feeds are the first validation pilot; no agency feature was added to a public package by that decision.
+
 **Scope:** the 49 states other than New York. Each state is produced as its own GeoJSON, search index, and source manifest package.
 
 **Complete source index and POI readiness:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists all nine shipped national source families, all 13 New York package sources, every 212 non-New-York registry source-role entries (including OSM), the 19 selected Arkansas/Idaho/South Dakota plan rows, and eight New York OPRHP candidates. It also reports POI category and import-limit results for each of the 49 state packages. The three shipped federal point feeds currently leave 62,408 of 71,523 package POI entries in the map's Other category; 17 state files exceed the current user-import size or feature limit. These are integration gates, separate from rights review.
