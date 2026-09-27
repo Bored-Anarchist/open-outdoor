@@ -14,18 +14,11 @@ test('stages a verified private catalog and reports every map source', async () 
   const root = await mkdtemp(join(tmpdir(), 'open-outdoor-private-map-'));
   const input = join(root, 'catalog');
   const output = join(root, 'mobile');
-  await mkdir(input);
+  const publicAssets = join(root, 'public');
+  await Promise.all([mkdir(input), mkdir(publicAssets)]);
   try {
-    const sourceIds = [
-      'nys-dec-poi',
-      'private-ioverlander',
-      'nps-parks-ny',
-      'nps-campgrounds-ny',
-      'nps-alerts-ny',
-      'nps-parks-ny',
-      'usfs-surface-ownership-ny',
-    ];
-    const features = Array.from({ length: 7 }, (_, index) => ({
+    const sourceIds = ['nys-dec-poi', 'private-ioverlander'];
+    const features = Array.from({ length: 2 }, (_, index) => ({
       type: 'Feature',
       id: `feature-${index}`,
       properties: {
@@ -55,16 +48,7 @@ test('stages a verified private catalog and reports every map source', async () 
       bundleId: 'private-ioverlander-new-york',
       classification: 'PRIVATE_USER',
       generatedAt: '2026-09-14T00:00:00.000Z',
-      input: {
-        npsSnapshot: { parks: 1, campgrounds: 1, alerts: 1, boundaries: 1 },
-        federalSnapshot: {
-          usfsSurfaceOwnership: 1,
-          usfsRecreationSites: 0,
-          usfsMvumRoads: 0,
-          usfsMvumTrails: 0,
-          blmManagedLands: 0,
-        },
-      },
+      input: {},
       privacy: {
         includesContributorIdentity: false,
         includesDescriptions: true,
@@ -89,21 +73,66 @@ test('stages a verified private catalog and reports every map source', async () 
       writeFile(join(input, 'new-york-outdoors.composed.index.json'), indexBytes),
       writeFile(join(input, 'manifest.json'), `${JSON.stringify(manifest)}\n`),
     ]);
+    const publicFeatures = [
+      {
+        type: 'Feature',
+        id: 'public-feature',
+        properties: {
+          id: 'public-feature',
+          kind: 'poi',
+          name: 'Public park',
+          sourceId: 'nps-parks-ny',
+        },
+        geometry: { type: 'Point', coordinates: [-74, 42] },
+      },
+    ];
+    const publicGeoBytes = Buffer.from(
+      `${JSON.stringify({ type: 'FeatureCollection', features: publicFeatures })}\n`,
+    );
+    const publicIndexBytes = Buffer.from(
+      `${JSON.stringify({ schemaVersion: 1, features: [{ id: 'public-feature', properties: publicFeatures[0].properties, bounds: [-74, 42, -74, 42] }] })}\n`,
+    );
+    await Promise.all([
+      writeFile(join(publicAssets, 'new-york-outdoors.geojson'), publicGeoBytes),
+      writeFile(join(publicAssets, 'new-york-outdoors.index.json'), publicIndexBytes),
+      writeFile(
+        join(publicAssets, 'new-york-outdoors.manifest.json'),
+        JSON.stringify({
+          classification: 'SOURCE_REDISTRIBUTABLE',
+          sha256: sha256(publicGeoBytes),
+          indexSha256: sha256(publicIndexBytes),
+          featureCount: 1,
+          rights: { attribution: ['National Park Service'] },
+          catalogSources: [
+            { id: 'nps', label: 'National Park Service', featureCount: 1, status: 'public' },
+          ],
+        }),
+      ),
+    ]);
 
-    const result = await stagePrivateMobileMap({ inputDirectory: input, outputDirectory: output });
-    assert.equal(result.metadata.featureCount, 7);
+    const result = await stagePrivateMobileMap({
+      inputDirectory: input,
+      outputDirectory: output,
+      publicAssetsDirectory: publicAssets,
+    });
+    assert.equal(result.metadata.featureCount, 3);
     assert.deepEqual(
       result.metadata.sources.map((source) => [source.id, source.featureCount]),
       [
         ['nys-dec', 1],
         ['private-ioverlander', 1],
-        ['nps', 4],
-        ['usfs', 1],
-        ['blm', 0],
+        ['nps', 1],
       ],
     );
-    assert.match(result.metadata.sources.at(-1).status, /verified/);
+    assert.match(result.metadata.sources.at(-1).status, /public/);
     assert.match(await readFile(join(output, 'mapData.private.ts'), 'utf8'), /composed\.geojson/);
+    const staged = JSON.parse(
+      await readFile(join(output, 'new-york-outdoors.composed.geojson'), 'utf8'),
+    );
+    assert.deepEqual(
+      staged.features.map((feature) => feature.id),
+      ['public-feature', 'feature-0', 'feature-1'],
+    );
   } finally {
     await rm(root, { recursive: true, force: true });
   }

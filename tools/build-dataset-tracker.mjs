@@ -252,7 +252,7 @@ const sections = [
   '',
   '## Shipped New York package sources',
   '',
-  'The current public manifest lists only federal feeds and operational alerts. Historical DEC records and trail-derived profiles are preserved under ignored PrivateData pending rights review; see the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
+  'The current public manifest lists the NYS civil boundary and federal feeds. DEC records and trail-derived profiles are held under ignored PrivateData pending rights review; see the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
   '',
   table(
     ['Source ID', 'Dataset', 'Stage'],

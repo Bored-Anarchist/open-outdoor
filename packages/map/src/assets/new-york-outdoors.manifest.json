@@ -2,26 +2,28 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "acquiredAt": "2026-09-16T09:29:28.517Z",
-  "sha256": "0c242dbadc77c83b6d5245cc38f8a6524ffda14055b231ca33aee606275fe38b",
-  "bytes": 1550620,
-  "indexSha256": "7b0c9137c1d79f61565b2919522a48d7f0fc830319c2ccff4a0cd7519b851eee",
-  "indexBytes": 288277,
-  "featureCount": 325,
+  "sha256": "0248177d6195f0fcd9cf1282f761806b829b786e31fa959035a558e635abd89e",
+  "bytes": 1634780,
+  "indexSha256": "ae3bd7f4938f228326a0bb290f1ab536dfb1705bcd81aba98612bf67c4037883",
+  "indexBytes": 288520,
+  "featureCount": 326,
   "coordinateReferenceSystem": "EPSG:4326",
   "simplificationDegrees": 0.00003,
   "geometryPrecision": 5,
-  "coverage": "Official NPS and USFS New York features; state agency data held in PrivateData pending rights review.",
+  "coverage": "NYS civil boundary and official NPS/USFS New York features; DEC data held privately pending rights review.",
   "rights": {
-    "license": "United States government public information",
+    "license": "United States government public information; NYS civil boundaries general-use data",
     "offlineStorage": true,
     "redistribution": true,
     "derivedData": true,
     "attribution": [
+      "NYS ITS Geospatial Services",
       "National Park Service",
       "USDA Forest Service",
       "Bureau of Land Management"
     ],
     "terms": [
+      "https://gis.ny.gov/civil-boundaries",
       "https://www.nps.gov/aboutus/disclaimer.htm",
       "https://data.fs.usda.gov/geodata/edw/datasets.php",
       "https://www.blm.gov/services/geospatial/GISData"
@@ -29,6 +31,26 @@
     "reviewedAt": "2026-09-27"
   },
   "sources": [
+    {
+      "id": "nys-boundary",
+      "kind": "boundary",
+      "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0",
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "DATEMOD"
+      ],
+      "attribution": "NYS ITS Geospatial Services",
+      "featureCount": 1,
+      "inventorySha256": "1cdb82d29226b6f6577db63ec7ed10c00188e36164f977c46a4f35354a3ca105",
+      "pages": [
+        {
+          "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0/query?objectIds=1&outFields=OBJECTID%2CNAME%2CDATEMOD&outSR=4326&returnGeometry=true&geometryPrecision=5&maxAllowableOffset=0.00003&f=geojson",
+          "sha256": "d80d0cd81de3bd1b686f61aa1599a923758be5ec1f1d475d6fa37aa8f1c16105",
+          "count": 1
+        }
+      ]
+    },
     {
       "id": "nps-parks-ny",
       "kind": "land-and-poi",
@@ -292,6 +314,12 @@
     }
   ],
   "catalogSources": [
+    {
+      "id": "nys-boundary",
+      "label": "NYS ITS civil boundary",
+      "featureCount": 1,
+      "status": "public planning and general-use boundary"
+    },
     {
       "id": "nps",
       "label": "National Park Service",

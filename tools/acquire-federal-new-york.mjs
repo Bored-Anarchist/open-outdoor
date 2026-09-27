@@ -178,8 +178,7 @@ if (!outputArgument) {
 }
 const outputDirectory = resolve(outputArgument);
 const boundaryPath = resolve(
-  args.get('boundary') ??
-    'PrivateData/catalogs/US/New York/rights-held-2026-09-27/new-york-outdoors.geojson',
+  args.get('boundary') ?? 'packages/map/src/assets/new-york-outdoors.geojson',
 );
 if (!isAbsolute(outputDirectory) || !isAbsolute(boundaryPath)) {
   throw new Error('output and boundary must resolve to absolute paths');

@@ -31,11 +31,11 @@ if (
 ) {
   throw new Error('New York public asset and its manifests do not match');
 }
-const held = (feature) => /^nys-(dec-|boundary$)/.test(feature.properties?.sourceId ?? '');
+const held = (feature) => /^nys-dec-/.test(feature.properties?.sourceId ?? '');
 const heldFeatures = collection.features.filter(held);
 if (heldFeatures.length === 0) throw new Error('No state agency records to quarantine');
 if (
-  heldFeatures.length !== 14455 ||
+  heldFeatures.length !== 14454 ||
   collection.features.some((feature, i) => feature.id !== index.features[i]?.id) ||
   Object.keys(hikes.hikes).length !== 5289
 ) {
@@ -83,22 +83,36 @@ const publicManifest = {
   indexBytes: indexBytes.length,
   featureCount: allowed.length,
   coverage:
-    'Official NPS and USFS New York features; state agency data held in PrivateData pending rights review.',
+    'NYS civil boundary and official NPS/USFS New York features; DEC data held in PrivateData pending rights review.',
   rights: {
-    license: 'United States government public information',
+    license: 'United States government public information; NYS civil boundaries general-use data',
     offlineStorage: true,
     redistribution: true,
     derivedData: true,
-    attribution: ['National Park Service', 'USDA Forest Service', 'Bureau of Land Management'],
+    attribution: [
+      'NYS ITS Geospatial Services',
+      'National Park Service',
+      'USDA Forest Service',
+      'Bureau of Land Management',
+    ],
     terms: [
+      'https://gis.ny.gov/civil-boundaries',
       'https://www.nps.gov/aboutus/disclaimer.htm',
       'https://data.fs.usda.gov/geodata/edw/datasets.php',
       'https://www.blm.gov/services/geospatial/GISData',
     ],
     reviewedAt: '2026-09-27',
   },
-  sources: manifest.sources.filter((source) => !/^nys-(dec-|boundary$)/.test(source.id)),
-  catalogSources: manifest.catalogSources.filter((source) => source.id !== 'nys-dec'),
+  sources: manifest.sources.filter((source) => !/^nys-dec-/.test(source.id)),
+  catalogSources: [
+    {
+      id: 'nys-boundary',
+      label: 'NYS ITS civil boundary',
+      featureCount: 1,
+      status: 'public planning and general-use boundary',
+    },
+    ...manifest.catalogSources.filter((source) => source.id !== 'nys-dec'),
+  ],
 };
 await writeFile(join(publicRoot, 'new-york-outdoors.geojson'), collectionBytes);
 await writeFile(join(publicRoot, 'new-york-outdoors.index.json'), indexBytes);

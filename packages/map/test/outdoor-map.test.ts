@@ -102,9 +102,9 @@ describe('real offline New York map', () => {
     expect(indexBytes.length).toBe(manifest.indexBytes);
     expect(index.features).toHaveLength(collection.features.length);
     expect(collection.features.length).toBe(manifest.featureCount);
-    expect(collection.features.length).toBe(325);
+    expect(collection.features.length).toBe(326);
     expect(
-      collection.features.every((feature) => !feature.properties.sourceId.startsWith('nys-')),
+      collection.features.every((feature) => !feature.properties.sourceId.startsWith('nys-dec-')),
     ).toBe(true);
     expect(new Set(collection.features.map((f) => f.id)).size).toBe(collection.features.length);
     expect(
@@ -114,6 +114,7 @@ describe('real offline New York map', () => {
     ).toBe(true);
     expect(manifest.rights.attribution).toEqual(
       expect.arrayContaining([
+        'NYS ITS Geospatial Services',
         'National Park Service',
         'USDA Forest Service',
         'Bureau of Land Management',
@@ -126,6 +127,7 @@ describe('real offline New York map', () => {
       expect(source.pages.reduce((n: number, p: any) => n + p.count, 0)).toBe(source.featureCount);
     }
     expect(manifest.catalogSources).toEqual([
+      expect.objectContaining({ id: 'nys-boundary', featureCount: 1 }),
       expect.objectContaining({ id: 'nps', featureCount: 88 }),
       expect.objectContaining({ id: 'usfs', featureCount: 237 }),
       expect.objectContaining({ id: 'blm', featureCount: 0 }),
@@ -181,6 +183,7 @@ describe('real offline New York map', () => {
     const sourceIds = new Set(collection.features.map((feature) => feature.properties.sourceId));
     expect([...sourceIds]).toEqual(
       expect.arrayContaining([
+        'nys-boundary',
         'nps-parks-ny',
         'nps-campgrounds-ny',
         'nps-alerts-ny',

@@ -1,6 +1,6 @@
 # New York State Agency Source Coverage Audit
 
-**Current packaging correction (2026-09-27):** The historical 14,780-feature bundle reviewed below is preserved under ignored `PrivateData/catalogs/US/New York/rights-held-2026-09-27/` with checksum receipts. The checked-in public overlay now contains 325 federal NPS/USFS features and no NYS or DEC records; the 5,289 DEC-derived hike profiles were removed from the public asset. This audit's earlier "bundled" counts describe the preserved historical snapshot, not the current public package. Prior Git commits still contain the old files.
+**Current packaging correction (2026-09-27):** The checked-in public overlay contains one NYS ITS civil boundary plus 325 federal NPS/USFS features. The active ignored `PrivateData/catalogs/US/New York/current/` package contains only 14,454 DEC features and 1,186 iOverlander places. The rights-held source folder now contains DEC features and the 5,289 DEC-derived hike profiles; the civil boundary and federal source snapshots are public. This audit's earlier "bundled" counts describe the former 14,780-feature public package. Prior Git commits and older private catalog archives still contain historical copies.
 
 **Audit date:** 2026-09-25<br>
 **Complete inventory:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists all 13 existing New York package source records and eight identified OPRHP service candidates alongside the other states. This audit retains the New York-specific coverage, reuse, and freshness decisions.<br>

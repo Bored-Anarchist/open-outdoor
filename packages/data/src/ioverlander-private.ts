@@ -2103,7 +2103,21 @@ export async function buildIoverlanderPrivateCatalog(
         federalSnapshotPath ? readFile(federalSnapshotPath) : Promise.resolve(null),
         reviewCsvPath ? readFile(reviewCsvPath) : Promise.resolve(null),
       ]);
-    const dec = parseDecCollection(JSON.parse(decBytes.toString('utf8')));
+    const decSource = parseDecCollection(JSON.parse(decBytes.toString('utf8')));
+    const publicBoundaryBytes = await readFile(
+      join(publicCheckout, 'packages/map/src/assets/new-york-outdoors.geojson'),
+    );
+    const publicBoundary = parseDecCollection(
+      JSON.parse(publicBoundaryBytes.toString('utf8')),
+    ).features.filter((feature) => feature.properties.sourceId === 'nys-boundary');
+    if (publicBoundary.length !== 1) throw new Error('public NYS civil boundary is unavailable');
+    const dec = {
+      ...decSource,
+      features: [
+        ...decSource.features.filter((feature) => feature.properties.sourceId !== 'nys-boundary'),
+        ...publicBoundary,
+      ],
+    };
     const nps = npsBytes ? parseNpsSnapshot(JSON.parse(npsBytes.toString('utf8'))) : null;
     const federal = federalBytes
       ? parseFederalSnapshot(JSON.parse(federalBytes.toString('utf8')))
@@ -2123,24 +2137,12 @@ export async function buildIoverlanderPrivateCatalog(
       : automaticResult;
     const privateFeatures = result.records.map(privateAppFeature);
     const publicFeatures = dec.features as readonly AppFeature[];
-    const publicSourceIds = new Set(
-      publicFeatures.map((feature) => normalizeText(String(feature.properties.sourceId ?? ''))),
-    );
-    const npsFeatures =
-      nps && ![...publicSourceIds].some((sourceId) => sourceId.startsWith('nps-'))
-        ? npsNewYorkAppFeatures(nps, generatedAt)
-        : [];
-    const federalFeatures =
-      federal &&
-      ![...publicSourceIds].some(
-        (sourceId) => sourceId.startsWith('usfs-') || sourceId.startsWith('blm-'),
-      )
-        ? federalNewYorkAppFeatures(federal, generatedAt)
-        : [];
+    // Public features may be used for matching, but the stored private package
+    // contains only DEC and iOverlander records. Mobile staging adds the public base.
     const composedFeatures = [
-      ...publicFeatures,
-      ...npsFeatures,
-      ...federalFeatures,
+      ...publicFeatures.filter((feature) =>
+        String(feature.properties.sourceId ?? '').startsWith('nys-dec-'),
+      ),
       ...privateFeatures,
     ];
 
@@ -2268,22 +2270,12 @@ export async function buildIoverlanderPrivateCatalog(
     await writeExclusive(
       join(temporaryDirectory, 'README.txt'),
       [
-        [
-          'Private iOverlander',
-          'NYS DEC',
-          ...(nps ? ['National Park Service'] : []),
-          ...(federal ? ['USDA Forest Service + Bureau of Land Management'] : []),
-        ].join(' + ') + ' deduplicated catalog',
+        'Private iOverlander + NYS DEC deduplicated catalog',
         '',
         outputInPrivateData
           ? 'Keep this directory private. It is under the Git-ignored PrivateData root.'
           : 'Keep this directory private. It is intentionally outside the public checkout.',
-        `Use new-york-outdoors.composed.geojson and its index as the app-readable ${[
-          'DEC',
-          ...(nps ? ['NPS'] : []),
-          ...(federal ? ['USFS', 'BLM'] : []),
-          'private iOverlander',
-        ].join(' + ')} view.`,
+        'Use new-york-outdoors.composed.geojson and its index as the private DEC + iOverlander overlay.',
         'Use private-ioverlander.geojson and its index for the private overlay alone.',
         'catalog.sqlite is compatible with the catalog record/search layout and adds dedup audit tables.',
         decisionBytes
