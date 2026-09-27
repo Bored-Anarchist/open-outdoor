@@ -4,10 +4,12 @@
 
 | Owner filter | Records | `last_verified_date` | What this establishes |
 | --- | ---: | --- | --- |
-| `owner='ASP'` | 180 | 88 missing; 77 in 2011–2019; 15 in 2023; none in 2024–2026 | All 15 records verified in 2023 are boating access. The remaining facility types, including camping, have no recent per-record verification. This is an incomplete amenity inventory alongside the [agency's 52-park directory](https://www.arkansasstateparks.com/parks/map). |
+| `owner='ASP'` | 180 | 88 missing; 77 in 2011–2019; 15 in 2023; none in 2024–2026 | The 2023 records are 14 Boating Access points and one Parking Area. The remaining facility types, including camping, have no recent per-record verification. This is an incomplete amenity inventory alongside the [agency's 52-park directory](https://www.arkansasstateparks.com/parks/map). |
 | `owner='AFC'` | 47 | 45 in 2015; one in 2023; one missing | All 45 dated 2015 records are Poison Springs camping areas. The 2023 record is Benjamin Lake Boat Ramp; Overcup Landing Boat Ramp has no verification date. Neither Hot Springs nor Lucky Hollow State Forest is represented by these points. |
 
 The ASP names include duplicate labels for Daisy State Park Camping Area C, Lake Frierson Camping Area, Lake Dardanelle State Park Dump Station, and West Summit Area. A repeated name may represent separate geometry or a duplicate; it must be resolved against a park map before use. `owner='ASP'` establishes the source's owner code, not that every point lies within a current State Parks boundary or is visitor accessible.
+
+The live layer was rechecked on 2026-09-26 EDT (2026-09-27 UTC); the 180 ASP and 47 AFC counts and year distribution did not change from the earlier audit. The query requested attributes only and copied no facility features into Git.
 
 ## Cross-check against agency publications
 

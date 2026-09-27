@@ -1,0 +1,62 @@
+# Agency rights and exact-source follow-up
+
+**Checked:** 2026-09-26 EDT / 2026-09-27 UTC. **Scope:** the 93 originally unconfirmed non-New-York agency source roles and 27 entries previously labeled Lead only in the [rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). New York, OSM, and the separate three-state plan keep their own audits. The project intends to publish modified, filtered outdoor-place derivatives in its GitHub repository and downloadable offline packages, including possible downstream reuse. An agency's willingness to display or download data, or the project's noncommercial status, does not by itself grant that distribution.
+
+## Recheck of the original 93 rights entries
+
+The [repeatable metadata checker](../tools/recheck-state-agency-metadata.mjs) read every original Unconfirmed matrix row and fetched the public `info/iteminfo` terms for its ArcGIS service. Seventy-nine source roles collapsed to 60 distinct ArcGIS services; 14 roles were downloads, catalog items, or webpages and were reviewed through their linked publisher pages. All 60 service metadata requests succeeded. Thirty-eight had empty `licenseInfo`; 22 had some text, but that text consisted of source credit, warranty, use, or similar notices without a clear public right to publish modified bulk/offline derivatives. **None of the original 93 changed to a positive public redistribution decision.** Their individual evidence links and decisions remain in the [matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). This is an absence of an affirmative grant, not a finding that the agencies forbid every reuse. The seven newly selected exact leads are additional Unconfirmed roles, bringing the current matrix total to 100.
+
+For each unresolved layer, the language needed from the publisher is specific: permission to copy the selected records, filter and modify geometry/attributes, combine them with other sources, publish the resulting derivative as GeoJSON or another machine-readable format in a public Git repository and downloadable offline app packages, and allow recipients to download and redistribute that derivative. The grant should identify required attribution, change notices, share-alike or noncommercial limits, third-party content, and whether it covers future updates. A statement that data are “public,” “for use,” or “available for download” leaves the derivative-distribution question open. Do not enter a private approval as `publisherGrant: true` based on such wording.
+
+**Publisher request text, ready to adapt to the exact source:**
+
+> We maintain a noncommercial open-source outdoor mapping project. May we download [exact dataset, item ID, and layer URL], select the records relevant to [agency], edit/normalize attributes and geometry, and combine those records into a modified derivative? We plan to publish that derivative as machine-readable data in a public GitHub repository and downloadable offline app packages, so recipients can copy and redistribute it. Does your permission cover those actions and future refreshed extracts? Please specify required attribution and change notices, any restrictions on downstream redistribution, whether the layer includes third-party data, and any separate terms that override your general policy. We will keep the agency's current access and closure information distinct from the offline snapshot.
+
+This is proposed request language only; no agency was contacted. The request must cite each actual layer or shared policy. A reply limited to use inside a noncommercial app would still leave public data redistribution unresolved.
+
+## Decisions on the 27 former portal and map leads
+
+Ten entries now point to exact layers or a direct file in the registry and rights matrix. “Exact” identifies a fetchable source; it does not mean the source passed POI, currency, or public-distribution review.
+
+| Former lead | Exact source or outcome | Rights and remaining data gate |
+| --- | --- | --- |
+| AR forestry | [Outdoor Recreational Facilities, layer 24](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24), filter `owner='AFC'` | Supported by [item use statement](https://gis.arkansas.gov/metadata/HTML/asdi.location.OUTDOOR_RECREATIONAL_FACILITIES_export.html); 47 forestry points remain [freshness-held](ARKANSAS_FACILITY_FRESHNESS_AUDIT_2026-09-26.md). |
+| CA forestry | [CAL FIRE State Demonstration Forests 2024 geodatabase](https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/gis-mapping-and-data-analytics) | Publisher page allows distribution with CAL FIRE credit and a modification notice; verify current forests and visitor access before POI mapping. |
+| DE parks | [DNREC Managed Lands, layer 0](https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Society/DE_State_Lands/MapServer/0) | Unconfirmed; filter park use and verify manager, public access, and coverage. |
+| DE forestry | [State Forest polygons, layer 0](https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Biota/DE_Forestry/MapServer/0) | Unconfirmed; layer reports a 2014 update and needs current tract/access comparison. |
+| HI forestry | [DOFAW Reserves, layer 1](https://geodata.hawaii.gov/arcgis/rest/services/Terrestrial/MapServer/1) | Unconfirmed; select DOFAW forest reserves from mixed reserve boundaries and verify source lineage. |
+| TN forestry | [Tennessee State Forest Boundaries, layer 0](https://services.arcgis.com/lvPBAGXeSupVUvx2/ArcGIS/rest/services/Tennessee_State_Forest_Boundaries/FeatureServer/0) | Unconfirmed; compare to the [current state-forest directory](https://www.tn.gov/agriculture/forests/state-forests.html). |
+| TN forestry supplement | [Statewide Trails Points Public, layer 0](https://services1.arcgis.com/YuVBSS7Y1of2Qud1/arcgis/rest/services/Tennessee_Statewide_Trails_Points_Public/FeatureServer/0) | Unconfirmed; multi-manager compilation requires TDF filtering and point-level role validation. |
+| UT parks | [State Park Management Areas, layer 0](https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/Utah_State_Park_Management_Areas/FeatureServer/0) | Unconfirmed; the [parks map](https://stateparks.utah.gov/resources/gis-maps-and-data/) also links trails, campsites, recreation points, and landmarks. UGRC's default license does not automatically cover this DNR-hosted service. |
+| VA parks supplement | [DCR SP_Trails, layer 0](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0) | Conditional noncommercial redistribution with DCR credit and separate notice; duplicate of the parks primary role, so ingest once. |
+| WA parks | [Washington State Parks ParkBoundaries, layer 2](https://services5.arcgis.com/4LKAHwqnBooVDUlX/arcgis/rest/services/ParkBoundaries/FeatureServer/2) | Unconfirmed; [agency item](https://www.arcgis.com/home/item.html?id=3385b003af5248e59c1fa68e1411c446) says monthly revision and July 2026 data update, but grants no public derivative distribution. |
+
+The remaining 17 are still Lead only after source and manager checks:
+
+| Lead | Finding and next source question |
+| --- | --- |
+| [AZ forestry](https://gis-dffm.hub.arcgis.com/) | DFFM fire/forest-health data portal; no DFFM-managed visitor land or POI inventory identified. Ask whether DFFM manages any public recreation land and who holds its visitor data. |
+| [CO forestry](https://csfs.colostate.edu/data/) | CSFS data portal has no selected agency visitor layer. Confirm responsible manager before substituting Colorado State Forest State Park data. |
+| [GA forestry supplement](https://gatrees.org/forest-management-conservation/state-managed-forests/) | Official forest-by-forest maps exist; request a current vector tract and visitor-facility export. |
+| [KS parks](https://ert.ksoutdoors.gov/help) | Ecological Review Tool references a merged public-land/PAD-US layer, which is not an authoritative park-only feed; request its KDWP-only component or park inventory. |
+| [ME parks](https://www.maine.gov/dacf/parks/about/gis_mapping.shtml) | Bureau describes GIS work without a public exact layer; request park/visitor export. A mixed secondary conserved-lands service is not a substitute. |
+| [ME forestry](https://mainegeolibrary-maine.hub.arcgis.com/) | Catalog search did not establish a Maine Forest Service managed visitor layer; confirm managed-land inventory and steward. |
+| [MS forestry](https://arcsrv.mfc.ms.gov/portal/sharing/rest/portals/self) | Portal exposes administrative/fire material but no verified public state-forest visitor geometry; request forest polygons and facilities. |
+| [MO parks supplement](https://apps5.mo.gov/trails/fullMap.action) | Official map offers per-park KMZ/ZIP downloads, not one verified statewide file; resolve park IDs and rights before selecting a reproducible feed. |
+| [MT forestry](https://prod-dnrc.mt.gov/Directors-Office/maps-and-data) | DNRC public-access map exists, but no exact DNRC-managed visitor layer was resolved; distinguish state trust lands from public recreation access. |
+| [NV forestry](https://forestry.nv.gov/gis-mapping) | NDF GIS is principally resource/fire data; no NDF-managed visitor inventory verified. Check managing agency before choosing a layer. |
+| [NM forestry](https://www.emnrd.nm.gov/sfd/gis-and-maps/) | GIS page has no exact public visitor/state-forest layer; request specific managed parcels and visitor data. |
+| [NC parks](https://www.nconemap.gov/) | OneMap catalog search did not yield an authoritative state park boundary/facility feed; the coastal paddle-trail service is not that inventory. |
+| [SC forestry](https://www.scfc.gov/state-lands/) | Agency maps identify state lands, but no current official vector export. A secondary mixed government-property layer needs a manager and completeness check. |
+| [SD forestry](https://sdgis.sd.gov/portal/home/) | State portal has no verified DANR-managed visitor layer; Forest Legacy/easement data would misstate public access. |
+| [SD forestry supplement](https://danr.sd.gov/Conservation/Forestry/default.aspx) | DANR program page is context only; ask for an agency-owned public-forest visitor dataset, if one exists. |
+| [TX forestry](https://tfsgis.tfs.tamu.edu/arcgis/rest/services) | GIS service index centers on fire response. [Agency state-forest directory](https://tfsweb.tamu.edu/texas-state-forests-and-arboretums/) does not provide a verified direct vector download; ask for one. |
+| [UT forestry](https://ffsl.utah.gov/about/maps/) | FFSL GIS page/central index lacks a selected visitor forest layer; request a precise managed-land/visitor export. |
+
+For these 17, leaving a lead is more accurate than assigning a mixed-owner boundary, PDF map, or fire-management layer to the app's park/forestry POIs. The [complete dataset tracker](ALL_DATASETS_TRACKER.md) keeps all 27 roles visible, including their updated direct sources.
+
+## Minnesota derivative decision and Arkansas currency
+
+[Minnesota DNR's General Data & Software License](https://www.dnr.state.mn.us/sitetools/data_software_license.html) allows credited modification and distribution of derivative works while barring distribution of the entire source dataset, subject to any more specific item terms. The project's stated plan is a filtered and modified derivative; **the three Minnesota DNR roles are signed off for that rights scope** and remain labeled Conditional to enforce its limits. Before ingestion, resolve their current exact downloads (the old `gisdata.mn.gov` paths redirect to the general portal), inspect item-specific terms, and assess POI relevance. In particular, forest stands are land-management data rather than visitor points. The release must credit MNDNR, describe modifications, and omit the entire raw source.
+
+[Arkansas layer 24](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24) was queried again by owner and `last_verified_date`. Counts are unchanged: 180 ASP points, 47 AFC points, and none with a verification date after 2023. The 15 ASP records dated 2023 comprise 14 Boating Access and one Parking Area (corrected from the earlier audit's “all boating” description); 88 ASP dates are absent. Forty-five AFC camping records date to 2015, one boat ramp to 2023, and one date is absent. All 227 remain held for record-level site and operating-status confirmation. See the [freshness audit](ARKANSAS_FACILITY_FRESHNESS_AUDIT_2026-09-26.md).

@@ -126,11 +126,11 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | AR | parks | [Arkansas Statewide Trails FeatureServer layer 22](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Environment/FeatureServer/22) | api | Supplemental candidate; no agency import |
 | AR | parks | [Arkansas outdoor recreation facilities layer 24](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24) | api | Supplemental candidate; no agency import |
 | AR | parks | [OpenStreetMap Arkansas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/arkansas-latest.osm.pbf) | download | OSM fallback; no agency import |
-| AR | forestry | [Arkansas Spatial Data Infrastructure](https://gis.arkansas.gov/) | catalog | Primary candidate; no agency import |
+| AR | forestry | [Arkansas Outdoor Recreational Facilities layer 24 (AFC subset)](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24) | api | Primary candidate; no agency import |
 | AR | forestry | [Arkansas Statewide Trails FeatureServer layer 22](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Environment/FeatureServer/22) | api | Supplemental candidate; no agency import |
 | AR | forestry | [OpenStreetMap Arkansas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/arkansas-latest.osm.pbf) | download | OSM fallback; no agency import |
 | CA | parks | [California State Parks GIS downloads and live feature services](https://www.parks.ca.gov/?page_id=29682) | download | Primary candidate; no agency import |
-| CA | forestry | [CAL FIRE FRAP GIS mapping and data](https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/gis-mapping-and-data-analytics) | catalog | Primary candidate; no agency import |
+| CA | forestry | [CAL FIRE State Demonstration Forests 2024 geodatabase ZIP](https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b) | download | Primary candidate; no agency import |
 | CA | forestry | [OpenStreetMap California outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/california-latest.osm.pbf) | download | OSM fallback; no agency import |
 | CO | parks | [Colorado State Parks Trails public-domain dataset](https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr) | download | Primary candidate; no agency import |
 | CO | parks | [Colorado CPW Trail Segments FeatureServer layer 2](https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2) | api | Supplemental candidate; no agency import |
@@ -145,10 +145,10 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | CT | forestry | [Connecticut DEEP Trails Set line layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3) | api | Supplemental candidate; no agency import |
 | CT | forestry | [Connecticut DEEP Property Access Locations](https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore) | catalog | Supplemental candidate; no agency import |
 | CT | forestry | [OpenStreetMap Connecticut outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/connecticut-latest.osm.pbf) | download | OSM fallback; no agency import |
-| DE | parks | [Delaware DNREC Play Outside recreation finder](https://playoutside.dnrec.delaware.gov/) | info | Primary candidate; no agency import |
+| DE | parks | [Delaware DNREC Managed Lands polygons layer 0](https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Society/DE_State_Lands/MapServer/0) | api | Primary candidate; no agency import |
 | DE | parks | [Delaware Trails and Pathways MapServer layer 28](https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Transportation/DE_Multimodal/MapServer/28) | api | Supplemental candidate; no agency import |
 | DE | parks | [OpenStreetMap Delaware outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/delaware-latest.osm.pbf) | download | OSM fallback; no agency import |
-| DE | forestry | [Delaware Forest Service maps and public recreation information](https://agriculture.delaware.gov/forest-service/maps/) | info | Primary candidate; no agency import |
+| DE | forestry | [Delaware State Forest polygons layer 0](https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Biota/DE_Forestry/MapServer/0) | api | Primary candidate; no agency import |
 | DE | forestry | [Delaware Trails and Pathways MapServer layer 28](https://enterprise.firstmaptest.delaware.gov/arcgis/rest/services/Transportation/DE_Multimodal/MapServer/28) | api | Supplemental candidate; no agency import |
 | DE | forestry | [OpenStreetMap Delaware outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/delaware-latest.osm.pbf) | download | OSM fallback; no agency import |
 | FL | parks | [Florida DEP State Parks PARKS_BOUNDARIES MapServer](https://ca.dep.state.fl.us/arcgis/rest/services/OpenData/PARKS_BOUNDARIES/MapServer) | api | Primary candidate; no agency import |
@@ -163,7 +163,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | HI | parks | [Hawaii State Parks MapServer State Parks layer 16](https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/16) | api | Primary candidate; no agency import |
 | HI | parks | [Hawaii State Parks Campsites MapServer layer 31](https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/31) | api | Supplemental candidate; no agency import |
 | HI | parks | [OpenStreetMap Hawaii outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/hawaii-latest.osm.pbf) | download | OSM fallback; no agency import |
-| HI | forestry | [Hawaii DOFAW OuterSpatial visitor map and downloadable maps](https://dlnr.hawaii.gov/dofaw/app/) | info | Primary candidate; no agency import |
+| HI | forestry | [Hawaii DOFAW Reserves polygons layer 1](https://geodata.hawaii.gov/arcgis/rest/services/Terrestrial/MapServer/1) | api | Primary candidate; no agency import |
 | HI | forestry | [OpenStreetMap Hawaii outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/hawaii-latest.osm.pbf) | download | OSM fallback; no agency import |
 | ID | parks | [Idaho IDPR Parks and Facilities FeatureServer layer 0](https://services1.arcgis.com/CNPdEkvnGl65jCX8/arcgis/rest/services/IDPR_Parks_and_Facilities/FeatureServer/0) | api | Primary candidate; no agency import |
 | ID | parks | [Idaho Recreation Trails FeatureServer layer 128](https://services1.arcgis.com/CNPdEkvnGl65jCX8/arcgis/rest/services/Idaho_Recreation_Trails/FeatureServer/128) | api | Supplemental candidate; no agency import |
@@ -285,14 +285,14 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | SD | forestry | [OpenStreetMap South Dakota outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/south-dakota-latest.osm.pbf) | download | OSM fallback; no agency import |
 | TN | parks | [Tennessee Natural Areas and State Parks FeatureServer](https://services7.arcgis.com/lpTX3280urZ21frb/ArcGIS/rest/services/TN_Natural_Areas_and_State_Parks_WFL1/FeatureServer) | api | Primary candidate; no agency import |
 | TN | parks | [TDEC State Park Boundaries FeatureServer layer 0](https://services5.arcgis.com/bPacKTm9cauMXVfn/arcgis/rest/services/TN_State_Parks_Boundaries/FeatureServer/0) | api | Supplemental candidate; no agency import |
-| TN | forestry | [Tennessee Division of Forestry State Forest maps](https://www.tn.gov/agriculture/forests/state-forests.html) | info | Primary candidate; no agency import |
-| TN | forestry | [Tennessee Statewide Trails Points Public](https://www.arcgis.com/home/item.html?id=87d9ef12e5344055874217c73dec1aa1) | catalog | Supplemental candidate; no agency import |
+| TN | forestry | [Tennessee Division of Forestry State Forest Boundaries layer 0](https://services.arcgis.com/lvPBAGXeSupVUvx2/ArcGIS/rest/services/Tennessee_State_Forest_Boundaries/FeatureServer/0) | api | Primary candidate; no agency import |
+| TN | forestry | [Tennessee Statewide Trails Points Public layer 0](https://services1.arcgis.com/YuVBSS7Y1of2Qud1/arcgis/rest/services/Tennessee_Statewide_Trails_Points_Public/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | TN | forestry | [OpenStreetMap Tennessee outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/tennessee-latest.osm.pbf) | download | OSM fallback; no agency import |
 | TX | parks | [Texas State Parks Trails MapServer layer 0](https://tpwd.texas.gov/arcgis/rest/services/Parks/TexasStateParksTrails/MapServer/0) | api | Primary candidate; no agency import |
 | TX | parks | [Texas Parks and Wildlife State Park Boundaries ZIP](https://tpwd.texas.gov/gis/data/baselayers/state-park-boundaries-zip/view) | download | Supplemental candidate; no agency import |
 | TX | forestry | [Texas A&M Forest Service Texas Forest Information and GIS services](https://tfsgis.tfs.tamu.edu/arcgis/rest/services) | catalog | Primary candidate; no agency import |
 | TX | forestry | [OpenStreetMap Texas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/texas-latest.osm.pbf) | download | OSM fallback; no agency import |
-| UT | parks | [Utah State Parks GIS maps and data](https://stateparks.utah.gov/resources/gis-maps-and-data/) | catalog | Primary candidate; no agency import |
+| UT | parks | [Utah State Park Management Areas layer 0](https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/Utah_State_Park_Management_Areas/FeatureServer/0) | api | Primary candidate; no agency import |
 | UT | parks | [Utah Trails and Pathways FeatureServer layer 0](https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | UT | parks | [OpenStreetMap Utah outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/utah-latest.osm.pbf) | download | OSM fallback; no agency import |
 | UT | forestry | [Utah FFSL GIS & Mapping / Central Index](https://ffsl.utah.gov/about/maps/) | catalog | Primary candidate; no agency import |
@@ -302,13 +302,13 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | VT | forestry | [Vermont ANR Atlas FPR MapServer](https://anrmaps.vermont.gov/arcgis/rest/services/map_services/MAP_ANR_ANRATLASFPR_WM_NOCACHE/MapServer) | api | Primary candidate; no agency import |
 | VA | parks | [Virginia State Parks SP_Trails FeatureServer layer 0](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0) | api | Primary candidate; no agency import |
 | VA | parks | [Virginia State Parks SP Boundary FeatureServer layer 3](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3) | api | Supplemental candidate; no agency import |
-| VA | parks | [Virginia State Parks park trail maps](https://www.dcr.virginia.gov/state-parks/park-trail-maps) | info | Supplemental candidate; no agency import |
+| VA | parks | [Virginia State Parks SP_Trails FeatureServer layer 0](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | VA | parks | [Virginia State Trails FeatureServer layer 0](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | VA | parks | [OpenStreetMap Virginia outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/virginia-latest.osm.pbf) | download | OSM fallback; no agency import |
 | VA | forestry | [Virginia Department of Forestry State Forest map downloads](https://www.dof.virginia.gov/education-and-recreation/state-forests/) | download | Primary candidate; no agency import |
 | VA | forestry | [Virginia State Trails FeatureServer layer 0](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/Virginia_State_Trails/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | VA | forestry | [OpenStreetMap Virginia outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/virginia-latest.osm.pbf) | download | OSM fallback; no agency import |
-| WA | parks | [Washington State Parks PARKS - Park Boundaries item](https://www.arcgis.com/home/item.html?id=3385b003af5248e59c1fa68e1411c446) | catalog | Primary candidate; no agency import |
+| WA | parks | [Washington State Parks ParkBoundaries FeatureServer layer 2](https://services5.arcgis.com/4LKAHwqnBooVDUlX/arcgis/rest/services/ParkBoundaries/FeatureServer/2) | api | Primary candidate; no agency import |
 | WA | parks | [Washington State Parks Open Campsites and Open Trails FeatureServer](https://services2.arcgis.com/6Miy5NqQWjMYTGFY/arcgis/rest/services/WA_State_Parks_WFL1/FeatureServer) | api | Supplemental candidate; no agency import |
 | WA | parks | [OpenStreetMap Washington outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/washington-latest.osm.pbf) | download | OSM fallback; no agency import |
 | WA | forestry | [Washington DNR Recreation Sites MapServer](https://gis.dnr.wa.gov/site2/rest/services/Recreation/DNR_Recreation_Sites/MapServer) | api | Primary candidate; no agency import |
