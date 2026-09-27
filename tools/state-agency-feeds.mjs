@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { nativeCurlFetch } from './native-curl-fetch.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryPath = join(repository, 'config/us-state-forestry-agencies.json');
@@ -14,6 +15,7 @@ const provisionalPath = join(
 const privateRoot = join(repository, 'PrivateData/agency-feeds');
 const exactArcgisLayer = /\/(?:FeatureServer|MapServer)\/\d+$/i;
 const directDownload = /\.(?:zip|geojson|json|csv|kml|gpkg)(?:\?.*)?$/i;
+const sourceFetch = process.platform === 'win32' ? nativeCurlFetch : fetch;
 
 function sourceType(url, declaredType) {
   if (/download\.geofabrik\.de\/.*\.osm\.pbf$/i.test(url)) return 'osm-extract';
@@ -245,7 +247,7 @@ export async function initializeProvisionalPrivateApprovals(feeds, now = new Dat
 }
 
 /** Metadata discovery only; this does not query or store source feature records. */
-export async function discoverArcgisChildLayers(feed, fetchImpl = fetch) {
+export async function discoverArcgisChildLayers(feed, fetchImpl = sourceFetch) {
   if (feed.sourceType !== 'arcgis-service')
     throw new Error(`${feed.id}: not an ArcGIS service root`);
   const response = await fetchImpl(`${feed.url}?f=pjson`, {
@@ -282,9 +284,18 @@ async function requestArcgis(url, parameters, fetchImpl) {
 }
 
 /** Raw, rights-gated staging. POI classification happens only after all feeds are selected. */
-export async function acquireApprovedArcgisLayer(feed, approval, fetchImpl = fetch) {
+export async function acquireApprovedArcgisLayer(feed, approval, fetchImpl = sourceFetch) {
   if (feed.sourceType !== 'arcgis-layer') throw new Error(`${feed.id}: ArcGIS layer required`);
   assertPrivateAcquisitionApproved(feed, approval);
+  const metadataResponse = await fetchImpl(`${feed.url}?f=pjson`, {
+    headers: { Accept: 'application/json' },
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!metadataResponse.ok) throw new Error(`${feed.id}: ArcGIS layer metadata unavailable`);
+  const metadata = await metadataResponse.json();
+  const pageSize = Number.isSafeInteger(metadata.maxRecordCount)
+    ? Math.max(1, Math.min(1000, metadata.maxRecordCount))
+    : 100;
   const inventory = await requestArcgis(
     `${feed.url}/query`,
     {
@@ -300,8 +311,8 @@ export async function acquireApprovedArcgisLayer(feed, approval, fetchImpl = fet
   }
   const ids = [...new Set(inventory.objectIds)].sort((a, b) => a - b);
   const features = [];
-  for (let offset = 0; offset < ids.length; offset += 100) {
-    const pageIds = ids.slice(offset, offset + 100);
+  for (let offset = 0; offset < ids.length; offset += pageSize) {
+    const pageIds = ids.slice(offset, offset + pageSize);
     const page = await requestArcgis(
       `${feed.url}/query`,
       {
@@ -337,7 +348,7 @@ export async function acquireApprovedArcgisLayer(feed, approval, fetchImpl = fet
   return { type: 'FeatureCollection', features };
 }
 
-export async function acquireApprovedDownload(feed, approval, fetchImpl = fetch) {
+export async function acquireApprovedDownload(feed, approval, fetchImpl = sourceFetch) {
   if (feed.sourceType !== 'download-file') throw new Error(`${feed.id}: direct download required`);
   assertPrivateAcquisitionApproved(feed, approval);
   const response = await fetchImpl(feed.url, { signal: AbortSignal.timeout(120_000) });
@@ -350,7 +361,7 @@ export async function acquireApprovedDownload(feed, approval, fetchImpl = fetch)
   return bytes;
 }
 
-export async function stageApprovedFeed(feed, approval, fetchImpl = fetch) {
+export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch) {
   const collection =
     feed.sourceType === 'arcgis-layer'
       ? await acquireApprovedArcgisLayer(feed, approval, fetchImpl)
@@ -368,6 +379,7 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = fetch) {
     : `raw.${new URL(feed.url).pathname.split('.').at(-1).toLowerCase()}`;
   const receipt = {
     sourceId: feed.id,
+    ...(feed.parentSourceId ? { parentSourceId: feed.parentSourceId } : {}),
     sourceUrl: feed.url,
     state: feed.state,
     rightsStatus: feed.rightsStatus,

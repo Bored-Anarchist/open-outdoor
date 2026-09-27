@@ -10,6 +10,8 @@
 
 **Private validation decision:** The project owner provisionally approved the [exact 107 Unconfirmed registry roles](../config/agency-provisional-private-validation-2026-09-27.json) for evaluation in ignored private storage while publisher permissions are pursued. This enables source and product checks; public packages remain gated by confirmed redistribution rights and release validation. The source-specific local approvals and limits are documented in the [connector plan](STATE_AGENCY_FEED_CONNECTORS.md).
 
+**Private state overlays:** The [agency + iOverlander pipeline](PRIVATE_STATE_AGENCY_IOVERLANDER_PIPELINE_2026-09-27.md) stages exact agency layers under `PrivateData/agency-feeds/` and combines checksum-verified raw GeoJSON with existing per-state iOverlander tiles under `PrivateData/catalogs/US/<state>/current/`. Combined features retain provisional rights and access labels; they are not public package inputs.
+
 ## Build policy
 
 - The app already has the detailed New York overlay. This tracker covers the other 49 states.

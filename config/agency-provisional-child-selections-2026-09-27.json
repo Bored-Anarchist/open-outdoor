@@ -1,0 +1,86 @@
+{
+  "reviewedAt": "2026-09-27",
+  "scope": "Exact visitor-data layers for private validation only",
+  "selections": [
+    {
+      "parentId": "registry-ms-parks-aa314d2fe0",
+      "layerIds": [0, 2],
+      "reason": "Park points and boundaries"
+    },
+    {
+      "parentId": "registry-oh-parks-cca02c3b6b",
+      "layerIds": [0, 2],
+      "reason": "Visitor points and trails"
+    },
+    {
+      "parentId": "registry-vt-parks-039e646038",
+      "layerIds": [2, 3, 4, 22, 32, 175],
+      "reason": "State parks, recreation sites, trails, primitive camping, managed lands, and campsites"
+    },
+    {
+      "parentId": "registry-ia-parks-093feb0642",
+      "layerIds": [7, 8, 10, 13],
+      "reason": "Trails, amenities, and public area geometry and points"
+    },
+    {
+      "parentId": "registry-ak-parks-00f3de91fb",
+      "layerIds": [0, 1, 2, 3],
+      "reason": "Park facilities, trails, boundaries, and roads"
+    },
+    {
+      "parentId": "registry-fl-parks-e7e3c24654",
+      "layerIds": [0, 1, 2, 6, 8],
+      "reason": "State park boundaries, campsites, entrances, points, and trails"
+    },
+    {
+      "parentId": "registry-ky-parks-supplement-c5d9a1e7ad",
+      "layerIds": [0, 1, 5, 8, 9],
+      "reason": "State park trailheads, campsites, parks, boundaries, and trails"
+    },
+    {
+      "parentId": "registry-ky-forestry-25cb7016ac",
+      "layerIds": [1],
+      "reason": "State forest geometry instead of StoryMap points"
+    },
+    {
+      "parentId": "registry-mo-parks-bee4bccb0b",
+      "layerIds": [4],
+      "reason": "State parks and historic sites"
+    },
+    {
+      "parentId": "registry-nh-parks-supplement-a1156dde5a",
+      "layerIds": [0, 1],
+      "reason": "Trailhead points and recreational trails"
+    },
+    {
+      "parentId": "registry-pa-forestry-6e84c2d7c8",
+      "layerIds": [1, 2, 4],
+      "reason": "Forest hiking access, hiking trails, and state forest boundaries"
+    },
+    {
+      "parentId": "registry-ri-parks-supplement-2ca629caba",
+      "layerIds": [15, 16, 21],
+      "reason": "Trailheads, recreational trails, and DEM managed recreational land"
+    },
+    {
+      "parentId": "registry-tn-parks-66885a723f",
+      "layerIds": [0, 2, 3, 6],
+      "reason": "Natural-area points, campsites, public trails, and park boundaries"
+    },
+    {
+      "parentId": "registry-wa-parks-supplement-a4421dd062",
+      "layerIds": [0, 1],
+      "reason": "Open campsites and open trails"
+    },
+    {
+      "parentId": "registry-wa-forestry-eae56bb913",
+      "layerIds": [0, 2, 3, 5, 6],
+      "reason": "DNR recreation sites, campgrounds, day-use sites, and trailheads"
+    },
+    {
+      "parentId": "registry-wv-parks-supplement-fc0c473ce0",
+      "layerIds": [0, 3],
+      "reason": "Recreation POIs and trails; avoids duplicate map-scale display layers"
+    }
+  ]
+}

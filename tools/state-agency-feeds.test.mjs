@@ -143,6 +143,7 @@ test('approved ArcGIS layer acquisition requires complete ID-based GeoJSON pages
   assert.ok(feed);
   const calls = [];
   const fetchImpl = async (_url, options) => {
+    if (!options.body) return { ok: true, json: async () => ({ maxRecordCount: 2000 }) };
     const body = new URLSearchParams(options.body);
     calls.push(body);
     const result =
@@ -175,6 +176,7 @@ test('approved ArcGIS layer acquisition requires complete ID-based GeoJSON pages
   await assert.rejects(
     () =>
       acquireApprovedArcgisLayer(feed, approvalFor(feed), async (_url, options) => {
+        if (!options.body) return { ok: true, json: async () => ({ maxRecordCount: 1000 }) };
         const body = new URLSearchParams(options.body);
         return {
           ok: true,

@@ -42,7 +42,7 @@
     "test:design:browser": "node tools/design-browser-qa.mjs",
     "phase5:quality": "node tools/production-quality.mjs",
     "profile:desktop": "node tools/production-benchmark.mjs",
-    "test:release": "node --test tools/release-artifacts.test.mjs tools/release-audit.test.mjs tools/stage-private-mobile-map.test.mjs tools/acquire-hike-profiles.test.mjs tools/state-agency-feeds.test.mjs",
+    "test:release": "node --test tools/release-artifacts.test.mjs tools/release-audit.test.mjs tools/stage-private-mobile-map.test.mjs tools/acquire-hike-profiles.test.mjs tools/state-agency-feeds.test.mjs tools/build-private-state-agency-ioverlander.test.mjs",
     "agency:feeds": "node tools/state-agency-feeds.mjs",
     "release:artifacts": "node tools/release-artifacts.mjs",
     "release:sbom": "node tools/release-sbom.mjs",
