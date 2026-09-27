@@ -7,7 +7,19 @@ import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(repository, 'PrivateData/agency-feeds');
 const feeds = (await loadStateAgencyFeedCatalog()).filter(
-  (feed) => feed.provisionalPrivateValidation,
+  (feed) => feed.provisionalPrivateValidation || feed.rightsStatus === 'Permission required',
+);
+const resolutions = new Map(
+  JSON.parse(
+    await readFile(join(repository, 'config/agency-pending-source-resolutions-2026-09-27.json')),
+  ).resolutions.map((item) => [item.parentId, item]),
+);
+const permissionRoles = new Map(
+  JSON.parse(
+    await readFile(
+      join(repository, 'config/agency-permission-required-private-validation-2026-09-27.json'),
+    ),
+  ).roles.map((item) => [item.id, item]),
 );
 const tryJson = async (path) => {
   try {
@@ -39,11 +51,23 @@ for (const feed of feeds) {
   const receipt = await tryJson(join(root, 'US', feed.state, feed.id, 'receipt.json'));
   const failure = batch?.results?.find((item) => item.id === feed.id && item.status === 'error');
   const child = discovery?.find((item) => item.id === feed.id);
+  const stagedChildren = childReceipts.get(feed.id) ?? [];
   let status;
-  if (receipt?.sourceId === feed.id && receipt.publicDistribution === false) {
+  if (feed.rightsStatus === 'Permission required') {
+    status =
+      (receipt?.sourceId === feed.id && receipt.publicDistribution === false) ||
+      stagedChildren.length
+        ? 'staged-private-permission-pending'
+        : permissionRoles.get(feed.id)?.privateCollection
+          ? 'pending-private-stage'
+          : 'permission-needed-for-copying';
+  } else if (receipt?.sourceId === feed.id && receipt.publicDistribution === false) {
     status = 'staged-private';
+  } else if (resolutions.get(feed.id)?.status === 'wrong-subject') {
+    status = 'wrong-subject-no-exact-layer';
+  } else if (stagedChildren.some((item) => item.sourceId.startsWith('resolved-'))) {
+    status = 'staged-alternate-private';
   } else if (feed.sourceType === 'arcgis-service') {
-    const stagedChildren = childReceipts.get(feed.id) ?? [];
     const sharedService = feeds.some(
       (other) =>
         other.id !== feed.id &&
@@ -60,20 +84,27 @@ for (const feed of feeds) {
   } else if (feed.sourceType === 'arcgis-layer' || feed.sourceType === 'download-file') {
     status = failure ? 'source-error' : 'pending-stage';
   } else {
-    status = 'select-exact-download';
+    status =
+      resolutions.get(feed.id)?.status === 'wrong-subject'
+        ? 'wrong-subject-no-exact-layer'
+        : 'select-exact-download';
   }
   results.push({
     id: feed.id,
     state: feed.state,
     role: feed.agencyRole,
     sourceType: feed.sourceType,
+    rightsStatus: feed.rightsStatus,
     status,
     sourceUrl: feed.url,
     ...(receipt ? { featureCount: receipt.featureCount, rawFilename: receipt.rawFilename } : {}),
     ...(failure ? { error: failure.error } : {}),
     ...(child?.children ? { childCount: child.children.length } : {}),
-    ...(childReceipts.get(feed.id)?.length
-      ? { stagedChildCount: childReceipts.get(feed.id).length }
+    ...(stagedChildren.length
+      ? {
+          stagedChildCount: stagedChildren.length,
+          stagedSourceUrls: stagedChildren.map((item) => item.sourceUrl),
+        }
       : {}),
   });
 }
@@ -83,7 +114,17 @@ const summary = Object.fromEntries(
     .map((status) => [status, results.filter((item) => item.status === status).length]),
 );
 await writeFile(
-  join(root, 'provisional-status.json'),
+  join(root, 'agency-private-status.json'),
   `${JSON.stringify({ generatedAt: new Date().toISOString(), total: results.length, summary, results }, null, 2)}\n`,
+);
+const provisionalResults = results.filter((item) => item.rightsStatus === 'Unconfirmed');
+const provisionalSummary = Object.fromEntries(
+  [...new Set(provisionalResults.map((item) => item.status))]
+    .sort()
+    .map((status) => [status, provisionalResults.filter((item) => item.status === status).length]),
+);
+await writeFile(
+  join(root, 'provisional-status.json'),
+  `${JSON.stringify({ generatedAt: new Date().toISOString(), total: provisionalResults.length, summary: provisionalSummary, results: provisionalResults }, null, 2)}\n`,
 );
 console.log(JSON.stringify({ total: results.length, summary }, null, 2));

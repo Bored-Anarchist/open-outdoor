@@ -1,0 +1,33 @@
+{
+  "reviewedAt": "2026-09-27",
+  "scope": "Five Permission required roles registered for private evaluation; no redistribution grant is asserted",
+  "roles": [
+    {
+      "id": "registry-mi-parks-cabb7fa608",
+      "privateCollection": false,
+      "reason": "Michigan DNR website terms require prior written permission even to copy the currently linked content"
+    },
+    {
+      "id": "registry-mi-forestry-cabb7fa608",
+      "privateCollection": false,
+      "reason": "Same Michigan DNR page and copying restriction; seek grant or independently licensed exact item"
+    },
+    {
+      "id": "registry-nj-parks-fbd88e5b9e",
+      "privateCollection": true,
+      "alternateUrl": "https://mapsdep.nj.gov/arcgis/rest/services/Applications/DEP_Trails/MapServer/0",
+      "reason": "Original ZIP returns HTTP 403; NJ State Park Service Trails service layer is available for local validation, with redistribution permission still required"
+    },
+    {
+      "id": "registry-nj-forestry-cecb5c0cc2",
+      "privateCollection": true,
+      "reason": "NJDEP GIS FAQ permits local data use but gates redistribution"
+    },
+    {
+      "id": "registry-nj-forestry-supplement-746fa861b0",
+      "privateCollection": true,
+      "childLayerIds": [0, 25, 31],
+      "reason": "NJDEP GIS FAQ permits local data use but gates redistribution; selected trails, open space, and POI children"
+    }
+  ]
+}

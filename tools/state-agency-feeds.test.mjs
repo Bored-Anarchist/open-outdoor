@@ -135,6 +135,34 @@ test('the 107 pinned roles allow only explicitly approved private validation', a
   );
 });
 
+test('NJDEP local validation stays private while Michigan copying remains gated', async () => {
+  const feeds = await loadStateAgencyFeedCatalog();
+  const permissionRoles = feeds.filter((feed) => feed.rightsStatus === 'Permission required');
+  assert.equal(permissionRoles.length, 5);
+  const nj = permissionRoles.find(
+    (feed) => feed.state === 'NJ' && feed.sourceType === 'arcgis-layer',
+  );
+  const mi = permissionRoles.find((feed) => feed.state === 'MI');
+  assert.ok(nj?.permissionRequiredPrivateValidation);
+  assert.equal(mi?.permissionRequiredPrivateValidation, false);
+  const approval = {
+    ...approvalFor(nj),
+    publisherGrant: false,
+    permissionRequiredPrivateValidation: true,
+    evidenceUrl: nj.url,
+  };
+  assert.doesNotThrow(() => assertPrivateAcquisitionApproved(nj, approval));
+  assert.throws(() =>
+    assertPrivateAcquisitionApproved(nj, { ...approval, publicDistribution: true }),
+  );
+  assert.throws(() =>
+    assertPrivateAcquisitionApproved(
+      { ...mi, sourceType: 'arcgis-layer' },
+      { ...approval, sourceId: mi.id, sourceUrl: mi.url },
+    ),
+  );
+});
+
 test('approved ArcGIS layer acquisition requires complete ID-based GeoJSON pages', async () => {
   const feeds = await loadStateAgencyFeedCatalog();
   const feed = feeds.find(

@@ -9,6 +9,11 @@ const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const privateRoot = join(repository, 'PrivateData');
 const censusUrl =
   'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query';
+const resolutions = new Map(
+  JSON.parse(
+    await readFile(join(repository, 'config/agency-pending-source-resolutions-2026-09-27.json')),
+  ).resolutions.map((item) => [item.parentId, item]),
+);
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
@@ -195,7 +200,7 @@ function agencyFeature(source, feature, index) {
       origin: 'private-catalog',
       sourceId: source.sourceId,
       sourceUrl: source.sourceUrl,
-      rightsStatus: 'Unconfirmed',
+      rightsStatus: source.rightsStatus,
       reviewStatus: 'provisional',
       publicUse: 'Private validation only; verify visitor access and publisher terms',
     },
@@ -227,14 +232,20 @@ async function readAgency(code) {
     }
     if (
       receipt.state !== code ||
-      receipt.rightsStatus !== 'Unconfirmed' ||
-      receipt.provisionalPrivateValidation !== true ||
+      !(
+        (receipt.rightsStatus === 'Unconfirmed' && receipt.provisionalPrivateValidation === true) ||
+        (receipt.rightsStatus === 'Permission required' &&
+          receipt.permissionRequiredPrivateValidation === true)
+      ) ||
       receipt.publicDistribution !== false ||
+      receipt.validationStatus === 'rejected-subject' ||
       seenUrls.has(receipt.sourceUrl) ||
       receipt.rawFilename !== 'raw.geojson'
     ) {
       continue;
     }
+    const resolution = resolutions.get(receipt.parentSourceId ?? receipt.sourceId);
+    if (resolution?.status === 'wrong-subject') continue;
     const bytes = await readFile(join(path, receipt.rawFilename));
     if (sha256(bytes) !== receipt.sha256) throw new Error(`${directory}: raw checksum mismatch`);
     const collection = JSON.parse(bytes.toString('utf8'));
@@ -242,12 +253,20 @@ async function readAgency(code) {
       throw new Error(`${directory}: invalid staged GeoJSON`);
     }
     seenUrls.add(receipt.sourceUrl);
+    const selected = resolution?.filter
+      ? collection.features.filter((feature) =>
+          Object.entries(resolution.filter).every(
+            ([field, value]) => feature.properties?.[field] === value,
+          ),
+        )
+      : collection.features;
     sources.push({
       sourceId: receipt.sourceId,
       sourceUrl: receipt.sourceUrl,
-      count: collection.features.length,
+      count: selected.length,
+      ...(resolution?.filter ? { filter: resolution.filter } : {}),
     });
-    collection.features.forEach((feature, index) => {
+    selected.forEach((feature, index) => {
       const converted = agencyFeature(receipt, feature, index);
       if (converted) features.push(converted);
     });

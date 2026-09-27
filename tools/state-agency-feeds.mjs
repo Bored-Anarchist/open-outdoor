@@ -12,6 +12,10 @@ const provisionalPath = join(
   repository,
   'config/agency-provisional-private-validation-2026-09-27.json',
 );
+const permissionPrivatePath = join(
+  repository,
+  'config/agency-permission-required-private-validation-2026-09-27.json',
+);
 const privateRoot = join(repository, 'PrivateData/agency-feeds');
 const exactArcgisLayer = /\/(?:FeatureServer|MapServer)\/\d+$/i;
 const directDownload = /\.(?:zip|geojson|json|csv|kml|gpkg)(?:\?.*)?$/i;
@@ -84,22 +88,28 @@ function plannedRows(markdown) {
 
 /** Source definitions only. No feature data are embedded in this public catalog. */
 export async function loadStateAgencyFeedCatalog() {
-  const [registryText, rightsText, planText, provisionalText] = await Promise.all([
+  const [registryText, rightsText, planText, provisionalText, permissionText] = await Promise.all([
     readFile(registryPath, 'utf8'),
     readFile(rightsPath, 'utf8'),
     readFile(planPath, 'utf8'),
     readFile(provisionalPath, 'utf8'),
+    readFile(permissionPrivatePath, 'utf8'),
   ]);
   const registry = JSON.parse(registryText);
   const decisions = rightsRows(rightsText);
   const provisional = JSON.parse(provisionalText);
   const provisionalIds = new Set(provisional.sourceIds);
+  const permissionPrivate = new Map(
+    JSON.parse(permissionText).roles.map((item) => [item.id, item]),
+  );
+  if (permissionPrivate.size !== 5) throw new Error('expected five permission-required roles');
   if (provisionalIds.size !== 107 || provisional.sourceIds.length !== 107) {
     throw new Error('expected 107 distinct provisional source IDs');
   }
   const feeds = [];
   const seenRights = new Set();
   const seenProvisional = new Set();
+  const seenPermission = new Set();
   for (const state of registry.states.filter((item) => item.code !== 'NY')) {
     for (const agencyRole of ['parks', 'forestry']) {
       const sources = [
@@ -124,6 +134,7 @@ export async function loadStateAgencyFeedCatalog() {
         if (!osm) seenRights.add(key);
         const id = feedId('registry', state.code, source.role, source.url);
         if (provisionalIds.has(id)) seenProvisional.add(id);
+        if (permissionPrivate.has(id)) seenPermission.add(id);
         feeds.push({
           id,
           origin: 'registry',
@@ -134,6 +145,9 @@ export async function loadStateAgencyFeedCatalog() {
           sourceType: sourceType(source.url, source.declaredType),
           rightsStatus,
           provisionalPrivateValidation: provisionalIds.has(id) && rightsStatus === 'Unconfirmed',
+          permissionRequiredPrivateValidation:
+            rightsStatus === 'Permission required' &&
+            permissionPrivate.get(id)?.privateCollection === true,
           stage: 'candidate',
         });
       }
@@ -143,6 +157,8 @@ export async function loadStateAgencyFeedCatalog() {
     throw new Error('rights matrix contains unmatched agency rows');
   if (seenProvisional.size !== provisionalIds.size)
     throw new Error('provisional source list contains unmatched agency rows');
+  if (seenPermission.size !== permissionPrivate.size)
+    throw new Error('permission-required source list contains unmatched agency rows');
   for (const item of plannedRows(planText)) {
     const osm = sourceType(item.url) === 'osm-extract';
     const matchingStatus = feeds.find(
@@ -199,9 +215,15 @@ export function assertPrivateAcquisitionApproved(feed, approval, now = new Date(
     feed.provisionalPrivateValidation === true &&
     approval.provisionalPrivateValidation === true &&
     approval.publisherGrant === false;
+  const permissionPrivate =
+    feed.rightsStatus === 'Permission required' &&
+    feed.permissionRequiredPrivateValidation === true &&
+    approval.permissionRequiredPrivateValidation === true &&
+    approval.publisherGrant === false;
   if (
     !['Supported', 'Conditional', 'ODbL'].includes(feed.rightsStatus) &&
     !provisional &&
+    !permissionPrivate &&
     approval.publisherGrant !== true
   ) {
     throw new Error(`${feed.id}: publisher grant required for ${feed.rightsStatus} source`);
@@ -358,6 +380,9 @@ export async function acquireApprovedDownload(feed, approval, fetchImpl = source
   const bytes = Buffer.from(await response.arrayBuffer());
   if (!bytes.length || bytes.length > 500 * 1024 * 1024)
     throw new Error(`${feed.id}: invalid download size`);
+  if (feed.downloadFormat === 'zip' && bytes.subarray(0, 4).toString('hex') !== '504b0304') {
+    throw new Error(`${feed.id}: response is not a ZIP archive`);
+  }
   return bytes;
 }
 
@@ -376,7 +401,7 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch)
   const bytes = collection ? Buffer.from(`${JSON.stringify(collection)}\n`) : download;
   const filename = collection
     ? 'raw.geojson'
-    : `raw.${new URL(feed.url).pathname.split('.').at(-1).toLowerCase()}`;
+    : `raw.${feed.downloadFormat ?? new URL(feed.url).pathname.split('.').at(-1).toLowerCase()}`;
   const receipt = {
     sourceId: feed.id,
     ...(feed.parentSourceId ? { parentSourceId: feed.parentSourceId } : {}),
@@ -384,6 +409,7 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch)
     state: feed.state,
     rightsStatus: feed.rightsStatus,
     provisionalPrivateValidation: approval.provisionalPrivateValidation === true,
+    permissionRequiredPrivateValidation: approval.permissionRequiredPrivateValidation === true,
     publicDistribution: false,
     retrievedAt: new Date().toISOString(),
     featureCount: collection?.features.length ?? null,
