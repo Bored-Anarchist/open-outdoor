@@ -4,6 +4,8 @@
 
 **Result after the remaining-eight follow-up:** eleven of these 17 roles now point to direct queryable layers in the [registry](../config/us-state-forestry-agencies.json) and [complete dataset tracker](ALL_DATASETS_TRACKER.md). Colorado and Texas were resolved in a second pass; Kansas and South Carolina have partial polygon downloads from a third pass. Six remain leads because the closest public data are private-property/forest-planning data, belong to another land manager, or have no verified visitor-land endpoint. No agency records were imported. The 142-role rights matrix now contains 111 Unconfirmed and six Lead only records.
 
+**Later rights update:** The [2026-09-27 language deep dive](STATE_AGENCY_111_RIGHTS_LANGUAGE_DEEP_DIVE_2026-09-27.md) moved two Michigan roles to Permission required. The current matrix has 109 Unconfirmed and six Lead only roles; this download-point result remains the 2026-09-26 snapshot.
+
 | Original role | Direct point or finding | Use boundary |
 | --- | --- | --- |
 | AZ forestry | **No applicable DFFM visitor-data download found.** The [DFFM GIS hub](https://gis-dffm.hub.arcgis.com/) and [agency mission](https://dffm.az.gov/about) focus on wildfire and forest stewardship. The [State Land Department parcel viewer](https://gis.azland.gov/) uses a queryable [trust parcel layer](https://gisdata.azland.gov/server/rest/services/ASLD/Arizona_State_Trust_Land_Parcels/MapServer/0), but its `openstatus` has no documented recreation-access meaning; [ASLD says](https://land.az.gov/faqs) recreation requires a conditional permit. | Keep Lead only. A trust parcel cannot be labeled DFFM visitor land or presumed accessible, particularly without a closure/permit-ready access field. |
