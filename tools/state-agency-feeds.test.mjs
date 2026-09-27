@@ -95,6 +95,46 @@ test('unconfirmed sources need an explicit publisher grant and private-only appr
   assert.doesNotThrow(() => assertPrivateAcquisitionApproved(feed, approval));
 });
 
+test('the 107 pinned roles allow only explicitly approved private validation', async () => {
+  const feeds = await loadStateAgencyFeedCatalog();
+  const provisional = feeds.filter((feed) => feed.provisionalPrivateValidation);
+  assert.equal(provisional.length, 107);
+  assert.ok(provisional.every((feed) => feed.origin === 'registry'));
+  const feed = provisional.find((item) => item.sourceType === 'arcgis-layer');
+  assert.ok(feed);
+  const approval = {
+    ...approvalFor(feed),
+    publisherGrant: false,
+    provisionalPrivateValidation: true,
+    evidenceUrl: feed.url,
+  };
+  assert.doesNotThrow(() => assertPrivateAcquisitionApproved(feed, approval));
+  assert.throws(() =>
+    assertPrivateAcquisitionApproved(feed, { ...approval, publicDistribution: true }),
+  );
+  assert.throws(() =>
+    assertPrivateAcquisitionApproved(feed, { ...approval, sourceUrl: 'https://example.org/other' }),
+  );
+  assert.throws(() =>
+    assertPrivateAcquisitionApproved(feed, { ...approval, provisionalPrivateValidation: false }),
+  );
+  const outside = feeds.find(
+    (item) =>
+      item.rightsStatus === 'Unconfirmed' &&
+      !item.provisionalPrivateValidation &&
+      item.sourceType === 'arcgis-layer',
+  );
+  assert.ok(outside);
+  assert.throws(() =>
+    assertPrivateAcquisitionApproved(outside, {
+      ...approvalFor(outside),
+      publisherGrant: false,
+      provisionalPrivateValidation: true,
+      evidenceUrl: outside.url,
+    }),
+  );
+});
+
 test('approved ArcGIS layer acquisition requires complete ID-based GeoJSON pages', async () => {
   const feeds = await loadStateAgencyFeedCatalog();
   const feed = feeds.find(

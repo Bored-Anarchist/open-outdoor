@@ -7,6 +7,10 @@ const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryPath = join(repository, 'config/us-state-forestry-agencies.json');
 const rightsPath = join(repository, 'docs/STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md');
 const planPath = join(repository, 'docs/STATE_DATA_PACKAGE_TRACKER.md');
+const provisionalPath = join(
+  repository,
+  'config/agency-provisional-private-validation-2026-09-27.json',
+);
 const privateRoot = join(repository, 'PrivateData/agency-feeds');
 const exactArcgisLayer = /\/(?:FeatureServer|MapServer)\/\d+$/i;
 const directDownload = /\.(?:zip|geojson|json|csv|kml|gpkg)(?:\?.*)?$/i;
@@ -78,15 +82,22 @@ function plannedRows(markdown) {
 
 /** Source definitions only. No feature data are embedded in this public catalog. */
 export async function loadStateAgencyFeedCatalog() {
-  const [registryText, rightsText, planText] = await Promise.all([
+  const [registryText, rightsText, planText, provisionalText] = await Promise.all([
     readFile(registryPath, 'utf8'),
     readFile(rightsPath, 'utf8'),
     readFile(planPath, 'utf8'),
+    readFile(provisionalPath, 'utf8'),
   ]);
   const registry = JSON.parse(registryText);
   const decisions = rightsRows(rightsText);
+  const provisional = JSON.parse(provisionalText);
+  const provisionalIds = new Set(provisional.sourceIds);
+  if (provisionalIds.size !== 107 || provisional.sourceIds.length !== 107) {
+    throw new Error('expected 107 distinct provisional source IDs');
+  }
   const feeds = [];
   const seenRights = new Set();
+  const seenProvisional = new Set();
   for (const state of registry.states.filter((item) => item.code !== 'NY')) {
     for (const agencyRole of ['parks', 'forestry']) {
       const sources = [
@@ -109,8 +120,10 @@ export async function loadStateAgencyFeedCatalog() {
         const rightsStatus = osm ? 'ODbL' : decisions.get(key);
         if (!rightsStatus) throw new Error(`missing rights decision for ${key}`);
         if (!osm) seenRights.add(key);
+        const id = feedId('registry', state.code, source.role, source.url);
+        if (provisionalIds.has(id)) seenProvisional.add(id);
         feeds.push({
-          id: feedId('registry', state.code, source.role, source.url),
+          id,
           origin: 'registry',
           state: state.code,
           agencyRole: source.role,
@@ -118,6 +131,7 @@ export async function loadStateAgencyFeedCatalog() {
           url: source.url,
           sourceType: sourceType(source.url, source.declaredType),
           rightsStatus,
+          provisionalPrivateValidation: provisionalIds.has(id) && rightsStatus === 'Unconfirmed',
           stage: 'candidate',
         });
       }
@@ -125,6 +139,8 @@ export async function loadStateAgencyFeedCatalog() {
   }
   if (seenRights.size !== decisions.size)
     throw new Error('rights matrix contains unmatched agency rows');
+  if (seenProvisional.size !== provisionalIds.size)
+    throw new Error('provisional source list contains unmatched agency rows');
   for (const item of plannedRows(planText)) {
     const osm = sourceType(item.url) === 'osm-extract';
     const matchingStatus = feeds.find(
@@ -139,6 +155,7 @@ export async function loadStateAgencyFeedCatalog() {
       url: item.url,
       sourceType: sourceType(item.url),
       rightsStatus: matchingStatus ?? (osm ? 'ODbL' : 'Unconfirmed'),
+      provisionalPrivateValidation: false,
       stage: 'candidate',
       selectionNotes: item.notes,
     });
@@ -148,7 +165,7 @@ export async function loadStateAgencyFeedCatalog() {
   return feeds;
 }
 
-/** Every feature fetch requires a private, source-specific rights and storage approval. */
+/** Every feature fetch requires a private, source-specific storage approval. */
 export function assertPrivateAcquisitionApproved(feed, approval, now = new Date()) {
   if (!['arcgis-layer', 'download-file'].includes(feed.sourceType)) {
     throw new Error(
@@ -173,14 +190,58 @@ export function assertPrivateAcquisitionApproved(feed, approval, now = new Date(
     !Number.isFinite(Date.parse(approval.expiresAt)) ||
     Date.parse(approval.expiresAt) <= now.getTime()
   ) {
-    throw new Error(`${feed.id}: current publisher evidence and review dates required`);
+    throw new Error(`${feed.id}: current source evidence and review dates required`);
   }
+  const provisional =
+    feed.rightsStatus === 'Unconfirmed' &&
+    feed.provisionalPrivateValidation === true &&
+    approval.provisionalPrivateValidation === true &&
+    approval.publisherGrant === false;
   if (
     !['Supported', 'Conditional', 'ODbL'].includes(feed.rightsStatus) &&
+    !provisional &&
     approval.publisherGrant !== true
   ) {
     throw new Error(`${feed.id}: publisher grant required for ${feed.rightsStatus} source`);
   }
+}
+
+/** Prepare time-limited, ignored approvals for exact provisionally reviewed sources. */
+export async function initializeProvisionalPrivateApprovals(feeds, now = new Date()) {
+  const path = join(privateRoot, 'approvals.json');
+  await mkdir(privateRoot, { recursive: true });
+  let approvals = {};
+  try {
+    approvals = JSON.parse(await readFile(path, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString();
+  let added = 0;
+  for (const feed of feeds) {
+    if (
+      !feed.provisionalPrivateValidation ||
+      !['arcgis-layer', 'download-file'].includes(feed.sourceType) ||
+      approvals[feed.id]
+    ) {
+      continue;
+    }
+    approvals[feed.id] = {
+      sourceId: feed.id,
+      sourceUrl: feed.url,
+      collect: true,
+      privateStorage: true,
+      publicDistribution: false,
+      publisherGrant: false,
+      provisionalPrivateValidation: true,
+      evidenceUrl: feed.url,
+      reviewedAt: now.toISOString(),
+      expiresAt,
+    };
+    added += 1;
+  }
+  await writeFile(path, `${JSON.stringify(approvals, null, 2)}\n`);
+  return { path, added, total: Object.keys(approvals).length, expiresAt };
 }
 
 /** Metadata discovery only; this does not query or store source feature records. */
@@ -310,6 +371,7 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = fetch) {
     sourceUrl: feed.url,
     state: feed.state,
     rightsStatus: feed.rightsStatus,
+    provisionalPrivateValidation: approval.provisionalPrivateValidation === true,
     publicDistribution: false,
     retrievedAt: new Date().toISOString(),
     featureCount: collection?.features.length ?? null,
@@ -351,6 +413,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
           2,
         ),
       );
+    } else if (command === 'init-provisional' && !id) {
+      console.log(JSON.stringify(await initializeProvisionalPrivateApprovals(feeds), null, 2));
     } else if (command === 'children' && id) {
       const feed = feeds.find((item) => item.id === id);
       if (!feed) throw new Error(`unknown agency feed: ${id}`);
@@ -368,7 +432,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       console.log(JSON.stringify(result.receipt, null, 2));
     } else {
       throw new Error(
-        'Usage: node tools/state-agency-feeds.mjs list [state-code] | children <service-id> | stage <feed-id> [child-layer-id]',
+        'Usage: node tools/state-agency-feeds.mjs list [state-code] | init-provisional | children <service-id> | stage <feed-id> [child-layer-id]',
       );
     }
   } catch (error) {

@@ -8,6 +8,8 @@
 
 **Agency feed code:** The [gated connector plan](STATE_AGENCY_FEED_CONNECTORS.md) registers all 231 current registry/selected-plan source roles. Exact ArcGIS layers and direct files can be staged only with a source-specific private approval; no agency data were added to public packages. Service roots, download pages, OSM extracts, and information leads retain the adapter or source-selection gates described there. The [rights-language deep dive](STATE_AGENCY_111_RIGHTS_LANGUAGE_DEEP_DIVE_2026-09-27.md) and [last-17 download-point audit](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md) supersede older candidate descriptions in the historical state summary below: 21 of the original 27 leads now have exact layer/download URLs in the [complete tracker](ALL_DATASETS_TRACKER.md), six remain leads, 107 rights roles remain Unconfirmed, and two Michigan plus three NJDEP roles require written permission. Minnesota's three derivative rights roles are signed off within their Conditional license; Arkansas's 227 facility points remain freshness-held.
 
+**Private validation decision:** The project owner provisionally approved the [exact 107 Unconfirmed registry roles](../config/agency-provisional-private-validation-2026-09-27.json) for evaluation in ignored private storage while publisher permissions are pursued. This enables source and product checks; public packages remain gated by confirmed redistribution rights and release validation. The source-specific local approvals and limits are documented in the [connector plan](STATE_AGENCY_FEED_CONNECTORS.md).
+
 ## Build policy
 
 - The app already has the detailed New York overlay. This tracker covers the other 49 states.
