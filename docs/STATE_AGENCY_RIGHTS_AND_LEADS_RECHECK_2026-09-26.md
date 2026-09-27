@@ -2,7 +2,7 @@
 
 **Checked:** 2026-09-26 EDT / 2026-09-27 UTC. **Scope:** the 93 originally unconfirmed non-New-York agency source roles and 27 entries previously labeled Lead only in the [rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). New York, OSM, and the separate three-state plan keep their own audits. The project intends to publish modified, filtered outdoor-place derivatives in its GitHub repository and downloadable offline packages, including possible downstream reuse. An agency's willingness to display or download data, or the project's noncommercial status, does not by itself grant that distribution.
 
-**Later rights update:** The [2026-09-27 role-by-role deep dive](STATE_AGENCY_111_RIGHTS_LANGUAGE_DEEP_DIVE_2026-09-27.md) checked the then-current 111 Unconfirmed roles and moved the two Michigan roles to Permission required. Counts below describe this earlier pass.
+**Later rights update:** The [2026-09-27 role-by-role deep dive](STATE_AGENCY_111_RIGHTS_LANGUAGE_DEEP_DIVE_2026-09-27.md) checked the then-current 111 Unconfirmed roles and moved two Michigan and two NJDEP roles to Permission required. Counts below describe this earlier pass.
 
 ## Recheck of the original 93 rights entries
 

@@ -4,7 +4,7 @@
 
 **Result after the remaining-eight follow-up:** eleven of these 17 roles now point to direct queryable layers in the [registry](../config/us-state-forestry-agencies.json) and [complete dataset tracker](ALL_DATASETS_TRACKER.md). Colorado and Texas were resolved in a second pass; Kansas and South Carolina have partial polygon downloads from a third pass. Six remain leads because the closest public data are private-property/forest-planning data, belong to another land manager, or have no verified visitor-land endpoint. No agency records were imported. The 142-role rights matrix now contains 111 Unconfirmed and six Lead only records.
 
-**Later rights update:** The [2026-09-27 language deep dive](STATE_AGENCY_111_RIGHTS_LANGUAGE_DEEP_DIVE_2026-09-27.md) moved two Michigan roles to Permission required. The current matrix has 109 Unconfirmed and six Lead only roles; this download-point result remains the 2026-09-26 snapshot.
+**Later rights update:** The [2026-09-27 language deep dive](STATE_AGENCY_111_RIGHTS_LANGUAGE_DEEP_DIVE_2026-09-27.md) moved two Michigan and two NJDEP roles to Permission required after checking applicable publisher policies. The current matrix has 107 Unconfirmed and six Lead only roles; this download-point result remains the 2026-09-26 snapshot.
 
 | Original role | Direct point or finding | Use boundary |
 | --- | --- | --- |
