@@ -6,6 +6,8 @@
 
 **Feed connectors:** The [gated agency feed connector](STATE_AGENCY_FEED_CONNECTORS.md) exposes these registry entries and selected three-state layers as source definitions. Exact ArcGIS layers and direct downloads require a source-specific private approval before feature or file acquisition. No agency records are included in public packages by that code.
 
+**Private state packages:** The [verified private package inventory](PRIVATE_STATE_PACKAGE_INVENTORY_2026-09-27.md) records 50 active packages: 43 agency+iOverlander, New York DEC+iOverlander, and six iOverlander-only packages for CA, CT, MA, MI, MN, and NE. Private package files remain Git-ignored.
+
 ## POI-system gate
 
 The shipped 49 state packages contain **71,523 point-of-interest entries**. The current map category mapper displays **62,408 (87.3%)** as Other because source categories were not mapped to the display taxonomy. This is a category/filter/icon problem, not a geometry failure. These counts are package entries, so cross-border duplicate features can appear in more than one state. The state packages are map GeoJSON/index assets, not canonical PlaceRecord envelopes. Before accepting a new agency or OSM point feed, map its categories to the canonical place taxonomy and current display filters, retain raw category/provenance, validate names/coordinates/status, and keep closures/restrictions in their separate temporal records.

@@ -1,10 +1,77 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   ioverlanderFeature,
   pointInGeometry,
   privateAgencySelection,
+  readIoverlander,
 } from './build-private-state-agency-ioverlander.mjs';
+
+test('multiple iOverlander packages retain state places once and reject corrupt tiles', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'private-state-packages-'));
+  const boundary = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [10, 0],
+        [10, 10],
+        [0, 10],
+        [0, 0],
+      ],
+    ],
+  };
+  const place = (guid, longitude, updated) => ({
+    guid,
+    name: guid,
+    category: 'campsite',
+    longitude,
+    latitude: 2,
+    date_verified: updated,
+    contributor_id: 'discard-me',
+  });
+  try {
+    for (const [directory, places] of [
+      ['tiles_1', [place('shared', 2, '2026-01-01'), place('first', 3, '2026-01-01')]],
+      [
+        'tiles_2',
+        [
+          place('shared', 2, '2026-02-01'),
+          place('second', 4, '2026-02-01'),
+          place('outside', 12, '2026-02-01'),
+        ],
+      ],
+    ]) {
+      const path = join(root, 'Example', directory);
+      await mkdir(path, { recursive: true });
+      const bytes = Buffer.from(JSON.stringify({ places }));
+      await writeFile(join(path, 'n1_w1.json'), bytes);
+      await writeFile(
+        join(path, 'manifest.json'),
+        JSON.stringify({
+          n1_w1: { size: bytes.length, md5: createHash('md5').update(bytes).digest('hex') },
+        }),
+      );
+    }
+    const result = await readIoverlander('Example', boundary, root);
+    assert.equal(result.packages.length, 2);
+    assert.equal(result.tiles, 2);
+    assert.deepEqual(
+      result.features.map((feature) => feature.id),
+      ['private:first', 'private:second', 'private:shared'],
+    );
+    assert.equal(result.features.at(-1).properties.sourceUpdated, '2026-02-01');
+    assert.equal(JSON.stringify(result).includes('discard-me'), false);
+    await writeFile(join(root, 'Example', 'tiles_2', 'n1_w1.json'), '{}');
+    await assert.rejects(readIoverlander('Example', boundary, root), /checksum mismatch/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test('state boundary filtering excludes holes and neighboring tiles', () => {
   const boundary = {

@@ -127,42 +127,54 @@ export function ioverlanderFeature(place) {
   };
 }
 
-async function readIoverlander(stateName, boundary) {
-  const source = join(privateRoot, 'sources', 'ioverlander', 'US', stateName);
+export async function readIoverlander(
+  stateName,
+  boundary,
+  sourceRoot = join(privateRoot, 'sources', 'ioverlander', 'US'),
+) {
+  const source = join(sourceRoot, stateName);
   const tileDirs = (await readdir(source, { withFileTypes: true }))
     .filter((item) => item.isDirectory() && /^tiles_\d+$/.test(item.name))
-    .map((item) => item.name);
-  if (tileDirs.length !== 1) throw new Error(`${stateName}: expected one tile directory`);
-  const tileRoot = join(source, tileDirs[0]);
-  const manifest = JSON.parse(await readFile(join(tileRoot, 'manifest.json'), 'utf8'));
-  const files = (await readdir(tileRoot)).filter((name) => /^n\d+_w\d+\.json$/.test(name));
+    .map((item) => item.name)
+    .sort();
+  if (tileDirs.length === 0) throw new Error(`${stateName}: no iOverlander tile directories`);
   const byId = new Map();
-  for (const file of files) {
-    const bytes = await readFile(join(tileRoot, file));
-    const expected = manifest[file.slice(0, -5)];
-    if (
-      !expected ||
-      expected.size !== bytes.length ||
-      expected.md5 !== createHash('md5').update(bytes).digest('hex')
-    ) {
-      throw new Error(`${stateName}: iOverlander tile checksum mismatch: ${file}`);
-    }
-    const tile = JSON.parse(bytes.toString('utf8'));
-    for (const place of tile.places ?? []) {
-      const feature = ioverlanderFeature(place);
-      if (!feature || !pointInGeometry(feature.geometry.coordinates, boundary)) continue;
-      const earlier = byId.get(feature.id);
+  const packages = [];
+  for (const directory of tileDirs) {
+    const tileRoot = join(source, directory);
+    const manifestBytes = await readFile(join(tileRoot, 'manifest.json'));
+    const manifest = JSON.parse(manifestBytes);
+    const files = (await readdir(tileRoot)).filter((name) => /^n\d+_w\d+\.json$/.test(name)).sort();
+    if (files.length === 0) throw new Error(`${stateName}: empty tile package ${directory}`);
+    packages.push({ directory, tileCount: files.length, manifestSha256: sha256(manifestBytes) });
+    for (const file of files) {
+      const bytes = await readFile(join(tileRoot, file));
+      const expected = manifest[file.slice(0, -5)];
       if (
-        !earlier ||
-        String(feature.properties.sourceUpdated) > String(earlier.properties.sourceUpdated)
+        !expected ||
+        expected.size !== bytes.length ||
+        expected.md5 !== createHash('md5').update(bytes).digest('hex')
       ) {
-        byId.set(feature.id, feature);
+        throw new Error(`${stateName}: iOverlander tile checksum mismatch: ${file}`);
+      }
+      const tile = JSON.parse(bytes.toString('utf8'));
+      for (const place of tile.places ?? []) {
+        const feature = ioverlanderFeature(place);
+        if (!feature || !pointInGeometry(feature.geometry.coordinates, boundary)) continue;
+        const earlier = byId.get(feature.id);
+        if (
+          !earlier ||
+          String(feature.properties.sourceUpdated) > String(earlier.properties.sourceUpdated)
+        ) {
+          byId.set(feature.id, feature);
+        }
       }
     }
   }
   return {
     features: [...byId.values()].sort((a, b) => a.id.localeCompare(b.id)),
-    tiles: files.length,
+    tiles: packages.reduce((total, item) => total + item.tileCount, 0),
+    packages,
   };
 }
 
@@ -363,7 +375,9 @@ export async function buildPrivateStateAgencyIoverlander(code) {
     readIoverlander(state.name, boundary.geometry),
     readAgency(code),
   ]);
-  if (agency.sources.length === 0) throw new Error(`${code}: no staged agency GeoJSON sources`);
+  if (agency.features.length === 0 && ioverlander.features.length === 0) {
+    throw new Error(`${code}: no usable agency or iOverlander features`);
+  }
   const output = join(privateRoot, 'catalogs', 'US', state.name, 'current');
   await mkdir(output, { recursive: true });
   const features = [...ioverlander.features, ...agency.features];
@@ -375,10 +389,16 @@ export async function buildPrivateStateAgencyIoverlander(code) {
     stateName: state.name,
     classification: 'PRIVATE_USER',
     publicDistribution: false,
+    packageMode: agency.features.length > 0 ? 'agency-and-ioverlander' : 'ioverlander-only',
     generatedAt: new Date().toISOString(),
     censusBoundary: { url: censusUrl, sha256: boundary.sha256 },
-    ioverlander: { tileCount: ioverlander.tiles, featureCount: ioverlander.features.length },
+    ioverlander: {
+      tileCount: ioverlander.tiles,
+      featureCount: ioverlander.features.length,
+      packages: ioverlander.packages,
+    },
     agency: {
+      status: agency.features.length > 0 ? 'staged-private-validation' : 'not-included',
       sourceCount: agency.sources.length,
       featureCount: agency.features.length,
       sources: agency.sources,
@@ -411,15 +431,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const results = [];
     for (const state of registry.states.filter((item) => item.code !== 'NY')) {
       try {
-        const agency = await readAgency(state.code);
-        if (agency.sources.length === 0) {
-          results.push({ state: state.code, status: 'pending-agency' });
-          continue;
-        }
         const result = await buildPrivateStateAgencyIoverlander(state.code);
         results.push({
           state: state.code,
           status: 'built',
+          packageMode: result.packageMode,
           ioverlander: result.ioverlander.featureCount,
           agency: result.agency.featureCount,
         });
@@ -433,7 +449,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.log(
       JSON.stringify({
         built: results.filter((item) => item.status === 'built').length,
-        pending: results.filter((item) => item.status === 'pending-agency').length,
+        ioverlanderOnly: results.filter((item) => item.packageMode === 'ioverlander-only').length,
         errors: results.filter((item) => item.status === 'error').length,
       }),
     );
@@ -442,6 +458,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     console.log(
       JSON.stringify({
         state: code,
+        packageMode: result.packageMode,
         ioverlander: result.ioverlander.featureCount,
         agency: result.agency.featureCount,
         total: result.output.featureCount,

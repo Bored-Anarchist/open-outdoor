@@ -28,6 +28,8 @@ Acceptance checklist:
 
 ## Next decisions in order
 
+**Private package coverage:** all 50 states now have one active private package. CA, CT, MA, MI, MN, and NE use iOverlander-only packages while eligible agency data are unavailable; New York uses DEC+iOverlander. The [verified inventory](PRIVATE_STATE_PACKAGE_INVENTORY_2026-09-27.md) lists counts and package contents. This private fallback does not change the agency rights decisions or public app activation gates.
+
 1. **New York rights correction:** the current public package is rebuilt without state-agency data. Obtain source-specific DEC permission before any reintroduction, confirm lands and POI terms separately, and do not add OPRHP layers under their inspected redistribution terms. Older Git commits still contain the previous asset.
 2. **49-state app integration:** map the 62,408 Other POI entries and handle the 17 over-limit files. This work affects the already published packages regardless of which agency feed is added.
 3. **Connecticut pilot:** complete the acceptance checklist above, then use the same receipt and validation process for other Supported sources. Arkansas's 227 facility points remain freshness-held; CAL FIRE's 2024 forests need a current forest/access check; Minnesota remains limited to modified derivatives.
