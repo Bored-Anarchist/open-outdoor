@@ -158,7 +158,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | GA | parks | [Georgia DNR Managed Lands dataset metadata/download record](https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.html) | download | Primary candidate; no agency import |
 | GA | parks | [OpenStreetMap Georgia outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/georgia-latest.osm.pbf) | download | OSM fallback; no agency import |
 | GA | forestry | [Georgia Public Lands managed-lands metadata and download](https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.html) | download | Primary candidate; no agency import |
-| GA | forestry | [Georgia Forestry Commission State Managed Forests](https://gatrees.org/forest-management-conservation/state-managed-forests/) | info | Supplemental candidate; no agency import |
+| GA | forestry | [Georgia DNR Conservation Lands layer 134 (GFC-owned public subset)](https://services6.arcgis.com/9QlSLDqa0P1cHLhu/ArcGIS/rest/services/Georgia_Conservation_Lands_23_proof_v2/FeatureServer/134) | api | Supplemental candidate; no agency import |
 | GA | forestry | [OpenStreetMap Georgia outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/georgia-latest.osm.pbf) | download | OSM fallback; no agency import |
 | HI | parks | [Hawaii State Parks MapServer State Parks layer 16](https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/16) | api | Primary candidate; no agency import |
 | HI | parks | [Hawaii State Parks Campsites MapServer layer 31](https://geodata.hawaii.gov/arcgis/rest/services/Infrastructure/MapServer/31) | api | Supplemental candidate; no agency import |
@@ -196,9 +196,9 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | LA | parks | [OpenStreetMap Louisiana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/louisiana-latest.osm.pbf) | download | OSM fallback; no agency import |
 | LA | forestry | [USFS Science Tree Canopy Cover 2025.6 (2025 annual data)](https://data.fs.usda.gov/geodata/rastergateway/treecanopycover/) | download | Primary candidate; no agency import |
 | LA | forestry | [OpenStreetMap Louisiana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/louisiana-latest.osm.pbf) | download | OSM fallback; no agency import |
-| ME | parks | [Maine Bureau of Parks and Lands GIS/Mapping](https://www.maine.gov/dacf/parks/about/gis_mapping.shtml) | catalog | Primary candidate; no agency import |
+| ME | parks | [Maine BPL Properties Points for MaineFoliage layer 0](https://services1.arcgis.com/RbMX0mRVOFNTdLzd/arcgis/rest/services/BPL_Properties_Points_for_MaineFoliage/FeatureServer/0) | api | Primary candidate; no agency import |
 | ME | parks | [OpenStreetMap Maine outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/maine-latest.osm.pbf) | download | OSM fallback; no agency import |
-| ME | forestry | [Maine GeoLibrary open geospatial catalog](https://mainegeolibrary-maine.hub.arcgis.com/) | catalog | Primary candidate; no agency import |
+| ME | forestry | [Maine Conserved Lands layer 0 (BPL public reserved lands)](https://services1.arcgis.com/RbMX0mRVOFNTdLzd/arcgis/rest/services/Maine_Conserved_Lands_All/FeatureServer/0) | api | Primary candidate; no agency import |
 | ME | forestry | [OpenStreetMap Maine outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/maine-latest.osm.pbf) | download | OSM fallback; no agency import |
 | MD | parks | [Maryland DNR Campsites MapServer layer 0](https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/0) | api | Primary candidate; no agency import |
 | MD | parks | [Maryland DNR Owned Properties MapServer layer 14](https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/14) | api | Supplemental candidate; no agency import |
@@ -218,14 +218,14 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | MS | forestry | [Mississippi Forestry Commission ArcGIS Portal](https://arcsrv.mfc.ms.gov/portal/sharing/rest/portals/self) | catalog | Primary candidate; no agency import |
 | MS | forestry | [OpenStreetMap Mississippi outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/mississippi-latest.osm.pbf) | download | OSM fallback; no agency import |
 | MO | parks | [Missouri State Parks Boundaries FeatureServer](https://gis.dnr.mo.gov/server/rest/services/parks/Missouri_State_Parks_Boundaries/FeatureServer) | api | Primary candidate; no agency import |
-| MO | parks | [Missouri Parks Trails Inventory System public GIS downloads](https://apps5.mo.gov/trails/fullMap.action) | catalog | Supplemental candidate; no agency import |
+| MO | parks | [Missouri State Parks Trail Routes MapServer layer 3](https://gis.dnr.mo.gov/server/rest/services/sphs_trails/SPHS_trails_public/MapServer/3) | api | Supplemental candidate; no agency import |
 | MO | parks | [OpenStreetMap Missouri outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/missouri-latest.osm.pbf) | download | OSM fallback; no agency import |
 | MO | forestry | [Missouri Department of Conservation Conservation Area Boundaries layer 5](https://gisblue.mdc.mo.gov/arcgis/rest/services/Discover_Nature/MDC_Administrative_Areas/FeatureServer/5) | api | Primary candidate; no agency import |
 | MO | forestry | [Missouri Department of Conservation Camping Sites MapServer layer 0](https://gisblue.mdc.mo.gov/arcgis/rest/services/Infrastructure/Camping/MapServer/0) | api | Supplemental candidate; no agency import |
 | MO | forestry | [OpenStreetMap Missouri outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/missouri-latest.osm.pbf) | download | OSM fallback; no agency import |
 | MT | parks | [Montana FWP State Parks land boundary MapServer layer 5](https://fwp-gis.mt.gov/arcgis/rest/services/fwplnd/fwpLands/MapServer/5) | api | Primary candidate; no agency import |
 | MT | parks | [OpenStreetMap Montana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/montana-latest.osm.pbf) | download | OSM fallback; no agency import |
-| MT | forestry | [Montana DNRC Maps and Data](https://prod-dnrc.mt.gov/Directors-Office/maps-and-data) | catalog | Primary candidate; no agency import |
+| MT | forestry | [Montana DNRC Trust Lands Public Access layer 1](https://gis.dnrc.mt.gov/arcgis/rest/services/TLMD/AccessMap/FeatureServer/1) | api | Primary candidate; no agency import |
 | MT | forestry | [OpenStreetMap Montana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/montana-latest.osm.pbf) | download | OSM fallback; no agency import |
 | NE | parks | [Nebraska Game and Parks Park_Areas FeatureServer](https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer) | api | Primary candidate; no agency import |
 | NE | forestry | [High-resolution land cover of Nebraska (2014), RDS-2019-0038](https://www.fs.usda.gov/rds/archive/catalog/RDS-2019-0038) | download | Primary candidate; no agency import |
@@ -248,7 +248,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | NM | parks | [OpenStreetMap New Mexico outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/new-mexico-latest.osm.pbf) | download | OSM fallback; no agency import |
 | NM | forestry | [New Mexico Forestry Division GIS and Maps](https://www.emnrd.nm.gov/sfd/gis-and-maps/) | catalog | Primary candidate; no agency import |
 | NM | forestry | [OpenStreetMap New Mexico outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/new-mexico-latest.osm.pbf) | download | OSM fallback; no agency import |
-| NC | parks | [North Carolina OneMap statewide geospatial catalog](https://www.nconemap.gov/) | catalog | Primary candidate; no agency import |
+| NC | parks | [North Carolina State Parks Points layer 0](https://services6.arcgis.com/nRIB86xC7kq6wavB/arcgis/rest/services/NC_State_Parks_Points/FeatureServer/0) | api | Primary candidate; no agency import |
 | NC | parks | [OpenStreetMap North Carolina outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/north-carolina-latest.osm.pbf) | download | OSM fallback; no agency import |
 | NC | forestry | [NC Forest Action Plan 2020 GIS data layers](https://www.ncmhtd.com/ncfs/ncfap/) | download | Primary candidate; no agency import |
 | NC | forestry | [OpenStreetMap North Carolina outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/north-carolina-latest.osm.pbf) | download | OSM fallback; no agency import |
@@ -295,7 +295,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | UT | parks | [Utah State Park Management Areas layer 0](https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/Utah_State_Park_Management_Areas/FeatureServer/0) | api | Primary candidate; no agency import |
 | UT | parks | [Utah Trails and Pathways FeatureServer layer 0](https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | UT | parks | [OpenStreetMap Utah outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/utah-latest.osm.pbf) | download | OSM fallback; no agency import |
-| UT | forestry | [Utah FFSL GIS & Mapping / Central Index](https://ffsl.utah.gov/about/maps/) | catalog | Primary candidate; no agency import |
+| UT | forestry | [Utah FFSL Sovereign Lands view layer 0](https://services.arcgis.com/ZzrwjTRez6FJiOq4/arcgis/rest/services/Utah_Sovereign_Lands_view/FeatureServer/0) | api | Primary candidate; no agency import |
 | UT | forestry | [Utah Trails and Pathways FeatureServer layer 0](https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0) | api | Supplemental candidate; no agency import |
 | UT | forestry | [OpenStreetMap Utah outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/utah-latest.osm.pbf) | download | OSM fallback; no agency import |
 | VT | parks | [Vermont ANR Atlas FPR MapServer](https://anrmaps.vermont.gov/arcgis/rest/services/map_services/MAP_ANR_ANRATLASFPR_WM_NOCACHE/MapServer) | api | Primary candidate; no agency import |

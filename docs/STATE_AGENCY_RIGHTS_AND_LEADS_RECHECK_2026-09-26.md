@@ -4,7 +4,7 @@
 
 ## Recheck of the original 93 rights entries
 
-The [repeatable metadata checker](../tools/recheck-state-agency-metadata.mjs) read every original Unconfirmed matrix row and fetched the public `info/iteminfo` terms for its ArcGIS service. Seventy-nine source roles collapsed to 60 distinct ArcGIS services; 14 roles were downloads, catalog items, or webpages and were reviewed through their linked publisher pages. All 60 service metadata requests succeeded. Thirty-eight had empty `licenseInfo`; 22 had some text, but that text consisted of source credit, warranty, use, or similar notices without a clear public right to publish modified bulk/offline derivatives. **None of the original 93 changed to a positive public redistribution decision.** Their individual evidence links and decisions remain in the [matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). This is an absence of an affirmative grant, not a finding that the agencies forbid every reuse. The seven newly selected exact leads are additional Unconfirmed roles, bringing the current matrix total to 100.
+The [repeatable metadata checker](../tools/recheck-state-agency-metadata.mjs) read every original Unconfirmed matrix row and fetched the public `info/iteminfo` terms for its ArcGIS service. Seventy-nine source roles collapsed to 60 distinct ArcGIS services; 14 roles were downloads, catalog items, or webpages and were reviewed through their linked publisher pages. All 60 service metadata requests succeeded. Thirty-eight had empty `licenseInfo`; 22 had some text, but that text consisted of source credit, warranty, use, or similar notices without a clear public right to publish modified bulk/offline derivatives. **None of the original 93 changed to a positive public redistribution decision.** Their individual evidence links and decisions remain in the [matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md). This is an absence of an affirmative grant, not a finding that the agencies forbid every reuse. Seven exact leads in this pass and seven in the [last-17 follow-up](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md) are additional Unconfirmed roles, bringing the current matrix total to 107.
 
 For each unresolved layer, the language needed from the publisher is specific: permission to copy the selected records, filter and modify geometry/attributes, combine them with other sources, publish the resulting derivative as GeoJSON or another machine-readable format in a public Git repository and downloadable offline app packages, and allow recipients to download and redistribute that derivative. The grant should identify required attribution, change notices, share-alike or noncommercial limits, third-party content, and whether it covers future updates. A statement that data are “public,” “for use,” or “available for download” leaves the derivative-distribution question open. Do not enter a private approval as `publisherGrant: true` based on such wording.
 
@@ -16,7 +16,7 @@ This is proposed request language only; no agency was contacted. The request mus
 
 ## Decisions on the 27 former portal and map leads
 
-Ten entries now point to exact layers or a direct file in the registry and rights matrix. “Exact” identifies a fetchable source; it does not mean the source passed POI, currency, or public-distribution review.
+Ten entries were resolved to exact layers or a direct file in this pass; the [last-17 follow-up](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md) resolved seven more. “Exact” identifies a fetchable source; it does not mean the source passed POI, currency, or public-distribution review.
 
 | Former lead | Exact source or outcome | Rights and remaining data gate |
 | --- | --- | --- |
@@ -31,7 +31,7 @@ Ten entries now point to exact layers or a direct file in the registry and right
 | VA parks supplement | [DCR SP_Trails, layer 0](https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0) | Conditional noncommercial redistribution with DCR credit and separate notice; duplicate of the parks primary role, so ingest once. |
 | WA parks | [Washington State Parks ParkBoundaries, layer 2](https://services5.arcgis.com/4LKAHwqnBooVDUlX/arcgis/rest/services/ParkBoundaries/FeatureServer/2) | Unconfirmed; [agency item](https://www.arcgis.com/home/item.html?id=3385b003af5248e59c1fa68e1411c446) says monthly revision and July 2026 data update, but grants no public derivative distribution. |
 
-The remaining 17 are still Lead only after source and manager checks:
+At that first pass, 17 were still Lead only. Seven now have direct endpoints and ten remain unresolved after the [last-17 download-point audit](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md). The table below preserves the first-pass search questions:
 
 | Lead | Finding and next source question |
 | --- | --- |
@@ -53,7 +53,7 @@ The remaining 17 are still Lead only after source and manager checks:
 | [TX forestry](https://tfsgis.tfs.tamu.edu/arcgis/rest/services) | GIS service index centers on fire response. [Agency state-forest directory](https://tfsweb.tamu.edu/texas-state-forests-and-arboretums/) does not provide a verified direct vector download; ask for one. |
 | [UT forestry](https://ffsl.utah.gov/about/maps/) | FFSL GIS page/central index lacks a selected visitor forest layer; request a precise managed-land/visitor export. |
 
-For these 17, leaving a lead is more accurate than assigning a mixed-owner boundary, PDF map, or fire-management layer to the app's park/forestry POIs. The [complete dataset tracker](ALL_DATASETS_TRACKER.md) keeps all 27 roles visible, including their updated direct sources.
+The [last-17 follow-up](STATE_AGENCY_LAST_17_DOWNLOAD_POINTS_2026-09-26.md) resolves seven of these source roles and explains the remaining ten. The [complete dataset tracker](ALL_DATASETS_TRACKER.md) keeps all 27 original roles visible, including their updated direct sources.
 
 ## Minnesota derivative decision and Arkansas currency
 
