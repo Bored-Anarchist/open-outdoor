@@ -2014,11 +2014,11 @@ export function OutdoorMap({
       />
 
       <Text>
-        Map key: green areas — DEC, NPS, USFS and BLM land references when present; blue lines —
-        trails; brown lines — roads; numbered orange circles — grouped places; colored symbols —
-        iOverlander categories; pink — recorded route; blue GPS dot — current position. Zooming in
-        expands groups into category-specific icons, then reveals names. Tap a group, feature, or
-        search result for details.
+        Map key: green areas — NPS, USFS and BLM land references when present; blue lines — trails;
+        brown lines — roads; numbered orange circles — grouped places; colored symbols — iOverlander
+        categories; pink — recorded route; blue GPS dot — current position. Zooming in expands
+        groups into category-specific icons, then reveals names. Tap a group, feature, or search
+        result for details.
       </Text>
 
       <Text>

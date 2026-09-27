@@ -23,22 +23,25 @@
     {
       "parentId": "registry-ks-forestry-19d710d58f",
       "status": "wrong-subject",
-      "reason": "Linked RDS-2017-0025 is 2015 land-cover raster, not visitor-access forestry data; no exact replacement verified"
+      "reason": "Linked RDS-2017-0025 is land-cover raster, not visitor data. Kansas Forest Service says Kansas has no public state forests, so no statewide agency forest visitor layer exists for this role",
+      "evidenceUrl": "https://www.k-state.edu/news/articles/2025/04/kansas-forest-service-protects-sustains-enhances-community-tree-resources.html"
     },
     {
       "parentId": "registry-la-forestry-aa353df9f0",
       "status": "wrong-subject",
-      "reason": "Linked USFS tree-canopy raster gateway is not Louisiana state forestry visitor data; no exact replacement verified"
+      "reason": "Linked USFS canopy raster is not visitor data. LDAF operates Alexander State Forest and Indian Creek Recreation Area; LDWF offers an Alexander WMA visitor page and WMA GIS download, but no exact current vector extract has been acquired",
+      "evidenceUrl": "https://www.ldaf.la.gov/indian-creek-recreation-area",
+      "candidateUrl": "https://www.wlf.louisiana.gov/page/wma-gis-data-download"
     },
     {
       "parentId": "registry-md-parks-6bd7984882",
       "status": "wrong-subject",
-      "reason": "The reachable iMAP Land Trails layer maps broad recreation study areas, not DNR trail lines; original campsite service remains unavailable"
+      "reason": "The reachable iMAP Land Trails layer maps broad recreation study areas, not DNR trail lines; original campsite service still returns Could not access any server machines"
     },
     {
       "parentId": "registry-md-parks-supplement-eae7982bb5",
       "status": "wrong-subject",
-      "reason": "The reachable iMAP Camping layer maps broad recreation study areas, not campsite points; original trail service remains unavailable"
+      "reason": "The reachable iMAP Camping layer maps broad recreation study areas, not campsite points; original DNR-owned lands service still returns Could not access any server machines"
     },
     {
       "parentId": "registry-md-forestry-196159b7be",
@@ -50,12 +53,15 @@
     {
       "parentId": "registry-ne-forestry-ae46925d8b",
       "status": "wrong-subject",
-      "reason": "Linked RDS-2019-0038 is a research land-cover dataset, not Nebraska forestry visitor data; no exact replacement verified"
+      "reason": "Linked RDS-2019-0038 is land-cover research, not visitor data. Nebraska Forest Service's mission is forestry education/protection; Nebraska Game and Parks publishes the state recreation properties separately",
+      "evidenceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=85-161"
     },
     {
       "parentId": "registry-nc-forestry-0fbb9ebcbc",
       "status": "wrong-subject",
-      "reason": "Linked NC Forest Action Plan is planning information, not an exact visitor layer; no exact replacement verified"
+      "reason": "Linked NC Forest Action Plan is planning data. NC Forest Service lists visitor forests and publishes a 2025 DuPont visitor map, but no statewide exact vector extract was verified",
+      "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
+      "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open"
     },
     {
       "parentId": "registry-or-forestry-52c5dde8b7",

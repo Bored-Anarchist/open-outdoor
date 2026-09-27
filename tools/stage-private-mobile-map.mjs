@@ -153,13 +153,13 @@ export async function stagePrivateMobileMap({
   if (decCount + ioverlanderCount + npsCount + usfsCount + blmCount !== index.features.length) {
     throw new Error('composed index contains an unrecognized map source');
   }
-  if (decCount < 1) throw new Error('composed catalog does not retain its public DEC base');
+  if (decCount < 1) throw new Error('composed catalog does not include held New York agency data');
 
   const metadata = {
     schemaVersion: 1,
     classification: manifest.classification,
     hasPrivateData: true,
-    label: 'DEC + iOverlander + NPS + USFS + BLM catalog',
+    label: 'Private DEC + iOverlander + NPS + USFS + BLM catalog',
     featureCount: geojson.features.length,
     acquiredAt: manifest.generatedAt,
     attribution:
@@ -169,7 +169,7 @@ export async function stagePrivateMobileMap({
         id: 'nys-dec',
         label: 'NYS DEC',
         featureCount: decCount,
-        status: 'public offline snapshot',
+        status: 'private rights-held offline snapshot',
       },
       {
         id: 'private-ioverlander',

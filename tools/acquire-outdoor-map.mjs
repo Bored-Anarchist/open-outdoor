@@ -3,8 +3,35 @@ import {
   outdoorSourceUrl,
 } from '../packages/shared/src/outdoor-details.ts';
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
-const output = new URL('../packages/map/src/assets/', import.meta.url);
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+// This source includes NYS DEC records with unresolved redistribution rights.
+// A project decision alone does not authorize a fresh copy from the publishers.
+const grantPath = new URL('../PrivateData/agency-feeds/ny-publisher-grant.json', import.meta.url);
+let grant;
+try {
+  grant = JSON.parse(await readFile(grantPath, 'utf8'));
+} catch {
+  throw new Error(`Publisher grant required before New York acquisition: ${grantPath.pathname}`);
+}
+const requiredPublishers = [
+  'NYS ITS Geospatial Services',
+  'NYS Department of Environmental Conservation',
+  'OPEN-NY',
+];
+if (
+  grant.publisherGrant !== true ||
+  typeof grant.evidenceUrl !== 'string' ||
+  grant.evidenceUrl.trim() === '' ||
+  !requiredPublishers.every((publisher) => grant.publishers?.includes(publisher))
+) {
+  throw new Error(
+    'New York publisher grant must cover NYS ITS, DEC, and OPEN-NY before acquisition',
+  );
+}
+const output = new URL(
+  '../PrivateData/catalogs/US/New York/dec-source-acquisition/',
+  import.meta.url,
+);
 const sources = [
   {
     id: 'nys-boundary',
@@ -249,7 +276,8 @@ await writeFile(
   JSON.stringify(
     {
       schemaVersion: 1,
-      classification: 'SOURCE_REDISTRIBUTABLE',
+      classification: 'PRIVATE_USER',
+      publicDistribution: false,
       acquiredAt: new Date().toISOString(),
       sha256: hash(bytes),
       bytes: Buffer.byteLength(bytes),
@@ -262,10 +290,10 @@ await writeFile(
       coverage:
         'New York State boundary and published DEC lands, roads, hiking trails and recreation points. Not a land-ownership survey, current-status feed or camping authorization.',
       rights: {
-        license: 'NYS public GIS data terms',
+        license: 'Publisher redistribution review pending',
         offlineStorage: true,
-        redistribution: true,
-        derivedData: true,
+        redistribution: false,
+        derivedData: false,
         attribution: [
           'NYS ITS Geospatial Services',
           'New York State Department of Environmental Conservation',

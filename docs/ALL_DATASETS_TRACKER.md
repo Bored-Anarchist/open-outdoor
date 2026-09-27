@@ -2,7 +2,7 @@
 
 **Snapshot:** 2026-09-26. This is the single index of every registered non-New-York state source role, all shipped state-package source families, the shipped New York source records, the selected AR/ID/SD layer plan, the identified New York OPRHP candidates, and the remaining map asset manifests. Repeated URLs remain repeated where two agency roles use the same dataset. A candidate or catalog entry is not a shipped layer or release approval.
 
-**Inventory counts:** 49 state packages; 9 national source families; 13 New York package source records; 212 registry source-role entries (98 primary agency, 44 non-OSM supplements, 70 OSM fallbacks); 19 selected AR/ID/SD plan rows; 8 OPRHP service candidates; two offline basemap manifests, one derived hike-profile manifest, one connected style manifest, and a proposed New York OSM extract. Rights findings remain in the [agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md), [three-state rights check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md), and [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
+**Inventory counts:** 49 state packages; 9 national source families; 8 New York package source records; 212 registry source-role entries (98 primary agency, 44 non-OSM supplements, 70 OSM fallbacks); 19 selected AR/ID/SD plan rows; 8 OPRHP service candidates; two offline basemap manifests, one derived hike-profile manifest, one connected style manifest, and a proposed New York OSM extract. Rights findings remain in the [agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md), [three-state rights check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md), and [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
 
 **Feed connectors:** The [gated agency feed connector](STATE_AGENCY_FEED_CONNECTORS.md) exposes these registry entries and selected three-state layers as source definitions. Exact ArcGIS layers and direct downloads require a source-specific private approval before feature or file acquisition. No agency records are included in public packages by that code.
 
@@ -90,15 +90,10 @@ The shipped 49 state packages contain **71,523 point-of-interest entries**. The 
 
 ## Shipped New York package sources
 
-The manifest also lists federal feeds and operational alerts. The four DEC records have separate rights gates; the DEC road/trail line records are held for redistribution under the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
+The current public manifest lists only federal feeds and operational alerts. Historical DEC records and trail-derived profiles are preserved under ignored PrivateData pending rights review; see the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
 
 | Source ID | Dataset | Stage |
 | --- | --- | --- |
-| nys-boundary | [nys-boundary](https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0) | In existing New York package; rights and freshness vary |
-| nys-dec-lands | [nys-dec-lands](https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2) | In existing New York package; rights and freshness vary |
-| nys-dec-roads | [nys-dec-roads](https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/0) | In existing New York package; rights and freshness vary |
-| nys-dec-trails | [nys-dec-trails](https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/2) | In existing New York package; rights and freshness vary |
-| nys-dec-poi | [nys-dec-poi](https://data.ny.gov/resource/yvkb-z58x.json) | In existing New York package; rights and freshness vary |
 | nps-parks-ny | [nps-parks-ny](https://developer.nps.gov/api/v1/parks?stateCode=NY) | In existing New York package; rights and freshness vary |
 | nps-campgrounds-ny | [nps-campgrounds-ny](https://developer.nps.gov/api/v1/campgrounds?stateCode=NY) | In existing New York package; rights and freshness vary |
 | nps-alerts-ny | [nps-alerts-ny](https://developer.nps.gov/api/v1/alerts?stateCode=NY) | In existing New York package; rights and freshness vary |
@@ -374,7 +369,7 @@ These sources are not bundled. The [New York audit](NYS_AGENCY_SOURCE_COVERAGE_A
 | --- | --- | --- |
 | [World overview PMTiles manifest](../packages/map/src/assets/world-basemap.manifest.json) · [Protomaps source](https://build.protomaps.com/20260910.pmtiles) | Bundled OSM/Natural Earth map context | Cartographic POIs are not canonical place records. |
 | [US/Canada regional PMTiles manifest](../packages/map/src/assets/us-canada-basemap.manifest.json) · [Protomaps source](https://build.protomaps.com/20260910.pmtiles) | Bundled OSM/Natural Earth map context | Cartographic POIs are not agency inventory. |
-| [New York hike profiles manifest](../packages/map/src/assets/new-york-hikes.manifest.json) · [Mapzen terrain source](https://registry.opendata.aws/terrain-tiles/) | Bundled derived profiles for 5289 DEC trail segments | Trail/elevation derivative, not a separate POI feed; DEC trail redistribution gate applies. |
+| [New York hike profiles manifest](../packages/map/src/assets/new-york-hikes.manifest.json) · [Mapzen terrain source](https://registry.opendata.aws/terrain-tiles/) | 0 public trail profiles after moving DEC derivatives to PrivateData | The historical 5,289 DEC trail profiles are retained only in the private archive. |
 | [OpenFreeMap Liberty style manifest](../packages/map/src/assets/openfreemap-liberty.manifest.json) · [style source](https://tiles.openfreemap.org/styles/liberty) | Connected-only map style | Online cartography, not a validated POI inventory. |
 | [New York Geofabrik OSM extract](https://download.geofabrik.de/north-america/us/new-york-latest.osm.pbf) | Proposed detailed-basemap/visitor-feature candidate | Not in a shipped state overlay; apply ODbL and tag-to-taxonomy mapping before separate POI use. |
 

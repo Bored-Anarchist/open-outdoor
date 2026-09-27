@@ -5,12 +5,16 @@
     {
       "id": "registry-mi-parks-cabb7fa608",
       "privateCollection": false,
-      "reason": "Michigan DNR website terms require prior written permission even to copy the currently linked content"
+      "projectPrivateApproval": true,
+      "candidateUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "reason": "Project owner approved private staging, but confirmed no Michigan DNR written copying grant. DNR terms require prior written permission; exact DNR hiking layer identified but not acquired"
     },
     {
       "id": "registry-mi-forestry-cabb7fa608",
       "privateCollection": false,
-      "reason": "Same Michigan DNR page and copying restriction; seek grant or independently licensed exact item"
+      "projectPrivateApproval": true,
+      "candidateUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "reason": "Same DNR copying restriction and project-only approval; exact hiking layer requires state-forest role filtering and written copying permission before acquisition"
     },
     {
       "id": "registry-nj-parks-fbd88e5b9e",

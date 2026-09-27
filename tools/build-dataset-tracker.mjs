@@ -252,7 +252,7 @@ const sections = [
   '',
   '## Shipped New York package sources',
   '',
-  'The manifest also lists federal feeds and operational alerts. The four DEC records have separate rights gates; the DEC road/trail line records are held for redistribution under the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
+  'The current public manifest lists only federal feeds and operational alerts. Historical DEC records and trail-derived profiles are preserved under ignored PrivateData pending rights review; see the [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).',
   '',
   table(
     ['Source ID', 'Dataset', 'Stage'],
@@ -316,8 +316,8 @@ const sections = [
         ) +
           ' · ' +
           link('Mapzen terrain source', 'https://registry.opendata.aws/terrain-tiles/'),
-        `Bundled derived profiles for ${hikes.featureCount} DEC trail segments`,
-        'Trail/elevation derivative, not a separate POI feed; DEC trail redistribution gate applies.',
+        `${hikes.featureCount} public trail profiles after moving DEC derivatives to PrivateData`,
+        'The historical 5,289 DEC trail profiles are retained only in the private archive.',
       ],
       [
         link(

@@ -26,7 +26,10 @@ if (!inputDirectory || !outputDirectory) {
 
 const result = await buildIoverlanderPrivateCatalog({
   inputDirectory: resolve(inputDirectory),
-  decGeojsonPath: resolve(args.get('dec') ?? 'packages/map/src/assets/new-york-outdoors.geojson'),
+  decGeojsonPath: resolve(
+    args.get('dec') ??
+      'PrivateData/catalogs/US/New York/rights-held-2026-09-27/new-york-outdoors.geojson',
+  ),
   npsSnapshotPath: args.get('nps') ? resolve(args.get('nps')) : undefined,
   federalSnapshotPath: args.get('federal') ? resolve(args.get('federal')) : undefined,
   outputDirectory: resolve(outputDirectory),

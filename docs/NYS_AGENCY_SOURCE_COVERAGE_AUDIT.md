@@ -1,5 +1,7 @@
 # New York State Agency Source Coverage Audit
 
+**Current packaging correction (2026-09-27):** The historical 14,780-feature bundle reviewed below is preserved under ignored `PrivateData/catalogs/US/New York/rights-held-2026-09-27/` with checksum receipts. The checked-in public overlay now contains 325 federal NPS/USFS features and no NYS or DEC records; the 5,289 DEC-derived hike profiles were removed from the public asset. This audit's earlier "bundled" counts describe the preserved historical snapshot, not the current public package. Prior Git commits still contain the old files.
+
 **Audit date:** 2026-09-25<br>
 **Complete inventory:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists all 13 existing New York package source records and eight identified OPRHP service candidates alongside the other states. This audit retains the New York-specific coverage, reuse, and freshness decisions.<br>
 **Scope:** The two New York agencies in [`config/us-state-forestry-agencies.json`](../config/us-state-forestry-agencies.json): NYS DEC Division of Lands and Forests and the NYS Office of Parks, Recreation and Historic Preservation (OPRHP).<br>
