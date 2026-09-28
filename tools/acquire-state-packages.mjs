@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { publicPoiCategory } from '../packages/shared/dist/public-poi-category.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryPath = join(root, 'config/us-state-forestry-agencies.json');
@@ -27,12 +28,9 @@ const API = {
     'https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_TrailNFSPublishWithDataStatus_01/MapServer/0',
   usfsRecreation:
     'https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0',
-  usfsMvumRoads:
-    'https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/1',
-  usfsMvumTrails:
-    'https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/2',
-  blmSma:
-    'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1',
+  usfsMvumRoads: 'https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/1',
+  usfsMvumTrails: 'https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/2',
+  blmSma: 'https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1',
   blmRecreation:
     'https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2',
 };
@@ -48,12 +46,18 @@ const DATA_SOURCES = [
     geometryPrecision: 4,
     simplificationDegrees: 0.00015,
     query: (state) => ({
-      where: "State_Nm='" + state.code + "' AND FeatClass='Fee' AND (Own_Type IN ('FED','STAT','TERR','LOC','DIST') OR Mang_Type IN ('FED','STAT','TERR','LOC','DIST'))",
+      where:
+        "State_Nm='" +
+        state.code +
+        "' AND FeatClass='Fee' AND (Own_Type IN ('FED','STAT','TERR','LOC','DIST') OR Mang_Type IN ('FED','STAT','TERR','LOC','DIST'))",
     }),
     fields:
       'OBJECTID,FeatClass,Category,Own_Type,Own_Name,Loc_Own,Mang_Type,Mang_Name,Loc_Mang,Des_Tp,Loc_Ds,Unit_Nm,Loc_Nm,State_Nm,Agg_Src,GIS_Src,Src_Date,GIS_Acres,Pub_Access,Access_Src,Access_Dt,Date_Est,Comments',
     terms: 'https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download',
-    attribution: ['U.S. Geological Survey Gap Analysis Project', 'PAD-US data providers and state stewards'],
+    attribution: [
+      'U.S. Geological Survey Gap Analysis Project',
+      'PAD-US data providers and state stewards',
+    ],
     mapper: padusFeature,
   },
   {
@@ -65,7 +69,8 @@ const DATA_SOURCES = [
     spatial: true,
     fields:
       'OBJECTID,TRLFEATTYPE,TRLNAME,TRLALTNAME,TRLSTATUS,TRLSURFACE,TRLTYPE,TRLCLASS,TRLUSE,PUBLICDISPLAY,DATAACCESS,ACCESSNOTES,ORIGINATOR,UNITCODE,UNITNAME,UNITTYPE,GROUPCODE,GROUPNAME,REGIONCODE,SOURCEDATE,OPENTOPUBLIC,SEASONAL,SEASDESC,MAINTAINER,NOTES,FEATUREID,MAPSOURCE',
-    terms: 'https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo',
+    terms:
+      'https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo',
     attribution: ['National Park Service'],
     mapper: npsTrailFeature,
   },
@@ -78,7 +83,8 @@ const DATA_SOURCES = [
     spatial: true,
     fields:
       'OBJECTID,POINAME,POIALTNAME,POITYPE,POISTATUS,PUBLICDISPLAY,DATAACCESS,ACCESSNOTES,ORIGINATOR,UNITCODE,UNITNAME,UNITTYPE,GROUPCODE,GROUPNAME,REGIONCODE,SOURCEDATE,OPENTOPUBLIC,SEASONAL,SEASDESC,MAINTAINER,NOTES,FEATUREID,MAPSOURCE',
-    terms: 'https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo',
+    terms:
+      'https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo',
     attribution: ['National Park Service'],
     mapper: npsPoiFeature,
   },
@@ -166,7 +172,8 @@ const DATA_SOURCES = [
     spatial: true,
     fields:
       'OBJECTID,FET_TYPE,FET_SUBTYPE,FET_NAME,ADM_UNIT_CD,ADMIN_ST,DESCRIPTION,WEB_LINK,UNIT_NAME,SOURCE,WEB_DISPLAY',
-    terms: 'https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2',
+    terms:
+      'https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2',
     attribution: ['U.S. Department of the Interior, Bureau of Land Management'],
     mapper: blmRecreationFeature,
   },
@@ -225,7 +232,8 @@ function stableId(source, feature, properties) {
     properties.GLOBALID ??
     properties.FEATUREID ??
     properties.FEATURE_ID;
-  const id = nativeId ?? sha256(stableJson({ properties, geometry: feature.geometry })).slice(0, 20);
+  const id =
+    nativeId ?? sha256(stableJson({ properties, geometry: feature.geometry })).slice(0, 20);
   return `${source.id}:${String(id)}`;
 }
 
@@ -238,7 +246,8 @@ function normalizedFeature(source, feature, state) {
     id,
     name: mapped.name,
     kind: mapped.kind,
-    category: mapped.category,
+    category: mapped.kind === 'poi' ? publicPoiCategory(mapped.category) : mapped.category,
+    sourceCategory: mapped.category,
     origin: 'public-catalog',
     sourceId: source.id,
     sourceUrl: source.endpoint,
@@ -282,7 +291,6 @@ function padusFeature(properties) {
       stateCode: properties.State_Nm,
       originalGisSource: properties.GIS_Src,
       sourceAggregator: properties.Agg_Src,
-
     },
   };
 }
@@ -294,7 +302,11 @@ function npsTrailFeature(properties) {
     name: properties.TRLNAME ?? properties.MAPLABEL ?? properties.TRLALTNAME,
     unit: properties.UNITNAME ?? null,
     sourceUpdated: dateString(properties.SOURCEDATE),
-    publicUse: publicStatus(properties.OPENTOPUBLIC, properties.PUBLICDISPLAY, properties.DATAACCESS),
+    publicUse: publicStatus(
+      properties.OPENTOPUBLIC,
+      properties.PUBLICDISPLAY,
+      properties.DATAACCESS,
+    ),
     details: {
       alternateName: properties.TRLALTNAME,
       trailType: properties.TRLTYPE,
@@ -317,11 +329,17 @@ function npsTrailFeature(properties) {
 function npsPoiFeature(properties) {
   return {
     kind: 'poi',
-    category: String(properties.POITYPE ?? 'outdoor').toLowerCase().replaceAll(' ', '_'),
+    category: String(properties.POITYPE ?? 'outdoor')
+      .toLowerCase()
+      .replaceAll(' ', '_'),
     name: properties.POINAME ?? properties.MAPLABEL ?? properties.POIALTNAME,
     unit: properties.UNITNAME ?? null,
     sourceUpdated: dateString(properties.SOURCEDATE),
-    publicUse: publicStatus(properties.OPENTOPUBLIC, properties.PUBLICDISPLAY, properties.DATAACCESS),
+    publicUse: publicStatus(
+      properties.OPENTOPUBLIC,
+      properties.PUBLICDISPLAY,
+      properties.DATAACCESS,
+    ),
     details: {
       alternateName: properties.POIALTNAME,
       poiType: properties.POITYPE,
@@ -372,7 +390,9 @@ function usfsTrailFeature(properties) {
 function usfsRecreationFeature(properties) {
   return {
     kind: 'poi',
-    category: String(properties.site_type ?? 'recreation').toLowerCase().replaceAll(' ', '_'),
+    category: String(properties.site_type ?? 'recreation')
+      .toLowerCase()
+      .replaceAll(' ', '_'),
     name: properties.site_name ?? properties.recarea_name,
     unit: properties.official_designation ?? properties.recarea_name ?? null,
     sourceUpdated: dateString(properties.edw_last_modify ?? properties.infra_last_update),
@@ -484,11 +504,14 @@ function blmFeature(properties) {
 function blmRecreationFeature(properties) {
   return {
     kind: 'poi',
-    category: String(properties.FET_SUBTYPE ?? 'recreation').toLowerCase().replaceAll(' ', '_'),
+    category: String(properties.FET_SUBTYPE ?? 'recreation')
+      .toLowerCase()
+      .replaceAll(' ', '_'),
     name: properties.FET_NAME ?? properties.UNIT_NAME,
     unit: properties.UNIT_NAME ?? properties.ADM_UNIT_CD ?? null,
     sourceUpdated: null,
-    publicUse: 'BLM public recreation site; verify current access, closures, fire rules and facilities with BLM.',
+    publicUse:
+      'BLM public recreation site; verify current access, closures, fire rules and facilities with BLM.',
     details: {
       featureType: properties.FET_TYPE,
       featureSubtype: properties.FET_SUBTYPE,
@@ -503,9 +526,12 @@ function blmRecreationFeature(properties) {
 }
 
 function publicStatus(open, display, access) {
-  if (String(open ?? '').toUpperCase() === 'Y') return 'Source marks this feature open to public; verify current conditions.';
-  if (String(display ?? '').toUpperCase() === 'Y') return 'Included in the source public display; verify current access.';
-  if (String(access ?? '').toUpperCase() === 'PUBLIC') return 'Source classifies this feature as public; verify current conditions.';
+  if (String(open ?? '').toUpperCase() === 'Y')
+    return 'Source marks this feature open to public; verify current conditions.';
+  if (String(display ?? '').toUpperCase() === 'Y')
+    return 'Included in the source public display; verify current access.';
+  if (String(access ?? '').toUpperCase() === 'PUBLIC')
+    return 'Source classifies this feature as public; verify current conditions.';
   return 'Public source feature; access conditions are not specified in this record.';
 }
 
@@ -611,7 +637,7 @@ async function fetchSource(source, state, boundary) {
     },
     `${state.code} ${source.id} inventory`,
   );
-const inventoryIds = inventory.objectIds ?? [];
+  const inventoryIds = inventory.objectIds ?? [];
   if (!Array.isArray(inventoryIds)) {
     throw new Error(state.code + ' ' + source.id + ' response has invalid objectIds');
   }
@@ -692,7 +718,9 @@ function buildIndex(features) {
 }
 
 function packageManifest(state, receipts, geojsonBytes, indexBytes, features) {
-  const padusFeatures = features.filter((feature) => feature.properties.sourceId === 'usgs-pad-us-fee-managers');
+  const padusFeatures = features.filter(
+    (feature) => feature.properties.sourceId === 'usgs-pad-us-fee-managers',
+  );
   const stateManagedFeatures = padusFeatures.filter(
     (feature) =>
       feature.properties.details.ownerType === 'STAT' ||
@@ -700,9 +728,11 @@ function packageManifest(state, receipts, geojsonBytes, indexBytes, features) {
   );
   const forestryNamedFeatures = stateManagedFeatures.filter((feature) =>
     /forest|forestry|woodland|timber/i.test(
-      String(feature.properties.name ?? '') + ' ' +
-      String(feature.properties.unit ?? '') + ' ' +
-      String(feature.properties.details.manager ?? ''),
+      String(feature.properties.name ?? '') +
+        ' ' +
+        String(feature.properties.unit ?? '') +
+        ' ' +
+        String(feature.properties.details.manager ?? ''),
     ),
   );
   return {
@@ -713,14 +743,20 @@ function packageManifest(state, receipts, geojsonBytes, indexBytes, features) {
     classification: 'SOURCE_REDISTRIBUTABLE',
     distribution: 'public',
     coordinateReferenceSystem: 'EPSG:4326',
-    geometryProcessing: 'Source-specific simplification parameters are recorded in each source receipt.',
+    geometryProcessing:
+      'Source-specific simplification parameters are recorded in each source receipt.',
     featureCount: features.length,
     artifacts: {
-      geojson: { file: 'outdoors.geojson', bytes: geojsonBytes.length, sha256: sha256(geojsonBytes) },
+      geojson: {
+        file: 'outdoors.geojson',
+        bytes: geojsonBytes.length,
+        sha256: sha256(geojsonBytes),
+      },
       index: { file: 'index.json', bytes: indexBytes.length, sha256: sha256(indexBytes) },
     },
     coverage: {
-      extent: 'State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.',
+      extent:
+        'State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.',
       content:
         'Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.',
       limitations: [
@@ -780,12 +816,18 @@ function trackerRow(state, manifest, relativeDirectory) {
     `USFS sites ${byId.get('usfs-recreation-sites') ?? 0}`,
     `MVUM roads ${byId.get('usfs-mvum-roads') ?? 0}`,
     `MVUM trails ${byId.get('usfs-mvum-trails') ?? 0}`,
-'BLM land ' + (byId.get('blm-surface-management-agency') ?? 0),
+    'BLM land ' + (byId.get('blm-surface-management-agency') ?? 0),
     'BLM recreation ' + (byId.get('blm-public-recreation-sites') ?? 0),
   ].join('; ');
   const sourceIssues = manifest.sources
-    .filter((source) => (source.unreturnedFeatureCount ?? 0) > 0 || (source.filteredFeatureCount ?? 0) > 0)
-    .map((source) => `${source.id}: ${source.unreturnedFeatureCount ?? 0} unavailable IDs, ${source.filteredFeatureCount ?? 0} filtered features`);
+    .filter(
+      (source) =>
+        (source.unreturnedFeatureCount ?? 0) > 0 || (source.filteredFeatureCount ?? 0) > 0,
+    )
+    .map(
+      (source) =>
+        `${source.id}: ${source.unreturnedFeatureCount ?? 0} unavailable IDs, ${source.filteredFeatureCount ?? 0} filtered features`,
+    );
   const status = `Package built${sourceIssues.length ? `; source reconciliation: ${sourceIssues.join(', ')}` : ''}; agency source candidates are inventoried in the source audit; selection, rights/freshness review, and integration remain open.`;
   return `| ${state.code} | ${state.name} | ${state.forestryAgency} | [${relativeDirectory.replaceAll('\\', '/')}/outdoors.geojson](${relativeDirectory.replaceAll('\\', '/')}/outdoors.geojson) | ${total} | ${counts} | ${status} | ${sourceNames || 'No source features'}${zeroSources ? ` (0 results: ${zeroSources})` : ''} |`;
 }
@@ -793,7 +835,10 @@ function trackerRow(state, manifest, relativeDirectory) {
 async function writeTracker(states, packageRows) {
   const rows = states.map((state) => {
     const row = packageRows.get(state.code);
-    return row ?? `| ${state.code} | ${state.name} | ${state.forestryAgency} | — | — | — | Not acquired | Not queried |`;
+    return (
+      row ??
+      `| ${state.code} | ${state.name} | ${state.forestryAgency} | — | — | — | Not acquired | Not queried |`
+    );
   });
   const agencyRows = registry.states.map((state) => {
     const parksAgency = `[${state.parksAgency}](${state.parksAgencyUrl})`;
@@ -854,9 +899,10 @@ async function writeTracker(states, packageRows) {
     if ([existingStart, existingEnd, generatedStart, generatedEnd].some((index) => index < 0)) {
       throw new Error('state tracker headings changed; refusing to overwrite manual source plans');
     }
-    updated = existing.slice(0, existingStart)
-      + content.slice(generatedStart, generatedEnd)
-      + existing.slice(existingEnd);
+    updated =
+      existing.slice(0, existingStart) +
+      content.slice(generatedStart, generatedEnd) +
+      existing.slice(existingEnd);
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
@@ -885,7 +931,14 @@ async function buildPackage(state, outputRoot) {
     console.log(state.code + ': querying ' + source.id);
     const acquired = await fetchSource(source, state, boundary);
     packageSources.push(acquired);
-    console.log(state.code + ': ' + source.id + ' packaged ' + acquired.receipt.packagedFeatureCount + ' features');
+    console.log(
+      state.code +
+        ': ' +
+        source.id +
+        ' packaged ' +
+        acquired.receipt.packagedFeatureCount +
+        ' features',
+    );
   }
   const byId = new Map();
   for (const source of packageSources) {

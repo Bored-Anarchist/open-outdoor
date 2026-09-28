@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "acquiredAt": "2026-09-16T09:29:28.517Z",
-  "sha256": "0248177d6195f0fcd9cf1282f761806b829b786e31fa959035a558e635abd89e",
-  "bytes": 1634780,
-  "indexSha256": "ae3bd7f4938f228326a0bb290f1ab536dfb1705bcd81aba98612bf67c4037883",
-  "indexBytes": 288520,
+  "sha256": "1880a3430878f82cf187b43c7ffa652e47cd214b2a772a60a81570e5d8f2e337",
+  "bytes": 1646190,
+  "indexSha256": "e6af4361f1e15352ede49cdf3882391fc06ad33a9ad3c821c2d6c291d2f9e6ba",
+  "indexBytes": 299930,
   "featureCount": 326,
   "coordinateReferenceSystem": "EPSG:4326",
   "simplificationDegrees": 0.00003,
@@ -49,7 +49,9 @@
           "sha256": "d80d0cd81de3bd1b686f61aa1599a923758be5ec1f1d475d6fa37aa8f1c16105",
           "count": 1
         }
-      ]
+      ],
+      "packagedFeatureCount": 1,
+      "packagedFeatureSha256": "dc6345047cf90f72e9a021df6f3230f774db49f867486b17acea007f75f9ff8d"
     },
     {
       "id": "nps-parks-ny",
@@ -86,7 +88,9 @@
           "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
           "count": 32
         }
-      ]
+      ],
+      "packagedFeatureCount": 60,
+      "packagedFeatureSha256": "6ac26a1ff2ac910fdbc3352d77f06fcfce3e2dbcded9bd075000a7594624e425"
     },
     {
       "id": "nps-campgrounds-ny",
@@ -118,7 +122,9 @@
           "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
           "count": 4
         }
-      ]
+      ],
+      "packagedFeatureCount": 4,
+      "packagedFeatureSha256": "3597b1aa3a8ece37c640c7532078e5d057eb45f9d5ee749ed8274e1ad3e2b487"
     },
     {
       "id": "nps-alerts-ny",
@@ -150,7 +156,9 @@
           "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
           "count": 24
         }
-      ]
+      ],
+      "packagedFeatureCount": 24,
+      "packagedFeatureSha256": "e1ec10a228c8a7053491eb1dcebfd45977c27bd9ce4875195c31d1fe47d1a07d"
     },
     {
       "id": "usfs-surface-ownership-ny",
@@ -182,7 +190,9 @@
           "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
           "count": 200
         }
-      ]
+      ],
+      "packagedFeatureCount": 200,
+      "packagedFeatureSha256": "45c2eff493d71e3deb1b0913e00d91f56e8a302da7f141e156376bd6e9f834ad"
     },
     {
       "id": "usfs-recreation-sites-ny",
@@ -214,7 +224,9 @@
           "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
           "count": 25
         }
-      ]
+      ],
+      "packagedFeatureCount": 25,
+      "packagedFeatureSha256": "bb9922e14285b9b0fa16bc5d93252733e82db3c70f9c8ab460388e5f8bd48622"
     },
     {
       "id": "usfs-mvum-roads-ny",
@@ -246,7 +258,9 @@
           "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
           "count": 12
         }
-      ]
+      ],
+      "packagedFeatureCount": 12,
+      "packagedFeatureSha256": "4ea3c91c98e24f945bb18838443c04bf44928acb478fe7ee58859e30baa4f564"
     },
     {
       "id": "usfs-mvum-trails-ny",
@@ -278,7 +292,9 @@
           "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
           "count": 0
         }
-      ]
+      ],
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     },
     {
       "id": "blm-managed-lands-ny",
@@ -310,7 +326,9 @@
           "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
           "count": 0
         }
-      ]
+      ],
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
     }
   ],
   "catalogSources": [
@@ -356,5 +374,52 @@
       "manifestBytes": 1471,
       "manifestSha256": "62025b8b7abed0042d9d5fdbf61697cb7f8a66666f8b8be7423c4b8a1b783852"
     }
+  },
+  "publicStatePackage": "state-packages/US/NY/manifest.json",
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 81,
+    "categoryCounts": {
+      "tourist_attraction": 34,
+      "warning": 24,
+      "campsite": 8,
+      "shorterm_parking": 15
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
   }
 }

@@ -1,5 +1,7 @@
 # New York State Agency Source Coverage Audit
 
+**Public packaging update (2026-09-27):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **167 app-parser-validated import parts**. The packages contain **739,609 features**, **76,959 POIs**, and **120,859 eligible direct agency features** in eight states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
+
 **Current packaging correction (2026-09-27):** The checked-in public overlay contains one NYS ITS civil boundary plus 325 federal NPS/USFS features. The active ignored `PrivateData/catalogs/US/New York/current/` package contains only 14,454 DEC features and 1,186 iOverlander places. The active private package also contains all 5,289 verified DEC-derived hike profiles, selected by the private mobile loader; original profiles remain in the rights-held source folder; the civil boundary and federal source snapshots are public. This audit's earlier "bundled" counts describe the former 14,780-feature public package. Prior Git commits and older private catalog archives still contain historical copies.
 
 **Audit date:** 2026-09-25<br>

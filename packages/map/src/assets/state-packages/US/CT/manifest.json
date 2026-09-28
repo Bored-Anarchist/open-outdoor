@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 11347433,
       "file": "outdoors.geojson",
-      "sha256": "ac4111acee21df9a17b720c11e97019738e7285b114bcdc09dc3314f81693143"
+      "featureCount": 24047,
+      "bytes": 26439403,
+      "sha256": "539ee9921d38f1d21d535990860775260ae587b6d4000c70bd6da3a83b7d91fb"
     },
     "index": {
-      "bytes": 3627694,
       "file": "index.json",
-      "sha256": "6e50b38c2abde56f4f3ca48a241736a45c654539343194363e820855a4d7e858"
+      "bytes": 14284952,
+      "sha256": "62903f31556642b277315f5bc2f71d53bfb2a09528b98f93197bfda5d4566dd1"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 2335,
+      "sha256": "0cf476c245bede26b6b2e6467936f7eedb36cca9f95a5354b0c2a5b1b243a704"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -28,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 9316,
-  "generatedAt": "2026-09-24T01:49:14.604Z",
+  "featureCount": 24047,
+  "generatedAt": "2026-09-28T00:08:32.251Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ct",
   "rights": {
@@ -38,7 +43,8 @@
       "PAD-US data providers and state stewards",
       "U.S. Department of Agriculture, Forest Service",
       "U.S. Department of the Interior, Bureau of Land Management",
-      "U.S. Geological Survey Gap Analysis Project"
+      "U.S. Geological Survey Gap Analysis Project",
+      "Connecticut Department of Energy and Environmental Protection"
     ],
     "derivation": true,
     "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
@@ -81,6 +87,24 @@
       {
         "id": "blm-public-recreation-sites",
         "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "ct-deep-property",
+        "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+        "license": "CC0-1.0",
+        "licenseUrl": null
+      },
+      {
+        "id": "ct-deep-trails",
+        "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+        "license": "CC0-1.0",
+        "licenseUrl": null
+      },
+      {
+        "id": "ct-deep-access",
+        "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Property_Access_Locations/FeatureServer/0",
+        "license": "CC0-1.0",
+        "licenseUrl": null
       }
     ]
   },
@@ -123,7 +147,7 @@
       "inventoryFeatureCount": 9316,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 9316,
-      "packagedFeatureSha256": "72d651cabed5d6cbf6be6c010e5e94f353c24becd580ec45d6ec96fb6828ee85",
+      "packagedFeatureSha256": "ac412838b65c223d08698d7223a7491338763f7579e5030b65b5be09a18d89e5",
       "queriedAt": "2026-09-24T01:49:14.604Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 9316,
@@ -497,6 +521,641 @@
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
       "unreturnedFeatureCount": 0,
       "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "ct-deep-property",
+      "state": "CT",
+      "name": "Connecticut DEEP properties",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:51:57.602Z",
+      "sourceUpdated": "2026-08-19T12:25:15.259Z",
+      "featureCount": 491,
+      "bytes": 1525707,
+      "sha256": "78256508a354c1ea7ccc1f67d78a1f6a6d0b696b3f1ba935c7fc9ad00ad7ea6b",
+      "metadataSha256": "9b860264e594ae3646bc052a0b78005e90c71c30359c23b2013c847dd09eb7a1",
+      "termsSha256": "72218acaa4729906d668479e9fd85c26bf1bd8e359134fad58b4aa5ac862ddc8",
+      "licenseText": "<span style='font-family:Helvetica, sans-serif; font-size:15.3333px;'>CC0</span>",
+      "serviceItemId": "ce4e1d1825154603b9b48d861bb050ff",
+      "fields": [
+        "OBJECTID",
+        "AV_LEGEND",
+        "IMS_LEGEND",
+        "DEP_ID",
+        "PROPERTY",
+        "AGNCYFN_CD",
+        "ACRE_GIS",
+        "Shape__Area",
+        "Shape__Length",
+        "GlobalID"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "df2fa0db92cb0dd21ebcabe8cc917aff0bdb20855e69f33b089aff9154f36ac7",
+          "firstId": 3966,
+          "lastId": 4165
+        },
+        {
+          "count": 200,
+          "sha256": "a4ade7d0d9103477503d26746691ef5a2b0e941e4ac1649fd9e46d3fe78c8c35",
+          "firstId": 4166,
+          "lastId": 4365
+        },
+        {
+          "count": 91,
+          "sha256": "4ccf7f736f00a4d1bf480a040fe1a0e429e28da0486cfd75a04675e9444f4288",
+          "firstId": 4366,
+          "lastId": 4456
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 491,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "605c1fa51c63e611d302d3e52f502215b257a666e42a1b05d90d44b9082e4ab5"
+    },
+    {
+      "id": "ct-deep-trails",
+      "state": "CT",
+      "name": "Connecticut DEEP trails",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+      "basisUrl": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:52:20.317Z",
+      "sourceUpdated": "2026-09-17T12:50:38.394Z",
+      "featureCount": 13883,
+      "bytes": 12750452,
+      "sha256": "078ebafb5bb42c002e1c71292821aae21aeb3765a2e5c0c3de58f51134eb1e58",
+      "metadataSha256": "8b00967a293a16ff774af2d73592e0fac7d3b9fee1d6187e932d328e5b066466",
+      "termsSha256": "5a9800f60a36d2001b70baef4834905bc7d3073f44e2cc423a284ee2416d796c",
+      "licenseText": "<p><span style='font-size:11.5pt; font-family:&quot;Helvetica&quot;,sans-serif; color:#4C4C4C; background:white;'>CC0</span></p>",
+      "serviceItemId": "f82ec207d5fd48ca878d3b90313b196e",
+      "fields": [
+        "OBJECTID",
+        "TRAILSYSID",
+        "TRAILNAME",
+        "ROADNAME",
+        "TRAILCLASS",
+        "TRAILSURF",
+        "TRAILSTAT",
+        "PUBACCESS",
+        "HIKE",
+        "WALK",
+        "RUN",
+        "INLINSKATE",
+        "BIKE",
+        "MTNBIKE",
+        "MOTORBIKE",
+        "ALLTERVEH",
+        "SNOWMOBILE",
+        "CROSSCSKI",
+        "EQUESTRIAN",
+        "ADAACCESS",
+        "DOGLEASH",
+        "DOGUNLEASH",
+        "NATURTRAIL",
+        "TIMEPERIOD",
+        "HORIZACCUR",
+        "SPECIALPERMIT",
+        "TRAILCOMMENTS",
+        "TRAILMARK",
+        "Shape__Length"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "1fc0c7632c5fb988d8f8616104324fc23c7f55d897c553954f858536cb641fba",
+          "firstId": 71552,
+          "lastId": 71751
+        },
+        {
+          "count": 200,
+          "sha256": "93f8a546b35b9cca92e0a11d3a0121892c5ee9ca1eab35d1eb66ed5dbbea45a4",
+          "firstId": 71752,
+          "lastId": 71951
+        },
+        {
+          "count": 200,
+          "sha256": "b3f3501b5b9d25ae4659e8e718e7c36fa5098d11c917d7410e6006f63ff9d3e7",
+          "firstId": 71952,
+          "lastId": 72151
+        },
+        {
+          "count": 200,
+          "sha256": "468e724200660d8b060b38e81c67b1e8ca077ea266fbac4d33f86e2b3ea25a19",
+          "firstId": 72152,
+          "lastId": 72351
+        },
+        {
+          "count": 200,
+          "sha256": "3e3e8be846ab780777397eb8ec26b659d2c20590bb3148612847eb3e9d3d2ea6",
+          "firstId": 72352,
+          "lastId": 72551
+        },
+        {
+          "count": 200,
+          "sha256": "8f297f7f27fe1679c70b82b36b5f9b890464161ed7f600068dd1388f268c9570",
+          "firstId": 72552,
+          "lastId": 72751
+        },
+        {
+          "count": 200,
+          "sha256": "8c08852e400da0fd28c9d39e7b6579bb7f9a7eb494b2147c4bcbb9647f3489e7",
+          "firstId": 72752,
+          "lastId": 72952
+        },
+        {
+          "count": 200,
+          "sha256": "2f160941d81b56b88498a6d41c494731699b8615ea2aecc1f81088e2c6a5b5bf",
+          "firstId": 72953,
+          "lastId": 73152
+        },
+        {
+          "count": 200,
+          "sha256": "41479659bd1be8ffe3c2014c74c49d6485fccedba6cebbbf5f0a3ce23a0cac36",
+          "firstId": 73153,
+          "lastId": 73352
+        },
+        {
+          "count": 200,
+          "sha256": "7b644cdd410bc965af4f600dd7dfbfad865b38cbb5b0d46b3b804ddff8cf11fd",
+          "firstId": 73353,
+          "lastId": 73552
+        },
+        {
+          "count": 200,
+          "sha256": "98cb1e59474b070df9fb3cb7f98ef83b0fe3c78b7a5db357ee85fabb114b2dc8",
+          "firstId": 73553,
+          "lastId": 73752
+        },
+        {
+          "count": 200,
+          "sha256": "99ef559d16e3f89f795b134a28e91750201c80dcadd1e0771bae82b0d26be8fc",
+          "firstId": 73753,
+          "lastId": 73952
+        },
+        {
+          "count": 200,
+          "sha256": "ab2deec9b36aa5b854833ba124532f61eed57e4bf488e7f79606edaa5456e37a",
+          "firstId": 73953,
+          "lastId": 74152
+        },
+        {
+          "count": 200,
+          "sha256": "7ada2553a604494b7dd09205b9a226e9750cd48e94e433b98f40c87ede77945c",
+          "firstId": 74153,
+          "lastId": 74352
+        },
+        {
+          "count": 200,
+          "sha256": "2b51f9b9efa4c80f612d08309dbba0178059aa58d17d65886781d5463a8a980b",
+          "firstId": 74353,
+          "lastId": 74552
+        },
+        {
+          "count": 200,
+          "sha256": "0fd61ccc61059dab7eb081cf3f626f2f29224c411c530a14bb5725ae20647b14",
+          "firstId": 74553,
+          "lastId": 74752
+        },
+        {
+          "count": 200,
+          "sha256": "3d1862b8eb8652bc693134ed001bdf83d73cb45c89818ba6744d103efb463034",
+          "firstId": 74753,
+          "lastId": 74952
+        },
+        {
+          "count": 200,
+          "sha256": "1888220d8c9fcb1059b249786b04ef9f4ab005e3d077e45c2cda57366512df4c",
+          "firstId": 74953,
+          "lastId": 75152
+        },
+        {
+          "count": 200,
+          "sha256": "548b6b83ecf6d7757ce7ce37763ba08297422b75fcf74c5528c8a951425d5121",
+          "firstId": 75153,
+          "lastId": 75352
+        },
+        {
+          "count": 200,
+          "sha256": "b5e24e777ba3bcf84c3ac4bab28b9d46ce1492594078654621f7a53bf5626949",
+          "firstId": 75353,
+          "lastId": 75552
+        },
+        {
+          "count": 200,
+          "sha256": "7a8c83a150366eb86014dd0e21ef83f320d3f0dc8d12ac99cfa421a06f57bcfc",
+          "firstId": 75553,
+          "lastId": 75752
+        },
+        {
+          "count": 200,
+          "sha256": "e9a4ed230913b225978763b3ac58844591edd034496dab3bf9ddfdc91b0584c5",
+          "firstId": 75753,
+          "lastId": 75952
+        },
+        {
+          "count": 200,
+          "sha256": "f888c8b5d3dda90cb5543abf5993363c014097fe264401970502c80480253caf",
+          "firstId": 75953,
+          "lastId": 76152
+        },
+        {
+          "count": 200,
+          "sha256": "94da81cf37dbd7de67172b4b6ea5595e7396987360d37b71df729361a788ce9a",
+          "firstId": 76153,
+          "lastId": 76352
+        },
+        {
+          "count": 200,
+          "sha256": "c12071c29606f8de4d146f76877c41173fbff0994c0c08ff67f98cfffd286b29",
+          "firstId": 76353,
+          "lastId": 76552
+        },
+        {
+          "count": 200,
+          "sha256": "e8d76d47e8a28890515a38e6422c4f3716cee910429dc7df41ce7e295a1c7681",
+          "firstId": 76553,
+          "lastId": 76752
+        },
+        {
+          "count": 200,
+          "sha256": "600ed03329b5d8b26c3e0956cf5c6378f1973ed97b8a1df16ed756e9cb60c701",
+          "firstId": 76753,
+          "lastId": 76952
+        },
+        {
+          "count": 200,
+          "sha256": "b834d1d197ff448a4a28cca74f78b9a30aea2ff7fb5d4d0bf06b0c6ec889a26b",
+          "firstId": 76953,
+          "lastId": 77152
+        },
+        {
+          "count": 200,
+          "sha256": "8e44cc74ac466a0432cdb4760c5e17bcfdcedf4af6b26e16e9dc788d66ebfa8c",
+          "firstId": 77153,
+          "lastId": 77352
+        },
+        {
+          "count": 200,
+          "sha256": "049a0b0b361aa1c1079cb128e90167968e623603e5ea2fba14def00276a52816",
+          "firstId": 77353,
+          "lastId": 77552
+        },
+        {
+          "count": 200,
+          "sha256": "9404ef305b6df116151dd7ed44d6d9286153d49a7e64861ed709841edd00a0ca",
+          "firstId": 77553,
+          "lastId": 77752
+        },
+        {
+          "count": 200,
+          "sha256": "d854fa6a3afdcb753d1ff1dc944619338f470cdb779b17841105ae1d693b2fe8",
+          "firstId": 77753,
+          "lastId": 77952
+        },
+        {
+          "count": 200,
+          "sha256": "7e43e45f6d7a5187c16926aaea2383b82b9f52a37c7b494b6a6e89aabcbe00f9",
+          "firstId": 77953,
+          "lastId": 78152
+        },
+        {
+          "count": 200,
+          "sha256": "50e233a88650529496e042554ded1cf1e56eb1513c3ed12829edc8479dd04dcd",
+          "firstId": 78153,
+          "lastId": 78352
+        },
+        {
+          "count": 200,
+          "sha256": "eb5765e53a82564d7be2ac3d664c4053e9b38a8ec5f06d566de812e0857836e6",
+          "firstId": 78353,
+          "lastId": 78552
+        },
+        {
+          "count": 200,
+          "sha256": "a337ca1324b0f64768074fec5bef3ccf6e052694bd7e35c7a55f2814142819c2",
+          "firstId": 78553,
+          "lastId": 78752
+        },
+        {
+          "count": 200,
+          "sha256": "2c8a3ec09beb6f3ae8cb241ab8461c11e779925bd33b4d6c9757dc3308630328",
+          "firstId": 78753,
+          "lastId": 78952
+        },
+        {
+          "count": 200,
+          "sha256": "8dcbf559b461ede417ff42b58e23e7b3c33f1a2292b38bced4fec270cd6e6bc1",
+          "firstId": 78953,
+          "lastId": 79152
+        },
+        {
+          "count": 200,
+          "sha256": "8826e70eb7aac41758e3950924a44b68d1c54f90ac19c68bf1dae733c0de9523",
+          "firstId": 79153,
+          "lastId": 79352
+        },
+        {
+          "count": 200,
+          "sha256": "ee7f529b841ad37d0e86db92f88edebfe2501b7cfb4251863591ae5c89776711",
+          "firstId": 79353,
+          "lastId": 79560
+        },
+        {
+          "count": 200,
+          "sha256": "a915e90ee847a2cd607f7f7e309eebd63417d5bbd903fb11c89dca6f3f9bcbdc",
+          "firstId": 79561,
+          "lastId": 79760
+        },
+        {
+          "count": 200,
+          "sha256": "81a02a02fd85809190774413bd44ad5d202a046ec105e61ffabbce53583ced5e",
+          "firstId": 79761,
+          "lastId": 79971
+        },
+        {
+          "count": 200,
+          "sha256": "c0a9344727e6a8dceb89649914673442b8f0bf21bcd6573c6b23ba291482b65e",
+          "firstId": 79972,
+          "lastId": 80171
+        },
+        {
+          "count": 200,
+          "sha256": "c7d1ed1193fc96c441679ab56d6bde4082e88abe1d094bd4470d1a93d6cb32ef",
+          "firstId": 80172,
+          "lastId": 80371
+        },
+        {
+          "count": 200,
+          "sha256": "76804efea1b95bdb16e4ba5b8a71e7d1522f214fedf307565e2a70c1d4f84177",
+          "firstId": 80372,
+          "lastId": 80571
+        },
+        {
+          "count": 200,
+          "sha256": "cd9c8ba62196944e12a43a3b43fa75b4ca0c494626c12511dccb4f7a12ed0bc6",
+          "firstId": 80572,
+          "lastId": 80771
+        },
+        {
+          "count": 200,
+          "sha256": "6cd63b76e0837731df28abac4cbc301260dad61a1551358075673874e76f5962",
+          "firstId": 80772,
+          "lastId": 80971
+        },
+        {
+          "count": 200,
+          "sha256": "4dd97f18b9b425e291e047ed365fb108911f83c0e11996b2d1df2ecd0182ee34",
+          "firstId": 80972,
+          "lastId": 81412
+        },
+        {
+          "count": 200,
+          "sha256": "e6fe4de594d8f3cb286a43c0205951bea5d7fba3096104ac2c662a1b55d7a36e",
+          "firstId": 81413,
+          "lastId": 81744
+        },
+        {
+          "count": 200,
+          "sha256": "a4f79602b7d3a122bee2a11cf0ee78ad7a3f8fd315e141a64c4f3f4e834b4bc2",
+          "firstId": 81745,
+          "lastId": 81966
+        },
+        {
+          "count": 200,
+          "sha256": "bbdc818dda1a4ed020b82b2bb6b72b2eb50c998fcd08b185f4ecb1d5d93fa45c",
+          "firstId": 81967,
+          "lastId": 82167
+        },
+        {
+          "count": 200,
+          "sha256": "f3400313111d431c08c85a060628c03afe451fb1ded29ce7e00d8c0f7bdace47",
+          "firstId": 82168,
+          "lastId": 82367
+        },
+        {
+          "count": 200,
+          "sha256": "c73a1d42170f4ad554735270bc63a3d68ae12cf11fd255f3cb101d47a357d456",
+          "firstId": 82368,
+          "lastId": 82567
+        },
+        {
+          "count": 200,
+          "sha256": "ea70b88db11a2ee74b52ae71a7b73b7a33ed2f5084d3a9092eb23ef6ca3e23e3",
+          "firstId": 82568,
+          "lastId": 82767
+        },
+        {
+          "count": 200,
+          "sha256": "97da748c7022b939ad82e499ab7bb03f29196898133ddf54bc1b4e583841f11b",
+          "firstId": 82768,
+          "lastId": 82967
+        },
+        {
+          "count": 200,
+          "sha256": "70925c0247a13c4ed155242fe8d13e1825b4c2d09b00d87ab9db630d027503b6",
+          "firstId": 82968,
+          "lastId": 83167
+        },
+        {
+          "count": 200,
+          "sha256": "d5d7f0daf867aab3b080af7e571b859b6a55c8fcfa0d09cb24257946fac21046",
+          "firstId": 83168,
+          "lastId": 83367
+        },
+        {
+          "count": 200,
+          "sha256": "6878b47519ad1586c64a51462940daf74d04f8c2c5387235678df30587529d07",
+          "firstId": 83368,
+          "lastId": 83567
+        },
+        {
+          "count": 200,
+          "sha256": "5366aad766a99ddc7acf77b64ee470585fa63e5ac38364408dfba54997c34baa",
+          "firstId": 83568,
+          "lastId": 83767
+        },
+        {
+          "count": 200,
+          "sha256": "e4719ff46c8e568b629e4282991704fa28fdc8a9c8bd9daf7c1cae9c0e79c012",
+          "firstId": 83768,
+          "lastId": 83969
+        },
+        {
+          "count": 200,
+          "sha256": "dd38bc6153a458ed6948a10f8de0e213c3ea9c638947124956df9da2350de6ab",
+          "firstId": 83970,
+          "lastId": 84169
+        },
+        {
+          "count": 200,
+          "sha256": "ceee0a529736b8d28fb659cca571227b3e7cf95d5650e38404eacbcbd92deb09",
+          "firstId": 84170,
+          "lastId": 84369
+        },
+        {
+          "count": 200,
+          "sha256": "c7bd2142c7778e852906de77b14b658199cc5d410dd76bb6f11a07fef3951105",
+          "firstId": 84370,
+          "lastId": 84569
+        },
+        {
+          "count": 200,
+          "sha256": "85961c418af3c888f593f94f3a622c225da39cddbbe65c38380200501aab542d",
+          "firstId": 84570,
+          "lastId": 84769
+        },
+        {
+          "count": 200,
+          "sha256": "58dd60c82d536af7baf3c2750805df2e26c98f58e23c7ef3f9981976a0260a25",
+          "firstId": 84770,
+          "lastId": 84978
+        },
+        {
+          "count": 200,
+          "sha256": "28e9d23a46a3eb30f64e901db07b1a7e3c0379bc6cad032f0e7288d09c595d7c",
+          "firstId": 84979,
+          "lastId": 85178
+        },
+        {
+          "count": 200,
+          "sha256": "483f7bfc37a06d6634631df5bdb983d56af9de511de7569c55698b630eb756de",
+          "firstId": 85179,
+          "lastId": 85378
+        },
+        {
+          "count": 200,
+          "sha256": "4f69bffa9b6723d7bb9cd04b6c9ff24859236ff26ef5d353762a992f21c65e28",
+          "firstId": 85379,
+          "lastId": 85578
+        },
+        {
+          "count": 200,
+          "sha256": "8422fed9afd24cd05c6580fce4c14abcf179bf70876a8f569d1e46dab4a70808",
+          "firstId": 85579,
+          "lastId": 85778
+        },
+        {
+          "count": 83,
+          "sha256": "8efdcad093334837b42bb4b7be0a0b1bfe0d95118384a74d749b14165144d483",
+          "firstId": 85779,
+          "lastId": 85861
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 13855,
+      "filteredFeatureCount": 28,
+      "geometryRejections": {
+        "count": 28,
+        "sha256": "36e4b3fc84fc3e3a1364479094fb6eec0223c4c91524749905c3be658dadd530"
+      },
+      "packagedFeatureSha256": "b8b52091588e695a96fa3d6730917005747dc2afcf378e9868761bda3b5e955f"
+    },
+    {
+      "id": "ct-deep-access",
+      "state": "CT",
+      "name": "Connecticut DEEP property access locations",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Property_Access_Locations/FeatureServer/0",
+      "basisUrl": "https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:52:22.177Z",
+      "sourceUpdated": "2026-04-21T14:05:40.374Z",
+      "featureCount": 385,
+      "bytes": 398851,
+      "sha256": "7056193598d5ddf6b3e24a59e3bbd0f655d9245206598f1f6985eaaeb3befc7a",
+      "metadataSha256": "1070c097678c447ff83fb813064616ccee9c3c067980d778aa967fd73b83bfe8",
+      "termsSha256": "72218acaa4729906d668479e9fd85c26bf1bd8e359134fad58b4aa5ac862ddc8",
+      "licenseText": "<span style='font-family:Helvetica, sans-serif; font-size:15.3333px;'>CC0</span>",
+      "serviceItemId": "3df3c20f4f2d415a8d728525c1d6d3f6",
+      "fields": [
+        "OBJECTID",
+        "DEP_ID",
+        "ACCESS_ID",
+        "PROPERTY",
+        "SECTN_NAME",
+        "ACCSS_NAME",
+        "ACCSS_TOWN",
+        "PROP_TYPE",
+        "ACCSS_TYPE",
+        "LINK",
+        "STATUS",
+        "BIKE_PAVED",
+        "BIKE_UNPVD",
+        "BIRDING",
+        "BOAT_MOTOR",
+        "BOAT_PDDLE",
+        "CAMPING",
+        "CAMP_BCKPK",
+        "CAMP_HORSE",
+        "CAMP_RIVER",
+        "CAMP_YOUTH",
+        "CONCESSION",
+        "EARTHCACHE",
+        "ED_CTR_MSM",
+        "FISH_FRESH",
+        "FISH_SALT",
+        "FISH_SHELL",
+        "HIKING",
+        "HISTORIC",
+        "HORSE_RIDE",
+        "HUNTING",
+        "ICE_SKATE",
+        "LETTERBOX",
+        "OVRLK_TOWR",
+        "PAVILION",
+        "PICNIC",
+        "CABINS",
+        "SCUBA",
+        "SPORTS_FLD",
+        "SPORTS_WTR",
+        "SNOWMOBILE",
+        "SWIM",
+        "WATERFALL",
+        "HQ_OFFICE",
+        "CAMPGROUND",
+        "NUMBER_CAMPSITES",
+        "VEHICLES_ALLOWED"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "51966dddf5c8391236f8bdbc26c7870d9bc0b52e32535f098d7ecfa54aa7f0a6",
+          "firstId": 1817,
+          "lastId": 2016
+        },
+        {
+          "count": 185,
+          "sha256": "62a4008c4095e793649f5c67fa0b8bc44788d91c5a81f3223e01f88b5f4aba1a",
+          "firstId": 2017,
+          "lastId": 2201
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 385,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "a041565a0844f28ce838b3a73929b42048cda9c5a23cbd6efd2e28a258f3e485"
     }
   ],
   "state": {
@@ -507,8 +1166,8 @@
   "stateForestry": {
     "agency": "Connecticut DEEP Forestry Division",
     "agencyUrl": "https://portal.ct.gov/deep/forestry",
-    "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 689,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +1179,125 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 2045
+  },
+  "stateName": "Connecticut",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 24047,
+    "bytes": 26439403,
+    "sha256": "539ee9921d38f1d21d535990860775260ae587b6d4000c70bd6da3a83b7d91fb"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 3,
+    "featureCount": 14731,
+    "sources": [
+      {
+        "id": "ct-deep-property",
+        "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+        "count": 491,
+        "license": "CC0-1.0",
+        "attribution": "Connecticut Department of Energy and Environmental Protection",
+        "sourceUpdated": "2026-08-19T12:25:15.259Z"
+      },
+      {
+        "id": "ct-deep-trails",
+        "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+        "count": 13855,
+        "license": "CC0-1.0",
+        "attribution": "Connecticut Department of Energy and Environmental Protection",
+        "sourceUpdated": "2026-09-17T12:50:38.394Z"
+      },
+      {
+        "id": "ct-deep-access",
+        "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Property_Access_Locations/FeatureServer/0",
+        "count": 385,
+        "license": "CC0-1.0",
+        "attribution": "Connecticut Department of Energy and Environmental Protection",
+        "sourceUpdated": "2026-04-21T14:05:40.374Z"
+      }
+    ],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 385,
+    "categoryCounts": {
+      "tourist_attraction": 116,
+      "other": 269
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 129170,
+        "bytes": 9024903,
+        "sha256": "acd92247e9002ddca9664cc2d77a76315a2dadbfae610a83809fb26375593cd2",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 103511,
+        "bytes": 8068112,
+        "sha256": "01b44038b9726b9d57c5d51cecae6bdae41e90e8e7084084426c3e5195dc8d75",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-003.geojson",
+        "featureCount": 4047,
+        "normalizedFeatureCount": 4047,
+        "positions": 70168,
+        "bytes": 3688867,
+        "sha256": "7077670145363f7ea22291b466456d5e83914f9216e9ecc671b41f35bdd3a3e2",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

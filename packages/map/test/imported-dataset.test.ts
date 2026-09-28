@@ -17,6 +17,31 @@ const feature = (
 const point = { type: 'Point', coordinates: [-74, 42] };
 
 describe('on-device GeoJSON map datasets', () => {
+  it('retains public source type and identity through local save and restore', () => {
+    const dataset = parseMapDataset(
+      collection([
+        feature(
+          point,
+          {
+            name: 'Synthetic public campground',
+            category: 'campsite',
+            sourceCategory: 'campground',
+            sourceId: 'usfs-recreation-sites',
+          },
+          'source-place',
+        ),
+      ]),
+      id,
+      'public part',
+    );
+    const restored = restoreMapDatasets(serializeMapDatasets([dataset]));
+    expect(restored[0]?.collection.features[0]?.properties).toMatchObject({
+      category: 'campsite',
+      sourceCategory: 'campground',
+      sourceId: 'imported-geojson',
+      upstreamSourceId: 'usfs-recreation-sites',
+    });
+  });
   it('imports points with private provenance, searchable names, categories and safe descriptions', () => {
     const dataset = parseMapDataset(
       collection([

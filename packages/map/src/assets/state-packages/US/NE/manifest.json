@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 3199206,
       "file": "outdoors.geojson",
-      "sha256": "fb9b0b8d9627009721e0206d59107886bd2b606c03347162b15a8f16dd3ba27c"
+      "featureCount": 2332,
+      "bytes": 3541886,
+      "sha256": "82c8becf22502b9788a93c79b71750b49917412503322bff59eb74878c746a82"
     },
     "index": {
-      "bytes": 884283,
       "file": "index.json",
-      "sha256": "cf4b75f57231f1da9a80a270fdb166189d63070286d7c3c6c586a63989bf6e70"
+      "bytes": 1320004,
+      "sha256": "c38459b79d341e898f2bbfdf8c2928818caff37d3cc33bc8e9c810f73f6ce13f"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 1794,
+      "sha256": "64964383dd00b457e503ccaa15023b584a0ef50379f8ca73ed700a3c624d8efc"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -28,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 2258,
-  "generatedAt": "2026-09-24T02:30:22.868Z",
+  "featureCount": 2332,
+  "generatedAt": "2026-09-28T00:09:17.281Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ne",
   "rights": {
@@ -38,7 +43,8 @@
       "PAD-US data providers and state stewards",
       "U.S. Department of Agriculture, Forest Service",
       "U.S. Department of the Interior, Bureau of Land Management",
-      "U.S. Geological Survey Gap Analysis Project"
+      "U.S. Geological Survey Gap Analysis Project",
+      "Nebraska Game and Parks Commission"
     ],
     "derivation": true,
     "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
@@ -81,6 +87,12 @@
       {
         "id": "blm-public-recreation-sites",
         "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "ne-park-areas",
+        "url": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer/0",
+        "license": "No restrictions on use and distribution",
+        "licenseUrl": null
       }
     ]
   },
@@ -123,7 +135,7 @@
       "inventoryFeatureCount": 1808,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 1808,
-      "packagedFeatureSha256": "1a9f0edb476e4bd5b2463b56989c036bdacbaa4639bc3a998a5e212f79de1296",
+      "packagedFeatureSha256": "bb1380ede79a3c20919323299577ecda1061eff9a7f6c5fe1f33963bb88c4420",
       "queriedAt": "2026-09-24T02:30:22.868Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 1808,
@@ -171,7 +183,7 @@
       "inventoryFeatureCount": 154,
       "name": "NPS public trails",
       "packagedFeatureCount": 118,
-      "packagedFeatureSha256": "0fba1bde32fd88712d5020b117258b467dc7221c5183e13b406d99fb57fbbe50",
+      "packagedFeatureSha256": "25d0c1ba8a4131a4ca938e06178448e436abdc563272b393e8b71d7a661efc34",
       "queriedAt": "2026-09-24T02:30:22.868Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 154,
@@ -272,7 +284,7 @@
       "inventoryFeatureCount": 78,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 78,
-      "packagedFeatureSha256": "5bb9fca065217ada49a57f2af45904b43b0a57f47ca7e4a8e4fa56bd131f05ae",
+      "packagedFeatureSha256": "64654131dbaec6f99b67e87eda6979623bd15246dce5c8e843102887559a63c9",
       "queriedAt": "2026-09-24T02:30:22.868Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 78,
@@ -327,7 +339,7 @@
       "inventoryFeatureCount": 16,
       "name": "USFS recreation sites",
       "packagedFeatureCount": 16,
-      "packagedFeatureSha256": "7d15f7c53a9035b1000eb96644ca124938830cf387f5b11be8af9ad95b3dfd38",
+      "packagedFeatureSha256": "d2aa861667c78086591f0dd253811e04732c0361dfd4df63dde4720218c92bd5",
       "queriedAt": "2026-09-24T02:30:22.868Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 16,
@@ -377,7 +389,7 @@
       "inventoryFeatureCount": 199,
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 199,
-      "packagedFeatureSha256": "c48a0e5077f23265614334ff5a68aef73fc9e0aabbb3fd4b30d3a99379cb73bc",
+      "packagedFeatureSha256": "2036c0f392fc445bb7eaaab0f9a23880bda86588db2053fa3dd8830a3576e7e1",
       "queriedAt": "2026-09-24T02:30:22.868Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 199,
@@ -426,7 +438,7 @@
       "inventoryFeatureCount": 39,
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 39,
-      "packagedFeatureSha256": "56c707d870899000fbaa2e34fa675c9561a013a9d7553d15047f5977fbcbadbf",
+      "packagedFeatureSha256": "8ebeb93b2b13edabbd4b04aa5ea0187a2fe3d76bbfcd4637f0971de1b8875004",
       "queriedAt": "2026-09-24T02:30:22.868Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 39,
@@ -497,6 +509,77 @@
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
       "unreturnedFeatureCount": 0,
       "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "ne-park-areas",
+      "state": "NE",
+      "name": "Nebraska Game and Parks park areas",
+      "url": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer/0",
+      "basisUrl": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer",
+      "license": "No restrictions on use and distribution",
+      "attribution": "Nebraska Game and Parks Commission",
+      "vintage": "Service includes historical closure descriptions; no live access claim",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:54:00.393Z",
+      "sourceUpdated": "Service includes historical closure descriptions; no live access claim",
+      "featureCount": 74,
+      "bytes": 267735,
+      "sha256": "96c4f01acd726f81dd4cd038b01c3235a3eab166539310c7d08a64b8adb57af5",
+      "metadataSha256": "8f2cb79ced42c5d84f503eeab23fb3a30d88298103390b78384d45af35e58ffd",
+      "termsSha256": "cfe87440ef7000b51caace104b9222f4f94a1f33d64ae649c8566cd51ba7c81c",
+      "licenseText": "<div style='text-align:Left;'><div><div><p><span>There are no restrictions on the use and distribution of data provided in this map or service. </span></p><p><span>Information displayed on this map is furnished as a public service by the Nebraska Game and Parks Commission and is intended to be used for reference only. Every reasonable effort has been made to ensure the accuracy and completeness of the data provided. However, the Nebraska Game and Parks Commission makes no warranties either expressed or implied, concerning the accuracy, completeness, reliability, or suitability of this data for any use other than display. Furthermore, the Nebraska Game and Parks Commission assumes no liability for the use or misuse of the information contained in this map or service.</span></p><p><span /></p></div></div></div>",
+      "serviceItemId": "ba20d669b821473089a5d542b54f9771",
+      "fields": [
+        "OBJECTID",
+        "AreaName",
+        "Acres",
+        "District",
+        "Latitude",
+        "Longitude",
+        "Notes",
+        "DB_AreaNumber",
+        "DB_GISID",
+        "Version",
+        "PHA_ID",
+        "AreaType",
+        "StartDate",
+        "EndDate",
+        "Status",
+        "GISAcres",
+        "County",
+        "OFWAtlasDisplay",
+        "Legal",
+        "PBA_ID",
+        "Park_ID",
+        "NGPC_Manager_Code",
+        "PFA_ID",
+        "Display2Public",
+        "MgtAgreementType",
+        "ManagedAs",
+        "FOP_POA",
+        "HuntGuide",
+        "GlobalID",
+        "Shape__Area",
+        "Shape__Length"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 74,
+          "sha256": "9fbd180b82c775420d11eb9d2f7dbd3087e871de84a9ba6600d11230c29e1188",
+          "firstId": 1,
+          "lastId": 75
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 74,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "4c3237004029469f549d49f66740ff07eb8e96108e5c1d1c856efcce3312bce2"
     }
   ],
   "state": {
@@ -507,8 +590,8 @@
   "stateForestry": {
     "agency": "Nebraska Forest Service",
     "agencyUrl": "https://nfs.unl.edu/",
-    "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 2,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +603,91 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 682
+  },
+  "stateName": "Nebraska",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 2332,
+    "bytes": 3541886,
+    "sha256": "82c8becf22502b9788a93c79b71750b49917412503322bff59eb74878c746a82"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 1,
+    "featureCount": 74,
+    "sources": [
+      {
+        "id": "ne-park-areas",
+        "url": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer/0",
+        "count": 74,
+        "license": "No restrictions on use and distribution",
+        "attribution": "Nebraska Game and Parks Commission",
+        "sourceUpdated": "Service includes historical closure descriptions; no live access claim"
+      }
+    ],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 16,
+    "categoryCounts": {
+      "tourist_attraction": 7,
+      "campsite": 9
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 2332,
+        "normalizedFeatureCount": 2332,
+        "positions": 60494,
+        "bytes": 2566375,
+        "sha256": "89d3a2c1f7b9cb0d349c05c545b89231bcf7d56d2975ff9bf51e4487060623c4",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

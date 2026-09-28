@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 3978504,
       "file": "outdoors.geojson",
-      "sha256": "f4c8b9cc27b13d5fd70ca6000506bff89194be1f96c0aaf7cae8ae0c3c4d4d54"
+      "featureCount": 2683,
+      "bytes": 4061677,
+      "sha256": "3ccfcfea211c5111154d8f83d436807e8f1e14b2fdb0b84e0ed32b96cd22b4c8"
     },
     "index": {
-      "bytes": 1045621,
       "file": "index.json",
-      "sha256": "a1825301e65912e61b37c539fc6d5f934092852ac6ce43c29789cca17a80d09b"
+      "bytes": 1507097,
+      "sha256": "0d2f64053700069a28e6e25e2572a2f92d8a9877cb2050ba9c7d3dd6c52841f9"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 445,
+      "sha256": "aa9bc253ae229cbe425423b7c93baf22b92614040e89f26306ba3e23a9931807"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -29,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 2683,
-  "generatedAt": "2026-09-24T01:49:52.906Z",
+  "generatedAt": "2026-09-28T00:08:32.990Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-de",
   "rights": {
@@ -123,7 +128,7 @@
       "inventoryFeatureCount": 2683,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 2683,
-      "packagedFeatureSha256": "a77cec046be7b455fd01c90247cf2f9bb7ab373bdc00804c53d87d111c4f671b",
+      "packagedFeatureSha256": "1d63531bdc35ffeece72fed923f541a4b5397bf5f13c10c227592d7e1cac5d4b",
       "queriedAt": "2026-09-24T01:49:52.906Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 2683,
@@ -508,7 +513,7 @@
     "agency": "Delaware Forest Service (DNREC)",
     "agencyUrl": "https://dnrec.delaware.gov/forests/",
     "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 47,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +525,79 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 581
+  },
+  "stateName": "Delaware",
+  "publicDistribution": true,
+  "packageMode": "public-baseline",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 2683,
+    "bytes": 4061677,
+    "sha256": "3ccfcfea211c5111154d8f83d436807e8f1e14b2fdb0b84e0ed32b96cd22b4c8"
+  },
+  "agency": {
+    "status": "no-eligible-staged-feed",
+    "sourceCount": 0,
+    "featureCount": 0,
+    "sources": [],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 0,
+    "categoryCounts": {},
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 2683,
+        "normalizedFeatureCount": 2683,
+        "positions": 75313,
+        "bytes": 2999293,
+        "sha256": "63a649d6abcfa794f7da407d60f16bee965ed32e16bb86937ff2ceb81c231405",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

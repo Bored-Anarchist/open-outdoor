@@ -160,6 +160,7 @@ describe('real offline New York map', () => {
             'sourceId',
             'unit',
             'category',
+            'sourceCategory',
             'publicUse',
             'sourceUpdated',
             'sourceUrl',

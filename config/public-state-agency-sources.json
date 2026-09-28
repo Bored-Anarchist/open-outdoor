@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ct-deep-property",
+      "state": "CT",
+      "name": "Connecticut DEEP properties",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection"
+    },
+    {
+      "id": "ct-deep-trails",
+      "state": "CT",
+      "name": "Connecticut DEEP trails",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+      "basisUrl": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection"
+    },
+    {
+      "id": "ct-deep-access",
+      "state": "CT",
+      "name": "Connecticut DEEP property access locations",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Property_Access_Locations/FeatureServer/0",
+      "basisUrl": "https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection"
+    },
+    {
+      "id": "ma-dcr-trails",
+      "state": "MA",
+      "name": "MassGIS DCR roads and trails",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Arcs/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "vintage": "2015-06; historical reference, verify current manager maps"
+    },
+    {
+      "id": "ma-dcr-points",
+      "state": "MA",
+      "name": "MassGIS DCR trail and road points",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Pts/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "vintage": "2015-06; historical reference, verify current manager maps"
+    },
+    {
+      "id": "ma-dcr-land",
+      "state": "MA",
+      "name": "MassGIS DCR protected and recreational open space",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/openspace/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-protected-and-recreational-openspace",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "where": "OWNER_ABRV LIKE 'DCR%'",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services"
+    },
+    {
+      "id": "ne-park-areas",
+      "state": "NE",
+      "name": "Nebraska Game and Parks park areas",
+      "url": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer/0",
+      "basisUrl": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer",
+      "license": "No restrictions on use and distribution",
+      "attribution": "Nebraska Game and Parks Commission",
+      "vintage": "Service includes historical closure descriptions; no live access claim"
+    },
+    {
+      "id": "nv-scorp-trails",
+      "state": "NV",
+      "name": "Nevada SCORP nonmotorized trails",
+      "url": "https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/SCORP_NonMoto_Trails_Master/FeatureServer/0",
+      "basisUrl": "https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/SCORP_NonMoto_Trails_Master/FeatureServer/0",
+      "license": "CC0-1.0",
+      "attribution": "Nevada Division of State Parks and contributing trail managers"
+    },
+    {
+      "id": "ut-ugrc-trails",
+      "state": "UT",
+      "name": "Utah UGRC trails and pathways",
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "termsUrl": "https://gis.utah.gov/documentation/policy/license/",
+      "attribution": "Utah Geospatial Resource Center (UGRC), SGID; data modified"
+    },
+    {
+      "id": "co-cpw-trails",
+      "state": "CO",
+      "name": "Colorado Parks and Wildlife trail segments",
+      "url": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2",
+      "basisUrl": "https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr",
+      "license": "CPW public GIS distribution",
+      "attribution": "Colorado Parks and Wildlife",
+      "termsUrl": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/info/iteminfo"
+    },
+    {
+      "id": "ar-historical-facilities",
+      "state": "AR",
+      "name": "Arkansas historical Parks and Forestry facilities",
+      "url": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+      "basisUrl": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+      "where": "owner IN ('ASP','AFC')",
+      "license": "Arkansas no access or use limitations",
+      "termsUrl": "https://gis.arkansas.gov/metadata/HTML/asdi.location.OUTDOOR_RECREATIONAL_FACILITIES_export.html",
+      "attribution": "Arkansas GIS Office; Arkansas State Parks and Forestry Commission",
+      "vintage": "Most facility verification dates are missing or 2011–2019; historical reference only, current existence/access unknown"
+    },
+    {
+      "id": "ca-calfire-forests",
+      "state": "CA",
+      "name": "CAL FIRE State Demonstration Forests 2024",
+      "url": "https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b",
+      "basisUrl": "https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b",
+      "format": "file-geodatabase",
+      "license": "CAL FIRE credited redistribution; modifications marked",
+      "termsUrl": "https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/gis-mapping-and-data-analytics",
+      "attribution": "California Department of Forestry and Fire Protection (CAL FIRE); data modified",
+      "vintage": "2024; dated boundary reference; current forest directory says fourteen forests, later service metadata says fifteen; completeness not asserted"
+    }
+  ],
+  "held": [
+    {
+      "state": "MN",
+      "source": "Minnesota DNR derivatives",
+      "reason": "Conditional license; exact current downloads and filtered derivative validation still required. Whole raw datasets excluded."
+    },
+    {
+      "state": "VA",
+      "source": "Virginia DCR boundaries and trails",
+      "reason": "Noncommercial-only distribution and separate notice remain a conditional distribution gate."
+    }
+  ]
+}

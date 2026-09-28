@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 8092057,
       "file": "outdoors.geojson",
-      "sha256": "d85a14ee664564c856d8e89859d479c80c9d39d5a9889255a73f64d6b3f4cc1b"
+      "featureCount": 5538,
+      "bytes": 8305310,
+      "sha256": "72033c9e8a22bc787e510b3d64ec5dbad0746642e29eb0df1affe41e5f8a8555"
     },
     "index": {
-      "bytes": 2154791,
       "file": "index.json",
-      "sha256": "8f2a0cd9cd18d17347a911bf52bd804c49b30b5c62f09836d375729d8b467768"
+      "bytes": 3137072,
+      "sha256": "9095e607a38e414ed5688c7fce381ea6126ae0a83b56a09305dee58c52e84b57"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 450,
+      "sha256": "65f2a7e42e3d62cdfd31db623e89df144853c2e4bb670959e80cd2d9383b9545"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -29,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 5538,
-  "generatedAt": "2026-09-24T02:33:13.185Z",
+  "generatedAt": "2026-09-28T00:09:25.156Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-nh",
   "rights": {
@@ -123,7 +128,7 @@
       "inventoryFeatureCount": 4116,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 4116,
-      "packagedFeatureSha256": "3f6c3c7290fbd178ed1002877c0ab48179c6ff925634f3f33ce73240ebfa002e",
+      "packagedFeatureSha256": "7c3d3bd16002fd0a0a3b62a67ad8ee82debcf6ce8bf94920e8a65aa10c37f612",
       "queriedAt": "2026-09-24T02:33:13.185Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 4116,
@@ -171,7 +176,7 @@
       "inventoryFeatureCount": 6,
       "name": "NPS public trails",
       "packagedFeatureCount": 1,
-      "packagedFeatureSha256": "91dc0f3e24b77a61dd636edf2c5dbdfdf65426ea1036a8f032fdff39154f8b10",
+      "packagedFeatureSha256": "0720e27ee1ca9df941e61910de77fe01110282fc7ef0342887fa361c29ca12e2",
       "queriedAt": "2026-09-24T02:33:13.185Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 6,
@@ -215,7 +220,7 @@
       "inventoryFeatureCount": 16,
       "name": "NPS public points of interest",
       "packagedFeatureCount": 16,
-      "packagedFeatureSha256": "7c73b18b1a172ef06bbd2f5cda8148123e555eb4778acd29735a3a0609260c38",
+      "packagedFeatureSha256": "d49909ca05c9b4012574c2372a9381c2ece55ab8d7cad6445f7fe4f5479cbed5",
       "queriedAt": "2026-09-24T02:33:13.185Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 16,
@@ -272,7 +277,7 @@
       "inventoryFeatureCount": 917,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 917,
-      "packagedFeatureSha256": "302fe6ed732b1730310a6d5990b06b50e4a8320c8aed5abbeb7de19707960e6b",
+      "packagedFeatureSha256": "29472f77e2c9329e7ee812eb6531e0a2f0f8341e89b7c887a555588d1474a630",
       "queriedAt": "2026-09-24T02:33:13.185Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 917,
@@ -327,7 +332,7 @@
       "inventoryFeatureCount": 308,
       "name": "USFS recreation sites",
       "packagedFeatureCount": 308,
-      "packagedFeatureSha256": "92c52d931bbd86735e1eb558fef248f302e0d295ba6afbcada8860daeb78f540",
+      "packagedFeatureSha256": "c8f9ab5873338ab4cf877459036f7f4cd2936c5d01510600d6662e7c6fd51193",
       "queriedAt": "2026-09-24T02:33:13.185Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 308,
@@ -377,7 +382,7 @@
       "inventoryFeatureCount": 180,
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 180,
-      "packagedFeatureSha256": "5c6a78a03f8edf205b5b9632b0e96a8600d79b14f6eabf9d0ac663c6ce82e221",
+      "packagedFeatureSha256": "9ba1814a25abab04d89d62a388c7455e45ca8ebffbe6fda59cfc6699a7b77334",
       "queriedAt": "2026-09-24T02:33:13.185Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 180,
@@ -508,7 +513,7 @@
     "agency": "New Hampshire Division of Forests and Lands",
     "agencyUrl": "https://www.nh.gov/nhdfl/",
     "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 174,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +525,85 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 923
+  },
+  "stateName": "New Hampshire",
+  "publicDistribution": true,
+  "packageMode": "public-baseline",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 5538,
+    "bytes": 8305310,
+    "sha256": "72033c9e8a22bc787e510b3d64ec5dbad0746642e29eb0df1affe41e5f8a8555"
+  },
+  "agency": {
+    "status": "no-eligible-staged-feed",
+    "sourceCount": 0,
+    "featureCount": 0,
+    "sources": [],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 324,
+    "categoryCounts": {
+      "other": 22,
+      "shorterm_parking": 1,
+      "tourist_attraction": 214,
+      "hotel": 22,
+      "campsite": 65
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 5538,
+        "normalizedFeatureCount": 5538,
+        "positions": 136966,
+        "bytes": 5941028,
+        "sha256": "e4f12d3d3a1f4acfa3010e36689a7fef53ecc57c41be6da6d4ba9f581f72109d",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

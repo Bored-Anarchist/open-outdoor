@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 9603465,
       "file": "outdoors.geojson",
-      "sha256": "1f17850e8b8f9149a7a1b70569f390a5ec51caf310bd42be1939c0e3e2b5eb57"
+      "featureCount": 6214,
+      "bytes": 10023915,
+      "sha256": "eda1a15f9e5a57dcbba645a399afce6aec9cdb0c74f7f335ed683196e4badb4c"
     },
     "index": {
-      "bytes": 2083595,
       "file": "index.json",
-      "sha256": "112495aed66ba214f32de8b95f5001c74bf2f9b351a8f736cca10ed4eaf8ea5d"
+      "bytes": 3187648,
+      "sha256": "fe55dd901fac4f1b86187d99271d65aa7b6d48903c44aa9b2d2fc6dcc33593b4"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 1046,
+      "sha256": "3808c4712c6e00401326323e96d6dbbe7542467f810bf360b149bb9d919cd261"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -28,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 5987,
-  "generatedAt": "2026-09-24T01:37:59.184Z",
+  "featureCount": 6214,
+  "generatedAt": "2026-09-28T00:27:21.142Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ar",
   "rights": {
@@ -38,7 +43,8 @@
       "PAD-US data providers and state stewards",
       "U.S. Department of Agriculture, Forest Service",
       "U.S. Department of the Interior, Bureau of Land Management",
-      "U.S. Geological Survey Gap Analysis Project"
+      "U.S. Geological Survey Gap Analysis Project",
+      "Arkansas GIS Office; Arkansas State Parks and Forestry Commission"
     ],
     "derivation": true,
     "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
@@ -81,6 +87,12 @@
       {
         "id": "blm-public-recreation-sites",
         "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "ar-historical-facilities",
+        "url": "https://gis.arkansas.gov/metadata/HTML/asdi.location.OUTDOOR_RECREATIONAL_FACILITIES_export.html",
+        "license": "Arkansas no access or use limitations",
+        "licenseUrl": null
       }
     ]
   },
@@ -123,7 +135,7 @@
       "inventoryFeatureCount": 895,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 895,
-      "packagedFeatureSha256": "d7dbbf58ec88a5dc2b95cad64258bfaa78feb16f068c4ea6125d14beb73cfa3f",
+      "packagedFeatureSha256": "a75f4ea5bd59302197d206ceb172124ddfceccf4ea14c8bf08248b804be10afc",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 895,
@@ -171,7 +183,7 @@
       "inventoryFeatureCount": 227,
       "name": "NPS public trails",
       "packagedFeatureCount": 160,
-      "packagedFeatureSha256": "0b237b5f1b85bc25ee079c7bc2c421966bd0166ebbd0be05f9001ba4c6a61db2",
+      "packagedFeatureSha256": "796eb3ef045190adffa6d1f4d565aec7c3e59c645722a0e5a8239b430485e998",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 227,
@@ -215,7 +227,7 @@
       "inventoryFeatureCount": 250,
       "name": "NPS public points of interest",
       "packagedFeatureCount": 1,
-      "packagedFeatureSha256": "23f4741ff2d147291337be876aef78bd3a1aa5ae9faba35d08aba064e494efa5",
+      "packagedFeatureSha256": "03eeacb2626a8faa9d5131f920f94763ce730c1fed098d750a671fcbf981c4e6",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 250,
@@ -272,7 +284,7 @@
       "inventoryFeatureCount": 466,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 466,
-      "packagedFeatureSha256": "00c7b2d04721dd83b518d08b1826031424c83626a003e34d626cb7d61079fb52",
+      "packagedFeatureSha256": "fa031103c4d8ad17ddd04ff8d405260d7857127ba771e846e54832eaa9ce3fb9",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 466,
@@ -327,7 +339,7 @@
       "inventoryFeatureCount": 196,
       "name": "USFS recreation sites",
       "packagedFeatureCount": 196,
-      "packagedFeatureSha256": "c514a9902ca280a856698bd430fa27b17181c753ca713f2821e8abedd8de8534",
+      "packagedFeatureSha256": "05f0d9ebff37f65f5a0fead04c3bd50c89dab8e8594066cee8b08d8252528d20",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 196,
@@ -377,7 +389,7 @@
       "inventoryFeatureCount": 4147,
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 4147,
-      "packagedFeatureSha256": "e19dd93db1462de1546fe9227a1c074dce4d44e1e44c09aba856099977d24bf5",
+      "packagedFeatureSha256": "04c69e5c7cca03621a27fb4d870f828ef829d2ddd285dd076b862727d5b8a088",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 4147,
@@ -426,7 +438,7 @@
       "inventoryFeatureCount": 122,
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 122,
-      "packagedFeatureSha256": "a1ec87794efdc692ab3dd2f021c93b9932a3f6cb5f8ab26f1274ae84683e28bc",
+      "packagedFeatureSha256": "d57b16969f10d807f12de7bf31535d13fcf60342a70435c79d79a732352634db",
       "queriedAt": "2026-09-24T01:37:59.184Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 122,
@@ -497,6 +509,78 @@
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
       "unreturnedFeatureCount": 0,
       "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "ar-historical-facilities",
+      "state": "AR",
+      "name": "Arkansas historical Parks and Forestry facilities",
+      "url": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+      "basisUrl": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+      "where": "owner IN ('ASP','AFC')",
+      "license": "Arkansas no access or use limitations",
+      "termsUrl": "https://gis.arkansas.gov/metadata/HTML/asdi.location.OUTDOOR_RECREATIONAL_FACILITIES_export.html",
+      "attribution": "Arkansas GIS Office; Arkansas State Parks and Forestry Commission",
+      "vintage": "Most facility verification dates are missing or 2011–2019; historical reference only, current existence/access unknown",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-28T00:04:31.788Z",
+      "sourceUpdated": "Most facility verification dates are missing or 2011–2019; historical reference only, current existence/access unknown",
+      "featureCount": 227,
+      "bytes": 179959,
+      "sha256": "568635036d61e61b5f66214e725d5cf99e55f04e04f5dd2653ab4724632c81d0",
+      "metadataSha256": "5f71124f30c88a61e9d0d9de9e0e85ed5f12de6fc6e1c7e127a2e4acc017c77e",
+      "termsSha256": "833023c860fae660ceca30bc5a3965c46d6cc598e278f6ea4da98fdcc0c42717",
+      "licenseText": "",
+      "serviceItemId": null,
+      "fields": [
+        "objectid",
+        "fname",
+        "fcat",
+        "ftype",
+        "fdescrip",
+        "owner",
+        "comments",
+        "county",
+        "waterbody",
+        "wma",
+        "location",
+        "hyp_1",
+        "search_field",
+        "last_verified_date",
+        "easting",
+        "northing",
+        "lat_wgs84",
+        "lon_wgs84",
+        "created_user",
+        "created_date",
+        "last_edited_user",
+        "last_edited_date",
+        "globalid"
+      ],
+      "idField": "objectid",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "89910330b78f0512b81b74efdee33d0d85c309ad8d95677c41f6ce0527c0121d",
+          "firstId": 20,
+          "lastId": 2889
+        },
+        {
+          "count": 27,
+          "sha256": "0b41015aceed915b0f966bbc614443f0002bfeae926e3365fd249c7c340c266d",
+          "firstId": 2905,
+          "lastId": 3329
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "fieldDomains": {},
+      "packagedFeatureCount": 227,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "0450a381a8b1135d0c44d43a79db081bb48928c361b6aeb1667c41dbfe6a5c31"
     }
   ],
   "state": {
@@ -507,8 +591,8 @@
   "stateForestry": {
     "agency": "Arkansas Department of Agriculture Forestry Division",
     "agencyUrl": "https://www.agriculture.arkansas.gov/forestry/",
-    "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 4,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +604,105 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 162
+  },
+  "stateName": "Arkansas",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 6214,
+    "bytes": 10023915,
+    "sha256": "eda1a15f9e5a57dcbba645a399afce6aec9cdb0c74f7f335ed683196e4badb4c"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 1,
+    "featureCount": 227,
+    "sources": [
+      {
+        "id": "ar-historical-facilities",
+        "url": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+        "count": 227,
+        "license": "Arkansas no access or use limitations",
+        "attribution": "Arkansas GIS Office; Arkansas State Parks and Forestry Commission",
+        "sourceUpdated": "Most facility verification dates are missing or 2011–2019; historical reference only, current existence/access unknown"
+      }
+    ],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 424,
+    "categoryCounts": {
+      "tourist_attraction": 145,
+      "other": 191,
+      "shorterm_parking": 32,
+      "showers": 11,
+      "sanitation_dump": 3,
+      "campsite": 38,
+      "hotel": 4
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 6078,
+        "normalizedFeatureCount": 6078,
+        "positions": 179089,
+        "bytes": 6708255,
+        "sha256": "83cf0b71ebf239691ae195865a19051c475862ab0b42b320c3fa25fd2439cb4f",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 136,
+        "normalizedFeatureCount": 136,
+        "positions": 13857,
+        "bytes": 342279,
+        "sha256": "cec35771c30cf06720d2ef5b76c5b336950c11cd7049f76a36f756a7a95392c4",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

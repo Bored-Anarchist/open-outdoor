@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 16242287,
       "file": "outdoors.geojson",
-      "sha256": "06f15c77d87214104d79fc6ae61c810d69c4d9ccaed9f7e146d65b8ed2c1fe54"
+      "featureCount": 10355,
+      "bytes": 16553880,
+      "sha256": "d82f3085906ac1070caee14aef29fe54022f117a81aee4bc6b383a6accb64efa"
     },
     "index": {
-      "bytes": 3867217,
       "file": "index.json",
-      "sha256": "0ec6e1fb61900e3afdc73d22c211e7a9fdda8435bca44b28ce46e7dabc6d9ba8"
+      "bytes": 5518875,
+      "sha256": "9c38c3e5d8a7845b8cd98ad17f01c3da23bbb41e829a7bc90908dac4f2a13bfd"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 446,
+      "sha256": "8a0d287ccefc75d13e1fcf2625b767aa2ac77d1bfd4397ee8d0dfa4f5af9f1c2"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -29,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 10355,
-  "generatedAt": "2026-09-24T03:06:23.485Z",
+  "generatedAt": "2026-09-28T00:10:14.875Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-wi",
   "rights": {
@@ -123,7 +128,7 @@
       "inventoryFeatureCount": 5390,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 5390,
-      "packagedFeatureSha256": "052fd4c1eecb11a21ae3ebdc3a05a8459398c2debb28db12ae4fe863c3c9cd0d",
+      "packagedFeatureSha256": "9e2ca5c092b3c4409ba5fd97ac332c6492c600301799798e6ea3adaf982652f7",
       "queriedAt": "2026-09-24T03:06:23.485Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 5390,
@@ -171,7 +176,7 @@
       "inventoryFeatureCount": 64,
       "name": "NPS public trails",
       "packagedFeatureCount": 64,
-      "packagedFeatureSha256": "fea10ec7c796ba7600dc7e1c9a15ec9b366c614a7c1d2491e8952143b820a7d2",
+      "packagedFeatureSha256": "aa3313cbd2c18d3ab287abed18451031668c0ce1fa2269aa1ad617345a1c5d67",
       "queriedAt": "2026-09-24T03:06:23.485Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 64,
@@ -272,7 +277,7 @@
       "inventoryFeatureCount": 711,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 711,
-      "packagedFeatureSha256": "1196cdfcec4349eccf34439b5c2e9ae80b7026c29b16414c5f5ee68a880c27aa",
+      "packagedFeatureSha256": "52b23ee689fb7414c66f1e94e91421278d1a9714ce1346c291cc74328c385ba7",
       "queriedAt": "2026-09-24T03:06:23.485Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 711,
@@ -327,7 +332,7 @@
       "inventoryFeatureCount": 196,
       "name": "USFS recreation sites",
       "packagedFeatureCount": 196,
-      "packagedFeatureSha256": "1855fa5976e3ef41d31a5b6eabf8251fe23951532bb9a42267646c183b036627",
+      "packagedFeatureSha256": "8320fe956f3b4d5e27b8e0cc5dc54505d3448f5c050c209441254a0c0ee8f1cb",
       "queriedAt": "2026-09-24T03:06:23.485Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 196,
@@ -377,7 +382,7 @@
       "inventoryFeatureCount": 3448,
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 3448,
-      "packagedFeatureSha256": "b300fd66186c144368bda05bbbc3d8ee82e56152df7e78f57d4eaab2bc8f8a9e",
+      "packagedFeatureSha256": "324150171a2071272f1f7128180990aa2a73c09c68ad7f6ae3b6637efc12c6a3",
       "queriedAt": "2026-09-24T03:06:23.485Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 3448,
@@ -426,7 +431,7 @@
       "inventoryFeatureCount": 546,
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 546,
-      "packagedFeatureSha256": "4c38f21eec80c2c3b72ab5337a10edf103f2764b1cb1b0adc86881bd014afc47",
+      "packagedFeatureSha256": "710be443d1f7281a1224b9b8dfb1574ef042c211eb01256cdb5ab06a9691903f",
       "queriedAt": "2026-09-24T03:06:23.485Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 546,
@@ -508,7 +513,7 @@
     "agency": "Wisconsin DNR Division of Forestry",
     "agencyUrl": "https://dnr.wisconsin.gov/topic/ForestManagement",
     "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 62,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +525,94 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 1340
+  },
+  "stateName": "Wisconsin",
+  "publicDistribution": true,
+  "packageMode": "public-baseline",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 10355,
+    "bytes": 16553880,
+    "sha256": "d82f3085906ac1070caee14aef29fe54022f117a81aee4bc6b383a6accb64efa"
+  },
+  "agency": {
+    "status": "no-eligible-staged-feed",
+    "sourceCount": 0,
+    "featureCount": 0,
+    "sources": [],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 196,
+    "categoryCounts": {
+      "tourist_attraction": 135,
+      "campsite": 57,
+      "hotel": 1,
+      "shorterm_parking": 2,
+      "other": 1
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 9054,
+        "normalizedFeatureCount": 9054,
+        "positions": 179916,
+        "bytes": 8447454,
+        "sha256": "2ffd43a234a4e53b47de3be084701bb2263c32396367ea2980eff6d0f4593e53",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 1301,
+        "normalizedFeatureCount": 1301,
+        "positions": 132907,
+        "bytes": 3305711,
+        "sha256": "a8e2e012af9cbe3ecea19025c23b4a50f49ea59620f18a9506f81300a487501b",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

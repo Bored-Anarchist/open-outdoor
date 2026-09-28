@@ -16,6 +16,8 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 
 | Document | Purpose | Primary owner role |
 | --- | --- | --- |
+| [Public state package format](PUBLIC_STATE_PACKAGE_FORMAT.md) | Public/private-compatible format, POI taxonomy, rights boundary and rebuild commands | Data lead |
+| [Public state package inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) | All 50 package counts and validated import parts | Data lead |
 | [Project scope](../PROJECT_SCOPE.md) | Normative product, architecture, privacy, and delivery boundary | Product owner |
 | [Documentation audit](DOCUMENTATION_AUDIT.md) | Identified issues, implemented resolutions, and validation record | Quality lead |
 | [Product and release definition](PRODUCT_RELEASE_DEFINITION.md) | iOS/platform boundary, release vocabulary, exact M4 Product MVP, and exclusions | Product owner |

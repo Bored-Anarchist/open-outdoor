@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 2222035,
       "file": "outdoors.geojson",
-      "sha256": "14001651b72c228c98861e07d031abe22914583d2af935937620d146469969d7"
+      "featureCount": 1767,
+      "bytes": 2276819,
+      "sha256": "a0689c990040b9c0a3ec7c994f63dd21a44871e6cee5a0385a7ec6d84dd67b60"
     },
     "index": {
-      "bytes": 692429,
       "file": "index.json",
-      "sha256": "319162a8d665beae85e01039daafa24ada3bfff705e0847f0c20deaf10c6fd7b"
+      "bytes": 996368,
+      "sha256": "358f25d2247121a5a3f1b3293491476f3aad6ef23b42df30f68f66d8d82f9355"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 449,
+      "sha256": "e8a310afc5ce1081209d4e5ba91de3ac9ada5d1e0506a07e0fd77b7faeeb51b2"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -29,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 1767,
-  "generatedAt": "2026-09-24T02:48:45.634Z",
+  "generatedAt": "2026-09-28T00:09:44.357Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ri",
   "rights": {
@@ -123,7 +128,7 @@
       "inventoryFeatureCount": 1766,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 1766,
-      "packagedFeatureSha256": "205506a6fc77b573e73813e14ae8139457498dc9c1d0996c233d1bebfd9f7ac8",
+      "packagedFeatureSha256": "1d711df674b3f0dc37595035407a5e696e71213b2c2b0b6700d7f17c8b339a8a",
       "queriedAt": "2026-09-24T02:48:45.634Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 1766,
@@ -215,7 +220,7 @@
       "inventoryFeatureCount": 1,
       "name": "NPS public points of interest",
       "packagedFeatureCount": 1,
-      "packagedFeatureSha256": "3def82e233d1c3eed238abb141f03d5e438c80cef59832f89a8b99cb755a2d56",
+      "packagedFeatureSha256": "898f69254674dd172ff79c6e98a461df2b9a03eed1d73dedf8c3ca9261df61be",
       "queriedAt": "2026-09-24T02:48:45.634Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 1,
@@ -508,7 +513,7 @@
     "agency": "Rhode Island DEM Division of Forest Environment",
     "agencyUrl": "https://dem.ri.gov/natural-resources-bureau/forest-environment",
     "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 7,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +525,81 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 488
+  },
+  "stateName": "Rhode Island",
+  "publicDistribution": true,
+  "packageMode": "public-baseline",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 1767,
+    "bytes": 2276819,
+    "sha256": "a0689c990040b9c0a3ec7c994f63dd21a44871e6cee5a0385a7ec6d84dd67b60"
+  },
+  "agency": {
+    "status": "no-eligible-staged-feed",
+    "sourceCount": 0,
+    "featureCount": 0,
+    "sources": [],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 1,
+    "categoryCounts": {
+      "tourist_attraction": 1
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 1767,
+        "normalizedFeatureCount": 1767,
+        "positions": 28065,
+        "bytes": 1565559,
+        "sha256": "a4f5afa11b3b343665b5a3d1239f7138bd94754cc8383f75ed1b511a511721f8",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

@@ -1,26 +1,31 @@
 {
   "artifacts": {
     "geojson": {
-      "bytes": 25718734,
       "file": "outdoors.geojson",
-      "sha256": "a79ca75927d6566748e23fb7b96df6bff6b8f838eb8d8492463911526ee25664"
+      "featureCount": 70399,
+      "bytes": 73222554,
+      "sha256": "059f4cde235c3960afec2df9d7773a3ef937d23347b9b8a6208a2308bfb254e7"
     },
     "index": {
-      "bytes": 8187757,
       "file": "index.json",
-      "sha256": "0ccba471c35a592bbb23dc438acc8bb8157c96dd631ec25f2732489af30bd776"
+      "bytes": 45062218,
+      "sha256": "3a798854788a641bfe219912b86e1d2cfc5f8ea6f22eab32e61cb3789ec9beef"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 2288,
+      "sha256": "ad1d98e08de55aa1e201917a7517f6a6e0d57bd384247afb54446992371ed066"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
   "coordinateReferenceSystem": "EPSG:4326",
   "coverage": {
-    "content": "Federal and state-managed protected lands from the PAD-US Fee inventory; NPS public trails and visitor points; USFS visitor trails, recreation sites, MVUM roads and trails; BLM surface-management areas and public recreation sites where present.",
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
     "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
     "limitations": [
-      "PAD-US 4.1 is a periodic protected-area inventory and can lag individual land managers; original GIS and aggregator lineage are retained per feature when supplied.",
-      "State-owned and state-managed PAD-US records form the statewide forest and park land baseline. State agency links are retained for current information; state-specific trails, roads, recreation sites, rules and closures are not represented unless present in a named source layer.",
-      "A land or recreation feature does not establish current access, permission to enter, camping legality, or current operating status.",
-      "USFS MVUM roads and trails describe motorized-use designations; they do not represent all non-motorized trails or current travel conditions."
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
     ]
   },
   "disclaimers": [
@@ -28,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 20612,
-  "generatedAt": "2026-09-24T02:10:28.948Z",
+  "featureCount": 70399,
+  "generatedAt": "2026-09-28T00:09:01.894Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ma",
   "rights": {
@@ -38,7 +43,8 @@
       "PAD-US data providers and state stewards",
       "U.S. Department of Agriculture, Forest Service",
       "U.S. Department of the Interior, Bureau of Land Management",
-      "U.S. Geological Survey Gap Analysis Project"
+      "U.S. Geological Survey Gap Analysis Project",
+      "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services"
     ],
     "derivation": true,
     "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
@@ -81,6 +87,24 @@
       {
         "id": "blm-public-recreation-sites",
         "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "ma-dcr-trails",
+        "url": "https://www.mass.gov/info-details/learn-about-massgis-data",
+        "license": "MassGIS freely redistributable derivatives",
+        "licenseUrl": null
+      },
+      {
+        "id": "ma-dcr-points",
+        "url": "https://www.mass.gov/info-details/learn-about-massgis-data",
+        "license": "MassGIS freely redistributable derivatives",
+        "licenseUrl": null
+      },
+      {
+        "id": "ma-dcr-land",
+        "url": "https://www.mass.gov/info-details/learn-about-massgis-data",
+        "license": "MassGIS freely redistributable derivatives",
+        "licenseUrl": null
       }
     ]
   },
@@ -123,7 +147,7 @@
       "inventoryFeatureCount": 20362,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 20362,
-      "packagedFeatureSha256": "9430bd1b946aa2940c58a8cd24d2a5a7b97dd7431dd91e6ade3200bbbc90ed70",
+      "packagedFeatureSha256": "a317c3eec4afec674b4796281757cb8039e17021cdc8cb0b89deade61dfb4425",
       "queriedAt": "2026-09-24T02:10:28.948Z",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 20362,
@@ -171,7 +195,7 @@
       "inventoryFeatureCount": 779,
       "name": "NPS public trails",
       "packagedFeatureCount": 40,
-      "packagedFeatureSha256": "7e5ffa6c496ba86d0d3aefe441d81423b764c88bf37c3303712d57de87803a38",
+      "packagedFeatureSha256": "6df4d249cc98abd9109ca96c6695ac4b21c49923a9334dff5c5cb63c0b6b8105",
       "queriedAt": "2026-09-24T02:10:28.948Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 779,
@@ -215,7 +239,7 @@
       "inventoryFeatureCount": 605,
       "name": "NPS public points of interest",
       "packagedFeatureCount": 209,
-      "packagedFeatureSha256": "3f170ef515c530266992d1d1f9cb095863b642632de8eefa17e2292f5ab5f463",
+      "packagedFeatureSha256": "56cfd24400666045f1e13f79f17bdebd3ee046b1ba1a70011d710d79f9125898",
       "queriedAt": "2026-09-24T02:10:28.948Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 605,
@@ -272,7 +296,7 @@
       "inventoryFeatureCount": 1,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 1,
-      "packagedFeatureSha256": "6bb9f392250c3de1bbd1683d9498ffb5f4adbca805bfa333580132a07345370c",
+      "packagedFeatureSha256": "6b63e8a6b1acff50194c58a3a24580b17d63e50e48a2824785fd6576dfe6485b",
       "queriedAt": "2026-09-24T02:10:28.948Z",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 1,
@@ -497,6 +521,2279 @@
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
       "unreturnedFeatureCount": 0,
       "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "ma-dcr-trails",
+      "state": "MA",
+      "name": "MassGIS DCR roads and trails",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Arcs/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "vintage": "2015-06; historical reference, verify current manager maps",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:53:03.574Z",
+      "sourceUpdated": "2015-06; historical reference, verify current manager maps",
+      "featureCount": 36859,
+      "bytes": 18399082,
+      "sha256": "b63f6c3539a85bbc8aa99776bb664a74c2c6c0cd4248f7fbf4829808f2b9af92",
+      "metadataSha256": "35a3a2d5e72c2f82ad562dcf44d148c73cbe644a104099fb91845ad55faf86b8",
+      "termsSha256": "04fc634be46b0d9b0a63b80a649a1cdfc66bd1ae8b65662019f66a36a93cb86d",
+      "licenseText": "",
+      "serviceItemId": null,
+      "fields": [
+        "OBJECTID",
+        "TYPE",
+        "SURFACE",
+        "WIDTH",
+        "CONDITION",
+        "TRAIL_MARK",
+        "ILLEGAL",
+        "COMMENTS",
+        "GPS_TIME",
+        "MILES",
+        "NAME",
+        "METERS",
+        "Shape__Length",
+        "VEHICACCES",
+        "GPS_DATE"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "f3a2cb2c7445bb655dc1a2b0006de60cfd9c8ddf88e53044a0906f2e1dd15bfc",
+          "firstId": 1,
+          "lastId": 200
+        },
+        {
+          "count": 200,
+          "sha256": "5c13fb95386e3e4874f7e47a52357958aac7b99e7ea5c3b499d4489816b80fac",
+          "firstId": 201,
+          "lastId": 400
+        },
+        {
+          "count": 200,
+          "sha256": "9eaf3897b58d4a24f462b0f93aeea276e4faa228eeee2cfbe1bb064f58004b3c",
+          "firstId": 401,
+          "lastId": 600
+        },
+        {
+          "count": 200,
+          "sha256": "4b6fe68a947ead4013a123c123c52be16367a51267fd77d0ea316d78c3c7940f",
+          "firstId": 601,
+          "lastId": 800
+        },
+        {
+          "count": 200,
+          "sha256": "31f56fdff276a2ff024e8f1bfdaee4e258002b597a5b2bdca462dd19ccf079ce",
+          "firstId": 801,
+          "lastId": 1000
+        },
+        {
+          "count": 200,
+          "sha256": "f1c1aa2ee24fd9fbe2f191d41a0122696ccfdf7af061ec2173d8657367c1981f",
+          "firstId": 1001,
+          "lastId": 1200
+        },
+        {
+          "count": 200,
+          "sha256": "7d32411ac80d1d77a265e91ae20bcd335ae96a8fed17def94611f332c4d02d9f",
+          "firstId": 1201,
+          "lastId": 1400
+        },
+        {
+          "count": 200,
+          "sha256": "4bba667f8efc71f23d7078dd9252566dd189256bc6340410694def7d06af2021",
+          "firstId": 1401,
+          "lastId": 1600
+        },
+        {
+          "count": 200,
+          "sha256": "72a4a3c41a405dfc9449c4023315402c612ec1d2c8820efb2201d8d995fd056d",
+          "firstId": 1601,
+          "lastId": 1800
+        },
+        {
+          "count": 200,
+          "sha256": "5dee5f068cb8610258f9410ef7c07c667e3ddc6da3343f0b9e2285f998013760",
+          "firstId": 1801,
+          "lastId": 2000
+        },
+        {
+          "count": 200,
+          "sha256": "1cd07cef1b030495cba4d55933687ba320afccec21fa0c8199b2e61cb750a1da",
+          "firstId": 2001,
+          "lastId": 2200
+        },
+        {
+          "count": 200,
+          "sha256": "e006c70723d21ff78894675d9a9efd588cc144129c0b39acbe6256d12dcba748",
+          "firstId": 2201,
+          "lastId": 2400
+        },
+        {
+          "count": 200,
+          "sha256": "52720e8b2c7c48b92a4b701454b87bd9f960dcf693c685c18abb74e9476cafcb",
+          "firstId": 2401,
+          "lastId": 2600
+        },
+        {
+          "count": 200,
+          "sha256": "f24873ec038b9293442a0abf5a2d9369a42ece91c86b32ab229f189d0127c24e",
+          "firstId": 2601,
+          "lastId": 2800
+        },
+        {
+          "count": 200,
+          "sha256": "862a021be8ea3349ac3c21e7fc69ed4a8d551db7ee295761086d6040e1ba8b93",
+          "firstId": 2801,
+          "lastId": 3000
+        },
+        {
+          "count": 200,
+          "sha256": "4b48815f325b9549ced7fff4234a8be4319eacd96f31d08b072374d639cc550e",
+          "firstId": 3001,
+          "lastId": 3200
+        },
+        {
+          "count": 200,
+          "sha256": "67006843435384b8e72f4a4324530a7d761a764db2b4c466202a84a5612e1feb",
+          "firstId": 3201,
+          "lastId": 3400
+        },
+        {
+          "count": 200,
+          "sha256": "ac40a6c7a8fda8bd4e178ffcbcaf9d7e1cf37b743c4a7f3a7c765a76965d05a3",
+          "firstId": 3401,
+          "lastId": 3600
+        },
+        {
+          "count": 200,
+          "sha256": "b9a4952329ce4def1495d9bad74bb8bb64f33f49eb5b73d0416cc98c41437625",
+          "firstId": 3601,
+          "lastId": 3800
+        },
+        {
+          "count": 200,
+          "sha256": "490bcba0e6122f19f9f91e81ebb2e400e5b88e0dccb6c1e89fdde50b9aa773fb",
+          "firstId": 3801,
+          "lastId": 4000
+        },
+        {
+          "count": 200,
+          "sha256": "0ee0c2ad89d7cfab03717e2045a3e609510715449bd782c883420826ec753a84",
+          "firstId": 4001,
+          "lastId": 4200
+        },
+        {
+          "count": 200,
+          "sha256": "ecc714c5cb4f5635e589464554fff4536f509b78022f2c1f432c330a9ed3e5f7",
+          "firstId": 4201,
+          "lastId": 4400
+        },
+        {
+          "count": 200,
+          "sha256": "aa8068c03404f5977ba47acfe3d21b515a5040dd63980b69f9058099221bc440",
+          "firstId": 4401,
+          "lastId": 4600
+        },
+        {
+          "count": 200,
+          "sha256": "a6b44d40f1a47686805187d060faac2bd8dfc39d28ad16d71df8dd2b2813fe6c",
+          "firstId": 4601,
+          "lastId": 4800
+        },
+        {
+          "count": 200,
+          "sha256": "8fe7f085e383397f384a1ebe6526221950bcfe1b2ebebe38ae3dd6d9bb325d18",
+          "firstId": 4801,
+          "lastId": 5000
+        },
+        {
+          "count": 200,
+          "sha256": "1a8ae8b5a6c612b630783c7b6008fd354b64fed0c09e6abfcb8d55af7ee39a4f",
+          "firstId": 5001,
+          "lastId": 5200
+        },
+        {
+          "count": 200,
+          "sha256": "8547014e2fa2cbcf07aabc6891147081a4bf6b0fa46433700ef3335efa14b448",
+          "firstId": 5201,
+          "lastId": 5400
+        },
+        {
+          "count": 200,
+          "sha256": "f40ab40974da92e92f0c9e6636eeefe244d026b5e1f78be00f875574bfa42085",
+          "firstId": 5401,
+          "lastId": 5600
+        },
+        {
+          "count": 200,
+          "sha256": "4fde331e506a7bdeba1e8222be63cc81ad9e55405efc7b6bfc54efba84628155",
+          "firstId": 5601,
+          "lastId": 5800
+        },
+        {
+          "count": 200,
+          "sha256": "0b076d1ef911ad89bcb02be40e4e6471b8c9175aa2818d85e4750b56bec7456e",
+          "firstId": 5801,
+          "lastId": 6000
+        },
+        {
+          "count": 200,
+          "sha256": "847f5e4594dbd3a0e5b013fce0b3da6f5e10a59e30b1c628cd17df18d7626208",
+          "firstId": 6001,
+          "lastId": 6200
+        },
+        {
+          "count": 200,
+          "sha256": "c1c799bb1a7540e22951ac26a66501557a1a3d2113ae5d8bf496571e6c61258b",
+          "firstId": 6201,
+          "lastId": 6400
+        },
+        {
+          "count": 200,
+          "sha256": "bdd43ef4ee56af41d3b3a0666874849504fbb42b17f4b28faf462f35d00d4c6b",
+          "firstId": 6401,
+          "lastId": 6600
+        },
+        {
+          "count": 200,
+          "sha256": "a8d7595183dcdb18e4f640aefbca17a1633c9aee85903e9ce0e044415a4f8e88",
+          "firstId": 6601,
+          "lastId": 6800
+        },
+        {
+          "count": 200,
+          "sha256": "7c46fcf78eb728edc29982969e68575eef3054b93eac34914c3781241e0661ce",
+          "firstId": 6801,
+          "lastId": 7000
+        },
+        {
+          "count": 200,
+          "sha256": "0034a5825fed00e5319a7abb3ab3d3ce7fc947c9fb4fea6d3674fc262a192331",
+          "firstId": 7001,
+          "lastId": 7200
+        },
+        {
+          "count": 200,
+          "sha256": "654cc03b2a721f2e05c054f4adc26dddfd76f85e307b5e971bf7b8861ae76472",
+          "firstId": 7201,
+          "lastId": 7400
+        },
+        {
+          "count": 200,
+          "sha256": "9a523495dd92a29240fe1543955d3ebb935debcca03997c03ba879e10619d7a5",
+          "firstId": 7401,
+          "lastId": 7600
+        },
+        {
+          "count": 200,
+          "sha256": "e9d2d38ba49c811c1f448374dac01faa2a6f26a18c94d6f83d16e17b1370b163",
+          "firstId": 7601,
+          "lastId": 7800
+        },
+        {
+          "count": 200,
+          "sha256": "27b3b6c10b47b64a4becf0e6f720842c32d76af10a52a9acb3578a8b8a52f0a5",
+          "firstId": 7801,
+          "lastId": 8000
+        },
+        {
+          "count": 200,
+          "sha256": "378a8940ec2bfad5864ca8fab6007403bf841c957fbc73c8fc1d8bc47bc00afd",
+          "firstId": 8001,
+          "lastId": 8200
+        },
+        {
+          "count": 200,
+          "sha256": "104cdf6d8ee02565526f24208ff2eb7980470b7b4da5d75b59180309d94d4bde",
+          "firstId": 8201,
+          "lastId": 8400
+        },
+        {
+          "count": 200,
+          "sha256": "4dceab87f00e49c802c54c7aea1d6d2c41fc1fa4a13f6c9edc3460372ce0871e",
+          "firstId": 8401,
+          "lastId": 8600
+        },
+        {
+          "count": 200,
+          "sha256": "e93f03fb8e0e3f133187b03d49369d554718732c8f935d6af2cffe7cedfb1a63",
+          "firstId": 8601,
+          "lastId": 8800
+        },
+        {
+          "count": 200,
+          "sha256": "6ffaeafcc678b5d97df4d1a657af0550c8bb8c4abea2ce53bc67a3b5fe6c741d",
+          "firstId": 8801,
+          "lastId": 9000
+        },
+        {
+          "count": 200,
+          "sha256": "97855f62aff17713a84226e3ac3548fd448b2276dbd89314c3da0a8cef51ecb1",
+          "firstId": 9001,
+          "lastId": 9200
+        },
+        {
+          "count": 200,
+          "sha256": "5942f00c8f16cab3a5294af59e3bbb66b7f3e2d33364cf1ebd39e6780977c55f",
+          "firstId": 9201,
+          "lastId": 9400
+        },
+        {
+          "count": 200,
+          "sha256": "69775082cb6d87453aee9bb8efdf40fe02ab7e93dd0ca604507c6dc841156e68",
+          "firstId": 9401,
+          "lastId": 9600
+        },
+        {
+          "count": 200,
+          "sha256": "ba278a3ade75df309a39d69310e898fe9e8d9ac9aae2789011c0f2bb708d09aa",
+          "firstId": 9601,
+          "lastId": 9800
+        },
+        {
+          "count": 200,
+          "sha256": "63e7c3197e04637b295cbb9ad84b7e0d18440da5a1ee2d6393399de15cb3f7e6",
+          "firstId": 9801,
+          "lastId": 10000
+        },
+        {
+          "count": 200,
+          "sha256": "25095a0e0e48a5d8149ca5894f926118b9253d671c67a869e5719f5459007512",
+          "firstId": 10001,
+          "lastId": 10200
+        },
+        {
+          "count": 200,
+          "sha256": "ee8b4c0859bd3a46a99513a67ab6acec87728c42ee89194b9de465af7355b9c0",
+          "firstId": 10201,
+          "lastId": 10400
+        },
+        {
+          "count": 200,
+          "sha256": "7c4537fd430a025a27fccb2f561d689aafcc34a93f258538afeb9698f0e306cd",
+          "firstId": 10401,
+          "lastId": 10600
+        },
+        {
+          "count": 200,
+          "sha256": "a3f17aaf7e12a05614991ce72304afd872fd5a342bbe6e19f4570f5d184c2bee",
+          "firstId": 10601,
+          "lastId": 10800
+        },
+        {
+          "count": 200,
+          "sha256": "d33b8d85fb7edf03ac6e97f50209ef75a8a1763a3b7bd89b180dc10467cc82bd",
+          "firstId": 10801,
+          "lastId": 11000
+        },
+        {
+          "count": 200,
+          "sha256": "0f584e2b7c3aaad9b23665a2dcf40715b90f75419981b239280ed627182d4747",
+          "firstId": 11001,
+          "lastId": 11200
+        },
+        {
+          "count": 200,
+          "sha256": "a52d6e747aec635ac6050f9c58080ddbff373f4907c9ca9188286bbaf9540c97",
+          "firstId": 11201,
+          "lastId": 11400
+        },
+        {
+          "count": 200,
+          "sha256": "f683b53d17f02d135db8f2e3707f00335b79b94f596acd25258e8bd95c841730",
+          "firstId": 11401,
+          "lastId": 11600
+        },
+        {
+          "count": 200,
+          "sha256": "cdcc5ced57d9ce38cb91d83518bfaa1fda08471d7899f7e53e6fe819b8f4ee17",
+          "firstId": 11601,
+          "lastId": 11800
+        },
+        {
+          "count": 200,
+          "sha256": "a7de96e5661db619e5db1a884555d653e63aeda5910573d0995db161cad97fad",
+          "firstId": 11801,
+          "lastId": 12000
+        },
+        {
+          "count": 200,
+          "sha256": "c5e60ef05b8f928d27dea3007af367293e812c0734e9b42a84e223c71a1b4d91",
+          "firstId": 12001,
+          "lastId": 12200
+        },
+        {
+          "count": 200,
+          "sha256": "2b333c68c9102b279b796d3714345f8ec3cbd79c91f457187b4d09a4ccae5af2",
+          "firstId": 12201,
+          "lastId": 12400
+        },
+        {
+          "count": 200,
+          "sha256": "32b364176f3222969967945916236213e93fc625064c4e25d1e9c05f82a54b81",
+          "firstId": 12401,
+          "lastId": 12600
+        },
+        {
+          "count": 200,
+          "sha256": "b80ea321c770e1308c13bcd9f58fbd68850c0613d9cf3f0fa3522a7094b40f5d",
+          "firstId": 12601,
+          "lastId": 12800
+        },
+        {
+          "count": 200,
+          "sha256": "0636594bf9a722315e79c04d1878c719ad8cde4040a9dcc5833f444270741ed1",
+          "firstId": 12801,
+          "lastId": 13000
+        },
+        {
+          "count": 200,
+          "sha256": "e78a040f72f23b2f47b3547609e817b9dc87fa4f970bbbf69a2cd40e92855fc8",
+          "firstId": 13001,
+          "lastId": 13200
+        },
+        {
+          "count": 200,
+          "sha256": "f95d734c2bc27743ee1233f9656fad6e72aae3af57e50accae54df391bff3e03",
+          "firstId": 13201,
+          "lastId": 13400
+        },
+        {
+          "count": 200,
+          "sha256": "e9994ea00b797eb770ce45f7238150f841978f5ade5c2ae90f20a66d4df0318a",
+          "firstId": 13401,
+          "lastId": 13600
+        },
+        {
+          "count": 200,
+          "sha256": "5da7ad7072630e2c0327ccf4a9973877882ad59e4edb7223b0faee35ced3a9c0",
+          "firstId": 13601,
+          "lastId": 13800
+        },
+        {
+          "count": 200,
+          "sha256": "cec0c1f32d981f3ba22c77b27e1b67b6ee23e1a74a7fb51f3bf5b6704f474e87",
+          "firstId": 13801,
+          "lastId": 14000
+        },
+        {
+          "count": 200,
+          "sha256": "7ef75511b148f12c05936747e1d2393c1863fc796b96fd4db07bf0dc44f90d14",
+          "firstId": 14001,
+          "lastId": 14200
+        },
+        {
+          "count": 200,
+          "sha256": "3e326ffa3f6f97ae8bcb09121726580b509a3b493d245ce256db2323a088e4ef",
+          "firstId": 14201,
+          "lastId": 14400
+        },
+        {
+          "count": 200,
+          "sha256": "1a0202c6f55cbcbd3f16818ef7fe8150f80edbcad89586799c306752a1e980f0",
+          "firstId": 14401,
+          "lastId": 14600
+        },
+        {
+          "count": 200,
+          "sha256": "8de0fa3f75e065b278ab53d3b61ef3f2d0da7bc45b5a1af48f06e7441492b084",
+          "firstId": 14601,
+          "lastId": 14800
+        },
+        {
+          "count": 200,
+          "sha256": "d3116780a86b6401969e14a7449090ab957f06037ab5cb0d4a32213d1bfb8575",
+          "firstId": 14801,
+          "lastId": 15000
+        },
+        {
+          "count": 200,
+          "sha256": "5d22cff55f528fa7ec74a94e752a7e0d3c9d54de9fde1dfcf112ae8cb3143e15",
+          "firstId": 15001,
+          "lastId": 15200
+        },
+        {
+          "count": 200,
+          "sha256": "3178a2a07c7f4a21ed9a756b4693d13517dc9b12baf116dd05a7908757201071",
+          "firstId": 15201,
+          "lastId": 15400
+        },
+        {
+          "count": 200,
+          "sha256": "79cabc023eae25cafc0136c9638576ec2610cf028f5c64ff2f5dce4f96dd5512",
+          "firstId": 15401,
+          "lastId": 15600
+        },
+        {
+          "count": 200,
+          "sha256": "554baa9548453ed03d418feb78c075f63289fac89485406e969cb2159614c9af",
+          "firstId": 15601,
+          "lastId": 15800
+        },
+        {
+          "count": 200,
+          "sha256": "ebcbf6cb156bd407449f2508f0d4d7bc35524dd1a12be2bf5ef68391f5c4ad96",
+          "firstId": 15801,
+          "lastId": 16000
+        },
+        {
+          "count": 200,
+          "sha256": "fab9f7af632643db120ed1ce7ce68b0578dbd0a706c6f83932a61693199c4828",
+          "firstId": 16001,
+          "lastId": 16200
+        },
+        {
+          "count": 200,
+          "sha256": "7b0152fe101fab0b50bfdd95da177d130b2875aa94d45d471fafc4b7d5b3107e",
+          "firstId": 16201,
+          "lastId": 16400
+        },
+        {
+          "count": 200,
+          "sha256": "70487eb8320a66bb7ad576f9fddc42a2e456521d4bfcfdf9f1880a740cf01304",
+          "firstId": 16401,
+          "lastId": 16600
+        },
+        {
+          "count": 200,
+          "sha256": "c43b9bc0db61c8f3562ff271fde5c76240408478854b714a42debb0458e9a2e4",
+          "firstId": 16601,
+          "lastId": 16800
+        },
+        {
+          "count": 200,
+          "sha256": "ffe0400ffb31d0624f501ce146a5ad69838ae6b4c8e6115df09424438bb82e39",
+          "firstId": 16801,
+          "lastId": 17000
+        },
+        {
+          "count": 200,
+          "sha256": "679895c1ce74662ac9482f4ae6408e6d73e082804bf4b7afb5fbd2362ce361e7",
+          "firstId": 17001,
+          "lastId": 17200
+        },
+        {
+          "count": 200,
+          "sha256": "9ef694c39b24b2799fe7c68e15d001dd279a1b9e9a1a0a2d5b5e9eb81739a7e3",
+          "firstId": 17201,
+          "lastId": 17400
+        },
+        {
+          "count": 200,
+          "sha256": "d35b9fe57ac3f8c1f65e9a7498160cac53f9f2f3e9b8aea07320a4aea915326c",
+          "firstId": 17401,
+          "lastId": 17600
+        },
+        {
+          "count": 200,
+          "sha256": "ae52aab1d833f52bc101a807134d9902523b02c4794d0a4eb5a5240b68356d9d",
+          "firstId": 17601,
+          "lastId": 17800
+        },
+        {
+          "count": 200,
+          "sha256": "62c23b4ef7d98198d8c6e9c1c6fd61bb164a15cc970b4d7c99240e1727b1402d",
+          "firstId": 17801,
+          "lastId": 18000
+        },
+        {
+          "count": 200,
+          "sha256": "dff1264cdda48b6d13b8284d05e8e9f7e88d6008813c89a1116f4adfcdfc935a",
+          "firstId": 18001,
+          "lastId": 18200
+        },
+        {
+          "count": 200,
+          "sha256": "51e6094e154f1afbd68cbeab8ac3904dc3cbd3eea3cd532a36490eaed6217106",
+          "firstId": 18201,
+          "lastId": 18400
+        },
+        {
+          "count": 200,
+          "sha256": "0133526554af62b995ffdc4a8757614694b1418946065a71bcd05a314fa97df3",
+          "firstId": 18401,
+          "lastId": 18600
+        },
+        {
+          "count": 200,
+          "sha256": "6edaf88771436edee15910f88a7c52e41a7b84188229b3a531ea842d8c24988a",
+          "firstId": 18601,
+          "lastId": 18800
+        },
+        {
+          "count": 200,
+          "sha256": "6ad8755f17b61f71a94e07a28d5fe737e109f0459d2b4c0afe8654880175d38b",
+          "firstId": 18801,
+          "lastId": 19000
+        },
+        {
+          "count": 200,
+          "sha256": "326b7c447f531bb084f88d38f5561084b7db4ae85b9110683da1ae1b8e5802ca",
+          "firstId": 19001,
+          "lastId": 19200
+        },
+        {
+          "count": 200,
+          "sha256": "73421f970842b6700fa4105874d62f5d7555e7213f4abec7a5fd77a0937e0cb3",
+          "firstId": 19201,
+          "lastId": 19400
+        },
+        {
+          "count": 200,
+          "sha256": "31f9755d3c23e782622949adf8ab78cbe143269c799796b4698c344f6bde2879",
+          "firstId": 19401,
+          "lastId": 19600
+        },
+        {
+          "count": 200,
+          "sha256": "4cf7412190554a14de321cd903261b89f031b8ec51aa077e4f235e4d98f320dd",
+          "firstId": 19601,
+          "lastId": 19800
+        },
+        {
+          "count": 200,
+          "sha256": "639f8b6023ea66326c2d84bcd5a49258530e1d1e2d03be4afc2d40ca99034abb",
+          "firstId": 19801,
+          "lastId": 20000
+        },
+        {
+          "count": 200,
+          "sha256": "41bf560ff326731666e46a9f9135797ca5936f7112120d036f14dad845bb4a71",
+          "firstId": 20001,
+          "lastId": 20200
+        },
+        {
+          "count": 200,
+          "sha256": "7bd899f13a4d1534ae8c44627224f7420b4d040df2baedf5472857b771562a08",
+          "firstId": 20201,
+          "lastId": 20400
+        },
+        {
+          "count": 200,
+          "sha256": "5060d65b696e2ee40d0f0ab4f4db5be67fe7f23e016f27af418b3d6ef0be6c34",
+          "firstId": 20401,
+          "lastId": 20600
+        },
+        {
+          "count": 200,
+          "sha256": "74de37ca8ea2dc49fb56b23b0cd00182c031ed09048fb9924ae1bbb1d275c2cc",
+          "firstId": 20601,
+          "lastId": 20800
+        },
+        {
+          "count": 200,
+          "sha256": "5c9cbc4bc41a0034f9bda3035288d25a6e51bca36f9088f9adc46efb9b815be8",
+          "firstId": 20801,
+          "lastId": 21000
+        },
+        {
+          "count": 200,
+          "sha256": "aa408e8a58112a8b44d163339311f2e5f35b1b94aa6b4e87225a37034c23d83d",
+          "firstId": 21001,
+          "lastId": 21200
+        },
+        {
+          "count": 200,
+          "sha256": "e55a4eff90b1501aef36d8a33cb988b7ffde4fe649882919a43004d749d6c2c2",
+          "firstId": 21201,
+          "lastId": 21400
+        },
+        {
+          "count": 200,
+          "sha256": "f75221090f4c0e650c3cd835b6f82ac2fdfa481b8c53aaf1a0661874154516e3",
+          "firstId": 21401,
+          "lastId": 21600
+        },
+        {
+          "count": 200,
+          "sha256": "54671021fc094bd972b10ea8d63844337ce3ae6ec0544282a4d423ae365f93d0",
+          "firstId": 21601,
+          "lastId": 21800
+        },
+        {
+          "count": 200,
+          "sha256": "ca0b5bc1227f6dfa689897e493b16fd05423d6e37868dc2a3dca60eda6bb4e04",
+          "firstId": 21801,
+          "lastId": 22000
+        },
+        {
+          "count": 200,
+          "sha256": "f290a9b2a25d34a14668a1da22e449e6913559cc82410dd6b82ad11e81ace66f",
+          "firstId": 22001,
+          "lastId": 22200
+        },
+        {
+          "count": 200,
+          "sha256": "4d4d6b2e4e795cbb65ea54dfdf3995aeeba48c1e1330b330f473fe9039cd5832",
+          "firstId": 22201,
+          "lastId": 22400
+        },
+        {
+          "count": 200,
+          "sha256": "9d710ad2772bfa47bfa07cc41eb2e2324cdfd884c7bf74c964f66e646931993d",
+          "firstId": 22401,
+          "lastId": 22600
+        },
+        {
+          "count": 200,
+          "sha256": "0b2183f419d50a665c2ecca0c839cb3a8377b1f5dd0039ffd804eadd64fea61a",
+          "firstId": 22601,
+          "lastId": 22800
+        },
+        {
+          "count": 200,
+          "sha256": "484b313425a40229dd5c9b5a1e5d9bbd62abb5f17d5fca023ccbc62c5c45db12",
+          "firstId": 22801,
+          "lastId": 23000
+        },
+        {
+          "count": 200,
+          "sha256": "c14c20751f911b06a73b51e3324233fb0372bcd0ce960a647e1db7a2213d8f4f",
+          "firstId": 23001,
+          "lastId": 23200
+        },
+        {
+          "count": 200,
+          "sha256": "843469c02c807edefa9559aeacab1688a5ce05478d7252969d12b4ceb02bac98",
+          "firstId": 23201,
+          "lastId": 23400
+        },
+        {
+          "count": 200,
+          "sha256": "5ef9894636a48ba767347d1a5b10da7bc0608781f45c5dd685beb12a6011c080",
+          "firstId": 23401,
+          "lastId": 23600
+        },
+        {
+          "count": 200,
+          "sha256": "b9dcec0f75e4ed84a5ff6ab2240d199ea9de57e76f369b2f69fc218285c2a23d",
+          "firstId": 23601,
+          "lastId": 23800
+        },
+        {
+          "count": 200,
+          "sha256": "78252d85dc53e06bc95e1483e69f71b1940a6f5e57c8a83f0674bc11a78c411e",
+          "firstId": 23801,
+          "lastId": 24000
+        },
+        {
+          "count": 200,
+          "sha256": "207e4fe2e7b7716666965d9ef97b4a229775531611eac4621fe1680a35b9bfe8",
+          "firstId": 24001,
+          "lastId": 24200
+        },
+        {
+          "count": 200,
+          "sha256": "32f58efc327d69bd442220954340cbc1449ae4d997509fa1283363c121336c69",
+          "firstId": 24201,
+          "lastId": 24400
+        },
+        {
+          "count": 200,
+          "sha256": "c555a95b4702058096558a6d803f49f787fe9119e6a9c58cd9d4f303627375fe",
+          "firstId": 24401,
+          "lastId": 24600
+        },
+        {
+          "count": 200,
+          "sha256": "94dadbb0dc44eaf274f5a450fa634b3f179e3f442e5d4c699c8c8e0a69bf8d92",
+          "firstId": 24601,
+          "lastId": 24800
+        },
+        {
+          "count": 200,
+          "sha256": "7c66144bb436f420386cc5b08d849dac184fe428b684334dc2c36b704c9f9c77",
+          "firstId": 24801,
+          "lastId": 25000
+        },
+        {
+          "count": 200,
+          "sha256": "282fa127c876c1ff57efe985f45686545cbb0fd5fd7bce2379465b0c6a131fd0",
+          "firstId": 25001,
+          "lastId": 25200
+        },
+        {
+          "count": 200,
+          "sha256": "ab9e8b0cc6da650bab7c8816d6ea55954e6e1efd97673d72488d62f4490eeb4d",
+          "firstId": 25201,
+          "lastId": 25400
+        },
+        {
+          "count": 200,
+          "sha256": "a960dc112054e3464a8e872803d53e4cc277753030b292a2b9fe5503507f397a",
+          "firstId": 25401,
+          "lastId": 25600
+        },
+        {
+          "count": 200,
+          "sha256": "c0fc36090609fc20d7f1cb1ccc4932dc04d69ac46b13365f19c9b1a4e13bc08e",
+          "firstId": 25601,
+          "lastId": 25800
+        },
+        {
+          "count": 200,
+          "sha256": "4b7ab04fabd225fb288249e8c0d5178082c5beb0c54ebfbc54adc479cb87528a",
+          "firstId": 25801,
+          "lastId": 26000
+        },
+        {
+          "count": 200,
+          "sha256": "4250fc10d6ce93f827d8317d925d594dc3faa50a929feea2e34d13c58356370f",
+          "firstId": 26001,
+          "lastId": 26200
+        },
+        {
+          "count": 200,
+          "sha256": "fcc1501fc2433b1c0cb30e9fa1bbebc8401fe791ea997f2ca4b4a48a26579e7e",
+          "firstId": 26201,
+          "lastId": 26400
+        },
+        {
+          "count": 200,
+          "sha256": "f96347dfe02d13b68a00a08ac1687066bf048b253ebbd640b48f5e3f96679fa6",
+          "firstId": 26401,
+          "lastId": 26600
+        },
+        {
+          "count": 200,
+          "sha256": "92c2004f250c77b79b83dec077c6df5f2fadfe8d49777c4311d979856fc4c676",
+          "firstId": 26601,
+          "lastId": 26800
+        },
+        {
+          "count": 200,
+          "sha256": "4bd29aa4cbb4bc3947b087fafc9853d2a22ecafabb704bf7cc5f9d77bbbe6f07",
+          "firstId": 26801,
+          "lastId": 27000
+        },
+        {
+          "count": 200,
+          "sha256": "c11c108c1610d938a1b9a948bc0ac932fe192129aa542b00d57cdff74fa0fdd5",
+          "firstId": 27001,
+          "lastId": 27200
+        },
+        {
+          "count": 200,
+          "sha256": "3bd8fe8bdc5e544c504da2833d1b3a58ed55cdf4d890c21b17d49ce57dddbe2f",
+          "firstId": 27201,
+          "lastId": 27400
+        },
+        {
+          "count": 200,
+          "sha256": "4ebfae81b637024fae712f7a24c58c3f0fb06073c0e107f3c8b5fe1b714677e8",
+          "firstId": 27401,
+          "lastId": 27600
+        },
+        {
+          "count": 200,
+          "sha256": "c7e2ae4ab38761b5d857f09241c78583689402636e117aad51e74b5af856bb5a",
+          "firstId": 27601,
+          "lastId": 27800
+        },
+        {
+          "count": 200,
+          "sha256": "c9b822e3880978cd453b40d448afbdb614f3c7747c32730bd1e3bcbd53afbada",
+          "firstId": 27801,
+          "lastId": 28000
+        },
+        {
+          "count": 200,
+          "sha256": "d5d855f8f9c228ddd0cc3c5857c5e2ccabc054e178fdd56671c6e5e633fb34b3",
+          "firstId": 28001,
+          "lastId": 28200
+        },
+        {
+          "count": 200,
+          "sha256": "92ed6174345fad1b33734ca543016267f6b94075f9dc48e995e4a679ccdce484",
+          "firstId": 28201,
+          "lastId": 28400
+        },
+        {
+          "count": 200,
+          "sha256": "1a2bcbd31bacb58771d81fb2c9e571cbc9b7e2f8780dc60716e2bfb51b8f7860",
+          "firstId": 28401,
+          "lastId": 28600
+        },
+        {
+          "count": 200,
+          "sha256": "d7b733360fc7a0d4071b46b9a10d5ad1dd09a5feb6598b4d769fac94aabd3897",
+          "firstId": 28601,
+          "lastId": 28800
+        },
+        {
+          "count": 200,
+          "sha256": "c7732cf07b4a8ddaf2659a4a6e4c4e6d384668916d051fb18a75281eaf757b12",
+          "firstId": 28801,
+          "lastId": 29000
+        },
+        {
+          "count": 200,
+          "sha256": "3a2a7764150630132d4f32485989b3b73f2641946e3ad7b92793ee9cf9216daf",
+          "firstId": 29001,
+          "lastId": 29200
+        },
+        {
+          "count": 200,
+          "sha256": "f4eb6fa7422f69233848fb01209c5ee624e32a17420d81cd407c95b471e8628a",
+          "firstId": 29201,
+          "lastId": 29400
+        },
+        {
+          "count": 200,
+          "sha256": "31f49eab29bb8793971891491cc06521c7b90e2a25b2bfaa5af939a2549396e5",
+          "firstId": 29401,
+          "lastId": 29600
+        },
+        {
+          "count": 200,
+          "sha256": "71bb4db227e17a96d9b1da247b5da14aa85eb607e54a11756727c4f8841c92a8",
+          "firstId": 29601,
+          "lastId": 29800
+        },
+        {
+          "count": 200,
+          "sha256": "87341e5f9408ec0c35747449e354ea1a4b9595edd2f9a15bc56697dae819ef32",
+          "firstId": 29801,
+          "lastId": 30000
+        },
+        {
+          "count": 200,
+          "sha256": "67b27aff32bb66ef2609e3e779c58e5e0c28d46d9b419934e9c83d18dbbbe596",
+          "firstId": 30001,
+          "lastId": 30200
+        },
+        {
+          "count": 200,
+          "sha256": "3dda0cc790c0fa44e07728cb47b53a74e8143e86a24cc786d49f72fc206ceac5",
+          "firstId": 30201,
+          "lastId": 30400
+        },
+        {
+          "count": 200,
+          "sha256": "487e289369dbc85c81cb411e076c7d6d663de0444dc7ee5259fa21cf3294e40f",
+          "firstId": 30401,
+          "lastId": 30600
+        },
+        {
+          "count": 200,
+          "sha256": "453d6aa652ea460d9558f7837cfbdedcf439523c1f920dc96f564e0394287efe",
+          "firstId": 30601,
+          "lastId": 30800
+        },
+        {
+          "count": 200,
+          "sha256": "927872fab1abb7f66c6afe18993dffa90d32ba000dcf6eda9a28140f04431e9b",
+          "firstId": 30801,
+          "lastId": 31000
+        },
+        {
+          "count": 200,
+          "sha256": "7e15c5feef5c2922e59a9a8674a7bdbf6e1dd21e63c2e92ba0c218aa932903b8",
+          "firstId": 31001,
+          "lastId": 31200
+        },
+        {
+          "count": 200,
+          "sha256": "529cd55f2c244e2ac2e62790c3c36d0f22c8fbf74cff4e9586263941cbed2273",
+          "firstId": 31201,
+          "lastId": 31400
+        },
+        {
+          "count": 200,
+          "sha256": "fb62b0e923fe3dce00b9896dae24f04195af3676deb64d79c6e7653b1d16b501",
+          "firstId": 31401,
+          "lastId": 31600
+        },
+        {
+          "count": 200,
+          "sha256": "c71fd7efaf4430615733e82f97af1bf906b41be482c9afa2ee89a45ee8b30991",
+          "firstId": 31601,
+          "lastId": 31800
+        },
+        {
+          "count": 200,
+          "sha256": "8252a608ec2ecbc17cd022552fccdf02dcfe25d2c2a1840c40cd9e3e43cf014e",
+          "firstId": 31801,
+          "lastId": 32000
+        },
+        {
+          "count": 200,
+          "sha256": "f678d280007f941e5e62593f51d692fddf66b8507e9cb1f1f1daad98bf2f7a88",
+          "firstId": 32001,
+          "lastId": 32200
+        },
+        {
+          "count": 200,
+          "sha256": "3ab8887e812ed0589c88471a4733e42fc4c68084dfe3a66974c6afe628d786c1",
+          "firstId": 32201,
+          "lastId": 32400
+        },
+        {
+          "count": 200,
+          "sha256": "4b2796e71001126d7a89ed445a6dd193871e4441bdb9e521de76828bc1e6aefe",
+          "firstId": 32401,
+          "lastId": 32600
+        },
+        {
+          "count": 200,
+          "sha256": "83067469982ee162813583939eee35abf2563b13dd077a63fb3f825aa26e089c",
+          "firstId": 32601,
+          "lastId": 32800
+        },
+        {
+          "count": 200,
+          "sha256": "230bffbc57ec24be2578185c1b9b2652e343b03853b15ccc000920757ddfac8f",
+          "firstId": 32801,
+          "lastId": 33000
+        },
+        {
+          "count": 200,
+          "sha256": "155fe058a90466b8fed627b91832359375488b83de5c49edd8feab17e9701a76",
+          "firstId": 33001,
+          "lastId": 33200
+        },
+        {
+          "count": 200,
+          "sha256": "c73e1b66c3c161fd7b6738112401f24de8213a8c8016e07d65c5dbf3bf699254",
+          "firstId": 33201,
+          "lastId": 33400
+        },
+        {
+          "count": 200,
+          "sha256": "5e3c7d3173927d593dea24077a8c2272fcf165e16006c6adb9f3ee86823836a8",
+          "firstId": 33401,
+          "lastId": 33600
+        },
+        {
+          "count": 200,
+          "sha256": "bc5ac8aa1fa15d710d407b580f5e92af24b73fa2df3beeae3f76e8c0ad598407",
+          "firstId": 33601,
+          "lastId": 33800
+        },
+        {
+          "count": 200,
+          "sha256": "127c949b80c695e72641de57038723a48322f45e1f931dac7056136df2a844af",
+          "firstId": 33801,
+          "lastId": 34000
+        },
+        {
+          "count": 200,
+          "sha256": "8fc847fc5127b9a1563d4ebe3d4d2c92e8ef5952f135593f0b9c34d38b2a4819",
+          "firstId": 34001,
+          "lastId": 34200
+        },
+        {
+          "count": 200,
+          "sha256": "4c2312ee4de34b274e679973720a4f9e7ab92dff630876d630b00c65dd5930e0",
+          "firstId": 34201,
+          "lastId": 34400
+        },
+        {
+          "count": 200,
+          "sha256": "54e3e9f04fcfd551d7c91ab6e46e754d782c36fc115332968bae82126c398386",
+          "firstId": 34401,
+          "lastId": 34600
+        },
+        {
+          "count": 200,
+          "sha256": "fbfdd73e7a0a28c60fc7af49b74d71cf658bb64faf3dc9d722aff9764c83736e",
+          "firstId": 34601,
+          "lastId": 34800
+        },
+        {
+          "count": 200,
+          "sha256": "2ba1606e8678325b168846f4f8cfe106c2e9e3e2a93750518c1373a7b351fbcd",
+          "firstId": 34801,
+          "lastId": 35000
+        },
+        {
+          "count": 200,
+          "sha256": "1dcea695e3899407a843fa787032c3951c0167c8f91924f56544b3463f7a640d",
+          "firstId": 35001,
+          "lastId": 35200
+        },
+        {
+          "count": 200,
+          "sha256": "d50e69b6d7a9a5293ea0641d007a2fc1bac033e606e83c1cb288155f5823b079",
+          "firstId": 35201,
+          "lastId": 35400
+        },
+        {
+          "count": 200,
+          "sha256": "7fe99e0f89749aadde4822fa582ca95e0a5155ee4cd78239a32be45144824156",
+          "firstId": 35401,
+          "lastId": 35600
+        },
+        {
+          "count": 200,
+          "sha256": "02385b1a04dbeaefcd8c514833c9b7f3f396506261681da60b01daeee1ba489a",
+          "firstId": 35601,
+          "lastId": 35800
+        },
+        {
+          "count": 200,
+          "sha256": "f5c86e39ae45f2c809ab939d06748ac2c1dca95ef1a9bd5fef795f2f3129bf49",
+          "firstId": 35801,
+          "lastId": 36000
+        },
+        {
+          "count": 200,
+          "sha256": "45851bec3b6dea482a7f591152096b6f4db8fc724fcf07375914fd888acde766",
+          "firstId": 36001,
+          "lastId": 36200
+        },
+        {
+          "count": 200,
+          "sha256": "4152d1c438bf9988e6e48701619a4814cedfb81bc3456289dc76a521fc1cfdd8",
+          "firstId": 36201,
+          "lastId": 36400
+        },
+        {
+          "count": 200,
+          "sha256": "b985accf5bee78c4e6440379d4dbfdcd34c34181b8b10106c7a90acfda703b14",
+          "firstId": 36401,
+          "lastId": 36600
+        },
+        {
+          "count": 200,
+          "sha256": "16b2192c51d47c11ec3dd5d0857855f2571fa5bcefe341d624179b208a72883e",
+          "firstId": 36601,
+          "lastId": 36800
+        },
+        {
+          "count": 59,
+          "sha256": "d0fc5645cb747fc2282f6c28c568d1c8cdf3d84fa05094291e89bb084bc66ce7",
+          "firstId": 36801,
+          "lastId": 36859
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 36855,
+      "filteredFeatureCount": 4,
+      "geometryRejections": {
+        "count": 4,
+        "sha256": "3841ad642befb74c24255d3c97ccd8e9251cb351dce70916a2d39171c91732dd"
+      },
+      "packagedFeatureSha256": "0f2c50248c68643949c9af6d682d52c1def7748c2f7b935d31c809eca2eea64e"
+    },
+    {
+      "id": "ma-dcr-points",
+      "state": "MA",
+      "name": "MassGIS DCR trail and road points",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Pts/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "vintage": "2015-06; historical reference, verify current manager maps",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:53:42.639Z",
+      "sourceUpdated": "2015-06; historical reference, verify current manager maps",
+      "featureCount": 20786,
+      "bytes": 40512530,
+      "sha256": "7454c81fcd34494106938c5390d1f86b92f8dfb406d1b2bdd9b6f81c982da548",
+      "metadataSha256": "b2b27522f77cec1f014a8f9539aeacd6c1efcc9fbf040a5b161ee2f7d286c563",
+      "termsSha256": "04fc634be46b0d9b0a63b80a649a1cdfc66bd1ae8b65662019f66a36a93cb86d",
+      "licenseText": "",
+      "serviceItemId": null,
+      "fields": [
+        "OBJECTID",
+        "TYPE",
+        "NUM",
+        "COMMENTS",
+        "GPS_TIME",
+        "RBRIDOWNER",
+        "RBRIDFCROS",
+        "RBRIDDMATE",
+        "RBRIDSPAN",
+        "RBRIDDWIDT",
+        "RBRIDDLENG",
+        "RBRIDDCOND",
+        "RBRIDSMATE",
+        "RBRIDSNUM",
+        "RBRIDSCOND",
+        "RBRIDSSIZE",
+        "RBRIDHRATI",
+        "RBRIDAMATE",
+        "RBRIDACOND",
+        "RBRIDOWIDT",
+        "RBRIDOHEIG",
+        "RBRIDYEARI",
+        "GATE_OWNER",
+        "GATE_EFFEC",
+        "GATE_NUM",
+        "GATE_TYPE",
+        "GATE_POSTS",
+        "GATE_HEIGH",
+        "GATE_WIDTH",
+        "GATE_CONFG",
+        "GATE_COND",
+        "GATE_RFLCT",
+        "RFORDFCROS",
+        "RFORDCOND",
+        "RFORDBTYPE",
+        "RSIGNTTEXT",
+        "RSIGNMATER",
+        "RSIGNPOSTM",
+        "PRKNGSURF",
+        "PRKNGCAPAC",
+        "PRKNGCOND",
+        "PRKNGESIZE",
+        "TSTRUSTYPE",
+        "TSTRUMATER",
+        "TSTRUSCOND",
+        "TSTRUSFUNC",
+        "TSTRXCTYPE",
+        "TSTRXMATER",
+        "TSTRXSCOND",
+        "TSTRXCCOND",
+        "TSTRXWTYPE",
+        "TSTRXLENGT",
+        "TUTIXUTYPE",
+        "TUTIXCONFG",
+        "TUTIXIMPCT",
+        "TBNDXSPDCR",
+        "TBNDXSPPRI",
+        "TSIGNINFO",
+        "TSIGNINTRP",
+        "TSIGNREGUL",
+        "TSIGNKIOSK",
+        "PICNINUM",
+        "PICNIMATER",
+        "BENCHNUM",
+        "BENCHMATER",
+        "RSIGNCOND",
+        "TSIGNCOND",
+        "INTSIGNAGE",
+        "INT_NUMBER",
+        "GPS_DATE",
+        "TDAMGTYPE",
+        "TDAMGLENGT",
+        "TDAMGDEPTH",
+        "RTRNOWIDTH",
+        "RTRNOSURF",
+        "RTRNAWIDTH",
+        "RTRNASURF",
+        "RLANDESIZE",
+        "RLANDMAINT",
+        "RLANDCOVER",
+        "RLANDLASTU",
+        "RDDIPTYPE",
+        "RDDIPCOND",
+        "RDAMGTYPE",
+        "RDAMGESIZE",
+        "RDAMGUSE_R",
+        "RDAMGVPASS",
+        "RCULVOWNER",
+        "RCULVFCROS",
+        "RCULVLENGT",
+        "RCULVDIAME",
+        "RCULVHEIGH",
+        "RCULVWIDTH",
+        "RCULVCOVER",
+        "RCULVFLOWC",
+        "RCULVCCOND",
+        "RCULVICOND",
+        "RCULVOCOND",
+        "RCULVYEARI",
+        "RCULVTYPE",
+        "RTRNALENGT",
+        "RTRNOLENGT",
+        "RDAMGMAINR",
+        "RWHOLIDNUM",
+        "RWHOLESIZE",
+        "RWHOLACCES",
+        "RWHOLSUVEG",
+        "RWHOLSEDIM",
+        "ENCROTYPE",
+        "BOUNDTYPE"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "2acb54a611fefba170ec967a4bf9ead981ef3d304c2308ffe3c4940e04d6c3cc",
+          "firstId": 1,
+          "lastId": 200
+        },
+        {
+          "count": 200,
+          "sha256": "08b239cb0d90075b62c1d9d3907898f2943e302ad6974692f8a822394b05527f",
+          "firstId": 201,
+          "lastId": 400
+        },
+        {
+          "count": 200,
+          "sha256": "f1c0875e236b6b5ab9040dca050a84a4ea7639b8f2ba675a88de276197b414fe",
+          "firstId": 401,
+          "lastId": 600
+        },
+        {
+          "count": 200,
+          "sha256": "ce83e3e2bff4b1ecd9708d6b04212d5d94948e77f052ca8a253cab79f899955f",
+          "firstId": 601,
+          "lastId": 800
+        },
+        {
+          "count": 200,
+          "sha256": "8e14003a80dfd10796c018edd76535da8d54ec5c0ba51fa95702f1f2b0a6d711",
+          "firstId": 801,
+          "lastId": 1000
+        },
+        {
+          "count": 200,
+          "sha256": "7cd6b59fceafdddc1f597808ee5b1e6d2acbe67b56252e31ce27de401fb01105",
+          "firstId": 1001,
+          "lastId": 1200
+        },
+        {
+          "count": 200,
+          "sha256": "fe078cca88104461f4123cb9e3912e60a1eb75edd8315dc60ed3b2c7628616ee",
+          "firstId": 1201,
+          "lastId": 1400
+        },
+        {
+          "count": 200,
+          "sha256": "4a9ee7992aad94783e620495af07e577c9bd515d445b0b2fb514df887bb62625",
+          "firstId": 1401,
+          "lastId": 1600
+        },
+        {
+          "count": 200,
+          "sha256": "e65aca9105401422abd474bb424aa8ae0931d6cad7e286714c4608df01e57984",
+          "firstId": 1601,
+          "lastId": 1800
+        },
+        {
+          "count": 200,
+          "sha256": "54149219b14984d5ce943c1287efc9fb31b66fe7cc379b28d6a93a254cefc061",
+          "firstId": 1801,
+          "lastId": 2000
+        },
+        {
+          "count": 200,
+          "sha256": "bbb6450052011fca070d40acc166b2312d3ba4cfd2cdaf15eb5f9c5a373bc7c4",
+          "firstId": 2001,
+          "lastId": 2200
+        },
+        {
+          "count": 200,
+          "sha256": "5db4a56fe1533a3628252c930b5f92c405893a0788099233dd31746ebc3fd1c1",
+          "firstId": 2201,
+          "lastId": 2400
+        },
+        {
+          "count": 200,
+          "sha256": "23b12e6963245de992e45f4150a268d77cbbcb2662c4220c4fd2f0cdef9dff56",
+          "firstId": 2401,
+          "lastId": 2600
+        },
+        {
+          "count": 200,
+          "sha256": "6b9ed895f8e74f6ef60efcc2a31e273793a368ae3efaa24bc6bfc380456b5642",
+          "firstId": 2601,
+          "lastId": 2800
+        },
+        {
+          "count": 200,
+          "sha256": "590f5fc4c245e681e22824bdecaf78def889009973153d1383e3af12229f85cc",
+          "firstId": 2801,
+          "lastId": 3000
+        },
+        {
+          "count": 200,
+          "sha256": "35a590c0ecc5b212d2fb1dbbf9998d48f40e58076d510605214b646a75e601a1",
+          "firstId": 3001,
+          "lastId": 3200
+        },
+        {
+          "count": 200,
+          "sha256": "938ea57d5d9de9732c6565dbb522cd50937303ad56db43ba82d01e7aa3eabeb4",
+          "firstId": 3201,
+          "lastId": 3400
+        },
+        {
+          "count": 200,
+          "sha256": "af9609397829cd99d0c937bbcfd9ac9f08c77915250e2a82f7d77e26ebdc47fe",
+          "firstId": 3401,
+          "lastId": 3600
+        },
+        {
+          "count": 200,
+          "sha256": "4e7b2a17830eaae07da5703e5fc9952a94bc04324003af4269c71fc6551294d0",
+          "firstId": 3601,
+          "lastId": 3800
+        },
+        {
+          "count": 200,
+          "sha256": "b39cf54110220c21f56a817d9174ba754857489eed85467607dcf6f70a80b2c9",
+          "firstId": 3801,
+          "lastId": 4000
+        },
+        {
+          "count": 200,
+          "sha256": "5315ba045713750c1cf4d42548332c8c4aecc381c3a9dd404f545ca0d68099c4",
+          "firstId": 4001,
+          "lastId": 4200
+        },
+        {
+          "count": 200,
+          "sha256": "23c7fabeb1a264c138cacb45fdac8c53e43ac5780effc407f82935dde1039a42",
+          "firstId": 4201,
+          "lastId": 4400
+        },
+        {
+          "count": 200,
+          "sha256": "edfa823c4924f2ca05df2c022e209882a3318677b95caf03b9d08f9695b810b0",
+          "firstId": 4401,
+          "lastId": 4600
+        },
+        {
+          "count": 200,
+          "sha256": "ecccd4cbb23cdc5d047e0fc7c3c66b2e542db753e56a455f6e826364d5744b37",
+          "firstId": 4601,
+          "lastId": 4800
+        },
+        {
+          "count": 200,
+          "sha256": "3bc93c67315f2a691f827c08c083478446cca60170c05d96f3a5d12e78b896ce",
+          "firstId": 4801,
+          "lastId": 5000
+        },
+        {
+          "count": 200,
+          "sha256": "eb62c546f70c7502353d5e98ad9fcc0712df8ce43b18f0447111059771bbc21a",
+          "firstId": 5001,
+          "lastId": 5200
+        },
+        {
+          "count": 200,
+          "sha256": "578860cb4e80ea62713affaa27ce79de5b1b9599b8397676be9c247ccebdfc55",
+          "firstId": 5201,
+          "lastId": 5400
+        },
+        {
+          "count": 200,
+          "sha256": "13edf7730f369d198925107ffaba7ee3ef053edb53e3dd25320f4e401623488c",
+          "firstId": 5401,
+          "lastId": 5600
+        },
+        {
+          "count": 200,
+          "sha256": "5ef884105088b69a9317fde18378389b5f8282ac8577452dccacf4b2b391ae08",
+          "firstId": 5601,
+          "lastId": 5800
+        },
+        {
+          "count": 200,
+          "sha256": "4d14837f30b528add39a36a82e388272a8028a9033c39c2033cfd98b6a3e5e0f",
+          "firstId": 5801,
+          "lastId": 6000
+        },
+        {
+          "count": 200,
+          "sha256": "c7feeab737040a01297e9549d3ad8771710b6d9b90aa4d14c48a2e0f7ec701af",
+          "firstId": 6001,
+          "lastId": 6200
+        },
+        {
+          "count": 200,
+          "sha256": "3c8f1fd5bb86bf5213ada5456138188ac34864b8814437ce4b56dc71827dd99f",
+          "firstId": 6201,
+          "lastId": 6400
+        },
+        {
+          "count": 200,
+          "sha256": "f5bb9ce13e3dd806153ad107d9674f57ee287a87d30105485b33763ab07b535d",
+          "firstId": 6401,
+          "lastId": 6600
+        },
+        {
+          "count": 200,
+          "sha256": "a8181e06f20775af869ac47098e80ecb6a09c7a4f09a21631f299f3ccca2e936",
+          "firstId": 6601,
+          "lastId": 6800
+        },
+        {
+          "count": 200,
+          "sha256": "33f1ae96e5ee6ad7f92893912ea63baf7a77ba2fe2a48d2da87ae0802dd1a320",
+          "firstId": 6801,
+          "lastId": 7000
+        },
+        {
+          "count": 200,
+          "sha256": "45c45f352749cd884b1a53f8b0f3bee4232789dba3d213d6fea1a204941702e3",
+          "firstId": 7001,
+          "lastId": 7200
+        },
+        {
+          "count": 200,
+          "sha256": "bd7ab4f3e51fa56b2bdf5bb795c47dcf1a7f8b9e930ad1aa64026a8d6ece542f",
+          "firstId": 7201,
+          "lastId": 7400
+        },
+        {
+          "count": 200,
+          "sha256": "f34d8a5f8f16fe0fc9a6fa2a69cdb0ca85c9e3c7666532c1feaeca883b343147",
+          "firstId": 7401,
+          "lastId": 7600
+        },
+        {
+          "count": 200,
+          "sha256": "0083f03fac43f3decf67739149c94c80ee1ed0522c95a4b4b5229e0f900376b5",
+          "firstId": 7601,
+          "lastId": 7800
+        },
+        {
+          "count": 200,
+          "sha256": "e7acac26d9d3f12ea4be9e95553b3aa2ad387e81d8ea4fa56f344b23f67d5cfe",
+          "firstId": 7801,
+          "lastId": 8000
+        },
+        {
+          "count": 200,
+          "sha256": "be2a5c18888bd4e35e41bff26687a69b93a368729ad56a0fa1e6efeac0e8a4fb",
+          "firstId": 8001,
+          "lastId": 8200
+        },
+        {
+          "count": 200,
+          "sha256": "9906f74abab07378cc43e0d1024002a2eb345824a9e352b859bc2eaaaf7a2b7b",
+          "firstId": 8201,
+          "lastId": 8400
+        },
+        {
+          "count": 200,
+          "sha256": "8e98f062eea5feebdf3b1411826e41df88d4db68f04751118b96c07229f18be8",
+          "firstId": 8401,
+          "lastId": 8600
+        },
+        {
+          "count": 200,
+          "sha256": "d61c799e7a19d877d8c31aceb2014603f8ea1f488b505ed0fb2bcd0c02564040",
+          "firstId": 8601,
+          "lastId": 8800
+        },
+        {
+          "count": 200,
+          "sha256": "aa84a107b62d6b91406ec91c2a43cbca8c00240afe413647c2ad6b156fff2442",
+          "firstId": 8801,
+          "lastId": 9000
+        },
+        {
+          "count": 200,
+          "sha256": "a192bd1ae84ceea46d7a7f270b32424f5d67dd0384de90c895dfc090c0e772dd",
+          "firstId": 9001,
+          "lastId": 9200
+        },
+        {
+          "count": 200,
+          "sha256": "833682f8657f3cbf71c72448086012d56d326e71d9a7c47cbdf2da9f16deb242",
+          "firstId": 9201,
+          "lastId": 9400
+        },
+        {
+          "count": 200,
+          "sha256": "421e251e9e627cf64e1104dfd5f7d4b5a02dadc943e6065347c777548cb36b2d",
+          "firstId": 9401,
+          "lastId": 9600
+        },
+        {
+          "count": 200,
+          "sha256": "a814811fcae4005f3644dca36e69a64e739184941cb229bb8dab87f7a6f8a06b",
+          "firstId": 9601,
+          "lastId": 9800
+        },
+        {
+          "count": 200,
+          "sha256": "bc323167cdb139f892e3a296b6950f9f1d8e2c3593f4db03e1508a7014d3b20a",
+          "firstId": 9801,
+          "lastId": 10000
+        },
+        {
+          "count": 200,
+          "sha256": "d81cf1026b31f5376f16ade8dd3465ddd1cc76cd001a6f5f7392785987b118f4",
+          "firstId": 10001,
+          "lastId": 10200
+        },
+        {
+          "count": 200,
+          "sha256": "84e074b57a26520e5258c6d1c1b050be2112973e7fdb10257b1a9fa5d327c09f",
+          "firstId": 10201,
+          "lastId": 10400
+        },
+        {
+          "count": 200,
+          "sha256": "5ac28b02693e2ed98f78117aad51827d7a42e0d7cf54e586b57b47222a54de6a",
+          "firstId": 10401,
+          "lastId": 10600
+        },
+        {
+          "count": 200,
+          "sha256": "de6c3ca496d82863ba0be90caa51d8f86109a2261132c1cc8d047ebbe09cdec8",
+          "firstId": 10601,
+          "lastId": 10800
+        },
+        {
+          "count": 200,
+          "sha256": "e4a71dd007724b2270b29be2a38021585efed58359a7b8fc3a7aaf895170bc82",
+          "firstId": 10801,
+          "lastId": 11000
+        },
+        {
+          "count": 200,
+          "sha256": "705692c5f57df5d9731a0c5f0716b40d3f6f4f1bf270253b8fba01112adf0957",
+          "firstId": 11001,
+          "lastId": 11200
+        },
+        {
+          "count": 200,
+          "sha256": "777d4a1912a77e9271efafada1aaeb28719e6277ff1f151ceaaf809b1d9bf50e",
+          "firstId": 11201,
+          "lastId": 11400
+        },
+        {
+          "count": 200,
+          "sha256": "f2a1e1f73c9e1729d153770fb61fba96255ad964fd0835713bb2f82c512b5335",
+          "firstId": 11401,
+          "lastId": 11600
+        },
+        {
+          "count": 200,
+          "sha256": "a64543ff461489bd1abaf1e6321238ce4161c25392f542c7e906f27b740f139a",
+          "firstId": 11601,
+          "lastId": 11800
+        },
+        {
+          "count": 200,
+          "sha256": "717bc3dbdb83cd4f83fd99eddd51613c55caceca87f1d457024040925553954d",
+          "firstId": 11801,
+          "lastId": 12000
+        },
+        {
+          "count": 200,
+          "sha256": "7b95a9cf6087ee750d1a387ea2326cdc39a9a2c47193577748cde12b463a35e7",
+          "firstId": 12001,
+          "lastId": 12200
+        },
+        {
+          "count": 200,
+          "sha256": "26b2d718c4d371f3fde4f90ab19a3cb4650071e8f237ed249ccd0411a5a7746b",
+          "firstId": 12201,
+          "lastId": 12400
+        },
+        {
+          "count": 200,
+          "sha256": "36a55f6be63376f0ea9e70ac9c83c1e0cca1fa06a82bd5e86366f4d47f855433",
+          "firstId": 12401,
+          "lastId": 12600
+        },
+        {
+          "count": 200,
+          "sha256": "aac999015a34b32f2e0428ee503cd15b36d915dbf57a111a53540eb298325686",
+          "firstId": 12601,
+          "lastId": 12800
+        },
+        {
+          "count": 200,
+          "sha256": "cfe929f3b7a76620f78e3e9e6a77b285a3545104f5a40f3d9fcc62b485dc11df",
+          "firstId": 12801,
+          "lastId": 13000
+        },
+        {
+          "count": 200,
+          "sha256": "24117cecd96b6726c55a1635455a91c53742160b47e2d36276274cd77b472c92",
+          "firstId": 13001,
+          "lastId": 13200
+        },
+        {
+          "count": 200,
+          "sha256": "d18878f6a063a7104cee6b0774681b4623e420ce540135698a8f344aec81fc5a",
+          "firstId": 13201,
+          "lastId": 13400
+        },
+        {
+          "count": 200,
+          "sha256": "a3cc5f298c4b8e5600d5a3aceef215bf08487a76ad8c6016bb1a941895c43350",
+          "firstId": 13401,
+          "lastId": 13600
+        },
+        {
+          "count": 200,
+          "sha256": "d7aa75ddbb60c3cd2f7eea0c2b426dea19a13b78a8d59660d83eadd998701dfe",
+          "firstId": 13601,
+          "lastId": 13800
+        },
+        {
+          "count": 200,
+          "sha256": "16f4d345be51dcfc5e789f5ae9df696c7ca616e0bf31cd5490ecde42d7daa786",
+          "firstId": 13801,
+          "lastId": 14000
+        },
+        {
+          "count": 200,
+          "sha256": "a43bbcad0c1e1fd1febaa2943b97252a2c318e65409bfb444edbaf291e700ded",
+          "firstId": 14001,
+          "lastId": 14200
+        },
+        {
+          "count": 200,
+          "sha256": "1b9ee6630e1759a5904ef12f9bbb9443d34e8974b4aa3c66a0e30a1a6307b468",
+          "firstId": 14201,
+          "lastId": 14400
+        },
+        {
+          "count": 200,
+          "sha256": "224b89daa6f434483818a1cfc734b33f47a23653f3454c32609e6a23118df0e2",
+          "firstId": 14401,
+          "lastId": 14600
+        },
+        {
+          "count": 200,
+          "sha256": "a3fa585b55152860bda512b052cabe1049fe20f5babdd3c292231fb506669da2",
+          "firstId": 14601,
+          "lastId": 14800
+        },
+        {
+          "count": 200,
+          "sha256": "b2ddf80ece17ce580d2db91c3f016e60b8acee3f627215f5104360226f73e872",
+          "firstId": 14801,
+          "lastId": 15000
+        },
+        {
+          "count": 200,
+          "sha256": "7357e19472b978b45c7b90d0dac732c6b2e74685d293f312ee445b97d35de388",
+          "firstId": 15001,
+          "lastId": 15200
+        },
+        {
+          "count": 200,
+          "sha256": "5558c44dce7d6853a91e94c3999f186ca86f2b933b3113b727cc7d828c44a432",
+          "firstId": 15201,
+          "lastId": 15400
+        },
+        {
+          "count": 200,
+          "sha256": "00e86bf1ff8278739c3c3ff1d10370fb8824b67777193742a07128282a2dbbc7",
+          "firstId": 15401,
+          "lastId": 15600
+        },
+        {
+          "count": 200,
+          "sha256": "1948c7768db9f106cf18dceac7f01c1fbf1b4e007917715a9b881b1c86cae319",
+          "firstId": 15601,
+          "lastId": 15800
+        },
+        {
+          "count": 200,
+          "sha256": "c83f41b6e13927af92d332b4a50460e8696c5f01b470f02a1ebefefad89f3498",
+          "firstId": 15801,
+          "lastId": 16000
+        },
+        {
+          "count": 200,
+          "sha256": "e97360f0013d982d89ff611c7dea9767ff7a0d81dee42fa8cdfce187a639a27b",
+          "firstId": 16001,
+          "lastId": 16200
+        },
+        {
+          "count": 200,
+          "sha256": "79164b0c8c2b6f11c8155ae7d090dcf8615a204ba267c87dd6f07e8b41f017cd",
+          "firstId": 16201,
+          "lastId": 16400
+        },
+        {
+          "count": 200,
+          "sha256": "ca7ed6dcae2e801b1f9367ad2df98da098f1c5c72504c60ce9aea563a6677fbe",
+          "firstId": 16401,
+          "lastId": 16600
+        },
+        {
+          "count": 200,
+          "sha256": "1486a10425f192f8db4d235e4b0b3b0a95f79816a2254012d05324212e6ec7cd",
+          "firstId": 16601,
+          "lastId": 16800
+        },
+        {
+          "count": 200,
+          "sha256": "5059b823f1a1754d6329cfe250223a221f0aae811aecebb15fcc32771808ab6b",
+          "firstId": 16801,
+          "lastId": 17000
+        },
+        {
+          "count": 200,
+          "sha256": "93835a90fcb962fa5b756444eacb9dcceaac4d585cfcbffbe55760dc29cadaa6",
+          "firstId": 17001,
+          "lastId": 17200
+        },
+        {
+          "count": 200,
+          "sha256": "65c4f14dae3c250fe06825b590a2af68aa358b4cf86d195f8211025b94b50a34",
+          "firstId": 17201,
+          "lastId": 17400
+        },
+        {
+          "count": 200,
+          "sha256": "f5019138446d6281eae7bee8def4ff4d744e3b417b4dfa9f09d25c352f53c802",
+          "firstId": 17401,
+          "lastId": 17600
+        },
+        {
+          "count": 200,
+          "sha256": "386a3d3e4b67156632a15bd767f37fd47372a821bf672aeeb038c7aa7dc43058",
+          "firstId": 17601,
+          "lastId": 17800
+        },
+        {
+          "count": 200,
+          "sha256": "f9b12c393441cec1f95c138da1d78465e1ea40ccaee8245743b2f942ca231a72",
+          "firstId": 17801,
+          "lastId": 18000
+        },
+        {
+          "count": 200,
+          "sha256": "ff4effd8947f3f1a51d99886003b2835f3415117fdd4cf86986b781617f155a6",
+          "firstId": 18001,
+          "lastId": 18200
+        },
+        {
+          "count": 200,
+          "sha256": "d8366f160ca6f5e4193aca7c8e599ce4b3fd6e8b89d1c7cf53bf76cc7d6ad38f",
+          "firstId": 18201,
+          "lastId": 18400
+        },
+        {
+          "count": 200,
+          "sha256": "97e04aaeb8f55d3ff6cd053b2e58d0ea931a61321eb55f4f56c4d5875bf2c7bf",
+          "firstId": 18401,
+          "lastId": 18600
+        },
+        {
+          "count": 200,
+          "sha256": "7e4c882f3104aabec2ba184d0fee05a47903895e5d75040994a4bec5d0148c3a",
+          "firstId": 18601,
+          "lastId": 18800
+        },
+        {
+          "count": 200,
+          "sha256": "82090633ed5cf25400cb9ec020cf050e2048ff885dfce3e9ab7698e7a560b45f",
+          "firstId": 18801,
+          "lastId": 19000
+        },
+        {
+          "count": 200,
+          "sha256": "4df250981b4bbd07d5ee7e99220898eb5ea6dc3de7aa234c90ed18c0d217206d",
+          "firstId": 19001,
+          "lastId": 19200
+        },
+        {
+          "count": 200,
+          "sha256": "6181aa22a0263e1972f9425c493772f146ba5abd4bfe4dcd45df04532442cb79",
+          "firstId": 19201,
+          "lastId": 19400
+        },
+        {
+          "count": 200,
+          "sha256": "1d637ee93c4231581b8adc101e658e5bc476f5963bdc19fd4f19d3343e27e79b",
+          "firstId": 19401,
+          "lastId": 19600
+        },
+        {
+          "count": 200,
+          "sha256": "b8ba38db603e4bf26ba5f8ed75412482e18b28f90e4db72a74e3580603b38dae",
+          "firstId": 19601,
+          "lastId": 19800
+        },
+        {
+          "count": 200,
+          "sha256": "d00d0c06fd5b9043cbc10242a5cf1d03d54da92fd43950eaafc31016231d6626",
+          "firstId": 19801,
+          "lastId": 20000
+        },
+        {
+          "count": 200,
+          "sha256": "10d3d7be024924384e76604e3f5e1e6a0ffad6a5be732b2c842344d546a685be",
+          "firstId": 20001,
+          "lastId": 20200
+        },
+        {
+          "count": 200,
+          "sha256": "fb4b1cca17f4d1294a6e0e7955b362adb31a13a8171cecc4aee406934075c3e6",
+          "firstId": 20201,
+          "lastId": 20400
+        },
+        {
+          "count": 200,
+          "sha256": "876c1579c6d305c8f623d71f95a63ff1a00d5531e5046429b0ec26e047b017a8",
+          "firstId": 20401,
+          "lastId": 20600
+        },
+        {
+          "count": 186,
+          "sha256": "98f4c02a4c96f019eaf8d35a456fbf940ab8f153806f34bafa1ba93bdbe0bd76",
+          "firstId": 20601,
+          "lastId": 20786
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 4743,
+      "filteredFeatureCount": 16043,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "selection": "Visitor parking, picnic, camping, toilet, water, sign/kiosk, bench and entrance points only; maintenance defects, survey boundaries and intersections excluded.",
+      "packagedFeatureSha256": "aaf91ee4d829e23631e0e56c8ad505fba3df52738daa36fe45c0da582e201293"
+    },
+    {
+      "id": "ma-dcr-land",
+      "state": "MA",
+      "name": "MassGIS DCR protected and recreational open space",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/openspace/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-protected-and-recreational-openspace",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "where": "OWNER_ABRV LIKE 'DCR%'",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:53:58.396Z",
+      "sourceUpdated": "Not supplied",
+      "featureCount": 8189,
+      "bytes": 13895623,
+      "sha256": "12a78deae631c72ecc46a211abccd0b56a96d932a41269a620d97041f4a3bf23",
+      "metadataSha256": "68e3842806279303d18792801683ed4f298309b020f58b65582d0779742f3422",
+      "termsSha256": "04fc634be46b0d9b0a63b80a649a1cdfc66bd1ae8b65662019f66a36a93cb86d",
+      "licenseText": "",
+      "serviceItemId": null,
+      "fields": [
+        "OBJECTID",
+        "TOWN_ID",
+        "POLY_ID",
+        "SITE_NAME",
+        "FEE_OWNER",
+        "OWNER_ABRV",
+        "OWNER_TYPE",
+        "MANAGER",
+        "MANAGR_ABRV",
+        "MANAGR_TYPE",
+        "PRIM_PURP",
+        "PUB_ACCESS",
+        "LEV_PROT",
+        "OLI_1_ORG",
+        "OLI_1_ABRV",
+        "OLI_1_TYPE",
+        "OLI_1_INT",
+        "OLI_2_ORG",
+        "OLI_2_ABRV",
+        "OLI_2_TYPE",
+        "OLI_2_INT",
+        "OLI_3_ORG",
+        "OLI_3_ABRV",
+        "OLI_3_TYPE",
+        "OLI_3_INT",
+        "GRANTPROG1",
+        "GRANTTYPE1",
+        "GRANTPROG2",
+        "GRANTTYPE2",
+        "PROJ_ID1",
+        "PROJ_ID2",
+        "PROJ_ID3",
+        "EOEAINVOLVE",
+        "ARTICLE97",
+        "FY_FUNDING",
+        "GIS_ACRES",
+        "DEED_ACRES",
+        "OS_DEED_BOOK",
+        "OS_DEED_PAGE",
+        "ASSESS_ACRE",
+        "ASSESS_MAP",
+        "ASSESS_BLK",
+        "ASSESS_LOT",
+        "ASSESS_SUB",
+        "ALT_SITE_NAME",
+        "ATT_DATE",
+        "BASE_MAP",
+        "SOURCE_MAP",
+        "SOURCE_TYPE",
+        "COMMENTS",
+        "LOC_ID",
+        "DCAM_ID",
+        "FEESYM",
+        "INTSYM",
+        "OS_ID",
+        "CAL_DATE_R",
+        "FORMAL_SITE_NAME",
+        "CR_REF",
+        "OS_TYPE",
+        "EEA_CR_ID",
+        "Shape__Area",
+        "Shape__Length"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "dc146af40152a4a6c222e1d0e20c7fc1c8152e1a3162fc9be4ba901a1cdc14f5",
+          "firstId": 639235,
+          "lastId": 647209
+        },
+        {
+          "count": 200,
+          "sha256": "37a13e6230a555bbdd970c4c46ce4cedf068f5d3a568c91f1c73d48a99a7ae31",
+          "firstId": 647210,
+          "lastId": 656998
+        },
+        {
+          "count": 200,
+          "sha256": "9412b4962623f5addab957aa9094d3ec6ab9f91b49750c85488dd262db41afb2",
+          "firstId": 657047,
+          "lastId": 660526
+        },
+        {
+          "count": 200,
+          "sha256": "1da38ecb92bbdf6881721452b7d0a4fc19801ada053708c290470c98e6ed39db",
+          "firstId": 660527,
+          "lastId": 661780
+        },
+        {
+          "count": 200,
+          "sha256": "15f3ee29c66b1d4ec61411dcb6a90c7972b7316777cc667a221ea8ddd37ebed3",
+          "firstId": 661782,
+          "lastId": 663449
+        },
+        {
+          "count": 200,
+          "sha256": "3f7b5415fd8d31d1b2b5818de2896b10d9f5c253c50befeb22d3fef2b5bc315f",
+          "firstId": 663452,
+          "lastId": 665333
+        },
+        {
+          "count": 200,
+          "sha256": "e01c38d0e7107e92e54cf65add07eedd4be4618b39a8a3b77d8f8f94779f20aa",
+          "firstId": 665341,
+          "lastId": 666244
+        },
+        {
+          "count": 200,
+          "sha256": "eca1bd65451b1dd3e22b409d78b7d0112333f1b0d15e54ab59892f67113cb6fb",
+          "firstId": 666245,
+          "lastId": 668809
+        },
+        {
+          "count": 200,
+          "sha256": "b18fff9911e124fb3e915863588e4ed3e76aa1cc03a0cb51fc3245409f1b4815",
+          "firstId": 668815,
+          "lastId": 671001
+        },
+        {
+          "count": 200,
+          "sha256": "2e24c0a6466ecb73b04fd11d758b635e48a8e9b73b62cf63c34d489c03e6ef54",
+          "firstId": 671003,
+          "lastId": 672049
+        },
+        {
+          "count": 200,
+          "sha256": "ed680add40d9c2599ec8768b25c03d23d10e6ff07d50643ec684aa541c76b75e",
+          "firstId": 672052,
+          "lastId": 672809
+        },
+        {
+          "count": 200,
+          "sha256": "0a3bbbca8986bbfb2ecd8e3b1c4b22317ec234ed91f8eed0eafec95e7b52b444",
+          "firstId": 672815,
+          "lastId": 673878
+        },
+        {
+          "count": 200,
+          "sha256": "f2caa3d2704a1980ff0741248107e73dcc93844a807c19e62386508b12e991e2",
+          "firstId": 673879,
+          "lastId": 675441
+        },
+        {
+          "count": 200,
+          "sha256": "9675cbefb2bf607abfcd1577f1203ea4438e85b7bd2c9003fdec858627afaacc",
+          "firstId": 675443,
+          "lastId": 683631
+        },
+        {
+          "count": 200,
+          "sha256": "9a1c8cc3bad5af412f68eb834ec0a6df251aa5a2bfc4499e5cada5e5b14ba86b",
+          "firstId": 683681,
+          "lastId": 686539
+        },
+        {
+          "count": 200,
+          "sha256": "71821abdf3040617560ea5baacb4d1c4d0ea2761e6c4c351776c675f15452bc3",
+          "firstId": 686563,
+          "lastId": 689878
+        },
+        {
+          "count": 200,
+          "sha256": "cddae7b3ff9f5f3db74c8c89810263372988e260ab6eeb838e26c211a6ec5a59",
+          "firstId": 689880,
+          "lastId": 690270
+        },
+        {
+          "count": 200,
+          "sha256": "06db0857b1c7b4e79b8236d1daab72521c54b5d95b98f5e53421c392b8335c03",
+          "firstId": 690271,
+          "lastId": 690783
+        },
+        {
+          "count": 200,
+          "sha256": "cd613db094fbedf8a94bfa86b7b1e51d4af64eb32432761a087d6af8299442d7",
+          "firstId": 690784,
+          "lastId": 691084
+        },
+        {
+          "count": 200,
+          "sha256": "256cabcf6d450266ff4ff765acca2b2c25ac8c5c4eb0ba6b4968ea8e497606f4",
+          "firstId": 691085,
+          "lastId": 691350
+        },
+        {
+          "count": 200,
+          "sha256": "01dd3fa0168c111937645a51badaf660df062626cba0ce12c4998149ff1bca11",
+          "firstId": 691351,
+          "lastId": 691562
+        },
+        {
+          "count": 200,
+          "sha256": "2fcbe8b281c5d4287b11b028dc3906b1206f2f84d4f3650caa03e1d1d7c47bb3",
+          "firstId": 691563,
+          "lastId": 691796
+        },
+        {
+          "count": 200,
+          "sha256": "632f39060086e1a5feb601e9731dd370964e20ada4dd3320b4c3d3dfda7749de",
+          "firstId": 691801,
+          "lastId": 692330
+        },
+        {
+          "count": 200,
+          "sha256": "f41215fe5f427992d4616f7ffb768d9f0222fb419ede0ef5e234e35d4761224d",
+          "firstId": 692331,
+          "lastId": 692680
+        },
+        {
+          "count": 200,
+          "sha256": "2638324ba29fb2c6184b0c5dbcd60549d1decb73337317cdf4983f3e6d4a7453",
+          "firstId": 692683,
+          "lastId": 692999
+        },
+        {
+          "count": 200,
+          "sha256": "9d5d9266b3f2f5bea9f0bab0911f76c9d66a269d1414542bcdd00599403fcf72",
+          "firstId": 693000,
+          "lastId": 694076
+        },
+        {
+          "count": 200,
+          "sha256": "fadebb6ea76956bf8eb0515816ba9349f7b33a5d839a44be3fabaaa3a075af5e",
+          "firstId": 694078,
+          "lastId": 694774
+        },
+        {
+          "count": 200,
+          "sha256": "20f65767be58aa3a648439acd5d058630522f65f806c6741ede8988d9a05d0dc",
+          "firstId": 694775,
+          "lastId": 695499
+        },
+        {
+          "count": 200,
+          "sha256": "497f6c900dca04257a4c6d03538fe06c502d20168063634e3a23ea63893715db",
+          "firstId": 695500,
+          "lastId": 695876
+        },
+        {
+          "count": 200,
+          "sha256": "2c76b6ca5278945642477b051c7f36bf5ee3d4b947df744b57615ec38265b43e",
+          "firstId": 695877,
+          "lastId": 696191
+        },
+        {
+          "count": 200,
+          "sha256": "0bfa04b18d62baba47c42d0f946bc2a63a2b43063c7d0faa284cdaeb1f8de83e",
+          "firstId": 696193,
+          "lastId": 696565
+        },
+        {
+          "count": 200,
+          "sha256": "d18ee854b4a5bb70d389979fa14741291014d2ef45b96abf7833d8588cecee7f",
+          "firstId": 696566,
+          "lastId": 696952
+        },
+        {
+          "count": 200,
+          "sha256": "d33ee5314155d02dabe12bd02f44ecbb07d7e8f7f6ca72830bfb18b1c5c78b02",
+          "firstId": 696953,
+          "lastId": 697451
+        },
+        {
+          "count": 200,
+          "sha256": "67488ae94c1e064cef484b35e53e51d27a30a3478c7f2f0372ce7fc056c65acc",
+          "firstId": 697452,
+          "lastId": 697768
+        },
+        {
+          "count": 200,
+          "sha256": "c5d576f0471733a1dfdcd3b3dfef02c75b41784dc1889f4df3c80454fc081609",
+          "firstId": 697769,
+          "lastId": 698292
+        },
+        {
+          "count": 200,
+          "sha256": "115ba0fcc157a832b4e98e56faaf17db194f2d4c4423a12249dc8ce550757f8a",
+          "firstId": 698293,
+          "lastId": 698799
+        },
+        {
+          "count": 200,
+          "sha256": "f9f894ec9f09b1aae0a9fcb40659e611694bfcf36e5625ce7e1ea4df9465b055",
+          "firstId": 698800,
+          "lastId": 699014
+        },
+        {
+          "count": 200,
+          "sha256": "c428e9f5066d5aae7ad1cd8c872d8fb5923eb7fab08854d75e1acdee8807d24c",
+          "firstId": 699015,
+          "lastId": 699217
+        },
+        {
+          "count": 200,
+          "sha256": "9795f4a9596319d066f7ce06520ed3909f36f63757ed98dc2fe1b4cb18c4f36c",
+          "firstId": 699218,
+          "lastId": 699603
+        },
+        {
+          "count": 200,
+          "sha256": "0a28500978e5338fe9876dfeb9fcc3bdb6b0a60f4c6e025a1f05ba77d590d1eb",
+          "firstId": 699607,
+          "lastId": 700256
+        },
+        {
+          "count": 189,
+          "sha256": "79ac20bc1ef7f4820bf34a9d1885f76adc68612e6de64af4259f1799e75b4bc4",
+          "firstId": 700257,
+          "lastId": 700705
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 8189,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "1002e52e1f61404a5687ac7dcd7fde90bd410ce9a3fb205a4b1b8c31ddf76800"
     }
   ],
   "state": {
@@ -507,8 +2804,8 @@
   "stateForestry": {
     "agency": "Massachusetts DCR Bureau of Forest Fire Control and Forestry",
     "agencyUrl": "https://www.mass.gov/orgs/department-of-conservation-and-recreation",
-    "directAgencyLayerIncluded": false,
-    "followUp": "Identify and rights-review direct agency GIS layers for forest tracts, trails, roads, facilities, rules, and closures where available.",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 824,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
     "sourceLineageFields": [
@@ -520,5 +2817,172 @@
       "Agg_Src"
     ],
     "stateManagedPadusFeatureCount": 5049
+  },
+  "stateName": "Massachusetts",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 70399,
+    "bytes": 73222554,
+    "sha256": "059f4cde235c3960afec2df9d7773a3ef937d23347b9b8a6208a2308bfb254e7"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 3,
+    "featureCount": 49787,
+    "sources": [
+      {
+        "id": "ma-dcr-trails",
+        "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Arcs/FeatureServer/0",
+        "count": 36855,
+        "license": "MassGIS freely redistributable derivatives",
+        "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+        "sourceUpdated": "2015-06; historical reference, verify current manager maps"
+      },
+      {
+        "id": "ma-dcr-points",
+        "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Pts/FeatureServer/0",
+        "count": 4743,
+        "license": "MassGIS freely redistributable derivatives",
+        "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+        "sourceUpdated": "2015-06; historical reference, verify current manager maps"
+      },
+      {
+        "id": "ma-dcr-land",
+        "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/openspace/FeatureServer/0",
+        "count": 8189,
+        "license": "MassGIS freely redistributable derivatives",
+        "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+        "sourceUpdated": "Not supplied"
+      }
+    ],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 4952,
+    "categoryCounts": {
+      "other": 3110,
+      "shorterm_parking": 785,
+      "tourist_attraction": 1054,
+      "showers": 3
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 146042,
+        "bytes": 9752449,
+        "sha256": "8937f6aa95e5dbc7c6442cb55b969aa2180d3209e913b3a25e5d3ede3229c61e",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 32969,
+        "bytes": 7572335,
+        "sha256": "dd6731c17bab7b441c9825feb078d30e30c649856345a28f2424a48344bb9a1e",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-003.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 44314,
+        "bytes": 7813017,
+        "sha256": "2bbdb775c4d5d12a75716665e640852297395601a06aac18f13c0e345112407b",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-004.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 48517,
+        "bytes": 7908165,
+        "sha256": "e50fe018804ab04e29f2a9fbdf4e7e383f1433a91528b7efce1e9c4fcc37b8cc",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-005.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 50372,
+        "bytes": 7926171,
+        "sha256": "d3a9b83914acf432f085171425d96cd0f42ab3da586b7e3af4e76a2f55666b06",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-006.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 129508,
+        "bytes": 8343592,
+        "sha256": "0a4ba8056cb2589e56688b8ae0ec3a99c9144e8312a925779a96ed2a2f7f169d",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-007.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 175218,
+        "bytes": 9238957,
+        "sha256": "5f9db0ffe5a96639035a31a0ec66896d24d992f5d13c3f0b37c3c0fa4336e62b",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-008.geojson",
+        "featureCount": 399,
+        "normalizedFeatureCount": 399,
+        "positions": 3914,
+        "bytes": 306502,
+        "sha256": "e2b9bd9f5152f8cfb9065bf469e6d4e3851ccd2e74d337afbda668ed65a03d9d",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
   }
 }

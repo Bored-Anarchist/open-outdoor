@@ -183,6 +183,8 @@ export function parseMapDataset(input: string, id: string, name: string): Import
               : 'imported-geojson',
           unit: text(properties.unit, text(name)),
           category: text(properties.category, 'other'),
+          sourceCategory: text(properties.sourceCategory, text(properties.category, 'other')),
+          upstreamSourceId: text(properties.upstreamSourceId, text(properties.sourceId)),
           publicUse: text(
             properties.publicUse,
             'Imported reference; verify current access and conditions.',

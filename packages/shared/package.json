@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./outdoor-details": "./src/outdoor-details.ts",
-    "./hike-route": "./src/hike-route.ts"
+    "./hike-route": "./src/hike-route.ts",
+    "./public-poi-category": "./src/public-poi-category.ts"
   }
 }

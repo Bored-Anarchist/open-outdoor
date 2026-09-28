@@ -1,3 +1,4 @@
+import { publicPoiCategory } from '@open-outdoor/shared/public-poi-category';
 import {
   ioverlanderCategoryDefinition,
   ioverlanderCategoryDefinitions,
@@ -23,6 +24,8 @@ export interface OutdoorFeatureProperties extends OutdoorVisitorDetails {
   sourceId: string;
   unit: string;
   category: string;
+  sourceCategory?: string;
+  upstreamSourceId?: string;
   publicUse: string;
   sourceUpdated: string;
   origin?: 'public-catalog' | 'private-catalog';
@@ -155,7 +158,7 @@ export function outdoorIoverlanderCategory(category: string): IoverlanderCategor
   if (includesCategory(decCampingCategories, decCategory)) return 'campsite';
   if (includesCategory(parkingCategories, decCategory)) return 'shorterm_parking';
   if (includesCategory(touristAttractionCategories, decCategory)) return 'tourist_attraction';
-  return 'other';
+  return publicPoiCategory(category);
 }
 
 export function outdoorPlaceIcon(category: IoverlanderCategory): string {

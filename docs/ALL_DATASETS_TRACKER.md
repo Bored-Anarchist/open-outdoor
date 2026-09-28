@@ -1,8 +1,10 @@
 # Complete outdoor dataset tracker
 
+**Public packaging update (2026-09-27):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **167 app-parser-validated import parts**. The packages contain **739,609 features**, **76,959 POIs**, and **120,859 eligible direct agency features** in eight states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
+
 **Snapshot:** 2026-09-26. This is the single index of every registered non-New-York state source role, all shipped state-package source families, the shipped New York source records, the selected AR/ID/SD layer plan, the identified New York OPRHP candidates, and the remaining map asset manifests. Repeated URLs remain repeated where two agency roles use the same dataset. A candidate or catalog entry is not a shipped layer or release approval.
 
-**Inventory counts:** 49 state packages; 9 national source families; 9 New York package source records; 212 registry source-role entries (98 primary agency, 44 non-OSM supplements, 70 OSM fallbacks); 19 selected AR/ID/SD plan rows; 8 OPRHP service candidates; two offline basemap manifests, one derived hike-profile manifest, one connected style manifest, and a proposed New York OSM extract. Rights findings remain in the [agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md), [three-state rights check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md), and [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
+**Inventory counts:** 50 state packages; 9 national source families; 9 New York package source records; 212 registry source-role entries (98 primary agency, 44 non-OSM supplements, 70 OSM fallbacks); 19 selected AR/ID/SD plan rows; 8 OPRHP service candidates; two offline basemap manifests, one derived hike-profile manifest, one connected style manifest, and a proposed New York OSM extract. Rights findings remain in the [agency rights matrix](STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md), [three-state rights check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md), and [New York audit](NYS_AGENCY_SOURCE_COVERAGE_AUDIT.md).
 
 **Feed connectors:** The [gated agency feed connector](STATE_AGENCY_FEED_CONNECTORS.md) exposes these registry entries and selected three-state layers as source definitions. Exact ArcGIS layers and direct downloads require a source-specific private approval before feature or file acquisition. No agency records are included in public packages by that code.
 
@@ -10,71 +12,64 @@
 
 ## POI-system gate
 
-The shipped 49 state packages contain **71,523 point-of-interest entries**. The current map category mapper displays **62,408 (87.3%)** as Other because source categories were not mapped to the display taxonomy. This is a category/filter/icon problem, not a geometry failure. These counts are package entries, so cross-border duplicate features can appear in more than one state. The state packages are map GeoJSON/index assets, not canonical PlaceRecord envelopes. Before accepting a new agency or OSM point feed, map its categories to the canonical place taxonomy and current display filters, retain raw category/provenance, validate names/coordinates/status, and keep closures/restrictions in their separate temporal records.
+The 50 public packages contain **76,959 POI entries**. **20,540 (26.7%)** retain Other because their source type is unknown, infrastructure, or an amenity without an iOverlander legend category. Raw source categories and bounded visitor amenities remain available. Camping types, parking, drinking water, dump stations, lodging and visitor attractions are normalized to the app taxonomy. These are package entries, not deduplicated national entities.
 
-**Import limit:** 17 state GeoJSON files exceed the current 20 MiB or 20,000-feature user-import limit. Split them or provide a package-specific loader before offering those files through the user-import flow. The other files were not run through every parser check, including the coordinate-count and normalized-size limits.
-
-### Shipped national POI source families
-
-| Source ID | POI entries | Displayed as Other | Readiness |
-| --- | --- | --- | --- |
-| blm-public-recreation-sites | 10,240 | 9,657 | Category mapping needed |
-| nps-public-points-of-interest | 29,926 | 25,576 | Category mapping needed |
-| usfs-recreation-sites | 31,357 | 27,175 | Category mapping needed |
+**Import status:** every one of the **167 parts** passed the actual app parser's byte, feature, coordinate, geometry and normalized-size checks. Full package files can exceed import limits. The app's five-dataset/50 MiB combined-store limits still apply; select parts within those limits. Native phone acceptance and automatic whole-state activation remain separate.
 
 ### State package POI and import status
 
-| State | POI entries | Displayed as Other | 20 MiB / 20,000-feature gate |
-| --- | --- | --- | --- |
-| AK | 1602 | 1484 | Over size/feature limit |
-| AL | 307 | 295 | Within tested limits |
-| AR | 197 | 165 | Within tested limits |
-| AZ | 4186 | 3927 | Over size/feature limit |
-| CA | 6402 | 5397 | Over size/feature limit |
-| CO | 5950 | 4803 | Over size/feature limit |
-| CT | 0 | 0 | Within tested limits |
-| DE | 0 | 0 | Within tested limits |
-| FL | 1812 | 1715 | Over size/feature limit |
-| GA | 517 | 489 | Within tested limits |
-| HI | 78 | 74 | Within tested limits |
-| IA | 0 | 0 | Within tested limits |
-| ID | 4845 | 4417 | Over size/feature limit |
-| IL | 131 | 123 | Within tested limits |
-| IN | 65 | 44 | Within tested limits |
-| KS | 16 | 15 | Within tested limits |
-| KY | 743 | 551 | Within tested limits |
-| LA | 128 | 101 | Within tested limits |
-| MA | 209 | 206 | Over size/feature limit |
-| MD | 694 | 676 | Within tested limits |
-| ME | 111 | 89 | Within tested limits |
-| MI | 597 | 476 | Over size/feature limit |
-| MN | 912 | 853 | Over size/feature limit |
-| MO | 206 | 187 | Within tested limits |
-| MS | 711 | 696 | Within tested limits |
-| MT | 10241 | 9776 | Over size/feature limit |
-| NC | 2675 | 2597 | Within tested limits |
-| ND | 54 | 40 | Within tested limits |
-| NE | 16 | 9 | Within tested limits |
-| NH | 324 | 273 | Within tested limits |
-| NJ | 102 | 100 | Over size/feature limit |
-| NM | 1920 | 1718 | Over size/feature limit |
-| NV | 1253 | 1075 | Over size/feature limit |
-| OH | 69 | 61 | Within tested limits |
-| OK | 284 | 267 | Within tested limits |
-| OR | 5329 | 4711 | Over size/feature limit |
-| PA | 377 | 348 | Within tested limits |
-| RI | 1 | 1 | Within tested limits |
-| SC | 190 | 168 | Within tested limits |
-| SD | 311 | 284 | Within tested limits |
-| TN | 2167 | 2118 | Within tested limits |
-| TX | 1145 | 970 | Within tested limits |
-| UT | 4214 | 3139 | Over size/feature limit |
-| VA | 1467 | 1419 | Within tested limits |
-| VT | 133 | 90 | Within tested limits |
-| WA | 2593 | 2233 | Over size/feature limit |
-| WI | 196 | 149 | Within tested limits |
-| WV | 520 | 479 | Within tested limits |
-| WY | 5523 | 3600 | Over size/feature limit |
+| State | POI entries | Other | Direct agency features | App import parts |
+| --- | ---: | ---: | ---: | --- |
+| AL | 307 | 120 | 0 | 2 validated parts |
+| AK | 1,602 | 483 | 0 | 23 validated parts |
+| AZ | 4,186 | 1,766 | 0 | 4 validated parts |
+| AR | 424 | 191 | 227 | 2 validated parts |
+| CA | 6,402 | 2,030 | 15 | 12 validated parts |
+| CO | 5,950 | 1,226 | 1,209 | 7 validated parts |
+| CT | 385 | 269 | 14,731 | 3 validated parts |
+| DE | 0 | 0 | 0 | 1 validated parts |
+| FL | 1,812 | 1,225 | 0 | 3 validated parts |
+| GA | 517 | 122 | 0 | 2 validated parts |
+| HI | 78 | 31 | 0 | 1 validated parts |
+| ID | 4,845 | 172 | 0 | 8 validated parts |
+| IL | 131 | 1 | 0 | 2 validated parts |
+| IN | 65 | 0 | 0 | 1 validated parts |
+| IA | 0 | 0 | 0 | 1 validated parts |
+| KS | 16 | 1 | 0 | 1 validated parts |
+| KY | 743 | 188 | 0 | 2 validated parts |
+| LA | 128 | 15 | 0 | 1 validated parts |
+| ME | 111 | 44 | 0 | 1 validated parts |
+| MD | 694 | 390 | 0 | 1 validated parts |
+| MA | 4,952 | 3,110 | 49,787 | 8 validated parts |
+| MI | 597 | 12 | 0 | 3 validated parts |
+| MN | 912 | 8 | 0 | 3 validated parts |
+| MS | 711 | 348 | 0 | 1 validated parts |
+| MO | 206 | 28 | 0 | 1 validated parts |
+| MT | 10,241 | 546 | 0 | 8 validated parts |
+| NE | 16 | 0 | 74 | 1 validated parts |
+| NV | 1,253 | 373 | 6,686 | 5 validated parts |
+| NH | 324 | 22 | 0 | 1 validated parts |
+| NJ | 102 | 41 | 0 | 3 validated parts |
+| NM | 1,920 | 386 | 0 | 4 validated parts |
+| NY | 81 | 0 | 0 | 1 validated parts |
+| NC | 2,675 | 1,351 | 0 | 3 validated parts |
+| ND | 54 | 4 | 0 | 1 validated parts |
+| OH | 69 | 1 | 0 | 1 validated parts |
+| OK | 284 | 62 | 0 | 1 validated parts |
+| OR | 5,329 | 1,250 | 0 | 7 validated parts |
+| PA | 377 | 120 | 0 | 2 validated parts |
+| RI | 1 | 0 | 0 | 1 validated parts |
+| SC | 190 | 38 | 0 | 1 validated parts |
+| SD | 311 | 27 | 0 | 2 validated parts |
+| TN | 2,167 | 999 | 0 | 2 validated parts |
+| TX | 1,145 | 416 | 0 | 2 validated parts |
+| UT | 4,214 | 1,016 | 48,130 | 10 validated parts |
+| VT | 133 | 3 | 0 | 1 validated parts |
+| VA | 1,467 | 625 | 0 | 3 validated parts |
+| WA | 2,593 | 316 | 0 | 5 validated parts |
+| WV | 520 | 76 | 0 | 1 validated parts |
+| WI | 196 | 1 | 0 | 2 validated parts |
+| WY | 5,523 | 1,087 | 0 | 5 validated parts |
 
 ## Shipped national source families in every state manifest
 
@@ -124,22 +119,22 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | AR | parks | [Arkansas Statewide Trails FeatureServer layer 22](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Environment/FeatureServer/22) | api | Supplemental candidate; no public agency import |
 | AR | parks | [Arkansas outdoor recreation facilities layer 24](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24) | api | Supplemental candidate; no public agency import |
 | AR | parks | [OpenStreetMap Arkansas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/arkansas-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| AR | forestry | [Arkansas Outdoor Recreational Facilities layer 24 (AFC subset)](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24) | api | Primary candidate; no public agency import; private staging tracked separately |
+| AR | forestry | [Arkansas Outdoor Recreational Facilities layer 24 (AFC subset)](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24) | api | Public dated derivative included; exact source receipt and selection in state manifest |
 | AR | forestry | [Arkansas Statewide Trails FeatureServer layer 22](https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Environment/FeatureServer/22) | api | Supplemental candidate; no public agency import |
 | AR | forestry | [OpenStreetMap Arkansas outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/arkansas-latest.osm.pbf) | download | OSM fallback; no public agency import |
 | CA | parks | [California State Parks GIS downloads and live feature services](https://www.parks.ca.gov/?page_id=29682) | download | Primary candidate; no public agency import; private staging tracked separately |
-| CA | forestry | [CAL FIRE State Demonstration Forests 2024 geodatabase ZIP](https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b) | download | Primary candidate; no public agency import; private staging tracked separately |
+| CA | forestry | [CAL FIRE State Demonstration Forests 2024 geodatabase ZIP](https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b) | download | Public dated derivative included; exact source receipt and selection in state manifest |
 | CA | forestry | [OpenStreetMap California outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/california-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| CO | parks | [Colorado State Parks Trails public-domain dataset](https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr) | download | Primary candidate; no public agency import; private staging tracked separately |
+| CO | parks | [Colorado State Parks Trails public-domain dataset](https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr) | download | Public dated derivative included; exact source receipt and selection in state manifest |
 | CO | parks | [Colorado CPW Trail Segments FeatureServer layer 2](https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2) | api | Supplemental candidate; no public agency import |
 | CO | parks | [OpenStreetMap Colorado outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/colorado-latest.osm.pbf) | download | OSM fallback; no public agency import |
 | CO | forestry | [Colorado CPW Managed Properties (public access) layer 5: State Forest State Park](https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/5) | api | Primary candidate; no public agency import; private staging tracked separately |
 | CO | forestry | [OpenStreetMap Colorado outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/colorado-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| CT | parks | [Connecticut DEEP Property FeatureServer layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0) | api | Primary candidate; no public agency import; private staging tracked separately |
+| CT | parks | [Connecticut DEEP Property FeatureServer layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0) | api | Public dated derivative included; exact source receipt and selection in state manifest |
 | CT | parks | [Connecticut DEEP Trails Set line layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3) | api | Supplemental candidate; no public agency import |
 | CT | parks | [Connecticut DEEP Property Access Locations](https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore) | catalog | Supplemental candidate; no public agency import |
 | CT | parks | [OpenStreetMap Connecticut outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/connecticut-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| CT | forestry | [Connecticut DEEP Property FeatureServer layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0) | api | Primary candidate; no public agency import; private staging tracked separately |
+| CT | forestry | [Connecticut DEEP Property FeatureServer layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0) | api | Public dated derivative included; exact source receipt and selection in state manifest |
 | CT | forestry | [Connecticut DEEP Trails Set line layer](https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3) | api | Supplemental candidate; no public agency import |
 | CT | forestry | [Connecticut DEEP Property Access Locations](https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore) | catalog | Supplemental candidate; no public agency import |
 | CT | forestry | [OpenStreetMap Connecticut outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/connecticut-latest.osm.pbf) | download | OSM fallback; no public agency import |
@@ -202,8 +197,8 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | MD | parks | [Maryland DNR Owned Properties MapServer layer 14](https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/14) | api | Supplemental candidate; no public agency import |
 | MD | forestry | [Maryland DNR Trail Atlas 2016 MapServer](https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/Trail_Atlas_2016/MapServer) | api | Primary candidate; no public agency import; private staging tracked separately |
 | MD | forestry | [OpenStreetMap Maryland outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/maryland-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| MA | parks | [MassGIS DCR Roads & Trails download](https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails) | download | Primary candidate; no public agency import; private staging tracked separately |
-| MA | forestry | [MassGIS Protected and Recreational OpenSpace downloads/services](https://www.mass.gov/info-details/massgis-data-protected-and-recreational-openspace) | download | Primary candidate; no public agency import; private staging tracked separately |
+| MA | parks | [MassGIS DCR Roads & Trails download](https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails) | download | Public dated derivative included; exact source receipt and selection in state manifest |
+| MA | forestry | [MassGIS Protected and Recreational OpenSpace downloads/services](https://www.mass.gov/info-details/massgis-data-protected-and-recreational-openspace) | download | Public dated derivative included; exact source receipt and selection in state manifest |
 | MA | forestry | [MassGIS DCR Roads & Trails download](https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails) | download | Supplemental candidate; no public agency import |
 | MA | forestry | [OpenStreetMap Massachusetts outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/massachusetts-latest.osm.pbf) | download | OSM fallback; no public agency import |
 | MI | parks | [Michigan DNR Michigan Trails - Find Your Path downloads](https://www.michigan.gov/dnr/places/state-trails) | download | Primary candidate; no public agency import; private staging tracked separately |
@@ -225,7 +220,7 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | MT | parks | [OpenStreetMap Montana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/montana-latest.osm.pbf) | download | OSM fallback; no public agency import |
 | MT | forestry | [Montana DNRC Trust Lands Public Access layer 1](https://gis.dnrc.mt.gov/arcgis/rest/services/TLMD/AccessMap/FeatureServer/1) | api | Primary candidate; no public agency import; private staging tracked separately |
 | MT | forestry | [OpenStreetMap Montana outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/montana-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| NE | parks | [Nebraska Game and Parks Park_Areas FeatureServer](https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer) | api | Primary candidate; no public agency import; private staging tracked separately |
+| NE | parks | [Nebraska Game and Parks Park_Areas FeatureServer](https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer) | api | Public dated derivative included; exact source receipt and selection in state manifest |
 | NE | forestry | [High-resolution land cover of Nebraska (2014), RDS-2019-0038](https://www.fs.usda.gov/rds/archive/catalog/RDS-2019-0038) | download | Primary candidate; no public agency import; private staging tracked separately |
 | NE | forestry | [OpenStreetMap Nebraska outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/nebraska-latest.osm.pbf) | download | OSM fallback; no public agency import |
 | NV | parks | [Nevada Division of State Parks NDSP State Park Boundaries FeatureServer](https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/NDSP_State_Park_Bondaries/FeatureServer/1) | api | Primary candidate; no public agency import; private staging tracked separately |
