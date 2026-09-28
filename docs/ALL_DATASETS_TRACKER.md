@@ -1,5 +1,7 @@
 # Complete outdoor dataset tracker
 
+**State loader update:** Complete public states can now be installed through the dedicated [offline state package loader](STATE_PACKAGE_LOADER.md), with local PMTiles display, indexed catalog search/details and checksum-verified activation/rollback. Manual GeoJSON import limits remain unchanged. Native build and physical phone acceptance remain pending.
+
 **Public packaging update (2026-09-27):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **167 app-parser-validated import parts**. The packages contain **739,609 features**, **76,959 POIs**, and **120,859 eligible direct agency features** in eight states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
 
 **Snapshot:** 2026-09-26. This is the single index of every registered non-New-York state source role, all shipped state-package source families, the shipped New York source records, the selected AR/ID/SD layer plan, the identified New York OPRHP candidates, and the remaining map asset manifests. Repeated URLs remain repeated where two agency roles use the same dataset. A candidate or catalog entry is not a shipped layer or release approval.

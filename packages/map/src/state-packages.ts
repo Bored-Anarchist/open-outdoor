@@ -1,0 +1,145 @@
+import { ioverlanderCategoryDefinitions } from '@open-outdoor/shared';
+import {
+  outdoorMarkerDensityConfig,
+  type OutdoorFeatureSummary,
+  type OutdoorPlaceFilter,
+  type OutdoorMarkerDensity,
+} from './outdoor-map';
+
+export interface InstalledStatePackage {
+  readonly state: string;
+  readonly name: string;
+  readonly schemaVersion: 1;
+  readonly channel: 'public';
+  readonly sha256: string;
+  readonly featureCount: number;
+  readonly installedBytes: number;
+  readonly generatedAt: string;
+  readonly maximumZoom: number;
+  readonly bounds: [number, number, number, number];
+  readonly tilesUri: string;
+  readonly visible: boolean;
+  readonly canRollback: boolean;
+  readonly attribution: string;
+  readonly notices: string;
+  readonly integrityError?: boolean;
+}
+
+export function mergeStateSummaries(
+  baseline: readonly OutdoorFeatureSummary[],
+  states: readonly OutdoorFeatureSummary[],
+): OutdoorFeatureSummary[] {
+  const entries = new Map(baseline.map((feature) => [feature.id, feature]));
+  for (const feature of states) if (!entries.has(feature.id)) entries.set(feature.id, feature);
+  return [...entries.values()];
+}
+
+export function statePackageMapStyle(
+  packages: readonly InstalledStatePackage[],
+  category: OutdoorPlaceFilter = 'all',
+  selectedId: string | null = null,
+  density: OutdoorMarkerDensity = 'automatic',
+) {
+  const markerConfig = outdoorMarkerDensityConfig[density];
+  const sources: Record<string, { type: 'vector'; url: string; attribution: string }> = {};
+  const layers: Record<string, unknown>[] = [];
+  const selectionLayers: string[] = [];
+  for (const state of packages.filter((entry) => entry.visible)) {
+    if (!/^[A-Z]{2}$/.test(state.state) || !/^file:\/\/\/[^\r\n]+$/.test(state.tilesUri))
+      throw new Error('State map sources must be verified local files.');
+    const id = `state-${state.state}`;
+    sources[id] = {
+      type: 'vector',
+      url: `pmtiles://${state.tilesUri}`,
+      attribution: state.attribution,
+    };
+    const base = { source: id, 'source-layer': 'outdoors' };
+    const poiFilter = [
+      'all',
+      ['==', ['get', 'kind'], 'poi'],
+      ...(category === 'all' ? [] : [['==', ['get', 'category'], category]]),
+    ];
+    const color = [
+      'match',
+      ['get', 'category'],
+      ...ioverlanderCategoryDefinitions.flatMap((definition) => [definition.id, definition.color]),
+      '#62757f',
+    ];
+    const styles = [
+      {
+        id: `${id}-area`,
+        type: 'fill',
+        filter: ['in', ['get', 'kind'], ['literal', ['land', 'boundary']]],
+        paint: { 'fill-color': '#2e7d54', 'fill-opacity': 0.1 },
+      },
+      {
+        id: `${id}-road`,
+        type: 'line',
+        minzoom: 8,
+        filter: ['==', ['get', 'kind'], 'road'],
+        paint: { 'line-color': '#92754b', 'line-width': 1.5 },
+      },
+      {
+        id: `${id}-trail`,
+        type: 'line',
+        minzoom: 8,
+        filter: ['==', ['get', 'kind'], 'trail'],
+        paint: { 'line-color': '#176b42', 'line-width': 2 },
+      },
+      {
+        id: `${id}-poi`,
+        type: 'circle',
+        minzoom: markerConfig.minimumZoom,
+        filter: poiFilter,
+        paint: {
+          'circle-color': color,
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 3, 14, 7],
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 1,
+        },
+      },
+      {
+        id: `${id}-label`,
+        type: 'symbol',
+        minzoom: markerConfig.labelMinZoom,
+        filter: poiFilter,
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-font': ['Open Outdoor Noto Sans'],
+          'text-size': 12,
+          'text-offset': [0, 1.25],
+          'text-anchor': 'top',
+        },
+        paint: { 'text-color': '#182e36', 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 },
+      },
+      {
+        id: `${id}-selection`,
+        type: 'line',
+        filter: [
+          'all',
+          ['!=', ['get', 'kind'], 'poi'],
+          ['==', ['get', 'id'], selectedId ?? '__none__'],
+        ],
+        paint: { 'line-color': '#a43913', 'line-width': 4 },
+      },
+      {
+        id: `${id}-selection-point`,
+        type: 'circle',
+        filter: [
+          'all',
+          ['==', ['get', 'kind'], 'poi'],
+          ['==', ['get', 'id'], selectedId ?? '__none__'],
+        ],
+        paint: {
+          'circle-color': '#a43913',
+          'circle-radius': 10,
+          'circle-stroke-color': '#ffffff',
+          'circle-stroke-width': 3,
+        },
+      },
+    ];
+    layers.push(...styles.map((layer) => ({ ...base, ...layer })));
+    selectionLayers.push(`${id}-poi`, `${id}-area`, `${id}-road`, `${id}-trail`);
+  }
+  return { sources, layers, selectionLayers };
+}

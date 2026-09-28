@@ -99,3 +99,6 @@ Unless a document says otherwise, this initial set is `proposed` and becomes `ac
 - Test cases: `T-<level>-NNN-CNN` under a named suite.
 
 Identifiers are permanent. Retired items keep their ID and point to the replacement.
+
+- [Offline state package loader](STATE_PACKAGE_LOADER.md): complete-state installation, local tiles, indexed search, integrity checks and rollback.
+- [Installable state catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md): all 50 transfer/installed sizes, record and tile counts.

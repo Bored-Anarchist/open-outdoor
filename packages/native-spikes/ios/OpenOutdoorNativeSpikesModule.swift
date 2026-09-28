@@ -6,6 +6,9 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private lazy var privateStore = try? OpenOutdoorStorageCoordinatorSpike()
   private lazy var mapDatasetPicker = OpenOutdoorMapDatasetPicker()
   private let mapDatasetQueue = DispatchQueue(label: "org.openoutdoor.map-datasets")
+  private let statePackageStore = OpenOutdoorStatePackages()
+  private let statePackageQueue = DispatchQueue(label: "org.openoutdoor.state-packages")
+  private lazy var statePackagePicker = OpenOutdoorStatePackagePicker(store: statePackageStore, queue: statePackageQueue)
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -30,6 +33,22 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("OpenOutdoorNativeSpikes")
+
+    AsyncFunction("loadStatePackages") { (registry: String) -> String in
+      try self.statePackageStore.load(registry)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("pickStatePackage") { (promise: Promise) in
+      self.statePackagePicker.pick(promise)
+    }.runOnQueue(.main)
+    AsyncFunction("changeStatePackage") { (state: String, action: String) -> String in
+      try self.statePackageStore.change(state, action)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("searchStatePackages") { (query: String) -> String in
+      try self.statePackageStore.search(query)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("statePackageDetail") { (id: String) -> String? in
+      try self.statePackageStore.detail(id)
+    }.runOnQueue(statePackageQueue)
 
     AsyncFunction("pickMapDataset") { (promise: Promise) in
       self.mapDatasetPicker.pick(promise: promise)

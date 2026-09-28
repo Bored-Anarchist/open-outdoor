@@ -6,6 +6,7 @@ Every state, including New York, lives under `packages/map/src/assets/state-pack
 
 | File | Purpose |
 | --- | --- |
+| `state.sqlite` | Dedicated one-file state installation: indexed catalog plus embedded local PMTiles; pinned by `loader-inventory.json`. See [state loader](STATE_PACKAGE_LOADER.md). |
 | `outdoors.geojson` | Full reference GeoJSON: POIs, land polygons, roads, trails and boundaries retain independent feature types and source lineage. |
 | `index.json` | Matching stable IDs, bounding boxes and visitor/search properties. |
 | `manifest.json` | Classification, state, package mode, counts, `output` descriptor, artifact hashes, source acquisition receipts, licenses, attribution, rejected-geometry counts and import-part inventory. |
@@ -16,7 +17,7 @@ The parent `inventory.json` and [state inventory](PUBLIC_STATE_PACKAGE_INVENTORY
 
 `properties.category` uses an app-supported iOverlander category for POIs. `properties.sourceCategory` retains the original source designation. Developed camping, primitive camping, parking, water, dump stations, lodging, food, shopping, medical and visitor attractions are mapped from source types, without using place names to infer facilities or camping permission. Toilets and unsupported source types remain Other with their raw type and bounded amenity details. Maintenance defects and survey-only Massachusetts point records are filtered from the visitor POI derivative; geometryless or invalid agency records are rejected and counted. Conditions and restrictions are not inferred from signs, ownership or old status fields.
 
-The full GeoJSON is the authoritative package; it can exceed the user-import limits. Import parts retain source identity and visitor fields, while omitting bulky source details. Parts stay below conservative byte, feature and coordinate budgets and pass all real parser checks, including polygon rings, MultiPoint expansion and normalized size. Oversized multipart geometry may be separated into parts with a parent feature ID; coordinates are preserved. The app still limits stored imports to five datasets and 50 MiB total. Select a useful group of parts within those limits; a whole-state automatic loader is separate work.
+The full GeoJSON is the authoritative package; it can exceed the user-import limits. Import parts retain source identity and visitor fields, while omitting bulky source details. Parts stay below conservative byte, feature and coordinate budgets and pass all real parser checks, including polygon rings, MultiPoint expansion and normalized size. Oversized multipart geometry may be separated into parts with a parent feature ID; coordinates are preserved. The app still limits stored imports to five datasets and 50 MiB total. Select a useful group of parts within those limits; complete states use the dedicated [state loader](STATE_PACKAGE_LOADER.md).
 
 ## Rebuild and verify
 
