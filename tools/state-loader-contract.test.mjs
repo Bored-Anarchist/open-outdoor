@@ -1,9 +1,31 @@
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 
 const text = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const native = text('packages/native-spikes/ios/OpenOutdoorStatePackages.swift');
+
+test('Metro resolves Node ESM specifiers to shared TypeScript sources', () => {
+  const require = createRequire(import.meta.url);
+  const config = require('../apps/mobile/metro.config.js');
+  const context = {
+    originModulePath: fileURLToPath(
+      new URL('../packages/shared/src/public-poi-category.ts', import.meta.url),
+    ),
+    resolveRequest: (_context, moduleName, platform) => ({ moduleName, platform }),
+  };
+  assert.deepEqual(config.resolver.resolveRequest(context, './ioverlander.js', 'ios'), {
+    moduleName: fileURLToPath(new URL('../packages/shared/src/ioverlander.ts', import.meta.url)),
+    platform: 'ios',
+  });
+  assert.equal(
+    config.resolver.resolveRequest(context, './missing.js', 'ios').moduleName,
+    './missing.js',
+  );
+  assert.equal(config.resolver.resolveRequest(context, 'react', 'ios').moduleName, 'react');
+});
 
 test('native state activation is build-pinned, bounded and separate from private user storage', () => {
   for (const token of [
