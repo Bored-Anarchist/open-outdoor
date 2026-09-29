@@ -33,7 +33,7 @@ All eight named services were acquired locally with complete object-ID inventori
 | [Beach status](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Beach_Status/FeatureServer/0) | 74 | Separate dated private snapshot with the same current-conditions exclusion. |
 | [2025–2026 snowmobile trail view](https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/2025_2026_Snowmobile_Data_view/FeatureServer/1) | 2,911 | Previous-season private reference, excluded from the durable map and current route/access claims. Layer 0 is a club-locator companion, not this trail dataset. |
 
-New York's private map now has **41,273** features: **14,454 DEC**, **25,633 selected OPRHP**, and **1,186 iOverlander**. The composer preserves existing DEC geometry, private narratives and IDs, checks every OPRHP receipt, and produces a checksum-pinned search index. All 5,289 preserved profiles are checked against retained DEC geometry before rebinding. Re-running the composer does not duplicate agency records. The private mobile staging result has **41,599** features when the 326 public records are added locally. Public New York remains **326** records.
+New York's private map now has **41,273** features: **14,454 DEC**, **25,633 selected OPRHP**, and **1,186 iOverlander**. The composer preserves existing DEC geometry, private narratives and IDs, checks every OPRHP receipt, and produces a checksum-pinned search index. A final comparison against the preserved pre-OPRHP package confirmed all 15,640 original feature records were unchanged. All 5,289 preserved profiles are checked against retained DEC geometry before rebinding. Re-running the composer does not duplicate agency records. The private mobile staging result has **41,599** features when the 326 public records are added locally. Public New York remains **326** records.
 
 ## Visitor-scope decisions
 
@@ -64,8 +64,8 @@ For NCFS, additionally request updated state-forest boundary/locator geometry co
 ```text
 node tools/acquire-public-state-agency.mjs mi-dnr-hiking
 node tools/build-public-state-packages.mjs MI
-python tools/build-state-loader.py --states MI --workers 2
 node tools/report-public-state-packages.mjs
+python tools/build-state-loader.py --states MI --workers 2
 node tools/stage-private-agency-resolutions.mjs --state MD
 node tools/stage-private-agency-resolutions.mjs --state NC
 node tools/stage-private-agency-resolutions.mjs --state LA
@@ -86,3 +86,5 @@ python tools/verify-state-loader.py
 ```
 
 Private acquisition receipts and complete sources remain Git-ignored. Only aggregate status, exact source URLs, review policy, tooling and eligible public package data are pushed. Rebuilds require the corresponding private local source files; a clean public checkout cannot reconstruct private catalogs.
+
+Verification passed for all 50 public packages and 169 import parts; all 50 SQLite catalogs, 757,616 original geometries and 25,488 tiles; all 50 private packages and 5,289 retained DEC profiles; 419 application tests, 108 release tests and six Python catalog tests. TypeScript, formatting, documentation governance, public-boundary scanning and local iOS/Metro export passed. Public catalog transfer is 1,393,651,712 bytes (1.30 GiB); installed catalogs plus extracted tiles total 1,559,952,099 bytes (1.45 GiB), excluding rollback copies and other user data. The complete [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36507140356) passed for code commit `da5b7109fa03f074b990a5e1ca306d792f4f7adb`, including native compilation, Metro/Hermes bundling, app packaging and artifact upload. All five hosted PR jobs passed for that code commit. Physical phone acceptance and production catalog trust integration remain pending.
