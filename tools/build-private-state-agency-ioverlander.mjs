@@ -494,14 +494,19 @@ export async function buildPrivateStateAgencyIoverlander(code) {
       sha256: sha256(collection),
     },
   };
-  await writeFile(join(output, filename), collection);
-  if (visitorReferences)
-    await writeFile(join(output, 'visitor-references.private.json'), visitorReferences.bytes);
-  await writeFile(
-    join(output, 'agency-ioverlander.manifest.json'),
-    `${JSON.stringify(manifest, null, 2)}\n`,
-  );
-  await deduplicatePrivateStatePackage(repository, code, state.name);
+  if (visitorReferences) {
+    const file = `visitor-references.${visitorReferences.sha256}.private.json`;
+    manifest.visitorReferences.file = file;
+  }
+  await deduplicatePrivateStatePackage(repository, code, state.name, {
+    prepared: {
+      manifest,
+      collection,
+      files: visitorReferences
+        ? { [manifest.visitorReferences.file]: visitorReferences.bytes }
+        : {},
+    },
+  });
   return JSON.parse(await readFile(join(output, 'agency-ioverlander.manifest.json'), 'utf8'));
 }
 

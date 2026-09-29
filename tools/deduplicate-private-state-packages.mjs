@@ -1,8 +1,14 @@
 #!/usr/bin/env node
+import { privateEnrichmentDocument } from './private-public-enrichment.mjs';
 import { createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+  writeImmutable,
+  replaceManifest,
+  recoverPrivateDirectory,
+} from './private-package-transaction.mjs';
 import {
   dedupPolicy,
   deduplicatePrivateFeatures,
@@ -15,25 +21,37 @@ export async function deduplicatePrivateStatePackage(
   repository,
   code,
   name,
-  { verifyOnly = false } = {},
+  { verifyOnly = false, catalogDirectory, prepared, beforeActivate } = {},
 ) {
-  const directory = join(repository, 'PrivateData/catalogs/US', name, 'current');
+  const directory =
+    catalogDirectory ?? join(repository, 'PrivateData/catalogs/US', name, 'current');
+  if (!catalogDirectory) await recoverPrivateDirectory(directory);
   const ny = code === 'NY';
   const manifestFile = ny ? 'manifest.json' : 'agency-ioverlander.manifest.json';
-  const manifest = JSON.parse(await readFile(join(directory, manifestFile), 'utf8'));
+  const manifest = prepared
+    ? structuredClone(prepared.manifest)
+    : JSON.parse(await readFile(join(directory, manifestFile), 'utf8'));
   if (manifest.classification !== 'PRIVATE_USER' || (!ny && manifest.publicDistribution !== false))
     throw new Error(`${code}: invalid private classification`);
   const descriptor = ny
     ? manifest.artifacts.find((a) => a.file === 'new-york-outdoors.composed.geojson')
     : manifest.output;
-  const current = await readFile(join(directory, descriptor.file));
-  if (hash(current) !== descriptor.sha256 || current.length !== descriptor.bytes)
+  const current = prepared
+    ? prepared.collection
+    : await readFile(join(directory, descriptor.file)).catch((error) => {
+        if (!verifyOnly && manifest.publicDeduplication && error.code === 'ENOENT')
+          return Buffer.alloc(0);
+        throw error;
+      });
+  const currentValid = hash(current) === descriptor.sha256 && current.length === descriptor.bytes;
+  if (!currentValid && (verifyOnly || !manifest.publicDeduplication))
     throw new Error(`${code}: private checksum mismatch`);
   const publicPackage = await readPublicStatePackage(repository, code);
   if (verifyOnly) {
     const d = manifest.publicDeduplication;
     if (
       !d ||
+      !d.enrichments ||
       d.publicSha256 !== publicPackage.sha256 ||
       JSON.stringify(d.policy) !== JSON.stringify(dedupPolicy) ||
       d.outputSha256 !== descriptor.sha256
@@ -58,6 +76,17 @@ export async function deduplicatePrivateStatePackage(
     )
       throw new Error(`${code}: deduplication provenance mismatch`);
     const replay = deduplicatePrivateFeatures(JSON.parse(base).features, publicPackage.features);
+    if (d.enrichments) {
+      const data = await readFile(join(directory, d.enrichments.file));
+      if (
+        hash(data) !== d.enrichments.sha256 ||
+        data.length !== d.enrichments.bytes ||
+        d.enrichments.featureCount !==
+          replay.matches.filter((m) => m.privateSourceId === 'private-ioverlander').length ||
+        !data.equals(encode(privateEnrichmentDocument(code, publicPackage.sha256, replay.matches)))
+      )
+        throw new Error(`${code}: private enrichment checksum mismatch`);
+    }
     if (
       !encode({ type: 'FeatureCollection', features: replay.features }).equals(current) ||
       JSON.stringify(replay.matches) !== JSON.stringify(report.matches) ||
@@ -111,8 +140,8 @@ export async function deduplicatePrivateStatePackage(
     summary,
     matches: result.matches,
   });
-  const inputFile = 'before-public-dedup.geojson',
-    reportFile = 'public-dedup.private.json';
+  const inputFile = `before-public-dedup.${hash(input)}.geojson`,
+    reportFile = `public-dedup.${hash(report)}.private.json`;
   if (!ny) {
     manifest.ioverlander.featureCount = ioverlander;
     manifest.agency.featureCount = summary.agency;
@@ -128,6 +157,7 @@ export async function deduplicatePrivateStatePackage(
         throw new Error(`${code}: matched visitor reference requires explicit binding migration`);
     }
     Object.assign(descriptor, {
+      file: `agency-ioverlander.${hash(output)}.private.geojson`,
       featureCount: result.features.length,
       bytes: output.length,
       sha256: hash(output),
@@ -142,11 +172,28 @@ export async function deduplicatePrivateStatePackage(
     report: { file: reportFile, bytes: report.length, sha256: hash(report) },
     summary,
   };
-  // Store the complete recoverable input and private match details before activating output.
-  await writeFile(join(directory, inputFile), input);
-  await writeFile(join(directory, reportFile), report);
-  if (!ny) await writeFile(join(directory, descriptor.file), output);
-  await writeFile(join(directory, manifestFile), JSON.stringify(manifest, null, 2) + '\n');
+  const enrichments = encode(privateEnrichmentDocument(code, publicPackage.sha256, result.matches));
+  const enrichmentFile = `public-enrichments.${hash(enrichments)}.private.json`;
+  manifest.publicDeduplication.enrichments = {
+    file: enrichmentFile,
+    bytes: enrichments.length,
+    sha256: hash(enrichments),
+    featureCount: result.matches.filter((m) => m.privateSourceId === 'private-ioverlander').length,
+  };
+  // Complete immutable artifacts first. Readers see either the old or the new manifest.
+  await writeImmutable(directory, inputFile, input);
+  await writeImmutable(directory, reportFile, report);
+  await writeImmutable(directory, enrichmentFile, enrichments);
+  if (!ny)
+    await writeImmutable(directory, descriptor.file, output, { repairCorrupt: !currentValid });
+  for (const [file, bytes] of Object.entries(prepared?.files ?? {}))
+    await writeImmutable(directory, file, bytes);
+  await replaceManifest(
+    directory,
+    manifestFile,
+    Buffer.from(JSON.stringify(manifest, null, 2) + '\n'),
+    { beforeActivate },
+  );
   return summary;
 }
 

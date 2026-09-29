@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { deduplicatePrivateStatePackage } from './deduplicate-private-state-packages.mjs';
+import { stagePrivateDirectory, activatePrivateDirectory } from './private-package-transaction.mjs';
 import { resolve } from 'node:path';
 import { buildIoverlanderPrivateCatalog } from '../packages/data/dist/ioverlander-private.js';
 import { packagePrivateNewYorkHikes } from './package-private-new-york-hikes.mjs';
@@ -28,6 +29,8 @@ if (!inputDirectory || !outputDirectory) {
   );
 }
 
+const activeDirectory = resolve(outputDirectory);
+const stagingDirectory = await stagePrivateDirectory(activeDirectory, { copyCurrent: false });
 const result = await buildIoverlanderPrivateCatalog({
   inputDirectory: resolve(inputDirectory),
   decGeojsonPath: resolve(
@@ -36,7 +39,7 @@ const result = await buildIoverlanderPrivateCatalog({
   ),
   npsSnapshotPath: args.get('nps') ? resolve(args.get('nps')) : undefined,
   federalSnapshotPath: args.get('federal') ? resolve(args.get('federal')) : undefined,
-  outputDirectory: resolve(outputDirectory),
+  outputDirectory: stagingDirectory,
   publicCheckout: process.cwd(),
   reviewCsvPath: args.get('review') ? resolve(args.get('review')) : undefined,
   generatedAt: args.get('generated-at'),
@@ -54,12 +57,16 @@ if (
 )
   await packagePrivateNewYorkAgencies({
     catalogDirectory: result.outputDirectory,
+    transactional: false,
     ...(args.get('profiles') ? { profileDirectory: resolve(args.get('profiles')) } : {}),
   });
 
-if (result.outputDirectory === resolve('PrivateData/catalogs/US/New York/current'))
-  await deduplicatePrivateStatePackage(resolve('.'), 'NY', 'New York');
+if (activeDirectory === resolve('PrivateData/catalogs/US/New York/current'))
+  await deduplicatePrivateStatePackage(resolve('.'), 'NY', 'New York', {
+    catalogDirectory: stagingDirectory,
+  });
+await activatePrivateDirectory(activeDirectory, stagingDirectory);
 
 process.stdout.write(
-  `${JSON.stringify({ outputDirectory: result.outputDirectory, counts: result.counts }, null, 2)}\n`,
+  `${JSON.stringify({ outputDirectory: activeDirectory, counts: result.counts }, null, 2)}\n`,
 );

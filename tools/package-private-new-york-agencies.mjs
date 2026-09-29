@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { deduplicatePrivateStatePackage } from './deduplicate-private-state-packages.mjs';
+import { stagePrivateDirectory, activatePrivateDirectory } from './private-package-transaction.mjs';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -68,7 +69,24 @@ export async function packagePrivateNewYorkAgencies({
   sourceRoot = resolve('PrivateData/agency-feeds/US/NY'),
   refreshProfiles = true,
   profileDirectory,
+  transactional = true,
 } = {}) {
+  if (transactional) {
+    const stage = await stagePrivateDirectory(catalogDirectory);
+    const result = await packagePrivateNewYorkAgencies({
+      catalogDirectory: stage,
+      sourceRoot,
+      refreshProfiles,
+      profileDirectory,
+      transactional: false,
+    });
+    if (catalogDirectory === resolve('PrivateData/catalogs/US/New York/current'))
+      await deduplicatePrivateStatePackage(resolve('.'), 'NY', 'New York', {
+        catalogDirectory: stage,
+      });
+    await activatePrivateDirectory(catalogDirectory, stage);
+    return result;
+  }
   const config = JSON.parse(await readFile(configPath, 'utf8'));
   // An unacquired source is an error: a rebuild must never silently lose an existing overlay.
   const manifest = JSON.parse(await readFile(join(catalogDirectory, 'manifest.json'), 'utf8'));

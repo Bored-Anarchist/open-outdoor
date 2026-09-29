@@ -1,12 +1,14 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import polygonClipping from 'polygon-clipping';
 
 export const dedupPolicy = {
-  version: 1,
+  version: 2,
   pointDistanceMeters: 25,
   shapeDistanceMeters: 20,
   shapeMeasureRatio: 0.98,
+  polygonIntersectionOverUnion: 0.9,
 };
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const nameKey = (value) =>
@@ -35,7 +37,11 @@ const dimension = (f) =>
         ? 0
         : -1;
 function category(f) {
-  const key = nameKey(f.properties?.sourceCategory || f.properties?.category);
+  const canonical = nameKey(f.properties?.category);
+  const key =
+    canonical && canonical !== 'other'
+      ? canonical
+      : nameKey(f.properties?.sourceCategory || canonical);
   return (
     {
       'established campground': 'campground',
@@ -96,26 +102,41 @@ function segmentDistance(p, a, b) {
   return distance(p, [a[0] + dx * t, a[1] + dy * t]);
 }
 function directedClose(a, b, limit) {
-  // Check every vertex and segment midpoint; no sparse sampling can hide a detour.
-  for (const part of a)
-    for (let i = 0; i < part.length; i++) {
-      const points = [part[i]];
-      if (i) points.push([(part[i][0] + part[i - 1][0]) / 2, (part[i][1] + part[i - 1][1]) / 2]);
-      for (const p of points) {
-        let found = false;
-        for (const q of b) {
-          for (let j = 1; j < q.length; j++) {
-            if (segmentDistance(p, q[j - 1], q[j]) <= limit) {
-              found = true;
-              break;
-            }
-          }
-          if (found) break;
-        }
-        if (!found) return false;
-      }
+  const segments = b.flatMap((r) => r.slice(1).map((p, i) => [r[i], p]));
+  function covered(start, end, depth = 0) {
+    // A segment inside one convex target-segment capsule is covered continuously.
+    // Subdivide crossings between capsules; uncertainty retains the private feature.
+    let startDistance = Infinity,
+      endDistance = Infinity;
+    for (const [q, r] of segments) {
+      const ds = segmentDistance(start, q, r),
+        de = segmentDistance(end, q, r);
+      if (ds <= limit && de <= limit) return true;
+      startDistance = Math.min(startDistance, ds);
+      endDistance = Math.min(endDistance, de);
     }
+    if (startDistance > limit || endDistance > limit || depth >= 20) return false;
+    const mid = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+    return covered(start, mid, depth + 1) && covered(mid, end, depth + 1);
+  }
+  for (const part of a)
+    for (let i = 1; i < part.length; i++) if (!covered(part[i - 1], part[i])) return false;
   return true;
+}
+export function polygonIntersectionOverUnion(a, b) {
+  try {
+    const intersection = polygonClipping.intersection(
+      a.geometry.coordinates,
+      b.geometry.coordinates,
+    );
+    const union = polygonClipping.union(a.geometry.coordinates, b.geometry.coordinates);
+    const area = (coordinates) =>
+      coordinates.reduce((n, poly) => n + measure({ type: 'Polygon' }, poly, 2), 0);
+    const unionArea = area(union);
+    return unionArea > 0 ? area(intersection) / unionArea : 0;
+  } catch {
+    return 0;
+  }
 }
 function measure(g, p, dim) {
   if (dim === 1)
@@ -160,6 +181,8 @@ export function sameShape(a, b, limit = dedupPolicy.shapeDistanceMeters) {
   const am = measure(a.geometry, ap, dim),
     bm = measure(b.geometry, bp, dim);
   if (!(am > 0 && bm > 0) || Math.min(am, bm) / Math.max(am, bm) < dedupPolicy.shapeMeasureRatio)
+    return false;
+  if (dim === 2 && polygonIntersectionOverUnion(a, b) < dedupPolicy.polygonIntersectionOverUnion)
     return false;
   return directedClose(ap, bp, limit) && directedClose(bp, ap, limit);
 }

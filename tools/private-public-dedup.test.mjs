@@ -5,6 +5,10 @@ import { deduplicatePrivateStatePackage } from './deduplicate-private-state-pack
 import { createHash } from 'node:crypto';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import {
+  privateEnrichmentDocument,
+  composePrivateStateView,
+} from './private-public-enrichment.mjs';
 import { join } from 'node:path';
 const feature = (
   id,
@@ -16,6 +20,53 @@ const feature = (
   id,
   geometry: { type, coordinates },
   properties: { name, sourceId, sourceUrl, category },
+});
+test('private enrichment preserves community details on one canonical feature without mutating public data', () => {
+  const privateFeature = feature('p', 'Pine Campground', [0, 0]);
+  privateFeature.properties.communityDescription = 'Private description';
+  privateFeature.properties.communityCheckIns = [{ comment: 'Private check-in' }];
+  privateFeature.properties.communityCheckInCount = 1;
+  const publicFeature = feature('q', 'Pine Campground', [0, 0], { sourceId: 'public' });
+  const matched = deduplicatePrivateFeatures([privateFeature], [publicFeature]);
+  const document = privateEnrichmentDocument('TS', 'public-hash', matched.matches);
+  const view = composePrivateStateView(
+    { features: [publicFeature] },
+    { features: matched.features },
+    document,
+  );
+  assert.equal(view.features.length, 1);
+  assert.equal(view.features[0].id, 'q');
+  assert.equal(view.publicDistribution, false);
+  assert.equal(view.features[0].properties.origin, 'private-catalog');
+  assert.equal(view.features[0].properties.communityDescription, 'Private description');
+  assert.equal(view.features[0].properties.communityCheckIns.length, 1);
+  assert.equal(publicFeature.properties.communityDescription, undefined);
+});
+test('public raw category does not override matching normalized visitor categories', () => {
+  const a = feature('p', 'Pine Visitor Center', [0, 0], { category: 'tourist_attraction' });
+  const b = feature('q', 'Pine Visitor Center', [0, 0], {
+    sourceId: 'public',
+    category: 'tourist_attraction',
+  });
+  b.properties.sourceCategory = 'interpretive_visitor_center_(minor)';
+  assert.equal(deduplicatePrivateFeatures([a], [b]).matches.length, 1);
+});
+test('disjoint same-name parcels are retained even within the boundary-distance tolerance', () => {
+  const ring = (x) => [
+    [x, 0],
+    [x + 0.00005, 0],
+    [x + 0.00005, 0.001],
+    [x, 0.001],
+    [x, 0],
+  ];
+  const a = feature('p', 'Pine State Park', [ring(0)], { type: 'Polygon', sourceId: 'agency' });
+  const b = feature('q', 'Pine State Park', [ring(0.0001)], {
+    type: 'Polygon',
+    sourceId: 'public',
+  });
+  assert.equal(deduplicatePrivateFeatures([a], [b]).matches.length, 0);
+  b.geometry.coordinates = [ring(0.000002)];
+  assert.equal(deduplicatePrivateFeatures([a], [b]).matches.length, 1);
 });
 test('same named, compatible POIs within 25 meters prefer public; audit retains private narrative', () => {
   const privateFeature = feature('private:1', 'Pine Campground', [-75, 40]);
@@ -192,6 +243,28 @@ test('package reconciliation verifies checksums, replays deterministically, and 
       await deduplicatePrivateStatePackage(root, 'TS', 'Test', { verifyOnly: true }),
       first,
     );
+    const manifestPath = join(privateDir, 'agency-ioverlander.manifest.json');
+    const pointer = await readFile(manifestPath);
+    await assert.rejects(
+      deduplicatePrivateStatePackage(root, 'TS', 'Test', {
+        beforeActivate: () => {
+          throw Error('activation interrupted');
+        },
+      }),
+      /interrupted/,
+    );
+    assert.deepEqual(await readFile(manifestPath), pointer);
+    let active = JSON.parse(pointer);
+    await writeFile(join(privateDir, active.output.file), 'corrupt active bytes');
+    await assert.rejects(
+      deduplicatePrivateStatePackage(root, 'TS', 'Test', { verifyOnly: true }),
+      /private checksum/,
+    );
+    assert.deepEqual(await deduplicatePrivateStatePackage(root, 'TS', 'Test'), first);
+    assert.deepEqual(
+      await deduplicatePrivateStatePackage(root, 'TS', 'Test', { verifyOnly: true }),
+      first,
+    );
     await publicInput([]);
     await assert.rejects(
       deduplicatePrivateStatePackage(root, 'TS', 'Test', { verifyOnly: true }),
@@ -199,10 +272,16 @@ test('package reconciliation verifies checksums, replays deterministically, and 
     );
     assert.equal((await deduplicatePrivateStatePackage(root, 'TS', 'Test')).total, 1);
     assert.equal(
-      await readFile(join(privateDir, 'agency-ioverlander.private.geojson'), 'utf8'),
+      await readFile(
+        join(privateDir, JSON.parse(await readFile(manifestPath)).output.file),
+        'utf8',
+      ),
       input.toString(),
     );
-    const path = join(privateDir, 'public-dedup.private.json');
+    const path = join(
+      privateDir,
+      JSON.parse(await readFile(manifestPath)).publicDeduplication.report.file,
+    );
     await writeFile(path, '{}');
     await assert.rejects(
       deduplicatePrivateStatePackage(root, 'TS', 'Test', { verifyOnly: true }),
