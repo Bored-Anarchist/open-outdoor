@@ -44,7 +44,7 @@ for (const name of [
   'BUNDLED_NATIVE_MAP.md',
   'STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md',
 ]) {
-  let text = await readFile(join(docs, name), 'utf8');
+  let text = (await readFile(join(docs, name), 'utf8')).replace(/\r\n/g, '\n');
   text = text.replace(/\*\*Public packaging update \(2026-09-(?:27|28)\):\*\*[^\n]*\n\n/g, '');
   const end = text.indexOf('\n');
   text = text.slice(0, end + 1) + '\n' + publicStatus + text.slice(end + 1).trimStart();
