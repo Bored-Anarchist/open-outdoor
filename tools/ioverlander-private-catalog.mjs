@@ -2,6 +2,8 @@
 import { resolve } from 'node:path';
 import { buildIoverlanderPrivateCatalog } from '../packages/data/dist/ioverlander-private.js';
 import { packagePrivateNewYorkHikes } from './package-private-new-york-hikes.mjs';
+import { packagePrivateNewYorkAgencies } from './package-private-new-york-agencies.mjs';
+import { access } from 'node:fs/promises';
 
 function argumentsByName(values) {
   const parsed = new Map();
@@ -43,6 +45,16 @@ await packagePrivateNewYorkHikes({
   catalogDirectory: result.outputDirectory,
   ...(args.get('profiles') ? { profileDirectory: resolve(args.get('profiles')) } : {}),
 });
+if (
+  await access(resolve('PrivateData/agency-feeds/US/NY/nys-oprhp-trails/receipt.json')).then(
+    () => true,
+    () => false,
+  )
+)
+  await packagePrivateNewYorkAgencies({
+    catalogDirectory: result.outputDirectory,
+    ...(args.get('profiles') ? { profileDirectory: resolve(args.get('profiles')) } : {}),
+  });
 
 process.stdout.write(
   `${JSON.stringify({ outputDirectory: result.outputDirectory, counts: result.counts }, null, 2)}\n`,

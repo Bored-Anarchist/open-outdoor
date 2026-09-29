@@ -1,6 +1,8 @@
 # Complete outdoor dataset tracker
 
-**Public packaging update (2026-09-28):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **168 app-parser-validated import parts**. The packages contain **748,156 features**, **77,013 POIs**, and **129,406 eligible direct agency features** in 10 states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
+**Remaining-gap review (2026-09-28):** Michigan's 9,460 hiking records are publicly licensed and packaged. Recovered MD/FL/LA/NC feeds, Mississippi's three state forests and all eight OPRHP feeds are now acquired privately; selected OPRHP visitor records are integrated into New York's private map. Scope exclusions and remaining source-license/current-coverage dependencies are recorded in the [resolution report](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md). OSM POI/trail extracts remain deferred by request. Earlier acquisition-failure and not-acquired statements below are historical.
+
+**Public packaging update (2026-09-28):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **169 app-parser-validated import parts**. The packages contain **757,616 features**, **77,013 POIs**, and **138,866 eligible direct agency features** in 11 states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
 
 **State loader update:** Complete public states can now be installed through the dedicated [offline state package loader](STATE_PACKAGE_LOADER.md), with local PMTiles display, indexed catalog search/details and checksum-verified activation/rollback. Manual GeoJSON import limits remain unchanged. The [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36369753027) passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`. Physical phone acceptance and production catalog trust integration remain pending.
 
@@ -16,7 +18,7 @@
 
 The 50 public packages contain **77,013 POI entries**. **20,540 (26.7%)** retain Other because their source type is unknown, infrastructure, or an amenity without an iOverlander legend category. Raw source categories and bounded visitor amenities remain available. Camping types, parking, drinking water, dump stations, lodging and visitor attractions are normalized to the app taxonomy. These are package entries, not deduplicated national entities.
 
-**Import status:** every one of the **168 parts** passed the actual app parser's byte, feature, coordinate, geometry and normalized-size checks. Full package files can exceed import limits. The app's five-dataset/50 MiB combined-store limits still apply; select parts within those limits. Complete states use the separate SQLite loader; native phone acceptance remains pending.
+**Import status:** every one of the **169 parts** passed the actual app parser's byte, feature, coordinate, geometry and normalized-size checks. Full package files can exceed import limits. The app's five-dataset/50 MiB combined-store limits still apply; select parts within those limits. Complete states use the separate SQLite loader; native phone acceptance remains pending.
 
 ### State package POI and import status
 
@@ -43,7 +45,7 @@ The 50 public packages contain **77,013 POI entries**. **20,540 (26.7%)** retain
 | ME | 111 | 44 | 0 | 1 validated parts |
 | MD | 694 | 390 | 0 | 1 validated parts |
 | MA | 4,952 | 3,110 | 49,787 | 8 validated parts |
-| MI | 597 | 12 | 0 | 3 validated parts |
+| MI | 597 | 12 | 9,460 | 4 validated parts |
 | MN | 966 | 8 | 7,872 | 4 validated parts |
 | MS | 711 | 348 | 0 | 1 validated parts |
 | MO | 206 | 28 | 0 | 1 validated parts |
@@ -203,8 +205,8 @@ These are the complete source roles in `config/us-state-forestry-agencies.json` 
 | MA | forestry | [MassGIS Protected and Recreational OpenSpace downloads/services](https://www.mass.gov/info-details/massgis-data-protected-and-recreational-openspace) | download | Public dated derivative included; exact source receipt and selection in state manifest |
 | MA | forestry | [MassGIS DCR Roads & Trails download](https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails) | download | Supplemental candidate; no public agency import |
 | MA | forestry | [OpenStreetMap Massachusetts outdoor routes and POIs state extract](https://download.geofabrik.de/north-america/us/massachusetts-latest.osm.pbf) | download | OSM fallback; no public agency import |
-| MI | parks | [Michigan DNR Michigan Trails - Find Your Path downloads](https://www.michigan.gov/dnr/places/state-trails) | download | Primary candidate; no public agency import; private staging tracked separately |
-| MI | forestry | [Michigan DNR Michigan Trails - Find Your Path downloads](https://www.michigan.gov/dnr/places/state-trails) | download | Primary candidate; no public agency import; private staging tracked separately |
+| MI | parks | [Michigan DNR Michigan Trails - Find Your Path downloads](https://www.michigan.gov/dnr/places/state-trails) | download | Public dated derivative included; exact source receipt and selection in state manifest |
+| MI | forestry | [Michigan DNR Michigan Trails - Find Your Path downloads](https://www.michigan.gov/dnr/places/state-trails) | download | Public dated derivative included; exact source receipt and selection in state manifest |
 | MN | parks | [Minnesota DNR State Park Trails and Roads dataset](https://gisdata.mn.gov/dataset/trans-state-park-trails-roads) | download | Public dated derivative included; exact source receipt and selection in state manifest |
 | MN | forestry | [Minnesota DNR Forest Stand Inventory dataset](https://gisdata.mn.gov/dataset/biota-dnr-forest-stand-inventory) | download | Primary candidate; no public agency import; private staging tracked separately |
 | MN | forestry | [Minnesota State Forest Campgrounds GIS download](https://gisdata.mn.gov/dataset/struc-state-forest-campgrounds) | download | Supplemental candidate; no public agency import |

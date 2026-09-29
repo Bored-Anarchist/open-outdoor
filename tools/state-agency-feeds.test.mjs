@@ -163,6 +163,39 @@ test('NJDEP local validation stays private while Michigan copying remains gated'
   );
 });
 
+test('restricted OPRHP polygon reference is exact, private and never converted', () => {
+  const source = {
+    id: 'nys-oprhp-parks',
+    sourceType: 'arcgis-layer',
+    rightsStatus: 'Restricted',
+    mode: 'reference-only',
+    url: 'https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NYS_Park_Polygons/FeatureServer/0',
+  };
+  const approval = {
+    ...approvalFor(source),
+    publisherGrant: false,
+    referenceOnlyPrivateValidation: true,
+  };
+  assert.doesNotThrow(() => assertPrivateAcquisitionApproved(source, approval));
+  for (const patch of [
+    { mode: 'durable' },
+    { id: 'other' },
+    { url: source.url.replace('/0', '/1') },
+  ])
+    assert.throws(
+      () =>
+        assertPrivateAcquisitionApproved(
+          { ...source, ...patch },
+          { ...approval, sourceId: patch.id ?? source.id, sourceUrl: patch.url ?? source.url },
+        ),
+      /publisher grant required/,
+    );
+  assert.throws(
+    () => assertPrivateAcquisitionApproved(source, { ...approval, publicDistribution: true }),
+    /public output prohibited/,
+  );
+});
+
 test('approved ArcGIS layer acquisition requires complete ID-based GeoJSON pages', async () => {
   const feeds = await loadStateAgencyFeedCatalog();
   const feed = feeds.find(
@@ -201,6 +234,15 @@ test('approved ArcGIS layer acquisition requires complete ID-based GeoJSON pages
   assert.equal(calls.length, 2);
   assert.equal(calls[1].get('objectIds'), '1,2');
   assert.equal(calls[1].get('outFields'), '*');
+  calls.length = 0;
+  const filtered = {
+    ...feed,
+    where: "PlanName='CAMDEN STATE FOREST'",
+    fields: ['OBJECTID', 'PlanName'],
+  };
+  await acquireApprovedArcgisLayer(filtered, approvalFor(filtered), fetchImpl);
+  assert.equal(calls[0].get('where'), filtered.where);
+  assert.equal(calls[1].get('outFields'), 'OBJECTID,PlanName');
   await assert.rejects(
     () =>
       acquireApprovedArcgisLayer(feed, approvalFor(feed), async (_url, options) => {

@@ -2,9 +2,9 @@
 
 **50 active packages: one for each U.S. state.** This count excludes source ZIPs, historical archives, and territories. All packages remain local under Git-ignored `PrivateData/`; only this inventory and the tooling are published to GitHub.
 
-The inventory verifier checks each package checksum and its feature counts against the manifest. Forty-three packages contain agency + iOverlander data, New York contains DEC + iOverlander only, and six packages use iOverlander alone because no eligible staged agency records are available.
+The inventory verifier checks each package checksum and its feature counts against the manifest. 43 packages contain agency + iOverlander data, New York contains DEC + selected OPRHP + iOverlander, and 6 packages use iOverlander alone because no eligible staged agency records are available.
 
-Totals: **446,522 agency/DEC features**, **63,333 iOverlander places**, and **509,855 features**. Counts do not establish current access, source completeness, or permission to redistribute.
+Totals: **472,960 agency/DEC features**, **63,333 iOverlander places**, and **536,293 features**. Counts do not establish current access, source completeness, or permission to redistribute.
 
 New York also packages **5,289 DEC trail elevation profiles**, verified against every packaged trail sample and statistic. Profiles describe existing trail features and are not added to the feature total. Florida includes 76 converted forest polygons; Oklahoma includes 44 historical state-park location points. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md).
 
@@ -20,7 +20,7 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | Colorado (CO) | Agency + iOverlander | 2,129 | 3,696 | 5,825 |
 | Connecticut (CT) | iOverlander only | 0 | 176 | 176 |
 | Delaware (DE) | Agency + iOverlander | 7,681 | 61 | 7,742 |
-| Florida (FL) | Agency + iOverlander | 16,534 | 2,446 | 18,980 |
+| Florida (FL) | Agency + iOverlander | 16,713 | 2,446 | 19,159 |
 | Georgia (GA) | Agency + iOverlander | 6,262 | 815 | 7,077 |
 | Hawaii (HI) | Agency + iOverlander | 600 | 79 | 679 |
 | Idaho (ID) | Agency + iOverlander | 70,975 | 1,975 | 72,950 |
@@ -29,13 +29,13 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | Iowa (IA) | Agency + iOverlander | 2,876 | 555 | 3,431 |
 | Kansas (KS) | Agency + iOverlander | 543 | 581 | 1,124 |
 | Kentucky (KY) | Agency + iOverlander | 4,092 | 447 | 4,539 |
-| Louisiana (LA) | Agency + iOverlander | 27 | 550 | 577 |
+| Louisiana (LA) | Agency + iOverlander | 28 | 550 | 578 |
 | Maine (ME) | Agency + iOverlander | 12,942 | 661 | 13,603 |
-| Maryland (MD) | Agency + iOverlander | 32 | 261 | 293 |
+| Maryland (MD) | Agency + iOverlander | 627 | 261 | 888 |
 | Massachusetts (MA) | iOverlander only | 0 | 373 | 373 |
 | Michigan (MI) | iOverlander only | 0 | 1,145 | 1,145 |
 | Minnesota (MN) | iOverlander only | 0 | 836 | 836 |
-| Mississippi (MS) | Agency + iOverlander | 2,918 | 445 | 3,363 |
+| Mississippi (MS) | Agency + iOverlander | 2,928 | 445 | 3,373 |
 | Missouri (MO) | Agency + iOverlander | 2,137 | 787 | 2,924 |
 | Montana (MT) | Agency + iOverlander | 8,752 | 2,174 | 10,926 |
 | Nebraska (NE) | iOverlander only | 0 | 504 | 504 |
@@ -43,8 +43,8 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | New Hampshire (NH) | Agency + iOverlander | 20,012 | 351 | 20,363 |
 | New Jersey (NJ) | Agency + iOverlander | 10,143 | 218 | 10,361 |
 | New Mexico (NM) | Agency + iOverlander | 35 | 2,073 | 2,108 |
-| New York (NY) | DEC + iOverlander | 14,454 | 1,186 | 15,640 |
-| North Carolina (NC) | Agency + iOverlander | 48 | 1,019 | 1,067 |
+| New York (NY) | DEC + OPRHP + iOverlander | 40,087 | 1,186 | 41,273 |
+| North Carolina (NC) | Agency + iOverlander | 68 | 1,019 | 1,087 |
 | North Dakota (ND) | Agency + iOverlander | 48 | 389 | 437 |
 | Ohio (OH) | Agency + iOverlander | 11,572 | 611 | 12,183 |
 | Oklahoma (OK) | Agency + iOverlander | 423 | 563 | 986 |
@@ -70,4 +70,4 @@ node tools/build-private-state-agency-ioverlander.mjs --all
 node tools/report-private-state-packages.mjs
 ```
 
-New York uses its separate reviewed DEC+iOverlander builder. Its civil boundary, NPS, and USFS data remain in the public system. Older private New York archives still contain historical copies of public features; archive cleanup remains a separate approval decision.
+New York uses its separate reviewed DEC+iOverlander builder followed by `node tools/package-private-new-york-agencies.mjs`. Selected public-designated OPRHP trails and facilities, camping and park locators are private dated references. Unchanged park polygons and temporal feeds remain separate private reference snapshots. Its civil boundary, NPS, and USFS data remain in the public system. See [remaining-gap resolution](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md).

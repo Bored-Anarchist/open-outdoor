@@ -178,7 +178,7 @@ export async function readIoverlander(
   };
 }
 
-function agencyFeature(source, feature, index) {
+export function agencyFeature(source, feature, index) {
   if (!feature?.geometry?.type || !feature.geometry.coordinates) return null;
   const geometryType = feature.geometry.type;
   const kind = /Point$/.test(geometryType)
@@ -202,11 +202,16 @@ function agencyFeature(source, feature, index) {
   );
   const sourceHash = sha256(`${source.sourceUrl}#${source.sourcePartition ?? ''}`).slice(0, 12);
   const id = `private-agency:${sourceHash}:${externalId}`;
-  const name =
+  let name =
     [
       'NAME',
       'Name',
       'name',
+      'NCDA_NAME',
+      'CampsiteName',
+      'PropertyName',
+      'DNRNAME',
+      'PlanName',
       'PARK_NAME',
       'TRAIL_NAME',
       'UNIT_NAME',
@@ -220,6 +225,12 @@ function agencyFeature(source, feature, index) {
       .map((key) => fields[key])
       .find((value) => typeof value === 'string' && value.trim())
       ?.trim() ?? `Agency feature ${externalId}`;
+  if (source.sourceId === 'resolved-ms-state-forests-2026-09-28')
+    name = /^camden/i.test(name)
+      ? 'Camden State Forest'
+      : /^kurtz/i.test(name)
+        ? 'Kurtz State Forest'
+        : 'Jamie L. Whitten State Forest';
   return {
     type: 'Feature',
     id,
@@ -229,12 +240,22 @@ function agencyFeature(source, feature, index) {
       kind,
       name,
       category:
-        source.parentSourceId === 'registry-ok-parks-71807f407a' && kind === 'poi'
-          ? 'tourist_attraction'
-          : 'other',
+        source.sourceUrl?.endsWith('/AIMStrailDataRO/MapServer/0') && kind === 'poi'
+          ? 'campsite'
+          : source.parentSourceId === 'registry-ok-parks-71807f407a' && kind === 'poi'
+            ? 'tourist_attraction'
+            : 'other',
       origin: 'private-catalog',
       sourceId: source.sourceId,
       sourceUrl: source.sourceUrl,
+      sourceCategory: String(
+        fields.Sub_Asset ?? fields.Category ?? fields.LOCTYPE ?? fields.DESIG ?? '',
+      ),
+      sourceUpdated: fields.last_edited_date ?? source.sourceEditDate ?? null,
+      ...(fields.DIVISION ? { agency: String(fields.DIVISION) } : {}),
+      ...(fields.CONTACT_NU ? { agencyPhone: String(fields.CONTACT_NU) } : {}),
+      ...(fields.SITE_ADD ? { address: String(fields.SITE_ADD) } : {}),
+      ...(fields.WEBLINK ? { agencyWebsite: String(fields.WEBLINK) } : {}),
       rightsStatus: source.rightsStatus,
       reviewStatus: 'provisional',
       publicUse: 'Private validation only; verify visitor access and publisher terms',
@@ -302,7 +323,7 @@ export function privateAgencySelection(receipt, features, resolution) {
   return { selected, filters };
 }
 
-async function readAgency(code) {
+export async function readAgency(code) {
   const root = join(privateRoot, 'agency-feeds', 'US', code);
   const directories = (
     await readdir(root, { withFileTypes: true }).catch((error) => {

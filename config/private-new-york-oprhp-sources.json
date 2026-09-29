@@ -1,0 +1,120 @@
+{
+  "reviewedAt": "2026-09-28",
+  "scope": "Noncommercial private informational reference only; no publisher redistribution grant. Temporal feeds remain separate snapshots and are never current access assertions.",
+  "sources": [
+    {
+      "id": "nys-oprhp-parks",
+      "state": "NY",
+      "name": "NYS_Park_Polygons",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NYS_Park_Polygons/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Restricted",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/bb2dfa2ccec0462ebe40e4efd8e2252f?f=json",
+      "mode": "reference-only",
+      "attribution": "NY State Parks (NYS OPRHP)",
+      "restriction": "Data cannot be edited; credit NY State Parks; do not redistribute. Raw source retained unchanged privately; original source fields/geometry preserved."
+    },
+    {
+      "id": "nys-oprhp-trails",
+      "state": "NY",
+      "name": "NY_State_Parks_Trails",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Trails/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/a89dcd37f8bc41929e490dacd872e288?f=json",
+      "mode": "durable",
+      "attribution": "NY State Parks (NYS OPRHP)",
+      "selection": {
+        "Public_": "Y"
+      },
+      "excludeStatuses": ["Closed", "Proposed"]
+    },
+    {
+      "id": "nys-oprhp-facilities",
+      "state": "NY",
+      "name": "NY_State_Park_Facilities",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Park_Facilities/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/7edb0518f71a4331a77384396296f8b7?f=json",
+      "mode": "durable",
+      "attribution": "NY State Parks (NYS OPRHP)",
+      "selection": {
+        "Public_": "Y"
+      },
+      "excludeStatuses": ["Closed", "Proposed"]
+    },
+    {
+      "id": "nys-oprhp-camping",
+      "state": "NY",
+      "name": "NY_State_Parks_Camping",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Camping/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/89a972bda12d4d7fa8600ee40b37784b?f=json",
+      "mode": "durable",
+      "attribution": "NY State Parks (NYS OPRHP)",
+      "category": "campsite"
+    },
+    {
+      "id": "nys-oprhp-park-points",
+      "state": "NY",
+      "name": "NY_State_Park_Points_(public_view)",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Park_Points_(public_view)/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/a7eb155ba5224cfe98fb6ca22b004a99?f=json",
+      "mode": "durable",
+      "attribution": "NY State Parks (NYS OPRHP)"
+    },
+    {
+      "id": "nys-oprhp-closures",
+      "state": "NY",
+      "name": "NY_State_Parks_Temporary_Trail_Closure",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Temporary_Trail_Closure/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/5de1d14a73e342b4bfb890218794fae4?f=json",
+      "mode": "condition-snapshot",
+      "attribution": "NY State Parks (NYS OPRHP)"
+    },
+    {
+      "id": "nys-oprhp-beaches",
+      "state": "NY",
+      "name": "NY_State_Parks_Beach_Status",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NY_State_Parks_Beach_Status/FeatureServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/62e98d59d190468b825bb27d0f508136?f=json",
+      "mode": "condition-snapshot",
+      "attribution": "NY State Parks (NYS OPRHP)"
+    },
+    {
+      "id": "nys-oprhp-snowmobile",
+      "state": "NY",
+      "name": "2025_2026_Snowmobile_Data_view",
+      "url": "https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/2025_2026_Snowmobile_Data_view/FeatureServer/1",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "publicDistribution": false,
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/b0519519785b48998ae46bf59515e204?f=json",
+      "mode": "previous-season",
+      "attribution": "NY State Parks (NYS OPRHP)"
+    }
+  ]
+}

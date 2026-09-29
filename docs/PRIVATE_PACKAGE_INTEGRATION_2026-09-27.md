@@ -1,5 +1,7 @@
 # Private package integration — September 27, 2026
 
+**Remaining-gap review (2026-09-28):** Michigan's 9,460 hiking records are publicly licensed and packaged. Recovered MD/FL/LA/NC feeds, Mississippi's three state forests and all eight OPRHP feeds are now acquired privately; selected OPRHP visitor records are integrated into New York's private map. Scope exclusions and remaining source-license/current-coverage dependencies are recorded in the [resolution report](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md). OSM POI/trail extracts remain deferred by request. Earlier acquisition-failure and not-acquired statements below are historical.
+
 The remaining acquired Florida ZIP, Oklahoma KML, and preserved New York DEC elevation profiles are now integrated into the active private packages. Source files, derived geometry, profiles, and mobile staging remain Git-ignored. GitHub receives tooling, tests, and this counts-only report.
 
 | Addition | Selection and validation | Active package result |

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { verifyPrivateHikeProfiles } from './package-private-new-york-hikes.mjs';
+import { validateOprhpPackage } from './package-private-new-york-agencies.mjs';
 
 const repository = resolve('.');
 const root = join(repository, 'PrivateData/catalogs/US');
@@ -39,6 +40,7 @@ for (const state of registry.states) {
     (feature) => feature.properties?.sourceId === 'private-ioverlander',
   ).length;
   const agency = collection.features.length - ioverlander;
+  if (ny) validateOprhpPackage(manifest, collection.features);
   if (
     ioverlander !==
       (ny ? manifest.counts.outputPrivatePlaces : manifest.ioverlander.featureCount) ||
@@ -53,7 +55,8 @@ for (const state of registry.states) {
     collection.features.some(
       (feature) =>
         feature.properties?.sourceId !== 'private-ioverlander' &&
-        !String(feature.properties?.sourceId).startsWith('nys-dec-'),
+        !String(feature.properties?.sourceId).startsWith('nys-dec-') &&
+        !String(feature.properties?.sourceId).startsWith('nys-oprhp-'),
     )
   ) {
     throw new Error('NY: private catalog includes public source features');
@@ -93,7 +96,9 @@ for (const state of registry.states) {
     state: state.code,
     name: state.name,
     packageMode: ny
-      ? 'dec-and-ioverlander'
+      ? manifest.oprhp?.featureCount
+        ? 'dec-oprhp-and-ioverlander'
+        : 'dec-and-ioverlander'
       : agency > 0
         ? 'agency-and-ioverlander'
         : 'ioverlander-only',
@@ -145,6 +150,7 @@ await writeFile(
   )}\n`,
 );
 const labels = {
+  'dec-oprhp-and-ioverlander': 'DEC + OPRHP + iOverlander',
   'dec-and-ioverlander': 'DEC + iOverlander',
   'agency-and-ioverlander': 'Agency + iOverlander',
   'ioverlander-only': 'iOverlander only',
@@ -157,7 +163,7 @@ await writeFile(
     '',
     '**50 active packages: one for each U.S. state.** This count excludes source ZIPs, historical archives, and territories. All packages remain local under Git-ignored `PrivateData/`; only this inventory and the tooling are published to GitHub.',
     '',
-    'The inventory verifier checks each package checksum and its feature counts against the manifest. Forty-three packages contain agency + iOverlander data, New York contains DEC + iOverlander only, and six packages use iOverlander alone because no eligible staged agency records are available.',
+    `The inventory verifier checks each package checksum and its feature counts against the manifest. ${rows.filter((r) => r.packageMode === 'agency-and-ioverlander').length} packages contain agency + iOverlander data, New York contains DEC + selected OPRHP + iOverlander, and ${rows.filter((r) => r.packageMode === 'ioverlander-only').length} packages use iOverlander alone because no eligible staged agency records are available.`,
     '',
     `Totals: **${format(totals.agency)} agency/DEC features**, **${format(totals.ioverlander)} iOverlander places**, and **${format(totals.features)} features**. Counts do not establish current access, source completeness, or permission to redistribute.`,
     '',
@@ -179,7 +185,7 @@ await writeFile(
     'node tools/report-private-state-packages.mjs',
     '```',
     '',
-    'New York uses its separate reviewed DEC+iOverlander builder. Its civil boundary, NPS, and USFS data remain in the public system. Older private New York archives still contain historical copies of public features; archive cleanup remains a separate approval decision.',
+    'New York uses its separate reviewed DEC+iOverlander builder followed by `node tools/package-private-new-york-agencies.mjs`. Selected public-designated OPRHP trails and facilities, camping and park locators are private dated references. Unchanged park polygons and temporal feeds remain separate private reference snapshots. Its civil boundary, NPS, and USFS data remain in the public system. See [remaining-gap resolution](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md).',
     '',
   ].join('\n'),
 );

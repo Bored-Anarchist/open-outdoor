@@ -1,5 +1,7 @@
 # Public state package format
 
+**Remaining-gap review (2026-09-28):** Michigan's 9,460 hiking records are publicly licensed and packaged. Recovered MD/FL/LA/NC feeds, Mississippi's three state forests and all eight OPRHP feeds are now acquired privately; selected OPRHP visitor records are integrated into New York's private map. Scope exclusions and remaining source-license/current-coverage dependencies are recorded in the [resolution report](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md). OSM POI/trail extracts remain deferred by request. Earlier acquisition-failure and not-acquired statements below are historical.
+
 The public state packages follow the private catalog system's GeoJSON and checksum-manifest structure, with a public search index and app import parts. They use the iOverlander POI legend supported by the app and the traveler/amenity requirements in [PROJECT_SCOPE.md](../PROJECT_SCOPE.md#121-entity-taxonomy-and-retention-requirements). No iOverlander source records, descriptions, check-ins, contributor identities or media are public inputs.
 
 Every state, including New York, lives under `packages/map/src/assets/state-packages/US/<code>/`:

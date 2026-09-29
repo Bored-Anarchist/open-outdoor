@@ -6,6 +6,10 @@ import { publicPoiCategory } from '../packages/shared/dist/public-poi-category.j
 import { ioverlanderCategoryIds } from '../packages/shared/dist/ioverlander.js';
 import { normalizeOutdoorVisitorDetails } from '../packages/shared/dist/outdoor-details.js';
 import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
+import {
+  publicAgencySourceClearance,
+  verifyPublicAgencySourceLicense,
+} from './public-agency-source-clearances.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const assets = join(root, 'packages/map/src/assets');
@@ -122,6 +126,8 @@ export function publicAgencyFeature(source, feature, index) {
       'PROPERTY',
       'TRAILNAME',
       'Trail_Name',
+      'HikingName',
+      'TrailNamePrimary',
       'PrimaryName',
       'trailname',
       'SITE_NAME',
@@ -200,8 +206,15 @@ export function publicAgencyFeature(source, feature, index) {
       sourceId: source.id,
       sourceUrl: source.url,
       unit:
-        field(p, ['PROPERTY', 'PropName', 'SITE_NAME', 'state_forest', 'pat_admin_unit']) ||
-        source.name,
+        field(p, [
+          'PROPERTY',
+          'PropName',
+          'SITE_NAME',
+          'state_forest',
+          'pat_admin_unit',
+          'PRDManagementUnit',
+          'PRDTrailUnit',
+        ]) || source.name,
       sourceUpdated: source.sourceUpdated,
       publicUse:
         source.state === 'MN'
@@ -221,7 +234,7 @@ export function publicAgencyFeature(source, feature, index) {
       details: {
         sourceStatus: field(p, ['STATUS', 'TRAILSTAT']),
         sourceAccess: field(p, ['PUBACCESS', 'PUB_ACCESS', 'ACCESS']),
-        manager: field(p, ['MANAGER', 'OwnerSteward']),
+        manager: field(p, ['MANAGER', 'OwnerSteward', 'PRDManagementUnit', 'TrailAdministrator']),
       },
       ...normalizeOutdoorVisitorDetails({ description, amenities }),
     },
@@ -333,6 +346,15 @@ export async function readPublicAgency(state, config) {
       receipt.url !== source.url
     )
       throw new Error('Invalid public agency receipt');
+    if (source.rightsClearance) {
+      if (
+        !publicAgencySourceClearance(source) ||
+        receipt.rightsClearance !== source.rightsClearance ||
+        receipt.rightsResolution !== 'dataset-specific-license-overrides-general-website-policy'
+      )
+        throw new Error('Invalid exact dataset rights clearance');
+      verifyPublicAgencySourceLicense(source, receipt.licenseText ?? '');
+    }
     if (
       source.distributionScope === 'noncommercial' ||
       receipt.upstreamRightsStatus === 'Conditional'

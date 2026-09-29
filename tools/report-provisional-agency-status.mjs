@@ -3,6 +3,7 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
+import { verifyPublicAgencySourceLicense } from './public-agency-source-clearances.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(repository, 'PrivateData/agency-feeds');
@@ -30,6 +31,10 @@ const tryJson = async (path) => {
   }
 };
 const batch = await tryJson(join(root, 'batch-report.json'));
+const michigan = (
+  await tryJson(join(repository, 'packages/map/src/assets/state-packages/US/MI/manifest.json'))
+)?.sources?.find((s) => s.id === 'mi-dnr-hiking');
+if (michigan) verifyPublicAgencySourceLicense(michigan, michigan.licenseText ?? '');
 const discovery = await tryJson(join(root, 'child-discovery.json'));
 const childReceipts = new Map();
 for (const state of new Set(feeds.map((feed) => feed.state))) {
@@ -40,7 +45,12 @@ for (const state of new Set(feeds.map((feed) => feed.state))) {
   });
   for (const directory of directories.filter((item) => item.isDirectory())) {
     const item = await tryJson(join(stateRoot, directory.name, 'receipt.json'));
-    if (!item?.parentSourceId || item.publicDistribution !== false) continue;
+    if (
+      !item?.parentSourceId ||
+      item.publicDistribution !== false ||
+      item.validationStatus === 'rejected-subject'
+    )
+      continue;
     const existing = childReceipts.get(item.parentSourceId) ?? [];
     existing.push(item);
     childReceipts.set(item.parentSourceId, existing);
@@ -55,12 +65,14 @@ for (const feed of feeds) {
   let status;
   if (feed.rightsStatus === 'Permission required') {
     status =
-      (receipt?.sourceId === feed.id && receipt.publicDistribution === false) ||
-      stagedChildren.length
-        ? 'staged-private-permission-pending'
-        : permissionRoles.get(feed.id)?.privateCollection
-          ? 'pending-private-stage'
-          : 'permission-needed-for-copying';
+      feed.state === 'MI' && feed.url === michigan?.basisUrl && michigan.publicDistribution === true
+        ? 'represented-public-exact-dataset-license'
+        : (receipt?.sourceId === feed.id && receipt.publicDistribution === false) ||
+            stagedChildren.length
+          ? 'staged-private-permission-pending'
+          : permissionRoles.get(feed.id)?.privateCollection
+            ? 'pending-private-stage'
+            : 'permission-needed-for-copying';
   } else if (receipt?.sourceId === feed.id && receipt.publicDistribution === false) {
     status = 'staged-private';
   } else if (resolutions.get(feed.id)?.status === 'wrong-subject') {

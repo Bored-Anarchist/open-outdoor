@@ -180,6 +180,38 @@
       "license": "Virginia DCR noncommercial redistribution; DCR credit required",
       "termsUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/info/iteminfo?f=json",
       "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor"
+    },
+    {
+      "id": "mi-dnr-hiking",
+      "state": "MI",
+      "name": "Michigan DNR Hiking Trails",
+      "basisUrl": "https://www.michigan.gov/dnr/places/state-trails",
+      "url": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "termsUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/info/iteminfo?f=json",
+      "rightsClearance": "dataset-specific-public-record-license-2026-09-28",
+      "license": "State of Michigan dataset-specific public-record terms; unrestricted use, reproduction and distribution",
+      "attribution": "Michigan Department of Natural Resources; data processed by Open Outdoor; no endorsement",
+      "fields": [
+        "OBJECTID",
+        "HikingName",
+        "TrailNamePrimary",
+        "PRDManagementUnit",
+        "PRDTrailUnit",
+        "TrailOwnership",
+        "TrailAdministrator",
+        "TrailApprovalStatus",
+        "OpenClosedStatusNonmotor",
+        "Hiking",
+        "SurfaceType",
+        "SegmentLengthMiles",
+        "PublicComments",
+        "SpecialRestrictionType",
+        "SpecialDesignation",
+        "LicenseType",
+        "FacilityName",
+        "SiteName",
+        "last_edited_date"
+      ]
     }
   ],
   "held": [

@@ -220,10 +220,21 @@ export function assertPrivateAcquisitionApproved(feed, approval, now = new Date(
     feed.permissionRequiredPrivateValidation === true &&
     approval.permissionRequiredPrivateValidation === true &&
     approval.publisherGrant === false;
+  // OPRHP permits informational noncommercial reference, but forbids polygon
+  // edits/redistribution. This exact local raw snapshot is never map-converted.
+  const referencePrivate =
+    feed.id === 'nys-oprhp-parks' &&
+    feed.rightsStatus === 'Restricted' &&
+    feed.url ===
+      'https://services.arcgis.com/1xFZPtKn1wKC6POA/ArcGIS/rest/services/NYS_Park_Polygons/FeatureServer/0' &&
+    feed.mode === 'reference-only' &&
+    approval.referenceOnlyPrivateValidation === true &&
+    approval.publisherGrant === false;
   if (
     !['Supported', 'Conditional', 'ODbL'].includes(feed.rightsStatus) &&
     !provisional &&
     !permissionPrivate &&
+    !referencePrivate &&
     approval.publisherGrant !== true
   ) {
     throw new Error(`${feed.id}: publisher grant required for ${feed.rightsStatus} source`);
@@ -321,7 +332,7 @@ export async function acquireApprovedArcgisLayer(feed, approval, fetchImpl = sou
   const inventory = await requestArcgis(
     `${feed.url}/query`,
     {
-      where: '1=1',
+      where: feed.where ?? '1=1',
       returnIdsOnly: 'true',
       returnGeometry: 'false',
       f: 'json',
@@ -339,7 +350,7 @@ export async function acquireApprovedArcgisLayer(feed, approval, fetchImpl = sou
       `${feed.url}/query`,
       {
         objectIds: pageIds.join(','),
-        outFields: '*',
+        outFields: feed.fields?.join(',') ?? '*',
         outSR: '4326',
         returnGeometry: 'true',
         f: 'geojson',
@@ -410,6 +421,9 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch)
     rightsStatus: feed.rightsStatus,
     provisionalPrivateValidation: approval.provisionalPrivateValidation === true,
     permissionRequiredPrivateValidation: approval.permissionRequiredPrivateValidation === true,
+    ...(approval.referenceOnlyPrivateValidation === true
+      ? { referenceOnlyPrivateValidation: true }
+      : {}),
     publicDistribution: false,
     retrievedAt: new Date().toISOString(),
     featureCount: collection?.features.length ?? null,
@@ -417,6 +431,8 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch)
     bytes: bytes.length,
     sha256: createHash('sha256').update(bytes).digest('hex'),
     approvalEvidenceUrl: approval.evidenceUrl,
+    ...(feed.where ? { sourceFilter: feed.where } : {}),
+    ...(feed.fields ? { sourceFields: feed.fields } : {}),
   };
   await writeFile(join(outputDirectory, filename), bytes, { flag: 'wx' });
   await writeFile(join(outputDirectory, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`, {

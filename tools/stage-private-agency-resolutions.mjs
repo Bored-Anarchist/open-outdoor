@@ -40,7 +40,19 @@ async function stage(feed, evidenceUrl) {
     if (error.code === 'ENOENT') return null;
     throw error;
   });
-  if (existing) return { status: 'already-staged' };
+  if (existing) {
+    const receipt = JSON.parse(existing);
+    if (
+      receipt.sourceId !== feed.id ||
+      receipt.sourceUrl !== feed.url ||
+      receipt.publicDistribution !== false ||
+      receipt.validationStatus === 'rejected-subject'
+    )
+      throw new Error(
+        'Existing receipt is rejected or belongs to a different source; use a new reviewed stageId',
+      );
+    return { status: 'already-staged', count: receipt.featureCount };
+  }
   approvals[feed.id] = {
     sourceId: feed.id,
     sourceUrl: feed.url,
@@ -88,7 +100,7 @@ for (const resolution of resolutions) {
   } else {
     const feed = {
       ...parent,
-      id: `resolved-${parent.id}`,
+      id: resolution.stageId ?? `resolved-${parent.id}`,
       parentSourceId: parent.id,
       name: `${parent.name}: ${resolution.reason}`,
       url: resolution.url,
@@ -161,7 +173,11 @@ await writeFile(
 console.log(
   JSON.stringify({
     total: results.length,
-    staged: results.filter((item) => item.status?.startsWith('staged')).length,
-    pending: results.filter((item) => !item.status?.startsWith('staged')).length,
+    staged: results.filter(
+      (item) => item.status?.startsWith('staged') || item.status === 'already-staged',
+    ).length,
+    pending: results.filter(
+      (item) => !item.status?.startsWith('staged') && item.status !== 'already-staged',
+    ).length,
   }),
 );

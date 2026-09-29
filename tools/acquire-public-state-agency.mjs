@@ -6,6 +6,10 @@ import { spawnSync } from 'node:child_process';
 import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
 import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
+import {
+  publicAgencySourceClearance,
+  verifyPublicAgencySourceLicense,
+} from './public-agency-source-clearances.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 export const publicAgencyStaging = join(root, '.tmp-public-agency');
@@ -36,12 +40,17 @@ async function request(url, params) {
 
 export async function acquirePublicAgency(source, catalog) {
   const policy = conditionalPublicPolicy(source);
+  const clearance = publicAgencySourceClearance(source);
   const decision = catalog.find(
     (feed) => feed.state === source.state && feed.url === source.basisUrl,
   );
   if (
     !decision ||
-    !(decision.rightsStatus === 'Supported' || (decision.rightsStatus === 'Conditional' && policy))
+    !(
+      decision.rightsStatus === 'Supported' ||
+      (decision.rightsStatus === 'Conditional' && policy) ||
+      (decision.rightsStatus === 'Permission required' && clearance)
+    )
   )
     throw new Error(`${source.id}: public source lacks a Supported rights decision`);
   const directory = join(publicAgencyStaging, source.id);
@@ -102,6 +111,7 @@ export async function acquirePublicAgency(source, catalog) {
   const licenseText = String(
     item?.licenseInfo ?? itemInfo.licenseInfo ?? itemInfo.accessInformation ?? '',
   );
+  if (clearance) verifyPublicAgencySourceLicense(source, licenseText);
   if (
     source.license === 'CC0-1.0' &&
     !/CC0|creative\s*commons.{0,50}zero/i.test(licenseText.replace(/<[^>]+>/g, ' '))
@@ -225,6 +235,13 @@ export async function acquirePublicAgency(source, catalog) {
     ...source,
     rightsStatus: 'Supported',
     upstreamRightsStatus: decision.rightsStatus,
+    ...(clearance
+      ? {
+          rightsResolution: 'dataset-specific-license-overrides-general-website-policy',
+          distributionConditions:
+            'Michigan DNR public-record dataset; use, reproduction and distribution unrestricted under the source terms. Provided AS IS; current access and conditions remain unverified. Source data are outside the project code license.',
+        }
+      : {}),
     ...(policy
       ? {
           distributionScope: 'noncommercial',

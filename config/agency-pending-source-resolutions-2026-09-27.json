@@ -1,5 +1,5 @@
 {
-  "reviewedAt": "2026-09-27",
+  "reviewedAt": "2026-09-28",
   "scope": "Private validation of the 14 formerly unresolved Unconfirmed agency roles",
   "resolutions": [
     {
@@ -28,26 +28,37 @@
     },
     {
       "parentId": "registry-la-forestry-aa353df9f0",
-      "status": "wrong-subject",
-      "reason": "Linked USFS canopy raster is not visitor data. LDAF operates Alexander State Forest and Indian Creek Recreation Area; LDWF offers an Alexander WMA visitor page and WMA GIS download, but no exact current vector extract has been acquired",
+      "reason": "LDWF-owned WMA/Refuge boundary feed linked from the official LDWF web map; private selection retains Alexander State Forest only. LDAF is the forest manager; not a full Indian Creek facility inventory.",
       "evidenceUrl": "https://www.ldaf.la.gov/indian-creek-recreation-area",
-      "candidateUrl": "https://www.wlf.louisiana.gov/page/wma-gis-data-download"
+      "candidateUrl": "https://www.wlf.louisiana.gov/page/wma-gis-data-download",
+      "url": "https://services1.arcgis.com/6euNCaGPCgCzgAVF/arcgis/rest/services/LDWF_WMA_Refuge/FeatureServer/0",
+      "format": "arcgis-layer",
+      "filter": {
+        "NAME": "Alexander State Forest WMA"
+      }
     },
     {
       "parentId": "registry-md-parks-6bd7984882",
-      "status": "wrong-subject",
-      "reason": "The reachable iMAP Land Trails layer maps broad recreation study areas, not DNR trail lines; original campsite service still returns Could not access any server machines"
+      "reason": "Original exact campsite / DNR property endpoint recovered on 2026-09-28; previous planning replacements remain rejected",
+      "url": "https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/0",
+      "format": "arcgis-layer",
+      "stageId": "resolved-registry-md-parks-6bd7984882-recovered-2026-09-28"
     },
     {
       "parentId": "registry-md-parks-supplement-eae7982bb5",
-      "status": "wrong-subject",
-      "reason": "The reachable iMAP Camping layer maps broad recreation study areas, not campsite points; original DNR-owned lands service still returns Could not access any server machines"
+      "reason": "Original exact campsite / DNR property endpoint recovered on 2026-09-28; previous planning replacements remain rejected",
+      "url": "https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/14",
+      "format": "arcgis-layer",
+      "stageId": "resolved-registry-md-parks-supplement-eae7982bb5-recovered-2026-09-28"
     },
     {
       "parentId": "registry-md-forestry-196159b7be",
       "url": "https://mdgeodata.md.gov/imap/rest/services/Environment/MD_ProtectedLands/FeatureServer/0",
       "format": "arcgis-layer",
-      "filter": { "ManagedBy": "Maryland Forest Service", "LABEL": 1 },
+      "filter": {
+        "ManagedBy": "Maryland Forest Service",
+        "LABEL": 1
+      },
       "reason": "Maryland DNR lands filtered to state-owned Maryland Forest Service properties; access still needs field review"
     },
     {
@@ -58,10 +69,11 @@
     },
     {
       "parentId": "registry-nc-forestry-0fbb9ebcbc",
-      "status": "wrong-subject",
-      "reason": "Linked NC Forest Action Plan is planning data. NC Forest Service lists visitor forests and publishes a 2025 DuPont visitor map, but no statewide exact vector extract was verified",
+      "reason": "Exact NCFS boundary feed identified in the official State Forests story map; stage privately while redistribution terms remain unconfirmed Historical coverage: includes former NCFS Rendezvous Mountain; Dan River ESF is absent. Current NCFS directory retained separately; no current access assertion.",
       "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
-      "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open"
+      "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open",
+      "url": "https://services6.arcgis.com/3Sj1fiIDvQtFfbvg/arcgis/rest/services/NCFS_StateForests/FeatureServer/0",
+      "format": "arcgis-layer"
     },
     {
       "parentId": "registry-or-forestry-52c5dde8b7",
@@ -86,6 +98,15 @@
       "url": "https://appservices.wvgis.wvu.edu/arcgis/rest/services/PublicLands/PublicLands/MapServer/8",
       "format": "arcgis-layer",
       "reason": "WVU GIS State Forests PAD-US layer sourced from West Virginia Division of Forestry"
+    },
+    {
+      "parentId": "registry-nc-forestry-0fbb9ebcbc",
+      "reason": "Official NCFS forest locator companion; historical inventory with the same current-directory mismatch as the boundary feed.",
+      "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
+      "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open",
+      "url": "https://services6.arcgis.com/3Sj1fiIDvQtFfbvg/arcgis/rest/services/NCFS_State_Forests_Points/FeatureServer/0",
+      "format": "arcgis-layer",
+      "stageId": "resolved-registry-nc-forestry-0fbb9ebcbc-points"
     }
   ]
 }

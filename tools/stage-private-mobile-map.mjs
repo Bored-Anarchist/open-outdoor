@@ -4,6 +4,7 @@ import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, parse, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { verifyPrivateHikeProfiles } from './package-private-new-york-hikes.mjs';
+import { validateOprhpPackage } from './package-private-new-york-agencies.mjs';
 
 const GEOJSON_FILE = 'new-york-outdoors.composed.geojson';
 const INDEX_FILE = 'new-york-outdoors.composed.index.json';
@@ -158,12 +159,15 @@ export async function stagePrivateMobileMap({
     ).length;
   const ioverlanderCount = sourceCount('private-ioverlander');
   const decCount = sourceCount('nys-dec-');
+  const oprhpCount = validateOprhpPackage(manifest, geojson.features);
+  validateOprhpPackage(manifest, index.features);
+  if (sourceCount('nys-oprhp-') !== oprhpCount) throw new Error('OPRHP index count mismatch');
   if (
     ioverlanderCount !== nonNegativeInteger(counts.outputPrivatePlaces, 'iOverlander output count')
   ) {
     throw new Error('private catalog count does not match its composed index');
   }
-  if (decCount + ioverlanderCount !== index.features.length) {
+  if (decCount + ioverlanderCount + oprhpCount !== index.features.length) {
     throw new Error('private catalog contains a source outside DEC and iOverlander');
   }
   if (decCount < 1) throw new Error('composed catalog does not include held New York agency data');
@@ -171,6 +175,7 @@ export async function stagePrivateMobileMap({
     publicIndex.features.some(
       (feature) =>
         String(feature?.properties?.sourceId ?? '').startsWith('nys-dec-') ||
+        String(feature?.properties?.sourceId ?? '').startsWith('nys-oprhp-') ||
         feature?.properties?.sourceId === 'private-ioverlander',
     )
   ) {
@@ -218,12 +223,12 @@ export async function stagePrivateMobileMap({
     schemaVersion: 1,
     classification: manifest.classification,
     hasPrivateData: true,
-    label: 'Public New York + private DEC + iOverlander catalog',
+    label: 'Public New York + private agency + iOverlander catalog',
     featureCount: combinedGeojson.features.length,
     sha256: sha256(combinedGeoBytes),
     hikeProfileCount: profileCount,
     acquiredAt: manifest.generatedAt,
-    attribution: `NYS DEC; private iOverlander catalog; ${publicManifest.rights.attribution.join('; ')}`,
+    attribution: `NYS DEC; ${oprhpCount ? 'NY State Parks (NYS OPRHP); ' : ''}private iOverlander catalog; ${publicManifest.rights.attribution.join('; ')}`,
     sources: [
       {
         id: 'nys-dec',
@@ -238,6 +243,17 @@ export async function stagePrivateMobileMap({
         status:
           'private on-device places with community descriptions and check-ins; contributor identities removed',
       },
+      ...(oprhpCount
+        ? [
+            {
+              id: 'nys-oprhp',
+              label: 'NY State Parks (NYS OPRHP)',
+              featureCount: oprhpCount,
+              status:
+                'private noncommercial dated reference; temporal snapshots excluded; verify current access',
+            },
+          ]
+        : []),
       ...publicManifest.catalogSources,
     ],
   };

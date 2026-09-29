@@ -1,0 +1,14 @@
+{
+  "id": "resolved-ms-state-forests-2026-09-28",
+  "state": "MS",
+  "name": "MFC state-forest property geometry only",
+  "url": "https://arcsrv.mfc.ms.gov/server/rest/services/MississippiForestry/MapServer/5",
+  "sourceType": "arcgis-layer",
+  "rightsStatus": "Unconfirmed",
+  "provisionalPrivateValidation": true,
+  "publicDistribution": false,
+  "where": "UPPER(PlanName) = 'CAMDEN STATE FOREST' OR UPPER(PlanName) LIKE 'KURTZ STATE FOREST%' OR UPPER(PlanName) = 'JAMIE WHITTEN STATE FOREST'",
+  "fields": ["OBJECTID", "PlanName"],
+  "evidenceUrl": "https://www.mfc.ms.gov/programs/public-lands-programs/",
+  "scope": "Three MFC-managed state forests only; excludes individual clients, contacts, management plans and stewardship records. Private dated reference; recreation access and redistribution unconfirmed."
+}

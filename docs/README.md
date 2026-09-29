@@ -103,3 +103,5 @@ Identifiers are permanent. Retired items keep their ID and point to the replacem
 
 - [Offline state package loader](STATE_PACKAGE_LOADER.md): complete-state installation, local tiles, indexed search, integrity checks and rollback.
 - [Installable state catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md): all 50 transfer/installed sizes, record and tile counts.
+
+- [Remaining state agency gaps](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md): recovered agency feeds, exact Michigan license, New York private OPRHP integration, scope exclusions and provider dependencies.
