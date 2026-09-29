@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
 import { assertVisitorSource } from './state-visitor-source-scope.mjs';
+import { atomicSourceWrite, reusableSource, sourceSignature } from './package-source-cache.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryPath = join(repository, 'config/us-state-forestry-agencies.json');
@@ -399,8 +400,27 @@ export async function acquireApprovedDownload(feed, approval, fetchImpl = source
   return bytes;
 }
 
-export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch) {
+export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch, options = {}) {
   assertVisitorSource(feed);
+  assertPrivateAcquisitionApproved(feed, approval);
+  if (!/^[A-Z]{2}$/.test(feed.state) || !/^[a-zA-Z0-9_-]+$/.test(feed.id))
+    throw new Error('Invalid private feed identity');
+  const outputDirectory = join(options.stagingRoot ?? privateRoot, 'US', feed.state, feed.id);
+  let sourceRevision;
+  let refreshSignature;
+  if (options.refresh && feed.sourceType === 'arcgis-layer') {
+    const response = await fetchImpl(`${feed.url}?f=pjson`, {
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (!response.ok) throw new Error(`${feed.id}: source metadata unavailable`);
+    const metadata = await response.json();
+    if (metadata.error) throw new Error(`${feed.id}: source metadata error`);
+    sourceRevision = metadata.editingInfo?.lastEditDate;
+    refreshSignature = sourceSignature({ feed, metadata });
+    const cached =
+      !options.force && (await reusableSource(outputDirectory, refreshSignature, sourceRevision));
+    if (cached) return { outputDirectory, receipt: cached, status: 'unchanged' };
+  }
   const collection =
     feed.sourceType === 'arcgis-layer'
       ? await acquireApprovedArcgisLayer(feed, approval, fetchImpl)
@@ -410,12 +430,27 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch)
       ? await acquireApprovedDownload(feed, approval, fetchImpl)
       : null;
   if (!collection && !download) throw new Error(`${feed.id}: no feature acquisition adapter`);
-  const outputDirectory = join(privateRoot, 'US', feed.state, feed.id);
+  if (options.refresh && Number.isSafeInteger(sourceRevision) && sourceRevision > 0) {
+    const response = await fetchImpl(`${feed.url}?f=pjson`, {
+      signal: AbortSignal.timeout(60_000),
+    });
+    if (
+      !response.ok ||
+      sourceSignature({ feed, metadata: await response.json() }) !== refreshSignature
+    )
+      throw new Error(`${feed.id}: source changed during refresh; retry`);
+  }
   await mkdir(outputDirectory, { recursive: true });
   const bytes = collection ? Buffer.from(`${JSON.stringify(collection)}\n`) : download;
-  const filename = collection
+  const legacyFilename = collection
     ? 'raw.geojson'
     : `raw.${feed.downloadFormat ?? new URL(feed.url).pathname.split('.').at(-1).toLowerCase()}`;
+  if (!/^raw\.(?:geojson|zip|kml|json|csv|gpkg)$/.test(legacyFilename))
+    throw new Error('Unsupported raw download filename');
+  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  const filename = options.refresh
+    ? legacyFilename.replace('raw.', `raw-${sha256}.`)
+    : legacyFilename;
   const receipt = {
     sourceId: feed.id,
     ...(feed.parentSourceId ? { parentSourceId: feed.parentSourceId } : {}),
@@ -429,19 +464,37 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch)
       : {}),
     publicDistribution: false,
     retrievedAt: new Date().toISOString(),
+    ...(refreshSignature ? { refreshSignature } : {}),
+    ...(Number.isSafeInteger(sourceRevision) && sourceRevision > 0 ? { sourceRevision } : {}),
     featureCount: collection?.features.length ?? null,
     rawFilename: filename,
     bytes: bytes.length,
-    sha256: createHash('sha256').update(bytes).digest('hex'),
+    sha256,
     approvalEvidenceUrl: approval.evidenceUrl,
     ...(feed.where ? { sourceFilter: feed.where } : {}),
     ...(feed.fields ? { sourceFields: feed.fields } : {}),
   };
-  await writeFile(join(outputDirectory, filename), bytes, { flag: 'wx' });
-  await writeFile(join(outputDirectory, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`, {
-    flag: 'wx',
-  });
-  return { outputDirectory, receipt };
+  if (options.refresh) {
+    // Keep the prior receipt and its immutable input until new acquisition succeeds.
+    const old = await readFile(join(outputDirectory, 'receipt.json')).catch((error) => {
+      if (error.code === 'ENOENT') return null;
+      throw error;
+    });
+    await atomicSourceWrite(join(outputDirectory, filename), bytes);
+    if (old) await atomicSourceWrite(join(outputDirectory, 'previous-receipt.json'), old);
+    await atomicSourceWrite(
+      join(outputDirectory, 'receipt.json'),
+      `${JSON.stringify(receipt, null, 2)}\n`,
+    );
+  } else {
+    await writeFile(join(outputDirectory, filename), bytes, { flag: 'wx' });
+    await writeFile(
+      join(outputDirectory, 'receipt.json'),
+      `${JSON.stringify(receipt, null, 2)}\n`,
+      { flag: 'wx' },
+    );
+  }
+  return { outputDirectory, receipt, status: 'staged' };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -476,7 +529,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       const feed = feeds.find((item) => item.id === id);
       if (!feed) throw new Error(`unknown agency feed: ${id}`);
       console.log(JSON.stringify(await discoverArcgisChildLayers(feed), null, 2));
-    } else if (command === 'stage' && id) {
+    } else if (['stage', 'refresh'].includes(command) && id) {
       let feed = feeds.find((item) => item.id === id);
       if (feed?.sourceType === 'arcgis-service' && /^\d+$/.test(layerId ?? '')) {
         feed = (await discoverArcgisChildLayers(feed)).find((item) =>
@@ -485,11 +538,13 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       }
       if (!feed) throw new Error(`unknown agency feed: ${id}`);
       const approvals = JSON.parse(await readFile(join(privateRoot, 'approvals.json'), 'utf8'));
-      const result = await stageApprovedFeed(feed, approvals[feed.id]);
+      const result = await stageApprovedFeed(feed, approvals[feed.id], undefined, {
+        refresh: command === 'refresh',
+      });
       console.log(JSON.stringify(result.receipt, null, 2));
     } else {
       throw new Error(
-        'Usage: node tools/state-agency-feeds.mjs list [state-code] | init-provisional | children <service-id> | stage <feed-id> [child-layer-id]',
+        'Usage: node tools/state-agency-feeds.mjs list [state-code] | init-provisional | children <service-id> | stage|refresh <feed-id> [child-layer-id]',
       );
     }
   } catch (error) {

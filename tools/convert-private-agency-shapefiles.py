@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import re
 import sys
 import zipfile
 from datetime import datetime, timezone
@@ -93,10 +94,11 @@ def convert(source: dict) -> dict:
         or receipt["rightsStatus"] != "Unconfirmed"
         or receipt["publicDistribution"] is not False
         or receipt.get("provisionalPrivateValidation") is not True
-        or receipt["rawFilename"] != "raw.zip"
+        or not re.fullmatch(r"[a-f0-9]{64}", receipt["sha256"])
+        or receipt["rawFilename"] not in ("raw.zip", f"raw-{receipt['sha256']}.zip")
     ):
         raise ValueError(f"{parent}: unexpected input receipt")
-    raw = (directory / "raw.zip").read_bytes()
+    raw = (directory / receipt["rawFilename"]).read_bytes()
     if sha256(raw) != receipt["sha256"]:
         raise ValueError(f"{parent}: raw ZIP checksum mismatch")
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:

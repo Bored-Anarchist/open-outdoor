@@ -4,6 +4,8 @@ Open Outdoor is a planned open-source, offline-first iOS application for trail d
 
 The repository contains an iOS candidate with recording, retained acceptance evidence and a [native geographic map](docs/BUNDLED_NATIVE_MAP.md). Explore combines bundled world and US/Canada OpenStreetMap/Protomaps overview tiers with bundled NYS DEC lands, roads, hiking trails and recreation points. The app never streams or imports maps; every installation uses the same fixed offline basemap. Physical acceptance and independent release review remain pending.
 
+Full state packages are generated locally or restored from external artifact storage; Git holds their manifests and checksums. See [package maintenance](docs/PACKAGE_MAINTENANCE.md) for API updates and restore commands.
+
 ## Phase 0 developer bootstrap
 
 The workspace pins Node.js 24.19.0, pnpm 11.20.0, Python 3.13.14, and uv 0.12.1. After installing those exact public tools on Windows, run:

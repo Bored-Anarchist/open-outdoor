@@ -1,6 +1,6 @@
 # Installable public state catalog inventory — updated 2026-09-28
 
-Each state is one `state.sqlite` package. Transfer size is the complete Git LFS SQLite file; installed size adds its extracted local PMTiles archive. No private or iOverlander source records are distributed in these public catalogs. Source coverage, agency rights and historical limitations remain as recorded in the [public source inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md).
+Each state is one `state.sqlite` package. Transfer size is the complete externally stored SQLite file; installed size adds its extracted local PMTiles archive. No private or iOverlander source records are distributed in these public catalogs. Source coverage, agency rights and historical limitations remain as recorded in the [public source inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md).
 
 All 50 states contain 757,622 catalog records and 25,488 tiles. Combined transfer size is 1,393,717,248 bytes (1.30 GiB); installed size is 1,560,053,331 bytes (1.45 GiB). These totals exclude rollback copies, source downloads, existing basemaps and user data.
 

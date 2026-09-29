@@ -23,6 +23,7 @@ const feeds = (await loadStateAgencyFeedCatalog()).filter(
 const approvals = JSON.parse(await readFile(join(privateRoot, 'approvals.json'), 'utf8'));
 const counts = new Map();
 const results = [];
+const refresh = process.argv.includes('--refresh');
 
 async function featureCount(feed) {
   if (feed.sourceType !== 'arcgis-layer') return null;
@@ -50,7 +51,7 @@ async function worker() {
         if (error.code === 'ENOENT') return null;
         throw error;
       });
-      if (existing) {
+      if (existing && !refresh) {
         results.push({ id: feed.id, state: feed.state, status: 'already-staged' });
         continue;
       }
@@ -59,11 +60,11 @@ async function worker() {
         results.push({ id: feed.id, state: feed.state, status: 'over-limit', featureCount: count });
         continue;
       }
-      const staged = await stageApprovedFeed(feed, approvals[feed.id]);
+      const staged = await stageApprovedFeed(feed, approvals[feed.id], undefined, { refresh });
       results.push({
         id: feed.id,
         state: feed.state,
-        status: 'staged',
+        status: staged.status,
         featureCount: staged.receipt.featureCount,
         bytes: staged.receipt.bytes,
       });
@@ -98,3 +99,4 @@ console.log(
     errors: results.filter((item) => item.status === 'error').length,
   }),
 );
+if (results.some((item) => item.status === 'error')) process.exitCode = 1;

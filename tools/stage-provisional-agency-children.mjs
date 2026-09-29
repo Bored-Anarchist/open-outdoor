@@ -57,6 +57,7 @@ const maxIndex = process.argv.indexOf('--max-features');
 const maximum = maxIndex < 0 ? 10000 : Number(process.argv[maxIndex + 1]);
 if (!(maximum > 0)) throw new Error('--max-features requires a positive number');
 const results = [];
+const refresh = process.argv.includes('--refresh');
 for (const child of selected) {
   const receiptPath = join(privateRoot, 'US', child.state, child.id, 'receipt.json');
   try {
@@ -64,7 +65,7 @@ for (const child of selected) {
       if (error.code === 'ENOENT') return null;
       throw error;
     });
-    if (existing) {
+    if (existing && !refresh) {
       results.push({ id: child.id, parentId: child.parentSourceId, status: 'already-staged' });
       continue;
     }
@@ -84,11 +85,11 @@ for (const child of selected) {
       results.push({ id: child.id, parentId: child.parentSourceId, status: 'over-limit', count });
       continue;
     }
-    const staged = await stageApprovedFeed(child, approvals[child.id]);
+    const staged = await stageApprovedFeed(child, approvals[child.id], undefined, { refresh });
     results.push({
       id: child.id,
       parentId: child.parentSourceId,
-      status: 'staged',
+      status: staged.status,
       count: staged.receipt.featureCount,
     });
   } catch (error) {
@@ -114,3 +115,4 @@ console.log(
     errors: results.filter((item) => item.status === 'error').length,
   }),
 );
+if (results.some((item) => item.status === 'error')) process.exitCode = 1;

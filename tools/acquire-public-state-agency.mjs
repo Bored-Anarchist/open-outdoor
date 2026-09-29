@@ -7,6 +7,7 @@ import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
 import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
 import { assertVisitorSource } from './state-visitor-source-scope.mjs';
+import { reusableSource, sourceSignature } from './package-source-cache.mjs';
 import {
   publicAgencySourceClearance,
   verifyPublicAgencySourceLicense,
@@ -39,7 +40,7 @@ async function request(url, params) {
   throw error;
 }
 
-export async function acquirePublicAgency(source, catalog) {
+export async function acquirePublicAgency(source, catalog, { refresh = false } = {}) {
   assertVisitorSource(source);
   const policy = conditionalPublicPolicy(source);
   const clearance = publicAgencySourceClearance(source);
@@ -205,6 +206,23 @@ export async function acquirePublicAgency(source, catalog) {
   const ids = [...new Set(inventory.objectIds)].sort((a, b) => a - b);
   if (policy?.state === 'MN' && !(ids.length > 0 && ids.length < fullSourceCount))
     throw new Error('Minnesota visitor selection must be a proper subset of the complete dataset');
+  const sourceRevision = metadata.editingInfo?.lastEditDate;
+  const refreshSignature = sourceSignature({
+    source,
+    metadata,
+    ids,
+    serviceItemId: service.serviceItemId,
+    licenseText,
+    termsText,
+    upstreamRightsStatus: decision.rightsStatus,
+    fullSourceCount,
+    conditionalEvidence,
+  });
+  const cached = !refresh && (await reusableSource(directory, refreshSignature, sourceRevision));
+  if (cached) {
+    console.log(`${source.id}: verified source unchanged; reusing local data`);
+    return cached;
+  }
   const features = [];
   const pages = [];
   const idField = inventory.objectIdFieldName ?? metadata.objectIdField;
@@ -237,9 +255,16 @@ export async function acquirePublicAgency(source, catalog) {
     });
     if (offset % 2000 === 0) console.log(`${source.id}: ${features.length}/${ids.length}`);
   }
+  if (Number.isSafeInteger(sourceRevision) && sourceRevision > 0) {
+    const after = await request(source.url + '?f=json');
+    if (sourceSignature(after) !== sourceSignature(metadata))
+      throw new Error(`${source.id}: source changed during acquisition; retry`);
+  }
   const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features }) + '\n');
   const receipt = {
     ...source,
+    refreshSignature,
+    ...(Number.isSafeInteger(sourceRevision) && sourceRevision > 0 ? { sourceRevision } : {}),
     rightsStatus: 'Supported',
     upstreamRightsStatus: decision.rightsStatus,
     ...(clearance
@@ -291,12 +316,16 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const config = JSON.parse(await readFile(join(root, 'config/public-state-agency-sources.json')));
   const catalog = await loadStateAgencyFeedCatalog();
   const results = [];
-  const requested = process.argv.slice(2);
+  const refresh = process.argv.includes('--refresh');
+  const requested = process.argv.slice(2).filter((arg) => !['--refresh', '--'].includes(arg));
+  if (requested.some((id) => !config.sources.some((s) => s.id === id)))
+    throw new Error('Unknown public source ID');
+  await mkdir(publicAgencyStaging, { recursive: true });
   for (const source of config.sources.filter(
     (s) => !requested.length || requested.includes(s.id),
   )) {
     try {
-      const r = await acquirePublicAgency(source, catalog);
+      const r = await acquirePublicAgency(source, catalog, { refresh });
       results.push({ id: source.id, status: 'acquired', count: r.featureCount });
     } catch (error) {
       results.push({ id: source.id, status: 'failed', error: String(error) });

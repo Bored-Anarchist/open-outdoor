@@ -397,7 +397,7 @@ export async function readAgency(code) {
       receipt.publicDistribution !== false ||
       receipt.validationStatus === 'rejected-subject' ||
       seenUrls.has(`${receipt.sourceUrl}#${receipt.sourcePartition ?? ''}`) ||
-      receipt.rawFilename !== 'raw.geojson'
+      !/^raw(?:-[a-f0-9]{64})?\.geojson$/.test(receipt.rawFilename)
     ) {
       continue;
     }

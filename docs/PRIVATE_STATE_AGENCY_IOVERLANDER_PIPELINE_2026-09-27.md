@@ -1,5 +1,7 @@
 # Private state agency + iOverlander pipeline
 
+**Maintenance policy (2026-09-29):** Sources can be refreshed with API metadata/cache checks and recoverable content-named receipts. Full state outputs remain outside Git. See [package maintenance](PACKAGE_MAINTENANCE.md).
+
 **Private/public deduplication (2026-09-28):** All 50 private packages have been compared against their matching public state packages. Removed 8,760 duplicate entries across 27 states; retained 527,153 private features (463,870 agency/DEC/OPRHP records and 63,283 iOverlander places). Policy v2 restores 40 uncertain earlier removals and matches 49 additional POIs. Rebuilds validate before activation and preserve recoverable private generations and community enrichments. See the [audit fixes](PRIVATE_PUBLIC_DEDUPLICATION_FIXES_2026-09-28.md). See [deduplication results and policy](PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md) and the [current inventory](PRIVATE_STATE_PACKAGE_INVENTORY_2026-09-27.md). Earlier acquisition totals below are dated history.
 
 **September 28 visitor update:** Current coverage and counts are recorded in the [NC/LA follow-up](NC_LA_VISITOR_COVERAGE_2026-09-28.md). The NC/LA acquisition snapshot verified 535,913 private features before the same-state public deduplication described above. Forestry inventory, land-cover and planning sources are excluded; 104 of 107 Unconfirmed roles remain represented privately. The dated acquisition history below is superseded by the follow-up and current inventory.

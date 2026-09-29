@@ -110,7 +110,10 @@ export async function packagePrivateNewYorkAgencies({
   for (const source of config.sources) {
     const directory = join(sourceRoot, source.id);
     const receipt = JSON.parse(await readFile(join(directory, 'receipt.json'), 'utf8'));
-    const raw = await readFile(join(directory, 'raw.geojson'));
+    const rawFilename = receipt.rawFilename ?? 'raw.geojson';
+    if (!/^raw(?:-[a-f0-9]{64})?\.geojson$/.test(rawFilename))
+      throw new Error('Invalid private raw filename');
+    const raw = await readFile(join(directory, rawFilename));
     if (
       receipt.sourceId !== source.id ||
       receipt.sourceUrl !== source.url ||

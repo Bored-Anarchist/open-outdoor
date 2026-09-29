@@ -173,3 +173,7 @@ The table links each identified agency to its discovered direct source, official
 - Rights terms have been recorded for the national public datasets; state-specific dataset terms are required before a direct layer is added.
 - Camping rules, seasonal closures, fire restrictions, and current conditions are intentionally not inferred from land ownership or this snapshot.
 - Refresh packages using `pnpm map:acquire:states`; the script rewrites this tracker after every completed state package.
+
+## Package maintenance storage policy (2026-09-29)
+
+Full state outputs are local/external artifacts, excluded from Git and Git LFS. Metadata and checksum inventories remain published. See [package maintenance](PACKAGE_MAINTENANCE.md) for API refresh and restore commands. Existing acquisition and coverage counts describe locally verified artifacts.

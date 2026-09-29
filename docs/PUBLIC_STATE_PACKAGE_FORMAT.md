@@ -4,7 +4,9 @@
 
 The public state packages follow the private catalog system's GeoJSON and checksum-manifest structure, with a public search index and app import parts. They use the iOverlander POI legend supported by the app and the traveler/amenity requirements in [PROJECT_SCOPE.md](../PROJECT_SCOPE.md#121-entity-taxonomy-and-retention-requirements). No iOverlander source records, descriptions, check-ins, contributor identities or media are public inputs.
 
-Every state, including New York, lives under `packages/map/src/assets/state-packages/US/<code>/`:
+Full state data are generated locally or restored from external storage and are not tracked in Git; manifests, notices and inventories remain tracked. See [package maintenance](PACKAGE_MAINTENANCE.md) for API refresh, verified cache reuse and selected-state restoration.
+
+Every state, including New York, lives locally under `packages/map/src/assets/state-packages/US/<code>/`:
 
 | File | Purpose |
 | --- | --- |

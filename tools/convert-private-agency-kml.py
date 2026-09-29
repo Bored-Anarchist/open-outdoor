@@ -66,9 +66,11 @@ def convert():
     if (receipt["sourceId"] != SOURCE_ID or receipt["state"] != "OK"
             or receipt["rightsStatus"] != "Unconfirmed"
             or receipt.get("provisionalPrivateValidation") is not True
-            or receipt["publicDistribution"] is not False or receipt["rawFilename"] != "raw.kml"):
+            or receipt["publicDistribution"] is not False
+            or not re.fullmatch(r"[a-f0-9]{64}", receipt["sha256"])
+            or receipt["rawFilename"] not in ("raw.kml", f"raw-{receipt['sha256']}.kml")):
         raise ValueError("unexpected private KML input receipt")
-    raw = (source / "raw.kml").read_bytes()
+    raw = (source / receipt["rawFilename"]).read_bytes()
     if hashlib.sha256(raw).hexdigest() != receipt["sha256"]:
         raise ValueError("raw KML checksum mismatch")
     features, excluded = park_points(raw)

@@ -3,6 +3,10 @@
 **Status:** Proposed  
 **Policy:** Missing classification or rights metadata fails closed
 
+## Package storage policy
+
+Full public state datasets are generated locally or restored from owner-managed external artifact storage. Public Git/CI retains source definitions, source-rights evidence, manifests, checksums, notices and counts; it does not retain complete state packages. Private datasets and enrichment remain excluded from public artifacts and CI. External hosting does not change source rights or release gates. See [package maintenance](PACKAGE_MAINTENANCE.md).
+
 ## 1. Data classification
 
 | Class | Examples | Public source/CI/release | Approved storage |

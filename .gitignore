@@ -27,6 +27,13 @@ __pycache__/
 *.py[cod]
 .tmp-*
 
+# Full state datasets are generated locally or restored from external artifact storage.
+# Keep only manifests, checksums, notices and inventories in Git.
+/packages/map/src/assets/state-packages/US/*/outdoors.geojson
+/packages/map/src/assets/state-packages/US/*/index.json
+/packages/map/src/assets/state-packages/US/*/state.sqlite
+/packages/map/src/assets/state-packages/US/*/parts/
+
 # Local editor and operating-system metadata.
 .idea/
 .vscode/

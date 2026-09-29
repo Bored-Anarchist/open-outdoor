@@ -4,6 +4,7 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { publicPoiCategory } from '../packages/shared/dist/public-poi-category.js';
+import { atomicSourceWrite, reusableSource, sourceSignature } from './package-source-cache.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryPath = join(root, 'config/us-state-forestry-agencies.json');
@@ -201,13 +202,18 @@ function sha256(value) {
 
 function parseArguments(argv) {
   const parsed = new Map();
-  for (let index = 0; index < argv.length; index += 2) {
+  for (let index = 0; index < argv.length; index += 1) {
     const name = argv[index];
+    if (name === '--refresh') {
+      parsed.set('refresh', true);
+      continue;
+    }
     const value = argv[index + 1];
     if (!name?.startsWith('--') || value === undefined || value.startsWith('--')) {
       throw new Error(`invalid argument near ${name ?? '<end>'}`);
     }
     parsed.set(name.slice(2), value);
+    index += 1;
   }
   return parsed;
 }
@@ -561,18 +567,18 @@ function toForm(parameters) {
   return form;
 }
 
-async function requestJson(url, parameters, label) {
+async function requestJson(url, parameters, label, method = 'POST') {
   const form = toForm(parameters);
   for (let attempt = 0; attempt < MAX_RETRIES; attempt += 1) {
     try {
-      const response = await fetch(url, {
-        method: 'POST',
+      const response = await fetch(method === 'GET' ? `${url}?${form}` : url, {
+        method,
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
           'User-Agent': 'Open Outdoor state data package acquisition',
         },
-        body: form,
+        ...(method === 'POST' ? { body: form } : {}),
         signal: AbortSignal.timeout(600_000),
       });
       const text = await response.text();
@@ -642,6 +648,35 @@ async function fetchSource(source, state, boundary) {
     throw new Error(state.code + ' ' + source.id + ' response has invalid objectIds');
   }
   const objectIds = [...new Set(inventoryIds)].sort((left, right) => left - right);
+  const metadata = await requestJson(
+    source.endpoint,
+    { f: 'json' },
+    `${source.id} metadata`,
+    'GET',
+  );
+  const sourceRevision = metadata.editingInfo?.lastEditDate;
+  const refreshSignature = sourceSignature({
+    query,
+    objectIds,
+    metadata,
+    fields: source.fields,
+    geometryPrecision: source.geometryPrecision ?? GEOMETRY_PRECISION,
+    simplification: source.simplificationDegrees ?? SIMPLIFICATION_DEGREES,
+    // Invalidate normalized cache when this adapter changes.
+    adapterSha256: sha256(await readFile(fileURLToPath(import.meta.url))),
+    taxonomySha256: sha256(
+      await readFile(join(root, 'packages/shared/dist/public-poi-category.js')),
+    ),
+  });
+  const cacheDirectory = join(root, '.tmp-state-source-cache', state.code, source.id);
+  const cached =
+    !args.has('refresh') &&
+    (await reusableSource(cacheDirectory, refreshSignature, sourceRevision));
+  if (cached)
+    return {
+      features: JSON.parse(await readFile(join(cacheDirectory, 'raw.geojson'))).features,
+      receipt: cached,
+    };
   const sourceFeatures = [];
   const pageSize = source.pageSize ?? PAGE_SIZE;
   for (let offset = 0; offset < objectIds.length; offset += pageSize) {
@@ -674,9 +709,21 @@ async function fetchSource(source, state, boundary) {
     .map((feature) => normalizedFeature(source, feature, state))
     .filter(Boolean)
     .sort((left, right) => left.id.localeCompare(right.id));
-  return {
+  if (Number.isSafeInteger(sourceRevision) && sourceRevision > 0) {
+    const after = await requestJson(source.endpoint, { f: 'json' }, `${source.id} metadata`, 'GET');
+    if (sourceSignature(after) !== sourceSignature(metadata))
+      throw new Error(`${source.id}: source changed during acquisition; retry`);
+  }
+  const raw = Buffer.from(
+    JSON.stringify({ type: 'FeatureCollection', features: normalized }) + '\n',
+  );
+  const acquired = {
     features: normalized,
     receipt: {
+      refreshSignature,
+      ...(Number.isSafeInteger(sourceRevision) && sourceRevision > 0 ? { sourceRevision } : {}),
+      sha256: sha256(raw),
+      bytes: raw.length,
       id: source.id,
       name: source.label,
       agency: source.agency,
@@ -695,6 +742,13 @@ async function fetchSource(source, state, boundary) {
       packagedFeatureSha256: sha256(JSON.stringify(normalized)),
     },
   };
+  await mkdir(cacheDirectory, { recursive: true });
+  await atomicSourceWrite(join(cacheDirectory, 'raw.geojson'), raw);
+  await atomicSourceWrite(
+    join(cacheDirectory, 'receipt.json'),
+    JSON.stringify(acquired.receipt, null, 2) + '\n',
+  );
+  return acquired;
 }
 
 function buildIndex(features) {
@@ -968,7 +1022,7 @@ async function buildPackage(state, outputRoot) {
   return { manifest, outputDirectory };
 }
 
-const args = parseArguments(process.argv.slice(2));
+const args = parseArguments(process.argv.slice(2).filter((arg) => arg !== '--'));
 const requestedStates = new Set(
   (args.get('states') ?? '')
     .split(',')

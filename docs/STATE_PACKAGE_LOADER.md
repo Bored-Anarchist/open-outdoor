@@ -6,7 +6,7 @@ The current development loader uses a compiled checksum allowlist; production si
 
 See the [50-state installable catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md) for exact transfer and installed sizes. The original GeoJSON/index packages and parser-validated import parts remain available for export and smaller manual imports.
 
-The native installer recognizes only the exact package checksums pinned in the app's `loader-inventory.json`. Use the full Git LFS file from the corresponding GitHub revision, rather than a Git LFS pointer. A newer catalog needs an app build containing its updated pin. No network acquisition or automatic update is performed on the phone.
+The native installer recognizes only the exact package checksums pinned in the app's `loader-inventory.json`. Restore the complete file from owner-managed external artifact storage using the checksums in the corresponding Git revision; see [package maintenance](PACKAGE_MAINTENANCE.md). A newer catalog needs an app build containing its updated pin. No network acquisition or automatic update is performed on the phone.
 
 ## Map, search and details
 
@@ -38,7 +38,7 @@ pnpm map:states:verify
 pnpm test:state-loader
 ```
 
-`tools/build-state-loader.py --states NY CA --workers 2` rebuilds selected states. Default concurrency is two, capped at four processes. Use `--resume` to reuse matching completed catalogs after an interrupted build, then run the independent verifier. The builder reads only the public asset tree, verifies source/index hashes, rejects private/community fields, writes atomically, and updates the pinned loader inventory. Generated `state.sqlite` files are tracked with Git LFS. The independent verifier checks all 50 source bindings, every original feature geometry, indexes, tile-blob hashes, PMTiles headers, read-only access and source notices.
+`tools/build-state-loader.py --states NY CA --workers 2` rebuilds selected states. Default concurrency is two, capped at four processes. Use `--resume` to reuse matching completed catalogs after an interrupted build, then run the independent verifier. The builder reads only the public asset tree, verifies source/index hashes, rejects private/community fields, writes atomically, and updates the pinned loader inventory. Generated `state.sqlite` files remain local and ignored; Git tracks loader checksum pins only. The independent verifier checks all 50 source bindings, every original feature geometry, indexes, tile-blob hashes, PMTiles headers, read-only access and source notices.
 
 ## Acceptance status
 

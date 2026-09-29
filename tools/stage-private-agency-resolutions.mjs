@@ -33,6 +33,7 @@ const approvals = JSON.parse(await readFile(approvalPath, 'utf8'));
 const now = new Date();
 const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000).toISOString();
 const results = [];
+const refresh = process.argv.includes('--refresh');
 
 async function stage(feed, evidenceUrl) {
   const path = join(root, 'US', feed.state, feed.id, 'receipt.json');
@@ -53,7 +54,7 @@ async function stage(feed, evidenceUrl) {
       throw new Error(
         'Existing receipt is rejected or belongs to a different source; use a new reviewed stageId',
       );
-    return { status: 'already-staged', count: receipt.featureCount };
+    if (!refresh) return { status: 'already-staged', count: receipt.featureCount };
   }
   approvals[feed.id] = {
     sourceId: feed.id,
@@ -81,9 +82,9 @@ async function stage(feed, evidenceUrl) {
     }
     if (body.count > maximum) return { status: 'over-limit', count: body.count };
   }
-  const staged = await stageApprovedFeed(feed, approvals[feed.id]);
+  const staged = await stageApprovedFeed(feed, approvals[feed.id], undefined, { refresh });
   return {
-    status: 'staged',
+    status: staged.status,
     count: staged.receipt.featureCount,
     bytes: staged.receipt.bytes,
     rawFilename: staged.receipt.rawFilename,
