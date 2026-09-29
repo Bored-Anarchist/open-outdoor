@@ -2,6 +2,8 @@
 .pnpm-store
 node_modules
 .venv
+PrivateData
+apps/mobile/.private-map-data
 .tmp-*
 dist
 coverage
@@ -24,3 +26,6 @@ packages/map/src/assets/openfreemap-liberty.json
 packages/map/src/assets/openfreemap-liberty.manifest.json
 
 packages/map/src/assets/new-york-hikes.json
+packages/map/src/assets/state-packages/
+packages/map/source-snapshots/
+config/us-state-forestry-agencies.json

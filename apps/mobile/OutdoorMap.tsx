@@ -4,10 +4,6 @@ import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hi
 
 import { HikeDetails } from './HikeDetails';
 
-import publicHikes from '../../packages/map/src/assets/new-york-hikes.json';
-
-import publicMapManifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
-
 import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
 
 import licenses from './map-licenses.json';
@@ -63,6 +59,8 @@ import {
   outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
   segmentedTrack,
+  mergeStateSummaries,
+  statePackageMapStyle,
   type OutdoorBaseMapStyle,
   type OutdoorFeatureIndex,
   type OutdoorFeatureSummary,
@@ -99,11 +97,13 @@ import {
   mobileMapDataAsset as outdoorDataAsset,
   mobileMapDataIndex as bundledIndex,
   mobileMapDataMetadata,
+  mobileHikeData as bundledHikes,
 } from '@open-outdoor/mobile-map-data';
 
 import type { PlaceJournalService } from './application';
 
 import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
+import { useStatePackages } from './useStatePackages';
 
 const bundledFeatureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 
@@ -451,23 +451,32 @@ export function OutdoorMap({
   const palette = usePalette();
 
   const [legendOpen, setLegendOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const statePackages = useStatePackages(query);
+  const selectedState = useRef<{
+    feature: OutdoorFeatureSummary;
+    packages: typeof statePackages.packages;
+  } | null>(null);
 
   const featureIndex = useMemo<OutdoorFeatureIndex>(
     () => ({
       schemaVersion: 1,
 
-      features: [
-        ...bundledFeatureIndex.features,
+      features: mergeStateSummaries(
+        [
+          ...bundledFeatureIndex.features,
 
-        ...imports.datasets
+          ...imports.datasets
 
-          .filter((dataset) => dataset.visible)
+            .filter((dataset) => dataset.visible)
 
-          .flatMap((dataset) => dataset.index.features),
-      ],
+            .flatMap((dataset) => dataset.index.features),
+        ],
+        [...statePackages.results, ...(statePackages.detail ? [statePackages.detail.summary] : [])],
+      ),
     }),
 
-    [imports.datasets],
+    [imports.datasets, statePackages.results, statePackages.detail],
   );
 
   const importedData = useMemo(
@@ -521,37 +530,52 @@ export function OutdoorMap({
   const regionalOverviewUri = assets?.[2]?.localUri ?? assets?.[2]?.uri;
 
   const offlineFontUri = assets?.[3]?.localUri ?? assets?.[3]?.uri;
+  const stateMap = useMemo(
+    () =>
+      statePackageMapStyle(
+        statePackages.packages,
+        placeFilter,
+        state.selectedFeatureId,
+        markerDensity,
+      ),
+    [statePackages.packages, placeFilter, state.selectedFeatureId, markerDensity],
+  );
 
   const mapStyle = useMemo(
     () =>
       outdoorDataUri && worldOverviewUri && regionalOverviewUri && offlineFontUri
-        ? (createOutdoorMapStyle(
-            outdoorDataUri,
+        ? (() => {
+            const base = createOutdoorMapStyle(
+              outdoorDataUri,
 
-            createTieredOfflineVectorBasemapStyle({
-              worldArchiveUri: worldOverviewUri,
+              createTieredOfflineVectorBasemapStyle({
+                worldArchiveUri: worldOverviewUri,
 
-              regionalArchiveUri: regionalOverviewUri,
+                regionalArchiveUri: regionalOverviewUri,
 
-              fontUri: offlineFontUri,
+                fontUri: offlineFontUri,
 
-              sourceLayers: offlineCartography,
+                sourceLayers: offlineCartography,
 
-              worldMaximumZoom: worldBasemapManifest.maximumZoom,
+                worldMaximumZoom: worldBasemapManifest.maximumZoom,
 
-              regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
+                regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
 
-              regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
-            }),
+                regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
+              }),
 
-            { includePlaces: false },
-          ) as unknown as StyleSpecification)
+              { includePlaces: false },
+            );
+            return {
+              ...base,
+              sources: { ...base.sources, ...stateMap.sources },
+              layers: [...base.layers, ...stateMap.layers],
+            } as unknown as StyleSpecification;
+          })()
         : null,
 
-    [offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri],
+    [offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri, stateMap],
   );
-
-  const [query, setQuery] = useState('');
 
   const [showLicenses, setShowLicenses] = useState(false);
 
@@ -560,10 +584,21 @@ export function OutdoorMap({
   const [sourceLinkStatus, setSourceLinkStatus] = useState('');
 
   const selected =
-    featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ?? null;
+    featureIndex.features.find((feature) => feature.id === state.selectedFeatureId) ??
+    (selectedState.current?.feature.id === state.selectedFeatureId &&
+    selectedState.current.packages === statePackages.packages
+      ? selectedState.current.feature
+      : null);
 
   const selectedHike = useMemo<HikeRouteDetails | null>(() => {
     if (!selected || selected.properties.kind !== 'trail') return null;
+    if (
+      statePackages.detail?.summary.id === selected.id &&
+      statePackages.detail.geometry &&
+      (statePackages.detail.geometry.type === 'LineString' ||
+        statePackages.detail.geometry.type === 'MultiLineString')
+    )
+      return hikeRouteDetails(statePackages.detail.geometry);
 
     if (selected.properties.origin === 'private-catalog') {
       const feature = imports.datasets
@@ -583,13 +618,13 @@ export function OutdoorMap({
       return null;
     }
 
-    if (publicHikes.sourceSha256 !== publicMapManifest.sha256) return null;
+    if (bundledHikes.sourceSha256 !== mobileMapDataMetadata.sha256) return null;
 
     return (
-      (publicHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
+      (bundledHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
       null
     );
-  }, [selected, imports.datasets]);
+  }, [selected, imports.datasets, statePackages.detail]);
 
   const [selectedHikeSample, setSelectedHikeSample] = useState<number | null>(null);
 
@@ -720,8 +755,13 @@ export function OutdoorMap({
     if (state.selectedFeatureId !== null && selected === null) adapter.setSelectedFeature(null);
   }, [adapter, selected, state.selectedFeatureId]);
 
-  const setSelected = (feature: OutdoorFeatureSummary | null) =>
+  const setSelected = (feature: OutdoorFeatureSummary | null) => {
+    if (!feature) {
+      selectedState.current = null;
+      statePackages.clearSelection();
+    }
     adapter.setSelectedFeature(feature?.id ?? null);
+  };
 
   const [loaded, setLoaded] = useState(false);
 
@@ -742,9 +782,21 @@ export function OutdoorMap({
   const [directionsStatus, setDirectionsStatus] = useState('');
 
   const placeData = useMemo(
-    () => createOutdoorPlaceCollection(featureIndex, placeFilter),
+    () =>
+      createOutdoorPlaceCollection(
+        {
+          schemaVersion: 1,
+          features: [
+            ...bundledFeatureIndex.features,
+            ...imports.datasets
+              .filter((entry) => entry.visible)
+              .flatMap((entry) => entry.index.features),
+          ],
+        },
+        placeFilter,
+      ),
 
-    [featureIndex, placeFilter],
+    [imports.datasets, placeFilter],
   );
 
   const placeLayers = useMemo(() => createOutdoorPlaceLayerStyles(markerDensity), [markerDensity]);
@@ -773,9 +825,13 @@ export function OutdoorMap({
       : [placeFilter];
 
   const results = useMemo(
-    () => searchOutdoorFeatureIndex(featureIndex, query),
+    () =>
+      mergeStateSummaries(
+        searchOutdoorFeatureIndex(featureIndex, query),
+        statePackages.results,
+      ).slice(0, 30),
 
-    [featureIndex, query],
+    [featureIndex, query, statePackages.results],
   );
 
   const track = useMemo(
@@ -831,6 +887,12 @@ export function OutdoorMap({
   }, [placeJournal, selected?.id]);
 
   function select(feature: OutdoorFeatureSummary) {
+    if (
+      statePackages.results.some((entry) => entry.id === feature.id) ||
+      statePackages.detail?.summary.id === feature.id
+    )
+      selectedState.current = { feature, packages: statePackages.packages };
+    if (statePackages.ready) void statePackages.select(feature.id);
     setSelected(feature);
 
     const [west, south, east, north] = feature.bounds;
@@ -903,7 +965,7 @@ export function OutdoorMap({
   }
 
   async function shareDirectionsDestination(): Promise<void> {
-    if (!selected) return;
+    if (!selected || selected.properties.navigationAllowed === false) return;
 
     const destination = selectedHike
       ? { name: `${selected.properties.name} mapped start`, coordinate: selectedHike.start }
@@ -939,7 +1001,7 @@ export function OutdoorMap({
   }
 
   async function chooseDirectionsApp(): Promise<void> {
-    if (!selected) return;
+    if (!selected || selected.properties.navigationAllowed === false) return;
 
     const destination = selectedHike
       ? { name: `${selected.properties.name} mapped start`, coordinate: selectedHike.start }
@@ -1052,7 +1114,10 @@ export function OutdoorMap({
           marginBottom: 12,
         }}
       >
-        Offline map · {featureIndex.features.length.toLocaleString()} geographic features
+        Offline map ·{' '}
+        {statePackages.packages.some((entry) => entry.visible)
+          ? `${statePackages.packages.filter((entry) => entry.visible).length} state packages shown`
+          : `${featureIndex.features.length.toLocaleString()} geographic features`}
       </Text>
 
       {section === 'search' ? (
@@ -1205,7 +1270,14 @@ export function OutdoorMap({
                 void mapView.current
 
                   ?.queryRenderedFeatures(event.nativeEvent.point, {
-                    layers: ['imported-area', 'imported-line', 'dec-land', 'dec-road', 'dec-trail'],
+                    layers: [
+                      ...stateMap.selectionLayers,
+                      'imported-area',
+                      'imported-line',
+                      'dec-land',
+                      'dec-road',
+                      'dec-trail',
+                    ],
                   })
 
                   .then((features) => {
@@ -1214,7 +1286,17 @@ export function OutdoorMap({
 
                     const feature = featureIndex.features.find((candidate) => candidate.id === id);
 
-                    if (feature) setSelected(feature);
+                    if (feature) select(feature);
+                    else if (typeof id === 'string' && statePackages.ready)
+                      void statePackages.select(id).then((summary) => {
+                        if (summary) {
+                          selectedState.current = {
+                            feature: summary,
+                            packages: statePackages.packages,
+                          };
+                          setSelected(summary);
+                        }
+                      });
                   })
 
                   .catch(() => undefined);
@@ -1223,7 +1305,17 @@ export function OutdoorMap({
               onRegionDidChange={(event) => {
                 const [x, y] = event.nativeEvent.center;
 
-                setOutside(x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02);
+                setOutside(
+                  (x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02) &&
+                    !statePackages.packages.some(
+                      (entry) =>
+                        entry.visible &&
+                        x >= entry.bounds[0] &&
+                        x <= entry.bounds[2] &&
+                        y >= entry.bounds[1] &&
+                        y <= entry.bounds[3],
+                    ),
+                );
 
                 setZoom(event.nativeEvent.zoom);
 
@@ -1634,6 +1726,14 @@ export function OutdoorMap({
               'Current access and camping status are unverified; check the managing agency.'}
           </Text>
 
+          {selectedProperties?.dataAttribution ? (
+            <Text>Data credit: {selectedProperties.dataAttribution}</Text>
+          ) : null}
+
+          {selectedProperties?.distributionConditions ? (
+            <Text>{selectedProperties.distributionConditions}</Text>
+          ) : null}
+
           {selectedSourceUrl ? (
             <ProductButton
               label={
@@ -1695,6 +1795,8 @@ export function OutdoorMap({
             label={selectedHike ? 'Get directions to mapped start' : 'Get directions'}
 
             hint="Choose an installed maps app to route to the selected destination"
+
+            disabled={selected.properties.navigationAllowed === false}
 
             onPress={chooseDirectionsApp}
           />
@@ -1965,7 +2067,7 @@ export function OutdoorMap({
             : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
 
         {outside
-          ? ' Outside the bundled New York public-overlay coverage; imported datasets may cover this area.'
+          ? ' Outside bundled and shown state-package coverage; imported datasets may cover this area.'
           : ''}
       </Text>
 
@@ -2014,17 +2116,17 @@ export function OutdoorMap({
       />
 
       <Text>
-        Map key: green areas — DEC, NPS, USFS and BLM land references when present; blue lines —
-        trails; brown lines — roads; numbered orange circles — grouped places; colored symbols —
-        iOverlander categories; pink — recorded route; blue GPS dot — current position. Zooming in
-        expands groups into category-specific icons, then reveals names. Tap a group, feature, or
-        search result for details.
+        Map key: green areas — NPS, USFS and BLM land references when present; blue lines — trails;
+        brown lines — roads; numbered orange circles — grouped places; colored symbols — iOverlander
+        categories; pink — recorded route; blue GPS dot — current position. Zooming in expands
+        groups into category-specific icons, then reveals names. Tap a group, feature, or search
+        result for details.
       </Text>
 
       <Text>
         Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
-        Hike elevations: {publicHikes.attribution}. Geometry simplified for display. MapLibre Native
-        renderer. Public-use GIS data is provided without warranty; boundaries are not legal
+        Hike elevations: {bundledHikes.attribution}. Geometry simplified for display. MapLibre
+        Native renderer. Public-use GIS data is provided without warranty; boundaries are not legal
         surveys.
       </Text>
 
@@ -2048,6 +2150,93 @@ export function OutdoorMap({
         </Text>
       )}
 
+      <ProductCard title="Offline state packages">
+        <Text>
+          Install a state.sqlite package from Files. Each state works offline as one package, with
+          searchable places, trails and land records. Manual import limits do not apply.
+        </Text>
+        <ProductButton
+          label="Install or update a state"
+          hint="Choose a supported state package from Files"
+          disabled={!statePackages.ready}
+          busy={statePackages.busy}
+          onPress={() => {
+            void statePackages.install();
+          }}
+        />
+        <Text accessibilityLiveRegion="polite">{statePackages.status}</Text>
+        {statePackages.packages.map((entry) => (
+          <View key={entry.state} style={{ gap: 6, marginTop: 12 }}>
+            <Text style={{ fontWeight: '700' }}>
+              {entry.name} · {entry.featureCount.toLocaleString()} features
+            </Text>
+            <Text>
+              {(entry.installedBytes / 1048576).toFixed(1)} MiB installed · Packaged{' '}
+              {entry.generatedAt.slice(0, 10)}
+            </Text>
+            {entry.integrityError && (
+              <Text>Integrity check failed. Reinstall or remove this state package.</Text>
+            )}
+            <ProductButton
+              label={entry.visible ? `Hide ${entry.name}` : `Show ${entry.name}`}
+              hint="Save this state package’s map visibility"
+              disabled={statePackages.busy || entry.integrityError}
+              onPress={() => {
+                void statePackages.change(entry.state, 'visibility');
+              }}
+            />
+            <ProductButton
+              label={`Show ${entry.name} coverage`}
+              disabled={statePackages.busy || entry.integrityError}
+              hint="Fit the state package’s geographic coverage in the map"
+              onPress={() => {
+                setFollowUser(false);
+                camera.current?.fitBounds(entry.bounds, {
+                  padding: { top: 25, right: 25, bottom: 25, left: 25 },
+                  duration: 0,
+                });
+              }}
+            />
+            {entry.canRollback && (
+              <ProductButton
+                label={`Restore previous ${entry.name} version`}
+                hint="Switch to the previously verified state package"
+                disabled={statePackages.busy}
+                onPress={() => {
+                  void statePackages.change(entry.state, 'rollback');
+                }}
+              />
+            )}
+            <ProductButton
+              label={`Remove ${entry.name}`}
+              hint="Remove this reference package while keeping your notes"
+              disabled={statePackages.busy}
+              onPress={() =>
+                Alert.alert(
+                  `Remove ${entry.name}?`,
+                  'Your place notes and recordings will be kept.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    {
+                      text: 'Remove',
+                      style: 'destructive',
+                      onPress: () => {
+                        void statePackages.change(entry.state, 'remove');
+                      },
+                    },
+                  ],
+                )
+              }
+            />
+            <Text>{entry.attribution}</Text>
+            <ProductButton
+              label={`Source notices for ${entry.name}`}
+              hint="Read this package’s source licenses and historical limitations"
+              onPress={() => Alert.alert(`${entry.name} source notices`, entry.notices)}
+            />
+          </View>
+        ))}
+      </ProductCard>
       <ProductCard title="Your imported datasets">
         <Text>
           Add a GeoJSON file from Files. Points, lines and areas stay on this phone and work

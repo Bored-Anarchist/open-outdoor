@@ -3,6 +3,10 @@
 **Status:** Proposed baseline  
 **Normative source:** [Consolidated project scope](../PROJECT_SCOPE.md)
 
+## Reference package maintenance
+
+Complete state catalogs and their generated GeoJSON/index/import files are local or external artifacts, not Git/Git LFS content. Git holds source recipes, rights, notices, counts and checksum pins. Source acquisition uses APIs and verified local cache reuse; phone installation remains offline with whole-state replacement and compiled pins. See [package maintenance](PACKAGE_MAINTENANCE.md).
+
 ## 1. Architecture goals
 
 - Operate offline without a required hosted runtime backend.

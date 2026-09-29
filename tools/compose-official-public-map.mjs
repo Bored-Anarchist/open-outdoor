@@ -117,15 +117,17 @@ const basePath = resolve(args.get('base') ?? 'packages/map/src/assets/new-york-o
 const baseManifestPath = resolve(
   args.get('base-manifest') ?? 'packages/map/src/assets/new-york-outdoors.manifest.json',
 );
-const npsPath = resolve(args.get('nps') ?? 'PrivateData/sources/nps/US/New York/nps-new-york.json');
+const npsPath = resolve(
+  args.get('nps') ?? 'packages/map/source-snapshots/new-york/nps/nps-new-york.json',
+);
 const npsManifestPath = resolve(
-  args.get('nps-manifest') ?? 'PrivateData/sources/nps/US/New York/manifest.json',
+  args.get('nps-manifest') ?? 'packages/map/source-snapshots/new-york/nps/manifest.json',
 );
 const federalPath = resolve(
-  args.get('federal') ?? 'PrivateData/sources/federal/US/New York/federal-new-york.json',
+  args.get('federal') ?? 'packages/map/source-snapshots/new-york/federal/federal-new-york.json',
 );
 const federalManifestPath = resolve(
-  args.get('federal-manifest') ?? 'PrivateData/sources/federal/US/New York/manifest.json',
+  args.get('federal-manifest') ?? 'packages/map/source-snapshots/new-york/federal/manifest.json',
 );
 const requestedGeneratedAt = args.get('generated-at');
 if (
@@ -161,23 +163,23 @@ if (
 ) {
   throw new Error('base catalog is not a redistributable outdoor FeatureCollection');
 }
-const decFeatures = baseDocument.features.filter((feature) =>
-  String(feature?.properties?.sourceId ?? '').startsWith('nys-'),
+const heldStateFeatures = baseDocument.features.filter((feature) =>
+  String(feature?.properties?.sourceId ?? '').startsWith('nys-dec-'),
 );
-const decSources = baseManifest.sources.filter((source) =>
-  String(source?.id ?? '').startsWith('nys-'),
+const heldStateSources = baseManifest.sources.filter((source) =>
+  String(source?.id ?? '').startsWith('nys-dec-'),
 );
-const expectedDecCount = decSources.reduce(
-  (total, source) => total + count(source.featureCount, `${source.id} count`),
-  0,
-);
-if (decFeatures.length !== expectedDecCount || decFeatures.length === 0) {
-  throw new Error('base catalog does not contain its complete DEC source inventory');
+if (heldStateFeatures.length || heldStateSources.length) {
+  throw new Error('public base still contains rights-held New York state agency data');
 }
 
 const npsFeatures = npsNewYorkAppFeatures(nps.document);
 const federalFeatures = federalNewYorkAppFeatures(federal.document);
-const features = [...decFeatures, ...npsFeatures, ...federalFeatures];
+const boundaryFeatures = baseDocument.features.filter(
+  (feature) => feature.properties?.sourceId === 'nys-boundary',
+);
+if (boundaryFeatures.length !== 1) throw new Error('public NYS boundary must contain one feature');
+const features = [...boundaryFeatures, ...npsFeatures, ...federalFeatures];
 if (new Set(features.map((feature) => String(feature.id))).size !== features.length) {
   throw new Error('public composition produced duplicate feature IDs');
 }
@@ -226,6 +228,7 @@ if (!Array.isArray(federalEndpoints) || federalEndpoints.length !== 5) {
   throw new Error('federal manifest must pin five endpoints');
 }
 const officialSources = [
+  ...baseManifest.sources.filter((source) => source.id === 'nys-boundary'),
   sourceReceipt({
     id: 'nps-parks-ny',
     kind: 'land-and-poi',
@@ -313,28 +316,32 @@ const manifest = {
   indexBytes: indexBytes.byteLength,
   featureCount: features.length,
   coverage:
-    'New York DEC lands, roads, trails and recreation points; official NPS parks, campgrounds, alerts and boundaries; official USFS Finger Lakes ownership, recreation and MVUM features; and official BLM managed-land coverage. Display-only and not current permission to camp or enter.',
+    'NYS civil boundary; official NPS parks, campgrounds, alerts and boundaries; USFS Finger Lakes ownership, recreation and MVUM features; and BLM managed-land coverage. Display-only and not current permission to camp or enter.',
   rights: {
     ...rights,
-    license: 'NYS public GIS terms and United States government public information',
+    license: 'United States government public information; NYS civil boundaries general-use data',
     attribution: [
       'NYS ITS Geospatial Services',
-      'New York State Department of Environmental Conservation',
-      'OPEN-NY',
       'National Park Service',
       'USDA Forest Service',
       'Bureau of Land Management',
     ],
-    terms: [...new Set([...rights.terms, nps.manifest.termsUrl, ...federal.manifest.termsUrls])],
+    terms: [
+      ...new Set([
+        'https://gis.ny.gov/civil-boundaries',
+        nps.manifest.termsUrl,
+        ...federal.manifest.termsUrls,
+      ]),
+    ],
     reviewedAt: generatedAt.slice(0, 10),
   },
-  sources: [...decSources, ...officialSources],
+  sources: officialSources,
   catalogSources: [
     {
-      id: 'nys-dec',
-      label: 'NYS DEC',
-      featureCount: decFeatures.length,
-      status: 'public offline snapshot',
+      id: 'nys-boundary',
+      label: 'NYS ITS civil boundary',
+      featureCount: boundaryFeatures.length,
+      status: 'public planning and general-use boundary',
     },
     {
       id: 'nps',

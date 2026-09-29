@@ -1,0 +1,1077 @@
+{
+  "artifacts": {
+    "geojson": {
+      "file": "outdoors.geojson",
+      "featureCount": 25726,
+      "bytes": 39899338,
+      "sha256": "d0e8d3ad34976835d1f63a29dd6467b755ad4bf595def68f00d342b64ddcbedb"
+    },
+    "index": {
+      "file": "index.json",
+      "bytes": 19136330,
+      "sha256": "0d4285f53be6e8eecd2d3088d7520d99255af4d8e69f36225e00b73ab886584c"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 9436,
+      "sha256": "77489433bf96d6e8685e04f9491caa47e7edcac19d14d3ff38bf70e490ab18f6"
+    }
+  },
+  "classification": "SOURCE_REDISTRIBUTABLE",
+  "coordinateReferenceSystem": "EPSG:4326",
+  "coverage": {
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
+    "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
+    "limitations": [
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
+    ]
+  },
+  "disclaimers": [
+    "Map display is informational and is not a legal access, property, camping, closure, fire, or safety determination.",
+    "Confirm current rules and conditions with the responsible land manager before travel."
+  ],
+  "distribution": "public",
+  "featureCount": 25726,
+  "generatedAt": "2026-09-28T23:53:23.913Z",
+  "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
+  "packageId": "outdoor-mn",
+  "rights": {
+    "attribution": [
+      "National Park Service",
+      "PAD-US data providers and state stewards",
+      "U.S. Department of Agriculture, Forest Service",
+      "U.S. Department of the Interior, Bureau of Land Management",
+      "U.S. Geological Survey Gap Analysis Project",
+      "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement"
+    ],
+    "derivation": true,
+    "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
+    "offlineStorage": true,
+    "redistribution": true,
+    "reviewState": "National source terms and public-use basis recorded; state land records retain PAD-US source lineage. Direct state-layer review remains open.",
+    "sourceTerms": [
+      {
+        "id": "usgs-pad-us-fee-managers",
+        "url": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download"
+      },
+      {
+        "id": "nps-public-trails",
+        "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo"
+      },
+      {
+        "id": "nps-public-points-of-interest",
+        "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo"
+      },
+      {
+        "id": "usfs-national-forest-system-trails",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-recreation-sites",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-mvum-roads",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-mvum-trails",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "blm-surface-management-agency",
+        "url": "https://www.blm.gov/services/geospatial/GISData"
+      },
+      {
+        "id": "blm-public-recreation-sites",
+        "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "mn-dnr-hiking",
+        "url": "https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html",
+        "license": "MNDNR credited modified derivatives; reference only",
+        "licenseUrl": null,
+        "distributionConditions": "MNDNR credited filtered visitor derivative. Reference only; do not use for navigation or legal boundaries/access. Entire source datasets are not redistributed. No MNDNR endorsement.",
+        "distributionScope": "noncommercial",
+        "upstreamRightsStatus": "Conditional"
+      },
+      {
+        "id": "mn-dnr-campgrounds",
+        "url": "https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html",
+        "license": "MNDNR credited modified derivatives; reference only",
+        "licenseUrl": null,
+        "distributionConditions": "MNDNR credited filtered campground derivative. Reference only; do not use for navigation or legal boundaries/access. Entire source datasets are not redistributed. No MNDNR endorsement.",
+        "distributionScope": "noncommercial",
+        "upstreamRightsStatus": "Conditional"
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "agency": "U.S. Geological Survey, Gap Analysis Project",
+      "attribution": [
+        "U.S. Geological Survey Gap Analysis Project",
+        "PAD-US data providers and state stewards"
+      ],
+      "fields": [
+        "OBJECTID",
+        "FeatClass",
+        "Category",
+        "Own_Type",
+        "Own_Name",
+        "Loc_Own",
+        "Mang_Type",
+        "Mang_Name",
+        "Loc_Mang",
+        "Des_Tp",
+        "Loc_Ds",
+        "Unit_Nm",
+        "Loc_Nm",
+        "State_Nm",
+        "Agg_Src",
+        "GIS_Src",
+        "Src_Date",
+        "GIS_Acres",
+        "Pub_Access",
+        "Access_Src",
+        "Access_Dt",
+        "Date_Est",
+        "Comments"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usgs-pad-us-fee-managers",
+      "inventoryFeatureCount": 7463,
+      "name": "USGS PAD-US fee managers",
+      "packagedFeatureCount": 7463,
+      "packagedFeatureSha256": "becbab62a43d5083cd7bb70031b9ab20167ea180a866b748b039f1d5969050f8",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 7463,
+      "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
+      "unreturnedFeatureCount": 0,
+      "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
+    },
+    {
+      "agency": "National Park Service",
+      "attribution": [
+        "National Park Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "TRLFEATTYPE",
+        "TRLNAME",
+        "TRLALTNAME",
+        "TRLSTATUS",
+        "TRLSURFACE",
+        "TRLTYPE",
+        "TRLCLASS",
+        "TRLUSE",
+        "PUBLICDISPLAY",
+        "DATAACCESS",
+        "ACCESSNOTES",
+        "ORIGINATOR",
+        "UNITCODE",
+        "UNITNAME",
+        "UNITTYPE",
+        "GROUPCODE",
+        "GROUPNAME",
+        "REGIONCODE",
+        "SOURCEDATE",
+        "OPENTOPUBLIC",
+        "SEASONAL",
+        "SEASDESC",
+        "MAINTAINER",
+        "NOTES",
+        "FEATUREID",
+        "MAPSOURCE"
+      ],
+      "filteredFeatureCount": 2,
+      "geometryPrecision": 5,
+      "id": "nps-public-trails",
+      "inventoryFeatureCount": 1882,
+      "name": "NPS public trails",
+      "packagedFeatureCount": 1880,
+      "packagedFeatureSha256": "828ab4d66b5b1a6b9fa6a3fd155962c32e5ce9e2747567ca419e9640f69a8cc6",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 1882,
+      "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
+      "unreturnedFeatureCount": 0,
+      "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0"
+    },
+    {
+      "agency": "National Park Service",
+      "attribution": [
+        "National Park Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "POINAME",
+        "POIALTNAME",
+        "POITYPE",
+        "POISTATUS",
+        "PUBLICDISPLAY",
+        "DATAACCESS",
+        "ACCESSNOTES",
+        "ORIGINATOR",
+        "UNITCODE",
+        "UNITNAME",
+        "UNITTYPE",
+        "GROUPCODE",
+        "GROUPNAME",
+        "REGIONCODE",
+        "SOURCEDATE",
+        "OPENTOPUBLIC",
+        "SEASONAL",
+        "SEASDESC",
+        "MAINTAINER",
+        "NOTES",
+        "FEATUREID",
+        "MAPSOURCE"
+      ],
+      "filteredFeatureCount": 598,
+      "geometryPrecision": 5,
+      "id": "nps-public-points-of-interest",
+      "inventoryFeatureCount": 598,
+      "name": "NPS public points of interest",
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 598,
+      "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
+      "unreturnedFeatureCount": 0,
+      "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "trail_name",
+        "trail_type",
+        "trail_cn",
+        "admin_org",
+        "managing_org",
+        "security_id",
+        "attributesubset",
+        "national_trail_designation",
+        "trail_class",
+        "accessibility_status",
+        "trail_surface",
+        "surface_firmness",
+        "typical_trail_grade",
+        "typical_tread_width",
+        "special_mgmt_area",
+        "terra_motorized",
+        "snow_motorized",
+        "water_motorized",
+        "allowed_terra_use",
+        "hiker_pedestrian_managed",
+        "hiker_pedestrian_accpt",
+        "hiker_pedestrian_disc",
+        "hiker_pedestrian_restricted",
+        "bicycle_managed",
+        "bicycle_accpt",
+        "bicycle_disc",
+        "motorcycle_managed",
+        "motorcycle_accpt",
+        "atv_managed",
+        "atv_accpt",
+        "trail_no",
+        "gis_miles",
+        "e_bike_class1_managed",
+        "e_bike_class1_accpt",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "usfs-national-forest-system-trails",
+      "inventoryFeatureCount": 3532,
+      "name": "USFS National Forest System trails",
+      "packagedFeatureCount": 3532,
+      "packagedFeatureSha256": "abb48ec5d43b8f84751aced333fe17f332afee657980d178e6db9a479a7c2a50",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 3532,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_TrailNFSPublishWithDataStatus_01/MapServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "site_cn",
+        "region",
+        "site_id",
+        "site_name",
+        "site_type",
+        "activity_type_list",
+        "service_type_list",
+        "seasonal_operational_status",
+        "op_status_reason",
+        "development_status",
+        "development_scale",
+        "site_contact_notes",
+        "recarea_name",
+        "recarea_description",
+        "official_designation",
+        "fee_charged",
+        "fee_type",
+        "fee_description",
+        "operational_hours",
+        "open_season",
+        "best_season",
+        "busiest_season",
+        "maximum_elevation",
+        "minimum_elevation",
+        "important_info",
+        "restrictions",
+        "directions",
+        "latitude",
+        "longitude",
+        "states_spanned",
+        "infra_last_update",
+        "edw_last_modify",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "usfs-recreation-sites",
+      "inventoryFeatureCount": 912,
+      "name": "USFS recreation sites",
+      "packagedFeatureCount": 912,
+      "packagedFeatureSha256": "3150aacacb807b1096caf01686fd1368e948aa5a78f02b9bf0a2134ecc464508",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 912,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "rte_cn",
+        "id",
+        "name",
+        "bmp",
+        "emp",
+        "seg_length",
+        "gis_miles",
+        "mvum_symbol_name",
+        "jurisdiction",
+        "operationalmaintlevel",
+        "surfacetype",
+        "system",
+        "seasonal",
+        "passengervehicle",
+        "passengervehicle_datesopen",
+        "highclearancevehicle",
+        "highclearancevehicle_datesopen",
+        "truck",
+        "bus",
+        "motorhome",
+        "fourwd_gt50inches",
+        "atv",
+        "motorcycle",
+        "adminorg",
+        "districtname",
+        "forestname",
+        "routestatus",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usfs-mvum-roads",
+      "inventoryFeatureCount": 3478,
+      "name": "USFS motor vehicle use map roads",
+      "packagedFeatureCount": 3478,
+      "packagedFeatureSha256": "f2bc429ede4ffa86df8f9d16f31391b3896070aac1b33d68eb499b2c0f447f86",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 3478,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/1"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "rte_cn",
+        "id",
+        "name",
+        "bmp",
+        "emp",
+        "seg_length",
+        "gis_miles",
+        "mvum_symbol_name",
+        "jurisdiction",
+        "seasonal",
+        "passengervehicle",
+        "passengervehicle_datesopen",
+        "highclearancevehicle",
+        "highclearancevehicle_datesopen",
+        "truck",
+        "bus",
+        "motorhome",
+        "fourwd_gt50inches",
+        "atv",
+        "motorcycle",
+        "adminorg",
+        "districtname",
+        "forestname",
+        "trailstatus",
+        "trailsystem",
+        "trailclass",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usfs-mvum-trails",
+      "inventoryFeatureCount": 589,
+      "name": "USFS motor vehicle use map trails",
+      "packagedFeatureCount": 589,
+      "packagedFeatureSha256": "73166225053c04bcd63d355f5ce649c2d705686ea494eb0cf09a5046b0cba11a",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 589,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/2"
+    },
+    {
+      "agency": "U.S. Department of the Interior, Bureau of Land Management",
+      "attribution": [
+        "U.S. Department of the Interior, Bureau of Land Management"
+      ],
+      "fields": [
+        "OBJECTID",
+        "SMA_ID",
+        "ADMIN_DEPT_CODE",
+        "ADMIN_AGENCY_CODE",
+        "ADMIN_UNIT_NAME",
+        "ADMIN_UNIT_TYPE",
+        "HOLD_ID",
+        "HOLD_DEPT_CODE",
+        "HOLD_AGENCY_CODE",
+        "ADMIN_ST",
+        "FAU_ID"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "blm-surface-management-agency",
+      "inventoryFeatureCount": 0,
+      "name": "BLM surface management agency boundaries",
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 0,
+      "terms": "https://www.blm.gov/services/geospatial/GISData",
+      "unreturnedFeatureCount": 0,
+      "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1"
+    },
+    {
+      "agency": "U.S. Department of the Interior, Bureau of Land Management",
+      "attribution": [
+        "U.S. Department of the Interior, Bureau of Land Management"
+      ],
+      "fields": [
+        "OBJECTID",
+        "FET_TYPE",
+        "FET_SUBTYPE",
+        "FET_NAME",
+        "ADM_UNIT_CD",
+        "ADMIN_ST",
+        "DESCRIPTION",
+        "WEB_LINK",
+        "UNIT_NAME",
+        "SOURCE",
+        "WEB_DISPLAY"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "blm-public-recreation-sites",
+      "inventoryFeatureCount": 0,
+      "name": "BLM public recreation sites",
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "queriedAt": "2026-09-24T02:15:39.306Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 0,
+      "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
+      "unreturnedFeatureCount": 0,
+      "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "mn-dnr-hiking",
+      "state": "MN",
+      "name": "Minnesota DNR filtered hiking trail references",
+      "url": "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/trans_state_park_trails_roads/FeatureServer/0",
+      "basisUrl": "https://gisdata.mn.gov/dataset/trans-state-park-trails-roads",
+      "where": "(use_hike=1 OR use_hiking=1 OR use_selfgu=1 OR use_accpat=1 OR use_wntrhi=1) AND (use_abando IS NULL OR use_abando<>1)",
+      "fields": [
+        "objectid",
+        "trail_name",
+        "prgm_prj",
+        "alt_name",
+        "treadway",
+        "road_name",
+        "public_use",
+        "spur",
+        "service_rd",
+        "use_hike",
+        "use_hiking",
+        "use_selfgu",
+        "use_accpat",
+        "use_horse",
+        "use_bike",
+        "use_mntbik",
+        "use_inline",
+        "use_wntrhi",
+        "use_snosho",
+        "use_sleddo",
+        "use_atvcl1",
+        "use_atvcl2",
+        "use_ohm",
+        "use_wcftm",
+        "use_wcftnm",
+        "use_abando",
+        "other_com",
+        "interp",
+        "use_orv",
+        "surfacetyp",
+        "width",
+        "lengthmile",
+        "Shape__Length"
+      ],
+      "distributionScope": "noncommercial",
+      "license": "MNDNR credited modified derivatives; reference only",
+      "termsUrl": "https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html",
+      "attribution": "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement",
+      "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Conditional",
+      "distributionConditions": "MNDNR credited filtered visitor derivative. Reference only; do not use for navigation or legal boundaries/access. Entire source datasets are not redistributed. No MNDNR endorsement.",
+      "conditionalClearance": "conditions-satisfied-for-this-processed-distribution",
+      "fullSourceCount": 26963,
+      "selectedFeatureCount": 7818,
+      "conditionalEvidence": {
+        "url": "https://www.arcgis.com/sharing/rest/content/items/c90e8f624b714e3498a4c21b4e52df32/info/metadata/metadata.xml",
+        "sha256": "534f66e23cb5d708a329cf08c5c45efcdc348fe6165b78bc6464b45949380ab3"
+      },
+      "selectedFields": [
+        "objectid",
+        "trail_name",
+        "road_name",
+        "public_use",
+        "use_hike",
+        "use_hiking",
+        "lengthmile"
+      ],
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-28T23:45:03.417Z",
+      "sourceUpdated": "Not supplied",
+      "featureCount": 7818,
+      "bytes": 3298490,
+      "sha256": "c2b037469a737974bb729548b2cfd400dc315462afb00f9cad0b78b921e5434b",
+      "metadataSha256": "9496ecc78f7966bb3d6980f53244b1da6bbb13de9e4fc540451ca541bffe4c78",
+      "termsSha256": "e65cd045fdbdeab24f7ac7a2d78dc17a7541fb67869af3d37e43dd926acf35bf",
+      "licenseText": "These data are intended to be used at a scale of 1:24,000 or smaller. Use of the data are constrained by the DNR GIS Data License Agreement. See the Distribution Liability section below for a link.",
+      "disclaimer": "Minnesota Department of Natural Resources General Data and Software License Agreement The Minnesota Department of Natural Resources (MNDNR) grants to you a personal, non-exclusive, non-transferrable, limited license to extract information from, use, reproduce, distribute, and modify data and/or software, in source and binary forms, with the acceptance of the following: Terms and Conditions of Use Data and/or software may be used for the creation of derivative works; however data and/or software in its entirety may not be resold, distributed or displayed for commercial purposes or otherwise. In the event that another more specific license agreement issued by the MNDNR is expressly associated with the data and/or software, the terms of the other license agreement prevail, and the terms expressed in this more general license agreement are null and void. The entire right, title and interest, including without limitation, all ownership rights and intellectual property rights in and to the data and/or software shall remain with the MNDNR. You agree to abide by copyright law and all other applicable laws of the United States as they apply to the data and software. An MNDNR copyright notice will be included, as appropriate; or MNDNR must be acknowledged as having contributed to any derivative work. MNDNR is not obligated to provide updates to the data and/or software whether or not other or newer versions become available. The use of the data or software for contract work with MNDNR does not relieve the contractor from any obligations assumed by the contract, or from complete and proper fulfillment of the terms of the contract. Map and geographic data should not be interpreted as establishing or describing legal boundaries or legal access and should not be used for navigational purposes. Map and geographic data should be used for reference only. Users of the data are responsible for verifying public land or water boundaries by observing boundary signs and markers, consulting official surveys and maps, and contacting local MNDNR offices. This license does not give the right to use the MNDNR name, marks, or any of its logos and is not an endorsement of the user's products. In States that do not allow the exclusion or limitation of incidental or consequential damages, you may not use these data and/or software. DISCLAIMER OF WARRANTIES AND LIMITATIONS OF LIABILITY Neither the state of Minnesota nor the Minnesota Department of Natural Resources, or their employees, make any representations or warranties, express or implied, with respect to the use of or reliance on the data and/or software provided herewith, regardless of its format or means of transmission. There are no guarantees or representations to the user as to the accuracy, currency, completeness, suitability or reliability of this data for any purpose. THE USER ACCEPTS THE DATA AND/OR SOFTWARE &quot;AS IS&quot; AND ASSUMES ALL RISKS ASSOCIATED WITH ITS USE. IN NO EVENT SHALL MNDNR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERS) ARISING IN ANY WAY OUT OF THE USE OF THIS DATA AND/OR SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE OR FOR ANY CLAIM BY ANY OTHER PARTY. Your use of the data and/or software is acceptance on your part of the terms and conditions set forth herein.",
+      "serviceItemId": "c90e8f624b714e3498a4c21b4e52df32",
+      "idField": "objectid",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "15e3875a67bfb8073a7a2b51ef5d57f1ab0f3fecec0051ce4a637157458d6da0",
+          "firstId": 283,
+          "lastId": 859
+        },
+        {
+          "count": 200,
+          "sha256": "cb34daf593bcf68f33e2f1666c850631dbb361d45c591833f1d64a05d997a08a",
+          "firstId": 860,
+          "lastId": 10870
+        },
+        {
+          "count": 200,
+          "sha256": "2e3fce14b5846471df5327f47a08e00f5ffa779fe9aced9d61b9724df9339ea9",
+          "firstId": 10871,
+          "lastId": 11084
+        },
+        {
+          "count": 200,
+          "sha256": "a6fd9ca90bbf65eea93276b3b4fa0a86eb50934c9d41ac9a84ddb1aaa5dc44c3",
+          "firstId": 11085,
+          "lastId": 11308
+        },
+        {
+          "count": 200,
+          "sha256": "1246a0e37c8ff863626301c7a4dc30e7bf5b709012c97b5306c420a903194420",
+          "firstId": 11309,
+          "lastId": 11531
+        },
+        {
+          "count": 200,
+          "sha256": "901da08031814628692a38bb60dd84ff55080b2f83a15f390b095e3df2d57262",
+          "firstId": 11532,
+          "lastId": 11751
+        },
+        {
+          "count": 200,
+          "sha256": "67b55744daecad43722b9598a38148d2ad28b655656bd633f3d2c7bb3307e86f",
+          "firstId": 11752,
+          "lastId": 11966
+        },
+        {
+          "count": 200,
+          "sha256": "bf373d7177951df3d3571a6ca8fc53601eccc6876c4b24d2fa2e8634461b6d2f",
+          "firstId": 11967,
+          "lastId": 12184
+        },
+        {
+          "count": 200,
+          "sha256": "1d773b6dec9d43e94ec044167635242af5164df35b791ddad67cca504103acd2",
+          "firstId": 12186,
+          "lastId": 12406
+        },
+        {
+          "count": 200,
+          "sha256": "635431e43ac596285b92e945078ad55eec6b87b4f791c7f4811cf6b3fd8a74dc",
+          "firstId": 12407,
+          "lastId": 12624
+        },
+        {
+          "count": 200,
+          "sha256": "e784b5d516edb939ea703996e891b56b4996e6068a24ec6961c52964cad952fd",
+          "firstId": 12625,
+          "lastId": 12841
+        },
+        {
+          "count": 200,
+          "sha256": "9e6fc67691890bc4750d6f6aafbad9d9f0cb75ad18d6da7b3617775fe7cfc1fd",
+          "firstId": 12842,
+          "lastId": 13078
+        },
+        {
+          "count": 200,
+          "sha256": "801caa38d1f7eb0a479c31bb29515e0c60b70f071cc05d6fa25f26f988c2b656",
+          "firstId": 13079,
+          "lastId": 13295
+        },
+        {
+          "count": 200,
+          "sha256": "647dd4272383a02f4775388e22e4c8ff1f708dc7c7189024ec1740316b1325dc",
+          "firstId": 13296,
+          "lastId": 13515
+        },
+        {
+          "count": 200,
+          "sha256": "a5f14f9772962a8250c841eafaa3a855ef6ca8bd727a1aef4fe73c95fe2baf64",
+          "firstId": 13516,
+          "lastId": 13720
+        },
+        {
+          "count": 200,
+          "sha256": "97308580de57dc0b2f0802c94544abc7287e1620cae35bea5d00adab97a89b70",
+          "firstId": 13721,
+          "lastId": 13931
+        },
+        {
+          "count": 200,
+          "sha256": "de2cef0764848683c44a5dfc9f2b0089aad532c17d4f942890a3d73dfd7ea365",
+          "firstId": 13932,
+          "lastId": 14339
+        },
+        {
+          "count": 200,
+          "sha256": "747b0400a839d6b14d0ed272df91e25aa746e2b845a62f236228f85659e3ac7a",
+          "firstId": 14352,
+          "lastId": 15284
+        },
+        {
+          "count": 200,
+          "sha256": "cab0b5c68c4b97c54a161e6376d50f3cf1785a76929945149faa476f13c71541",
+          "firstId": 15285,
+          "lastId": 15495
+        },
+        {
+          "count": 200,
+          "sha256": "9a1a19a4304ea246439478557dd8ae28c9da7503023288ea6959d9c1ae8215dd",
+          "firstId": 15496,
+          "lastId": 15710
+        },
+        {
+          "count": 200,
+          "sha256": "93912accd93e94e390e70ef773cca639a99de820dff01eae5a404600e7af23ed",
+          "firstId": 15711,
+          "lastId": 15919
+        },
+        {
+          "count": 200,
+          "sha256": "8c01e65d3078c006d30379851c693191d4632cde4f3301ceda2b03eb207ee7b3",
+          "firstId": 15922,
+          "lastId": 16144
+        },
+        {
+          "count": 200,
+          "sha256": "e979c183efacefb5df12967b0ef7e6a1b959ce76b38c596d34cb9e336dfd8df7",
+          "firstId": 16145,
+          "lastId": 16366
+        },
+        {
+          "count": 200,
+          "sha256": "45fdb41641ab63607d4ad1a9e145bfe9226e6c53d49162782bbfda5cea07a805",
+          "firstId": 16367,
+          "lastId": 16579
+        },
+        {
+          "count": 200,
+          "sha256": "887aa94a25720dcf1390452824ad1712b57ba37777b4bf9a3a0f977192d3e714",
+          "firstId": 16580,
+          "lastId": 16796
+        },
+        {
+          "count": 200,
+          "sha256": "29fe32a0df81e50f323c390fd24d24d9a0e54e94e8811324b0f1773454e19d58",
+          "firstId": 16798,
+          "lastId": 17014
+        },
+        {
+          "count": 200,
+          "sha256": "164bf1662426e573f48e88578c9a892893298701c2f6b4b409e0eb9f4e4972e1",
+          "firstId": 17015,
+          "lastId": 17238
+        },
+        {
+          "count": 200,
+          "sha256": "341fcf25bdaf763da4a45be1504bace03505a4d5b412836dd8fb34bb0202a8f0",
+          "firstId": 17239,
+          "lastId": 17459
+        },
+        {
+          "count": 200,
+          "sha256": "c958f171f890ce8df110d143da8daa0634a26ea28edb5900ad405a5adf82ced1",
+          "firstId": 17460,
+          "lastId": 22674
+        },
+        {
+          "count": 200,
+          "sha256": "13364809ae4a1f69c0c03fa0110ee3ace4153b6e75238901ea6fd5a984af68c1",
+          "firstId": 22675,
+          "lastId": 22875
+        },
+        {
+          "count": 200,
+          "sha256": "1287d62cdd775e36977f1b7e246f6cba09f69f003f2e275ccce0adebc2a7d82e",
+          "firstId": 22876,
+          "lastId": 23084
+        },
+        {
+          "count": 200,
+          "sha256": "1f032b3629c7ea17eb3ac8c08d34a1c6d91cd7e300449abb5a1770d61baf65dc",
+          "firstId": 23086,
+          "lastId": 24174
+        },
+        {
+          "count": 200,
+          "sha256": "e7383a10bb6d507f1bd4f39085119d9957c2d2325eadb5d7841b9b39cd1ecc44",
+          "firstId": 24212,
+          "lastId": 24473
+        },
+        {
+          "count": 200,
+          "sha256": "d8f3c635287e153b3468b29b8dec8c77d303f5d7c9a0e7249bd1831d756e6485",
+          "firstId": 24474,
+          "lastId": 24840
+        },
+        {
+          "count": 200,
+          "sha256": "5991b0b06964b8a547f1cdeea17fc65c15a8166db98476b1f66ada81446b8c2c",
+          "firstId": 24841,
+          "lastId": 25088
+        },
+        {
+          "count": 200,
+          "sha256": "ceb1849f9f9a8cac5d4699ee8cf2443682b17c80063e272f32f65f0c4e9cb93c",
+          "firstId": 25089,
+          "lastId": 25531
+        },
+        {
+          "count": 200,
+          "sha256": "be9ea73076d22a4cf6aa0e079c165c48f2b25ffb6614fce18c04afa3b504de2d",
+          "firstId": 25532,
+          "lastId": 25875
+        },
+        {
+          "count": 200,
+          "sha256": "97af5c9b961ab4e41a9e83e6aac0a35c603f907dbda91ede7c3e39cbfeb303d6",
+          "firstId": 25876,
+          "lastId": 26283
+        },
+        {
+          "count": 200,
+          "sha256": "7197233ddb094caa976c79d1c04526df1bfaddce04c32e874ffea051748c90b3",
+          "firstId": 26284,
+          "lastId": 26515
+        },
+        {
+          "count": 18,
+          "sha256": "445a93307e8d6f71631d39b3196a786a0c828de33d974a4ccc69ef4ba3150b58",
+          "firstId": 26516,
+          "lastId": 26533
+        }
+      ],
+      "modifications": "Filtered visitor subset, technical/source fields excluded; Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 7818,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "658f9d78b669da89f84c9c82c5c8dc7769d85419c0f0f7b3e31e9ade2bce450b"
+    },
+    {
+      "id": "mn-dnr-campgrounds",
+      "state": "MN",
+      "name": "Minnesota DNR filtered forest campground references",
+      "url": "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/struc_state_forest_campgrounds/FeatureServer/1",
+      "basisUrl": "https://gisdata.mn.gov/dataset/struc-state-forest-campgrounds",
+      "where": "site_type LIKE '%Camp%'",
+      "fields": [
+        "objectid",
+        "fc_load_objectid",
+        "stable_prod_guid",
+        "globalid",
+        "shape_collection_method",
+        "facility_name",
+        "site_type",
+        "state_forest",
+        "county",
+        "pat_admin_unit",
+        "dnr_region",
+        "stable_prod_guid_1",
+        "shape_collection_method_1",
+        "esri_oid"
+      ],
+      "distributionScope": "noncommercial",
+      "license": "MNDNR credited modified derivatives; reference only",
+      "termsUrl": "https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html",
+      "attribution": "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement",
+      "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Conditional",
+      "distributionConditions": "MNDNR credited filtered campground derivative. Reference only; do not use for navigation or legal boundaries/access. Entire source datasets are not redistributed. No MNDNR endorsement.",
+      "conditionalClearance": "conditions-satisfied-for-this-processed-distribution",
+      "fullSourceCount": 61,
+      "selectedFeatureCount": 54,
+      "conditionalEvidence": {
+        "url": "https://www.arcgis.com/sharing/rest/content/items/28d6a3aa5bc8431bb90af36ac80974af/info/metadata/metadata.xml",
+        "sha256": "6d86efe8a35284b7463c63e8ba98d02e85fb1eb02ff7d370fc4bc279d3825ebc"
+      },
+      "selectedFields": [
+        "objectid",
+        "facility_name",
+        "site_type",
+        "state_forest",
+        "pat_admin_unit"
+      ],
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-28T23:45:07.634Z",
+      "sourceUpdated": "Not supplied",
+      "featureCount": 54,
+      "bytes": 16444,
+      "sha256": "354aca66ebaddba400c70ad59bfe8eaae7d3067539ef2f803028cc42eaebbc4d",
+      "metadataSha256": "3296f407eeac999dfa73e504cb49685589824d40ab6d80b6c77b9cbd769ea6dc",
+      "termsSha256": "6a301cfe727d11851516b4cee94cd0f0a14be4b0f4ec9d1a7f65bb94206e962a",
+      "licenseText": "Use of the data are constrained only by the DNR GIS Data License Agreement. See the Distribution Liability section below for a link.",
+      "disclaimer": "Minnesota Department of Natural Resources General Data and Software License Agreement The Minnesota Department of Natural Resources (MNDNR) grants to you a personal, non-exclusive, non-transferrable, limited license to extract information from, use, reproduce, distribute, and modify data and/or software, in source and binary forms, with the acceptance of the following: Terms and Conditions of Use Data and/or software may be used for the creation of derivative works; however data and/or software in its entirety may not be resold, distributed or displayed for commercial purposes or otherwise. In the event that another more specific license agreement issued by the MNDNR is expressly associated with the data and/or software, the terms of the other license agreement prevail, and the terms expressed in this more general license agreement are null and void. The entire right, title and interest, including without limitation, all ownership rights and intellectual property rights in and to the data and/or software shall remain with the MNDNR. You agree to abide by copyright law and all other applicable laws of the United States as they apply to the data and software. An MNDNR copyright notice will be included, as appropriate; or MNDNR must be acknowledged as having contributed to any derivative work. MNDNR is not obligated to provide updates to the data and/or software whether or not other or newer versions become available. The use of the data or software for contract work with MNDNR does not relieve the contractor from any obligations assumed by the contract, or from complete and proper fulfillment of the terms of the contract. Map and geographic data should not be interpreted as establishing or describing legal boundaries or legal access and should not be used for navigational purposes. Map and geographic data should be used for reference only. Users of the data are responsible for verifying public land or water boundaries by observing boundary signs and markers, consulting official surveys and maps, and contacting local MNDNR offices. This license does not give the right to use the MNDNR name, marks, or any of its logos and is not an endorsement of the user's products. In States that do not allow the exclusion or limitation of incidental or consequential damages, you may not use these data and/or software. DISCLAIMER OF WARRANTIES AND LIMITATIONS OF LIABILITY Neither the state of Minnesota nor the Minnesota Department of Natural Resources, or their employees, make any representations or warranties, express or implied, with respect to the use of or reliance on the data and/or software provided herewith, regardless of its format or means of transmission. There are no guarantees or representations to the user as to the accuracy, currency, completeness, suitability or reliability of this data for any purpose. THE USER ACCEPTS THE DATA AND/OR SOFTWARE &quot;AS IS&quot; AND ASSUMES ALL RISKS ASSOCIATED WITH ITS USE. IN NO EVENT SHALL MNDNR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERS) ARISING IN ANY WAY OUT OF THE USE OF THIS DATA AND/OR SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE OR FOR ANY CLAIM BY ANY OTHER PARTY. Your use of the data and/or software is acceptance on your part of the terms and conditions set forth herein.",
+      "serviceItemId": "28d6a3aa5bc8431bb90af36ac80974af",
+      "idField": "objectid",
+      "pages": [
+        {
+          "count": 54,
+          "sha256": "f14516fbd620bcd2ee1ee6cabbe85bafb7e9ed9a5f3ecdb07c62717458956491",
+          "firstId": 1,
+          "lastId": 61
+        }
+      ],
+      "modifications": "Filtered visitor subset, technical/source fields excluded; Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 54,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "64e5e25888d273d7f3b3dd215e1ce932ed50a0ce4d0c7d15adb2a2c666ca88bd"
+    }
+  ],
+  "state": {
+    "code": "MN",
+    "fips": "27",
+    "name": "Minnesota"
+  },
+  "stateForestry": {
+    "agency": "Minnesota DNR Forestry Division",
+    "agencyUrl": "https://www.dnr.state.mn.us/forestry/index.html",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
+    "forestNamedPadusFeatureCount": 63,
+    "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
+    "sourceLineageFields": [
+      "Own_Name",
+      "Own_Type",
+      "Mang_Name",
+      "Mang_Type",
+      "GIS_Src",
+      "Agg_Src"
+    ],
+    "stateManagedPadusFeatureCount": 2284
+  },
+  "stateName": "Minnesota",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 25726,
+    "bytes": 39899338,
+    "sha256": "d0e8d3ad34976835d1f63a29dd6467b755ad4bf595def68f00d342b64ddcbedb"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 2,
+    "featureCount": 7872,
+    "sources": [
+      {
+        "id": "mn-dnr-hiking",
+        "url": "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/trans_state_park_trails_roads/FeatureServer/0",
+        "count": 7818,
+        "license": "MNDNR credited modified derivatives; reference only",
+        "attribution": "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement",
+        "sourceUpdated": "Not supplied"
+      },
+      {
+        "id": "mn-dnr-campgrounds",
+        "url": "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/struc_state_forest_campgrounds/FeatureServer/1",
+        "count": 54,
+        "license": "MNDNR credited modified derivatives; reference only",
+        "attribution": "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement",
+        "sourceUpdated": "Not supplied"
+      }
+    ],
+    "held": [
+      {
+        "state": "MN",
+        "source": "Minnesota DNR complete raw datasets / Forest Stand Inventory",
+        "reason": "Visitor hiking/campground derivatives are included. Entire source datasets remain excluded; forest stand inventory is not a visitor POI dataset."
+      }
+    ]
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 966,
+    "categoryCounts": {
+      "campsite": 501,
+      "tourist_attraction": 457,
+      "other": 8
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 87119,
+        "bytes": 12461453,
+        "sha256": "51a8360693172b6d15d935f13a490dab051ffa22eb58ff9b91ab787b51509d46",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 153889,
+        "bytes": 8620594,
+        "sha256": "5c00ff336eb9a43feab50e01c80f53f482a0fb9b9017fac41abb1887b36e29e4",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-003.geojson",
+        "featureCount": 4606,
+        "normalizedFeatureCount": 4606,
+        "positions": 179966,
+        "bytes": 6204131,
+        "sha256": "934c4135c4764bfd80370635b0379311cbd2f26eb285705a87039f77b755556a",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-004.geojson",
+        "featureCount": 1120,
+        "normalizedFeatureCount": 1120,
+        "positions": 154938,
+        "bytes": 3605355,
+        "sha256": "26bc7cf0f1355d9a4a12351392daa26abfb9104db324ec1e75fd5c856f12cc71",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
+  }
+}

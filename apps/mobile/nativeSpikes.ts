@@ -94,6 +94,11 @@ export interface Phase0PhysicalDiagnosticReport {
 }
 
 interface OpenOutdoorNativeSpikesModule {
+  readonly loadStatePackages: (registry: string) => Promise<string>;
+  readonly pickStatePackage: () => Promise<string | null>;
+  readonly changeStatePackage: (state: string, action: string) => Promise<string>;
+  readonly searchStatePackages: (query: string) => Promise<string>;
+  readonly statePackageDetail: (id: string) => Promise<string | null>;
   readonly pickMapDataset: () => Promise<{
     readonly id: string;
     readonly name: string;
@@ -152,6 +157,13 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 }
 
 export const nativeSpikes = {
+  statePackagesAvailable: typeof module?.loadStatePackages === 'function',
+  loadStatePackages: (registry: string) => requiredModule().loadStatePackages(registry),
+  pickStatePackage: () => requiredModule().pickStatePackage(),
+  changeStatePackage: (state: string, action: string) =>
+    requiredModule().changeStatePackage(state, action),
+  searchStatePackages: (query: string) => requiredModule().searchStatePackages(query),
+  statePackageDetail: (id: string) => requiredModule().statePackageDetail(id),
   mapImportAvailable: typeof module?.pickMapDataset === 'function',
   pickMapDataset: () => requiredModule().pickMapDataset(),
   loadMapDatasets: (): Promise<string | null> => requiredModule().loadMapDatasets(),

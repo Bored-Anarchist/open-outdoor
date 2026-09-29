@@ -29,3 +29,5 @@ jobs:
         run: pnpm install --frozen-lockfile
       - shell: bash
         run: pnpm test:privacy
+      - shell: bash
+        run: pnpm map:storage:verify

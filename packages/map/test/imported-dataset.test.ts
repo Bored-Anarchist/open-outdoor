@@ -17,6 +17,44 @@ const feature = (
 const point = { type: 'Point', coordinates: [-74, 42] };
 
 describe('on-device GeoJSON map datasets', () => {
+  it('preserves reference-only and separate source-license conditions through save/restore', () => {
+    const conditions = {
+      navigationAllowed: false,
+      dataLicense: 'MNDNR credited derivative',
+      dataAttribution: 'Minnesota Department of Natural Resources',
+      dataTermsUrl: 'https://www.dnr.state.mn.us/sitetools/data_software_license.html',
+      distributionConditions: 'Reference only; no navigation or legal access claim.',
+    };
+    const dataset = parseMapDataset(collection([feature(point, conditions)]), id, 'MN derivative');
+    const restored = restoreMapDatasets(serializeMapDatasets([dataset]));
+    expect(restored[0]?.index.features[0]?.properties).toMatchObject(conditions);
+    expect(restored[0]?.collection.features[0]?.properties).toMatchObject(conditions);
+  });
+  it('retains public source type and identity through local save and restore', () => {
+    const dataset = parseMapDataset(
+      collection([
+        feature(
+          point,
+          {
+            name: 'Synthetic public campground',
+            category: 'campsite',
+            sourceCategory: 'campground',
+            sourceId: 'usfs-recreation-sites',
+          },
+          'source-place',
+        ),
+      ]),
+      id,
+      'public part',
+    );
+    const restored = restoreMapDatasets(serializeMapDatasets([dataset]));
+    expect(restored[0]?.collection.features[0]?.properties).toMatchObject({
+      category: 'campsite',
+      sourceCategory: 'campground',
+      sourceId: 'imported-geojson',
+      upstreamSourceId: 'usfs-recreation-sites',
+    });
+  });
   it('imports points with private provenance, searchable names, categories and safe descriptions', () => {
     const dataset = parseMapDataset(
       collection([

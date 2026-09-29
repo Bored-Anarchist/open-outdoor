@@ -1,0 +1,142 @@
+{
+  "reviewedAt": "2026-09-28",
+  "scope": "Private validation of the 14 formerly unresolved Unconfirmed agency roles",
+  "resolutions": [
+    {
+      "parentId": "registry-ga-parks-d8134b1089",
+      "url": "https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.zip",
+      "format": "zip",
+      "reason": "Exact DNR lands shapefile archive linked to the source metadata; derived private layer selects DNR-owned names ending SP"
+    },
+    {
+      "parentId": "registry-ga-forestry-d8134b1089",
+      "url": "https://data.georgiaspatial.org/data/statewide/dnr/fed_lands/dnr20a.zip",
+      "format": "zip",
+      "reason": "Same lands archive; derived private layer selects Forestry Commission owner code 3200; visitor access unverified"
+    },
+    {
+      "parentId": "registry-id-forestry-d4f272bf30",
+      "url": "https://gis1.idl.idaho.gov/arcgis/rest/services/Portal/IDLPublicRecreation/MapServer/3",
+      "format": "arcgis-layer",
+      "reason": "Idaho Department of Lands recreation-area polygons replace forest-action-plan analytical layers"
+    },
+    {
+      "parentId": "registry-ks-forestry-19d710d58f",
+      "status": "wrong-subject",
+      "reason": "Linked RDS-2017-0025 is land-cover raster, not visitor data. Kansas Forest Service says Kansas has no public state forests, so no statewide agency forest visitor layer exists for this role",
+      "evidenceUrl": "https://www.k-state.edu/news/articles/2025/04/kansas-forest-service-protects-sustains-enhances-community-tree-resources.html"
+    },
+    {
+      "parentId": "registry-la-forestry-aa353df9f0",
+      "reason": "LDWF-owned WMA/Refuge boundary feed linked from the official LDWF web map; private selection retains Alexander State Forest only. LDAF is the forest manager; not a full Indian Creek facility inventory.",
+      "evidenceUrl": "https://www.ldaf.la.gov/indian-creek-recreation-area",
+      "candidateUrl": "https://www.wlf.louisiana.gov/page/wma-gis-data-download",
+      "url": "https://services1.arcgis.com/6euNCaGPCgCzgAVF/arcgis/rest/services/LDWF_WMA_Refuge/FeatureServer/0",
+      "format": "arcgis-layer",
+      "filter": {
+        "NAME": "Alexander State Forest WMA"
+      }
+    },
+    {
+      "parentId": "registry-md-parks-6bd7984882",
+      "reason": "Original exact campsite / DNR property endpoint recovered on 2026-09-28; previous planning replacements remain rejected",
+      "url": "https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/0",
+      "format": "arcgis-layer",
+      "stageId": "resolved-registry-md-parks-6bd7984882-recovered-2026-09-28"
+    },
+    {
+      "parentId": "registry-md-parks-supplement-eae7982bb5",
+      "reason": "Original exact campsite / DNR property endpoint recovered on 2026-09-28; previous planning replacements remain rejected",
+      "url": "https://dnr.geodata.md.gov/dnrdata/rest/services/AIMS/AIMStrailDataRO/MapServer/14",
+      "format": "arcgis-layer",
+      "stageId": "resolved-registry-md-parks-supplement-eae7982bb5-recovered-2026-09-28"
+    },
+    {
+      "parentId": "registry-md-forestry-196159b7be",
+      "url": "https://mdgeodata.md.gov/imap/rest/services/Environment/MD_ProtectedLands/FeatureServer/0",
+      "format": "arcgis-layer",
+      "filter": {
+        "ManagedBy": "Maryland Forest Service",
+        "LABEL": 1
+      },
+      "reason": "Maryland DNR lands filtered to state-owned Maryland Forest Service properties; access still needs field review"
+    },
+    {
+      "parentId": "registry-ne-forestry-ae46925d8b",
+      "status": "wrong-subject",
+      "reason": "Linked RDS-2019-0038 is land-cover research, not visitor data. Nebraska Forest Service's mission is forestry education/protection; Nebraska Game and Parks publishes the state recreation properties separately",
+      "evidenceUrl": "https://nebraskalegislature.gov/laws/statutes.php?statute=85-161"
+    },
+    {
+      "parentId": "registry-nc-forestry-0fbb9ebcbc",
+      "reason": "Historical NCFS visitor forest feed: nine retained records; excludes the obsolete Rendezvous Mountain record following the Parks transfer. Current Little Fork game-land boundary and public SPO Dan River/Backbone Ridge tracts are separately sourced.",
+      "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
+      "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open",
+      "url": "https://services6.arcgis.com/3Sj1fiIDvQtFfbvg/arcgis/rest/services/NCFS_StateForests/FeatureServer/0",
+      "format": "arcgis-layer",
+      "excludeFilter": {
+        "NCDA_NAME": "Rendezvous Mountain Educational State Forest"
+      }
+    },
+    {
+      "parentId": "registry-or-forestry-52c5dde8b7",
+      "url": "https://services.arcgis.com/uUvqNMGPm7axC2dD/ArcGIS/rest/services/ODF_Managed_Lands/FeatureServer/0",
+      "format": "arcgis-layer",
+      "reason": "Oregon Department of Forestry managed-lands polygon layer"
+    },
+    {
+      "parentId": "registry-tx-parks-supplement-54a5d37923",
+      "url": "https://tpwd.texas.gov/gis/data/baselayers/state-park-boundaries-zip/at_download/file",
+      "format": "zip",
+      "reason": "Exact TPWD state-park boundary ZIP linked from source page; derived private layer selects Open for Public Use; dated 2015"
+    },
+    {
+      "parentId": "registry-va-forestry-64d38891a6",
+      "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/VADOF_StateForestBoundary/FeatureServer/6",
+      "format": "arcgis-layer",
+      "reason": "Virginia Department of Forestry state-forest boundary layer"
+    },
+    {
+      "parentId": "registry-wv-forestry-8294f276ba",
+      "url": "https://appservices.wvgis.wvu.edu/arcgis/rest/services/PublicLands/PublicLands/MapServer/8",
+      "format": "arcgis-layer",
+      "reason": "WVU GIS State Forests PAD-US layer sourced from West Virginia Division of Forestry"
+    },
+    {
+      "parentId": "registry-nc-forestry-0fbb9ebcbc",
+      "reason": "Historical NCFS visitor forest feed: nine retained records; excludes the obsolete Rendezvous Mountain record following the Parks transfer. Current Little Fork game-land boundary and public SPO Dan River/Backbone Ridge tracts are separately sourced.",
+      "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
+      "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open",
+      "url": "https://services6.arcgis.com/3Sj1fiIDvQtFfbvg/arcgis/rest/services/NCFS_State_Forests_Points/FeatureServer/0",
+      "format": "arcgis-layer",
+      "stageId": "resolved-registry-nc-forestry-0fbb9ebcbc-points",
+      "excludeFilter": {
+        "NCDA_NAME": "Rendezvous Mountain Educational State Forest"
+      }
+    },
+    {
+      "parentId": "registry-nc-forestry-0fbb9ebcbc",
+      "stageId": "resolved-nc-little-fork-2026-09-28",
+      "url": "https://services1.arcgis.com/YfqBAUM5nWR3yhGP/arcgis/rest/services/gamelands_detail/FeatureServer/22",
+      "format": "arcgis-layer",
+      "where": "GML_HAB='Little Fork State Forest' AND GML_OWN='NC Forest Service'",
+      "fields": [
+        "OBJECTID",
+        "GML_HAB",
+        "GML_TYPE",
+        "GML_TRACT",
+        "GML_OWN",
+        "GML_STATUS",
+        "COUNTY",
+        "ACRES",
+        "GameLandID"
+      ],
+      "filter": {
+        "GML_HAB": "Little Fork State Forest",
+        "GML_OWN": "NC Forest Service"
+      },
+      "evidenceUrl": "https://www.ncwildlife.gov/hunting/where-hunt-shoot/game-lands-maps/mountain-game-land-maps",
+      "reason": "NCWRC current visitor game-land boundary of Little Fork State Forest, formerly part of Rendezvous Mountain. Exact subset only; no blanket recreational access or public redistribution claim."
+    }
+  ]
+}

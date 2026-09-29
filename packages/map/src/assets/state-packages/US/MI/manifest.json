@@ -1,0 +1,1022 @@
+{
+  "artifacts": {
+    "geojson": {
+      "file": "outdoors.geojson",
+      "featureCount": 31083,
+      "bytes": 45070588,
+      "sha256": "c367ebc511cda31dd6d5d3320191ada9d61ed0c10b39d5f67fef919682e18c88"
+    },
+    "index": {
+      "file": "index.json",
+      "bytes": 22451366,
+      "sha256": "150b349e1631dffb8fccb335fdd454eaf42a8cab5b0f54a62c4d93525078bfe0"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 4546,
+      "sha256": "6066f2f7dd6d1606d4f29f57c87f69d034a84763d30a9d48ca778673d47613e5"
+    }
+  },
+  "classification": "SOURCE_REDISTRIBUTABLE",
+  "coordinateReferenceSystem": "EPSG:4326",
+  "coverage": {
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
+    "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
+    "limitations": [
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
+    ]
+  },
+  "disclaimers": [
+    "Map display is informational and is not a legal access, property, camping, closure, fire, or safety determination.",
+    "Confirm current rules and conditions with the responsible land manager before travel."
+  ],
+  "distribution": "public",
+  "featureCount": 31083,
+  "generatedAt": "2026-09-29T01:00:55.779Z",
+  "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
+  "packageId": "outdoor-mi",
+  "rights": {
+    "attribution": [
+      "National Park Service",
+      "PAD-US data providers and state stewards",
+      "U.S. Department of Agriculture, Forest Service",
+      "U.S. Department of the Interior, Bureau of Land Management",
+      "U.S. Geological Survey Gap Analysis Project",
+      "Michigan Department of Natural Resources; data processed by Open Outdoor; no endorsement"
+    ],
+    "derivation": true,
+    "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
+    "offlineStorage": true,
+    "redistribution": true,
+    "reviewState": "National source terms and public-use basis recorded; state land records retain PAD-US source lineage. Direct state-layer review remains open.",
+    "sourceTerms": [
+      {
+        "id": "usgs-pad-us-fee-managers",
+        "url": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download"
+      },
+      {
+        "id": "nps-public-trails",
+        "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo"
+      },
+      {
+        "id": "nps-public-points-of-interest",
+        "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo"
+      },
+      {
+        "id": "usfs-national-forest-system-trails",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-recreation-sites",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-mvum-roads",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-mvum-trails",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "blm-surface-management-agency",
+        "url": "https://www.blm.gov/services/geospatial/GISData"
+      },
+      {
+        "id": "blm-public-recreation-sites",
+        "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "mi-dnr-hiking",
+        "url": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/info/iteminfo?f=json",
+        "license": "State of Michigan dataset-specific public-record terms; unrestricted use, reproduction and distribution",
+        "licenseUrl": null,
+        "distributionConditions": "Michigan DNR public-record dataset; use, reproduction and distribution unrestricted under the source terms. Provided AS IS; current access and conditions remain unverified. Source data are outside the project code license.",
+        "upstreamRightsStatus": "Permission required"
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "agency": "U.S. Geological Survey, Gap Analysis Project",
+      "attribution": [
+        "U.S. Geological Survey Gap Analysis Project",
+        "PAD-US data providers and state stewards"
+      ],
+      "fields": [
+        "OBJECTID",
+        "FeatClass",
+        "Category",
+        "Own_Type",
+        "Own_Name",
+        "Loc_Own",
+        "Mang_Type",
+        "Mang_Name",
+        "Loc_Mang",
+        "Des_Tp",
+        "Loc_Ds",
+        "Unit_Nm",
+        "Loc_Nm",
+        "State_Nm",
+        "Agg_Src",
+        "GIS_Src",
+        "Src_Date",
+        "GIS_Acres",
+        "Pub_Access",
+        "Access_Src",
+        "Access_Dt",
+        "Date_Est",
+        "Comments"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usgs-pad-us-fee-managers",
+      "inventoryFeatureCount": 5754,
+      "name": "USGS PAD-US fee managers",
+      "packagedFeatureCount": 5754,
+      "packagedFeatureSha256": "0e414cb19cbe1605dcb44d0b2a733188f2a2c5617ceb5cd6e41854d0a3676d9e",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 5754,
+      "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
+      "unreturnedFeatureCount": 0,
+      "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
+    },
+    {
+      "agency": "National Park Service",
+      "attribution": [
+        "National Park Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "TRLFEATTYPE",
+        "TRLNAME",
+        "TRLALTNAME",
+        "TRLSTATUS",
+        "TRLSURFACE",
+        "TRLTYPE",
+        "TRLCLASS",
+        "TRLUSE",
+        "PUBLICDISPLAY",
+        "DATAACCESS",
+        "ACCESSNOTES",
+        "ORIGINATOR",
+        "UNITCODE",
+        "UNITNAME",
+        "UNITTYPE",
+        "GROUPCODE",
+        "GROUPNAME",
+        "REGIONCODE",
+        "SOURCEDATE",
+        "OPENTOPUBLIC",
+        "SEASONAL",
+        "SEASDESC",
+        "MAINTAINER",
+        "NOTES",
+        "FEATUREID",
+        "MAPSOURCE"
+      ],
+      "filteredFeatureCount": 214,
+      "geometryPrecision": 5,
+      "id": "nps-public-trails",
+      "inventoryFeatureCount": 377,
+      "name": "NPS public trails",
+      "packagedFeatureCount": 163,
+      "packagedFeatureSha256": "45cc3dcf4b0c2433a40c5ffd1d84cf95d8e3b143e22c5b7bd60f9c1a0fddd6a5",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 377,
+      "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
+      "unreturnedFeatureCount": 0,
+      "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0"
+    },
+    {
+      "agency": "National Park Service",
+      "attribution": [
+        "National Park Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "POINAME",
+        "POIALTNAME",
+        "POITYPE",
+        "POISTATUS",
+        "PUBLICDISPLAY",
+        "DATAACCESS",
+        "ACCESSNOTES",
+        "ORIGINATOR",
+        "UNITCODE",
+        "UNITNAME",
+        "UNITTYPE",
+        "GROUPCODE",
+        "GROUPNAME",
+        "REGIONCODE",
+        "SOURCEDATE",
+        "OPENTOPUBLIC",
+        "SEASONAL",
+        "SEASDESC",
+        "MAINTAINER",
+        "NOTES",
+        "FEATUREID",
+        "MAPSOURCE"
+      ],
+      "filteredFeatureCount": 387,
+      "geometryPrecision": 5,
+      "id": "nps-public-points-of-interest",
+      "inventoryFeatureCount": 387,
+      "name": "NPS public points of interest",
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 387,
+      "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
+      "unreturnedFeatureCount": 0,
+      "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "trail_name",
+        "trail_type",
+        "trail_cn",
+        "admin_org",
+        "managing_org",
+        "security_id",
+        "attributesubset",
+        "national_trail_designation",
+        "trail_class",
+        "accessibility_status",
+        "trail_surface",
+        "surface_firmness",
+        "typical_trail_grade",
+        "typical_tread_width",
+        "special_mgmt_area",
+        "terra_motorized",
+        "snow_motorized",
+        "water_motorized",
+        "allowed_terra_use",
+        "hiker_pedestrian_managed",
+        "hiker_pedestrian_accpt",
+        "hiker_pedestrian_disc",
+        "hiker_pedestrian_restricted",
+        "bicycle_managed",
+        "bicycle_accpt",
+        "bicycle_disc",
+        "motorcycle_managed",
+        "motorcycle_accpt",
+        "atv_managed",
+        "atv_accpt",
+        "trail_no",
+        "gis_miles",
+        "e_bike_class1_managed",
+        "e_bike_class1_accpt",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "usfs-national-forest-system-trails",
+      "inventoryFeatureCount": 4951,
+      "name": "USFS National Forest System trails",
+      "packagedFeatureCount": 4951,
+      "packagedFeatureSha256": "83dd364ad72313bf4307a2372616fc362ab288fbefd816c6acdff93770fbc1df",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 4951,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_TrailNFSPublishWithDataStatus_01/MapServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "site_cn",
+        "region",
+        "site_id",
+        "site_name",
+        "site_type",
+        "activity_type_list",
+        "service_type_list",
+        "seasonal_operational_status",
+        "op_status_reason",
+        "development_status",
+        "development_scale",
+        "site_contact_notes",
+        "recarea_name",
+        "recarea_description",
+        "official_designation",
+        "fee_charged",
+        "fee_type",
+        "fee_description",
+        "operational_hours",
+        "open_season",
+        "best_season",
+        "busiest_season",
+        "maximum_elevation",
+        "minimum_elevation",
+        "important_info",
+        "restrictions",
+        "directions",
+        "latitude",
+        "longitude",
+        "states_spanned",
+        "infra_last_update",
+        "edw_last_modify",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "usfs-recreation-sites",
+      "inventoryFeatureCount": 597,
+      "name": "USFS recreation sites",
+      "packagedFeatureCount": 597,
+      "packagedFeatureSha256": "3687bbd2bcf498d8d49c22ae1b1d0b747a0a5be5cd102ef77ff4f272709795a6",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 597,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "rte_cn",
+        "id",
+        "name",
+        "bmp",
+        "emp",
+        "seg_length",
+        "gis_miles",
+        "mvum_symbol_name",
+        "jurisdiction",
+        "operationalmaintlevel",
+        "surfacetype",
+        "system",
+        "seasonal",
+        "passengervehicle",
+        "passengervehicle_datesopen",
+        "highclearancevehicle",
+        "highclearancevehicle_datesopen",
+        "truck",
+        "bus",
+        "motorhome",
+        "fourwd_gt50inches",
+        "atv",
+        "motorcycle",
+        "adminorg",
+        "districtname",
+        "forestname",
+        "routestatus",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usfs-mvum-roads",
+      "inventoryFeatureCount": 6792,
+      "name": "USFS motor vehicle use map roads",
+      "packagedFeatureCount": 6792,
+      "packagedFeatureSha256": "67d76fd4ef7e631e4aaaec714d07db9532fcf2729cc132a2b173ad2e1b591f85",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 6792,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/1"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "rte_cn",
+        "id",
+        "name",
+        "bmp",
+        "emp",
+        "seg_length",
+        "gis_miles",
+        "mvum_symbol_name",
+        "jurisdiction",
+        "seasonal",
+        "passengervehicle",
+        "passengervehicle_datesopen",
+        "highclearancevehicle",
+        "highclearancevehicle_datesopen",
+        "truck",
+        "bus",
+        "motorhome",
+        "fourwd_gt50inches",
+        "atv",
+        "motorcycle",
+        "adminorg",
+        "districtname",
+        "forestname",
+        "trailstatus",
+        "trailsystem",
+        "trailclass",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usfs-mvum-trails",
+      "inventoryFeatureCount": 3366,
+      "name": "USFS motor vehicle use map trails",
+      "packagedFeatureCount": 3366,
+      "packagedFeatureSha256": "8b2ea2d844cba5be31a722f2b62b5b836fe0596233c10cec26855078845b68f9",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 3366,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/2"
+    },
+    {
+      "agency": "U.S. Department of the Interior, Bureau of Land Management",
+      "attribution": [
+        "U.S. Department of the Interior, Bureau of Land Management"
+      ],
+      "fields": [
+        "OBJECTID",
+        "SMA_ID",
+        "ADMIN_DEPT_CODE",
+        "ADMIN_AGENCY_CODE",
+        "ADMIN_UNIT_NAME",
+        "ADMIN_UNIT_TYPE",
+        "HOLD_ID",
+        "HOLD_DEPT_CODE",
+        "HOLD_AGENCY_CODE",
+        "ADMIN_ST",
+        "FAU_ID"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "blm-surface-management-agency",
+      "inventoryFeatureCount": 0,
+      "name": "BLM surface management agency boundaries",
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 0,
+      "terms": "https://www.blm.gov/services/geospatial/GISData",
+      "unreturnedFeatureCount": 0,
+      "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1"
+    },
+    {
+      "agency": "U.S. Department of the Interior, Bureau of Land Management",
+      "attribution": [
+        "U.S. Department of the Interior, Bureau of Land Management"
+      ],
+      "fields": [
+        "OBJECTID",
+        "FET_TYPE",
+        "FET_SUBTYPE",
+        "FET_NAME",
+        "ADM_UNIT_CD",
+        "ADMIN_ST",
+        "DESCRIPTION",
+        "WEB_LINK",
+        "UNIT_NAME",
+        "SOURCE",
+        "WEB_DISPLAY"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "blm-public-recreation-sites",
+      "inventoryFeatureCount": 0,
+      "name": "BLM public recreation sites",
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 0,
+      "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
+      "unreturnedFeatureCount": 0,
+      "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "mi-dnr-hiking",
+      "state": "MI",
+      "name": "Michigan DNR Hiking Trails",
+      "basisUrl": "https://www.michigan.gov/dnr/places/state-trails",
+      "url": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "termsUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/info/iteminfo?f=json",
+      "rightsClearance": "dataset-specific-public-record-license-2026-09-28",
+      "license": "State of Michigan dataset-specific public-record terms; unrestricted use, reproduction and distribution",
+      "attribution": "Michigan Department of Natural Resources; data processed by Open Outdoor; no endorsement",
+      "fields": [
+        "OBJECTID",
+        "DNRTrail",
+        "PRDManagementUnit",
+        "PRDTrailUnit",
+        "TrailSiteType",
+        "TrailApprovalStatus",
+        "TrailUseCategory",
+        "OpenClosedStatusNonmotor",
+        "OpenClosedStatusORV",
+        "OpenClosedStatusSnowmobile",
+        "Hiking",
+        "HikingName",
+        "TrailNamePrimary",
+        "SurfaceType",
+        "TrailWidthFeet",
+        "TrailOnRoad",
+        "ADAAccessible",
+        "TrailTreadType",
+        "SegmentLengthMiles",
+        "PublicComments",
+        "RailtrailType",
+        "RailGradeName",
+        "TrailROW",
+        "TrailOwnership",
+        "TrailAdministrator",
+        "TrailNetwork",
+        "SpecialRestrictionType",
+        "SpecialDesignation",
+        "LicenseType",
+        "Lighted",
+        "NonmotorizedBrushSign",
+        "Peninsula",
+        "County",
+        "RecreationSearchFacilityID",
+        "RecreationSearchTrailID",
+        "FacilityType",
+        "FacilityName",
+        "SiteType",
+        "SiteName",
+        "GlobalID",
+        "created_date",
+        "last_edited_date",
+        "Shape__Length"
+      ],
+      "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Permission required",
+      "rightsResolution": "dataset-specific-license-overrides-general-website-policy",
+      "distributionConditions": "Michigan DNR public-record dataset; use, reproduction and distribution unrestricted under the source terms. Provided AS IS; current access and conditions remain unverified. Source data are outside the project code license.",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-29T00:43:50.528Z",
+      "sourceUpdated": "Not supplied",
+      "featureCount": 9460,
+      "bytes": 9534565,
+      "sha256": "b3f5f964fb318cb5261557793b4efbfdeb230106b55843eb63e9af5b51dd66de",
+      "metadataSha256": "1100fe4606a65b9f146989a4599d7df1bad117b262ad0b2c7131116496667095",
+      "termsSha256": "37594eb88611945a488f4caf8aac19c61d0ee87e1bb767e7c7f783690d4242f6",
+      "licenseText": "<div style='text-align:Left;'><div><div><p><span>This dataset is a public record and, as more fully described below, there are no restrictions on the use, reproduction, or distribution of this dataset. Notwithstanding the foregoing, the public release of this dataset should not be construed, expressed or implied, as to whether any use constitutes a legally permissible purpose. It is the sole responsibility of the user to determine if the data is usable for their purposes. This dataset is provided “AS IS” and on an “AS AVAILABLE” basis. The State of Michigan (“State”) makes no warranties, express or implied, regarding the accuracy, adequacy, reliability, timeliness, or completeness of this dataset. The State also does not make any warranties, express or implied, for the continued quality, accuracy, or currency of this dataset after it has been downloaded, nor the quality or accuracy of any analyses or re-uses of this dataset. THE STATE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS DATASET AND ANY INFORMATION PROVIDED TO YOU, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT OF PROPRIETARY RIGHTS. THE STATE WILL NOT BE LIABLE, REGARDLESS OF THE FORM OF ACTION, WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY OR BY STATUTE OR OTHERWISE, FOR ANY CLAIM FOR CONSEQUENTIAL, INCIDENTAL, INDIRECT, OR SPECIAL DAMAGES, INCLUDING WITHOUT LIMITATION LOST PROFITS AND LOST BUSINESS OPPORTUNITIES, RELATED TO THE ACCESS OR USE OF THIS DATASET. IN NO EVENT WILL THE STATE BE LIABLE FOR ANY AMOUNTS THAT MAY RESULT FROM THE ACCESS OR USE OF THIS DATASET, REGARDLESS OF THE FORM OF ACTION, WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR BY STATUTE OR OTHERWISE. You forever release the State, its departments, subdivisions, officers, and employees from all claims, rights, actions, demands, damages, liabilities, expenses and fees, which arise out of or relate to your access or use of this dataset. You must defend, indemnify and hold the State, its departments, subdivisions, officers, and employees harmless, without limitation, from and against all actions, claims, losses, liabilities, damages, costs, attorney fees, and expenses (including those required to establish the right to indemnification) arising out of or relating to your access or use of this dataset. The State reserves the right to modify or remove this dataset for any reason, without notice, at any time. Nothing in these terms constitutes or is intended to be a limitation upon, or waiver of, any privileges and immunities that apply to the State. These terms are governed by and interpreted under the laws of the State of Michigan without regard to conflict of laws provisions. These terms do not apply to other materials or content, including maps or logos, that may be located on the site or portal containing this dataset and that may be protected by intellectual property rights such copyright, trademark, or patent. Nothing in these terms should be construed, expressed or implied, as impacting any existing rights or licenses in such materials or content, if any.</span></p></div></div></div>",
+      "serviceItemId": null,
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "5d5f274ffa31f02d3ccd200543b50548703a3268294093b873575073a205a9bf",
+          "firstId": 15,
+          "lastId": 637
+        },
+        {
+          "count": 200,
+          "sha256": "446ce1fdefed7d6ba48c5effea9c3c694aa8466983ed4d1cfe8d01870b76d874",
+          "firstId": 638,
+          "lastId": 851
+        },
+        {
+          "count": 200,
+          "sha256": "dd791fb61e541b509f4df7820efe88ff4807533fd69b1fb87a3de329b81f12aa",
+          "firstId": 852,
+          "lastId": 1065
+        },
+        {
+          "count": 200,
+          "sha256": "8c80f2b93f3a5ff77f341d04839d179db351efcbd72de6ad97b7dd30506a94c7",
+          "firstId": 1066,
+          "lastId": 1304
+        },
+        {
+          "count": 200,
+          "sha256": "ce19534c2ed1ee03083837ee42f6936fa0da95a3c698d0f9529d1d4605186d62",
+          "firstId": 1305,
+          "lastId": 1515
+        },
+        {
+          "count": 200,
+          "sha256": "01597c90dfef16ba3667e56062a15db29fb79cac13c2f268c3ec3c61f2851043",
+          "firstId": 1516,
+          "lastId": 1729
+        },
+        {
+          "count": 200,
+          "sha256": "461bfd7496f89fe2ac54441ae401fcf8626cb49c2693949e67919b0eee9d9cfd",
+          "firstId": 1730,
+          "lastId": 1940
+        },
+        {
+          "count": 200,
+          "sha256": "903d1394f38d7f1069ac3db1669e274df3ff241b595d1381a1d5be6dbe56ef81",
+          "firstId": 1942,
+          "lastId": 2145
+        },
+        {
+          "count": 200,
+          "sha256": "7f488a7e08dce5e3c4e4deb97db7786f19124a3c88b917f8a070634be9c49968",
+          "firstId": 2146,
+          "lastId": 2378
+        },
+        {
+          "count": 200,
+          "sha256": "dac85a7a64a1121feb4b40e134ac836e2f039168db57381b0774e1344be325f7",
+          "firstId": 2379,
+          "lastId": 3376
+        },
+        {
+          "count": 200,
+          "sha256": "a4301e711f930e3dcece2afc05ed57f087f2b3b632855d04c17500753d17d113",
+          "firstId": 3377,
+          "lastId": 3771
+        },
+        {
+          "count": 200,
+          "sha256": "72193ae8dfa53aea9ab18d8f40571df117f6a116670631c63d4d053d37743dcd",
+          "firstId": 3772,
+          "lastId": 3979
+        },
+        {
+          "count": 200,
+          "sha256": "a95d2d70c60cbcf86625b4dd3bc72888bbbf26d60ea2fa916faf21dbaccde12b",
+          "firstId": 3980,
+          "lastId": 4203
+        },
+        {
+          "count": 200,
+          "sha256": "8e223752cada989fcf2f7c7c3dd0eb34f6e1c01d361c839ce2feb6358349ffc7",
+          "firstId": 4204,
+          "lastId": 4480
+        },
+        {
+          "count": 200,
+          "sha256": "8df0c0c977dc8df561951a410bd846de7ff72d7ad1ac0556fc4add35844632a9",
+          "firstId": 4481,
+          "lastId": 4785
+        },
+        {
+          "count": 200,
+          "sha256": "3c224c8b1dc36a2a366cd8171ab95918ca298ff4a14a7d3786f2cc7eb7bb74cd",
+          "firstId": 4792,
+          "lastId": 5021
+        },
+        {
+          "count": 200,
+          "sha256": "25b9a548daaedd40d7830a2645e90a666d39a72ed3e64148297fb54349df2305",
+          "firstId": 5022,
+          "lastId": 5259
+        },
+        {
+          "count": 200,
+          "sha256": "eed01f0a936f0f5dd73c08504fdafa4a582f2405045974bda2cc4f17d79acb1d",
+          "firstId": 5260,
+          "lastId": 5680
+        },
+        {
+          "count": 200,
+          "sha256": "ab96a2bfbd295d418120753efff58a32f531df13ab8ca1b9105cfabbc2a9af24",
+          "firstId": 5681,
+          "lastId": 5883
+        },
+        {
+          "count": 200,
+          "sha256": "c2bb477f1831052501b83b25f87a948bac5ea17317de6c7fc08b6e881bf4dda9",
+          "firstId": 5884,
+          "lastId": 6093
+        },
+        {
+          "count": 200,
+          "sha256": "24123e2a686a4feda1524bed27a95e9395439a4d7fd3604be295297b7c160b6f",
+          "firstId": 6094,
+          "lastId": 6299
+        },
+        {
+          "count": 200,
+          "sha256": "01e79477a5d27038276780f8f30f1dc7ce993bd45cfe08b4d0215be14642710a",
+          "firstId": 6300,
+          "lastId": 6524
+        },
+        {
+          "count": 200,
+          "sha256": "67b0539750ad3257ba8fffa16a2405cbf559ddb0f1d57b5e4756ab2802148f56",
+          "firstId": 6525,
+          "lastId": 6756
+        },
+        {
+          "count": 200,
+          "sha256": "ac50fb6c4f3ead15fcee387d5494352d7872394d2eb1c57be7089713dcd9f4e5",
+          "firstId": 6757,
+          "lastId": 6995
+        },
+        {
+          "count": 200,
+          "sha256": "3e1bd5e8f123d55a55f0473e01d951bef2be93f25a20e7731bd53882fff878a5",
+          "firstId": 6996,
+          "lastId": 7426
+        },
+        {
+          "count": 200,
+          "sha256": "934b500e53a078ec10aaaf4ef48da190601d07593f4b9932e5bde23b5ac7f027",
+          "firstId": 7427,
+          "lastId": 7769
+        },
+        {
+          "count": 200,
+          "sha256": "cb4e61a94945801a5c9df05e5bb62fc9ba17669613bf655a4789cfbf95247c31",
+          "firstId": 7770,
+          "lastId": 8048
+        },
+        {
+          "count": 200,
+          "sha256": "20e86413b4ef2c1d0374b3ad38e56588341c069be6c22d52f20231f4ff903780",
+          "firstId": 8049,
+          "lastId": 8462
+        },
+        {
+          "count": 200,
+          "sha256": "c013a1afba22b56714d252848a02e37cf77e6a3d283842b2cc05a63272588582",
+          "firstId": 8463,
+          "lastId": 8665
+        },
+        {
+          "count": 200,
+          "sha256": "133ab158e3e035753ff3e81dc143b30409df1bb4ab3a2a254f82f7181a0aba24",
+          "firstId": 8668,
+          "lastId": 8908
+        },
+        {
+          "count": 200,
+          "sha256": "e9f951e812f38d21dc8d4eeb7409a5285f1f093cae772deb3e8bc429761f6c04",
+          "firstId": 8909,
+          "lastId": 9168
+        },
+        {
+          "count": 200,
+          "sha256": "ca03e7395bf839a2c9cd40bd50132a976e4e200393869c09d289a7f5792c8b3a",
+          "firstId": 9169,
+          "lastId": 9471
+        },
+        {
+          "count": 200,
+          "sha256": "c5161bf6aa31c7866b6c5fa5199d2a6fe129eeb2a431490060bbf08220e32324",
+          "firstId": 9472,
+          "lastId": 9695
+        },
+        {
+          "count": 200,
+          "sha256": "f8f8868ba685c4d95e83222e5359eedbac9a29f7afba4816e20c4733f8165f2b",
+          "firstId": 9696,
+          "lastId": 12132
+        },
+        {
+          "count": 200,
+          "sha256": "43bc5665398d819131cb3d491fac76405258d2bbf638430513cfc5e594ae0b46",
+          "firstId": 12135,
+          "lastId": 13203
+        },
+        {
+          "count": 200,
+          "sha256": "b3a92ce9f5c531592462f2002d034d511722d6fb4cd2b274151ef614047f11a7",
+          "firstId": 13204,
+          "lastId": 13759
+        },
+        {
+          "count": 200,
+          "sha256": "995e6611031062fe0dcc692616453bf9f9dd2c76ba48219a3109971be9526c53",
+          "firstId": 13760,
+          "lastId": 14528
+        },
+        {
+          "count": 200,
+          "sha256": "a953d43a032dc129cd0d0d7f3a22e03109cb2e86fa13af436e22ada63cfc924f",
+          "firstId": 14599,
+          "lastId": 14974
+        },
+        {
+          "count": 200,
+          "sha256": "6e92d6bc4c2e2fc86b5b795b8754069a7ad3b7025327f571972b08b75ceac6bc",
+          "firstId": 14975,
+          "lastId": 15582
+        },
+        {
+          "count": 200,
+          "sha256": "cfd21f56f1309a8943580c487430518e956a4e1f185d31657615901c01bc9837",
+          "firstId": 15583,
+          "lastId": 15924
+        },
+        {
+          "count": 200,
+          "sha256": "1abcc786e7925e5251987c6d782aaa1b7d73c84ee02fb9e7139d489cfe808ab6",
+          "firstId": 15925,
+          "lastId": 16186
+        },
+        {
+          "count": 200,
+          "sha256": "9fcfa113bc08535b3e7dab52a444f1e86e5da8e152ddc2e5fabe1ad7c7d69eb9",
+          "firstId": 16187,
+          "lastId": 16482
+        },
+        {
+          "count": 200,
+          "sha256": "1ebde8f375db109a66a27bea879ede5d94e69db6215f9ce779380905f0d21838",
+          "firstId": 16483,
+          "lastId": 17297
+        },
+        {
+          "count": 200,
+          "sha256": "ed26c38316a15f5b966b1cebaad20cff95433f5614df93c268e8ccdd9eff9da6",
+          "firstId": 17298,
+          "lastId": 18207
+        },
+        {
+          "count": 200,
+          "sha256": "ddd26a663166adf8f9d1279cb8b8fbb6352f313ae2df849113155df42cde80b8",
+          "firstId": 18211,
+          "lastId": 18896
+        },
+        {
+          "count": 200,
+          "sha256": "a6e7a77e70be8061ca7bcc751938ec334415e4f4f931f41df261808f3d8cc80f",
+          "firstId": 18897,
+          "lastId": 19569
+        },
+        {
+          "count": 200,
+          "sha256": "dd75aa87cd0b967f8922158dc7ec562f7a198721f29598c13773ccd4bb769799",
+          "firstId": 19570,
+          "lastId": 126155
+        },
+        {
+          "count": 60,
+          "sha256": "5a680585131ed6a93c1c825efb65babd5ed776cc7da878dab5463b017c949bcf",
+          "firstId": 126598,
+          "lastId": 150221
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 9460,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "0c30da30f7fdc748f18fbf512ea02600bd71cae5433294c4c6dd19a60274140c"
+    }
+  ],
+  "state": {
+    "code": "MI",
+    "fips": "26",
+    "name": "Michigan"
+  },
+  "stateForestry": {
+    "agency": "Michigan DNR Forest Resources Division",
+    "agencyUrl": "https://www.michigan.gov/dnr/managing-resources/forestry",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
+    "forestNamedPadusFeatureCount": 40,
+    "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
+    "sourceLineageFields": [
+      "Own_Name",
+      "Own_Type",
+      "Mang_Name",
+      "Mang_Type",
+      "GIS_Src",
+      "Agg_Src"
+    ],
+    "stateManagedPadusFeatureCount": 624
+  },
+  "stateName": "Michigan",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 31083,
+    "bytes": 45070588,
+    "sha256": "c367ebc511cda31dd6d5d3320191ada9d61ed0c10b39d5f67fef919682e18c88"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 1,
+    "featureCount": 9460,
+    "sources": [
+      {
+        "id": "mi-dnr-hiking",
+        "url": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+        "count": 9460,
+        "license": "State of Michigan dataset-specific public-record terms; unrestricted use, reproduction and distribution",
+        "attribution": "Michigan Department of Natural Resources; data processed by Open Outdoor; no endorsement",
+        "sourceUpdated": "Not supplied"
+      }
+    ],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 597,
+    "categoryCounts": {
+      "tourist_attraction": 398,
+      "campsite": 180,
+      "hotel": 7,
+      "other": 12
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 8431,
+        "normalizedFeatureCount": 8431,
+        "positions": 122095,
+        "bytes": 12573372,
+        "sha256": "71e781aa8fb078130e86672cf3b245d9fa2602ba4ba85b8802f51de6d7bf6cf3",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 10000,
+        "normalizedFeatureCount": 10000,
+        "positions": 73303,
+        "bytes": 7124324,
+        "sha256": "c42424fb097da6051592692d510123251ebbe21b6276198749de75db1a70354e",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-003.geojson",
+        "featureCount": 8886,
+        "normalizedFeatureCount": 8886,
+        "positions": 179997,
+        "bytes": 8755246,
+        "sha256": "6607bf94aa88d808b623f11e3e3ab75740f8c590bbf02bf438386df9b89a8a0b",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-004.geojson",
+        "featureCount": 3766,
+        "normalizedFeatureCount": 3766,
+        "positions": 151411,
+        "bytes": 5093328,
+        "sha256": "00a1526beb2d3372244769a90ada5485926b3e673b9e660e09e3b93c1841de97",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
+  }
+}

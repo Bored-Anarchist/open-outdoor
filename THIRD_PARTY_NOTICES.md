@@ -36,3 +36,24 @@ WP-502/WP-503 add axe-core 4.13.0 (MPL-2.0) and React/React Test Renderer 19.2.3
 - New York GIS snapshot: NYS ITS Geospatial Services boundary and New York State Department of Environmental Conservation lands, roads and hiking trails. Exact source endpoints, dated page receipts, checksum, rights basis and attribution are recorded in `packages/map/src/assets/new-york-outdoors.manifest.json`. Public offline/source/binary redistribution follows the existing authorized NYS source registry and public GIS terms: https://gis.ny.gov/disclaimer and https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS. Modified by field selection, geometry simplification and normalization; provided without warranty and not a legal survey or access authorization. No personal data or special retention obligation is introduced. Attribution appears beneath the map; these notices accompany source and distribution documentation.
 
 The app includes the native renderer license text alongside map attribution. Preview-only GL JS notices remain in development/source distribution. Transitive licenses remain subject to the release SBOM and independent rights review; this addition does not mark that review complete.
+
+## Public state catalogs and build tooling (reviewed 2026-09-27)
+
+The current public New York snapshot supersedes the earlier snapshot described above: DEC records and hike profiles are held in the private system. Its 326 public features contain the civil boundary and eligible federal records. All 50 public states retain their exact source receipts, rights classifications, attribution and full `DATA_NOTICES.md` under `packages/map/src/assets/state-packages/US/<state>/`; the SQLite loader embeds those notices and exposes them in the app. Converting the public GeoJSON to indexed SQLite and simplified display tiles does not change the original data license or access limitations. No iOverlander source records or permission-held agency datasets are included in these public catalogs.
+
+The following unmodified Python packages are build-only tools, pinned in `tools/state-loader-requirements.txt` and installed locally in a Git-ignored directory. Their code and native libraries are not embedded in the catalogs or mobile app. Canonical licenses accompany the installed distributions; redistribution of the tools themselves must retain the applicable full license and copyright notices. No additional retention or deletion obligation is introduced by these direct tools.
+
+| Tool and owner | Exact version | License and canonical source | Modifications / distribution |
+| --- | --- | --- | --- |
+| mapbox-vector-tile, Tilezen contributors | 2.2.0 | [MIT](https://github.com/tilezen/mapbox-vector-tile/blob/master/LICENSE) | Unmodified development dependency; license permits source/binary redistribution with notices. |
+| pmtiles, Protomaps LLC | 3.7.0 | [BSD-3-Clause](https://github.com/protomaps/PMTiles/blob/main/LICENSE) | Unmodified development dependency; license permits source/binary redistribution with notices. |
+| Shapely, Sean Gillies and contributors | 2.1.2 | [BSD-3-Clause](https://github.com/shapely/shapely/blob/2.1.2/LICENSE.txt) | Unmodified development dependency; its GEOS/native wheel notices remain with the local install. |
+| pyproj, Jeffrey Whitaker and contributors | 3.7.2 | [MIT](https://github.com/pyproj4/pyproj/blob/3.7.2/LICENSE) | Unmodified development dependency; its PROJ/native wheel notices remain with the local install. |
+
+The application continues to use its existing platform SQLite and MapLibre runtime dependencies. Build-environment transitive dependencies and native wheel contents must be included when generating the build SBOM; this record does not claim a completed independent release audit.
+
+## Minnesota and Virginia conditional public agency derivatives
+
+Minnesota Department of Natural Resources (MNDNR): selected State Park Trails and Roads hiking records and State Forest Campgrounds visitor records. [MNDNR GIS terms](https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html) remain applicable: credited modified subsets, reference only, no navigation or legal-boundary/access use, no endorsement. Entire source datasets and Forest Stand Inventory are excluded. Complete terms and exact evidence are carried in the Minnesota package notices and acquisition receipts.
+
+Virginia Department of Conservation and Recreation (DCR): State Park Trails and State Park Boundaries. Redistribution for profit is prohibited; these processed data are distributed for this noncommercial application with DCR credit and separate source terms. They are outside the project code license. See [the conditional public-data review](docs/CONDITIONAL_PUBLIC_DATA_2026-09-28.md) and the Virginia package DATA_NOTICES.md.

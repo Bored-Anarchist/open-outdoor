@@ -1,0 +1,491 @@
+{
+  "schemaVersion": 1,
+  "classification": "SOURCE_REDISTRIBUTABLE",
+  "acquiredAt": "2026-09-16T09:29:28.517Z",
+  "sha256": "0248177d6195f0fcd9cf1282f761806b829b786e31fa959035a558e635abd89e",
+  "bytes": 1634780,
+  "indexSha256": "ae3bd7f4938f228326a0bb290f1ab536dfb1705bcd81aba98612bf67c4037883",
+  "indexBytes": 288520,
+  "featureCount": 326,
+  "coordinateReferenceSystem": "EPSG:4326",
+  "simplificationDegrees": 0.00003,
+  "geometryPrecision": 5,
+  "coverage": {
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
+    "limitations": [
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+    ]
+  },
+  "rights": {
+    "license": "United States government public information; NYS civil boundaries general-use data",
+    "offlineStorage": true,
+    "redistribution": true,
+    "derivedData": true,
+    "attribution": [
+      "NYS ITS Geospatial Services",
+      "National Park Service",
+      "USDA Forest Service",
+      "Bureau of Land Management"
+    ],
+    "terms": [
+      "https://gis.ny.gov/civil-boundaries",
+      "https://www.nps.gov/aboutus/disclaimer.htm",
+      "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "https://www.blm.gov/services/geospatial/GISData"
+    ],
+    "reviewedAt": "2026-09-27",
+    "sourceTerms": []
+  },
+  "sources": [
+    {
+      "id": "nys-boundary",
+      "kind": "boundary",
+      "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0",
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "DATEMOD"
+      ],
+      "attribution": "NYS ITS Geospatial Services",
+      "featureCount": 1,
+      "inventorySha256": "1cdb82d29226b6f6577db63ec7ed10c00188e36164f977c46a4f35354a3ca105",
+      "pages": [
+        {
+          "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0/query?objectIds=1&outFields=OBJECTID%2CNAME%2CDATEMOD&outSR=4326&returnGeometry=true&geometryPrecision=5&maxAllowableOffset=0.00003&f=geojson",
+          "sha256": "d80d0cd81de3bd1b686f61aa1599a923758be5ec1f1d475d6fa37aa8f1c16105",
+          "count": 1
+        }
+      ],
+      "packagedFeatureCount": 1,
+      "packagedFeatureSha256": "dc6345047cf90f72e9a021df6f3230f774db49f867486b17acea007f75f9ff8d"
+    },
+    {
+      "id": "nps-parks-ny",
+      "kind": "land-and-poi",
+      "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "National Park Service",
+      "featureCount": 60,
+      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "pages": [
+        {
+          "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "count": 28
+        },
+        {
+          "url": "https://developer.nps.gov/api/v1/mapdata/parkboundaries/{parkCode}",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "count": 32
+        }
+      ],
+      "packagedFeatureCount": 60,
+      "packagedFeatureSha256": "6ac26a1ff2ac910fdbc3352d77f06fcfce3e2dbcded9bd075000a7594624e425"
+    },
+    {
+      "id": "nps-campgrounds-ny",
+      "kind": "poi",
+      "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "National Park Service",
+      "featureCount": 4,
+      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "pages": [
+        {
+          "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "count": 4
+        }
+      ],
+      "packagedFeatureCount": 4,
+      "packagedFeatureSha256": "3597b1aa3a8ece37c640c7532078e5d057eb45f9d5ee749ed8274e1ad3e2b487"
+    },
+    {
+      "id": "nps-alerts-ny",
+      "kind": "poi",
+      "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "National Park Service",
+      "featureCount": 24,
+      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "pages": [
+        {
+          "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY",
+          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "count": 24
+        }
+      ],
+      "packagedFeatureCount": 24,
+      "packagedFeatureSha256": "e1ec10a228c8a7053491eb1dcebfd45977c27bd9ce4875195c31d1fe47d1a07d"
+    },
+    {
+      "id": "usfs-surface-ownership-ny",
+      "kind": "land",
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_SurfaceOwnership_01/MapServer/0",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 200,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_SurfaceOwnership_01/MapServer/0",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 200
+        }
+      ],
+      "packagedFeatureCount": 200,
+      "packagedFeatureSha256": "45c2eff493d71e3deb1b0913e00d91f56e8a302da7f141e156376bd6e9f834ad"
+    },
+    {
+      "id": "usfs-recreation-sites-ny",
+      "kind": "poi",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 25,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 25
+        }
+      ],
+      "packagedFeatureCount": 25,
+      "packagedFeatureSha256": "bb9922e14285b9b0fa16bc5d93252733e82db3c70f9c8ab460388e5f8bd48622"
+    },
+    {
+      "id": "usfs-mvum-roads-ny",
+      "kind": "road",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/1",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 12,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/1",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 12
+        }
+      ],
+      "packagedFeatureCount": 12,
+      "packagedFeatureSha256": "4ea3c91c98e24f945bb18838443c04bf44928acb478fe7ee58859e30baa4f564"
+    },
+    {
+      "id": "usfs-mvum-trails-ny",
+      "kind": "trail",
+      "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/2",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "USDA Forest Service",
+      "featureCount": 0,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/2",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 0
+        }
+      ],
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "id": "blm-managed-lands-ny",
+      "kind": "land",
+      "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1",
+      "fields": [
+        "id",
+        "kind",
+        "name",
+        "sourceId",
+        "unit",
+        "category",
+        "publicUse",
+        "sourceUpdated",
+        "sourceUrl",
+        "origin",
+        "description",
+        "directionsInfo",
+        "amenities",
+        "openingHours",
+        "fees"
+      ],
+      "attribution": "Bureau of Land Management",
+      "featureCount": 0,
+      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "pages": [
+        {
+          "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1",
+          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "count": 0
+        }
+      ],
+      "packagedFeatureCount": 0,
+      "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  ],
+  "catalogSources": [
+    {
+      "id": "nys-boundary",
+      "label": "NYS ITS civil boundary",
+      "featureCount": 1,
+      "status": "public planning and general-use boundary"
+    },
+    {
+      "id": "nps",
+      "label": "National Park Service",
+      "featureCount": 88,
+      "status": "official parks, campgrounds, alerts and boundaries"
+    },
+    {
+      "id": "usfs",
+      "label": "US Forest Service",
+      "featureCount": 237,
+      "status": "official ownership, recreation and MVUM snapshot"
+    },
+    {
+      "id": "blm",
+      "label": "Bureau of Land Management",
+      "featureCount": 0,
+      "status": "official New York query verified; no managed-land features returned"
+    }
+  ],
+  "officialSnapshots": {
+    "nps": {
+      "file": "nps-new-york.json",
+      "bytes": 4217600,
+      "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "manifestFile": "manifest.json",
+      "manifestBytes": 719,
+      "manifestSha256": "718a9a01f0924c1a38af61c2144b5b34bfa7bf5c9b2b1a4efdb62393b02d83ef"
+    },
+    "federal": {
+      "file": "federal-new-york.json",
+      "bytes": 200059,
+      "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "manifestFile": "manifest.json",
+      "manifestBytes": 1471,
+      "manifestSha256": "62025b8b7abed0042d9d5fdbf61697cb7f8a66666f8b8be7423c4b8a1b783852"
+    }
+  },
+  "packageId": "outdoor-ny",
+  "state": {
+    "code": "NY",
+    "fips": "36",
+    "name": "New York"
+  },
+  "stateName": "New York",
+  "distribution": "public",
+  "publicDistribution": true,
+  "packageMode": "public-baseline",
+  "generatedAt": "2026-09-28T00:09:30.617Z",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 326,
+    "bytes": 1646190,
+    "sha256": "1880a3430878f82cf187b43c7ffa652e47cd214b2a772a60a81570e5d8f2e337"
+  },
+  "artifacts": {
+    "geojson": {
+      "file": "outdoors.geojson",
+      "featureCount": 326,
+      "bytes": 1646190,
+      "sha256": "1880a3430878f82cf187b43c7ffa652e47cd214b2a772a60a81570e5d8f2e337"
+    },
+    "index": {
+      "file": "index.json",
+      "bytes": 299930,
+      "sha256": "e6af4361f1e15352ede49cdf3882391fc06ad33a9ad3c821c2d6c291d2f9e6ba"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 327,
+      "sha256": "66176d0c1d9e7fd909727c27440008e86a2fd95cedcf083cc6a301d758a631a8"
+    }
+  },
+  "agency": {
+    "status": "no-eligible-staged-feed",
+    "sourceCount": 0,
+    "featureCount": 0,
+    "sources": [],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 81,
+    "categoryCounts": {
+      "tourist_attraction": 34,
+      "warning": 24,
+      "campsite": 8,
+      "shorterm_parking": 15
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 326,
+        "normalizedFeatureCount": 326,
+        "positions": 53526,
+        "bytes": 1646190,
+        "sha256": "c312621d8be728cd008da83235b29fd32e7056e24c96a8ea0ce2a597f49d3200",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
+  }
+}

@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 import { createHash, randomUUID } from 'node:crypto';
-import { copyFile, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, parse, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { verifyPrivateHikeProfiles } from './package-private-new-york-hikes.mjs';
+import { validateOprhpPackage } from './package-private-new-york-agencies.mjs';
 
 const GEOJSON_FILE = 'new-york-outdoors.composed.geojson';
 const INDEX_FILE = 'new-york-outdoors.composed.index.json';
@@ -46,6 +48,7 @@ async function verifyArtifact(directory, descriptor) {
 export async function stagePrivateMobileMap({
   inputDirectory,
   outputDirectory = resolve('apps/mobile/.private-map-data'),
+  publicAssetsDirectory = resolve('packages/map/src/assets'),
 }) {
   const input = resolve(inputDirectory);
   const output = resolve(outputDirectory);
@@ -72,9 +75,7 @@ export async function stagePrivateMobileMap({
   ) {
     throw new Error('private catalog violates the mobile privacy boundary');
   }
-  const manifestInput = requireObject(manifest.input, 'manifest input');
-  const nps = requireObject(manifestInput.npsSnapshot, 'manifest NPS snapshot');
-  const federal = requireObject(manifestInput.federalSnapshot, 'manifest federal snapshot');
+  requireObject(manifest.input, 'manifest input');
   const counts = requireObject(manifest.counts, 'manifest counts');
   const geoDescriptor = artifactByName(manifest, GEOJSON_FILE);
   const indexDescriptor = artifactByName(manifest, INDEX_FILE);
@@ -84,6 +85,22 @@ export async function stagePrivateMobileMap({
   ]);
   const geojson = JSON.parse(geoBytes.toString('utf8'));
   const index = JSON.parse(indexBytes.toString('utf8'));
+  const publicManifest = JSON.parse(
+    await readFile(join(publicAssetsDirectory, 'new-york-outdoors.manifest.json'), 'utf8'),
+  );
+  const publicGeoBytes = await readFile(join(publicAssetsDirectory, 'new-york-outdoors.geojson'));
+  const publicIndexBytes = await readFile(
+    join(publicAssetsDirectory, 'new-york-outdoors.index.json'),
+  );
+  if (
+    publicManifest.classification !== 'SOURCE_REDISTRIBUTABLE' ||
+    publicManifest.sha256 !== sha256(publicGeoBytes) ||
+    publicManifest.indexSha256 !== sha256(publicIndexBytes)
+  ) {
+    throw new Error('public New York asset does not match its redistributable manifest');
+  }
+  const publicGeojson = JSON.parse(publicGeoBytes.toString('utf8'));
+  const publicIndex = JSON.parse(publicIndexBytes.toString('utf8'));
   if (geojson.type !== 'FeatureCollection' || !Array.isArray(geojson.features)) {
     throw new Error('composed GeoJSON is not a FeatureCollection');
   }
@@ -127,49 +144,97 @@ export async function stagePrivateMobileMap({
     }
   }
 
-  nonNegativeInteger(nps.parks, 'NPS park count');
-  nonNegativeInteger(nps.campgrounds, 'NPS campground count');
-  nonNegativeInteger(nps.alerts, 'NPS alert count');
-  nonNegativeInteger(nps.boundaries, 'NPS boundary count');
-  nonNegativeInteger(federal.usfsSurfaceOwnership, 'USFS ownership count');
-  nonNegativeInteger(federal.usfsRecreationSites, 'USFS recreation count');
-  nonNegativeInteger(federal.usfsMvumRoads, 'USFS road count');
-  nonNegativeInteger(federal.usfsMvumTrails, 'USFS trail count');
-  nonNegativeInteger(federal.blmManagedLands, 'BLM managed-land count');
+  if (
+    publicGeojson.type !== 'FeatureCollection' ||
+    !Array.isArray(publicGeojson.features) ||
+    !Array.isArray(publicIndex.features) ||
+    publicGeojson.features.length !== publicIndex.features.length ||
+    publicGeojson.features.length !== publicManifest.featureCount
+  ) {
+    throw new Error('public New York feature inventory is invalid');
+  }
   const sourceCount = (prefix) =>
     index.features.filter((feature) =>
       String(feature?.properties?.sourceId ?? '').startsWith(prefix),
     ).length;
   const ioverlanderCount = sourceCount('private-ioverlander');
-  const npsCount = sourceCount('nps-');
-  const usfsCount = sourceCount('usfs-');
-  const blmCount = sourceCount('blm-');
-  const decCount = sourceCount('nys-');
+  const decCount = sourceCount('nys-dec-');
+  const oprhpCount = validateOprhpPackage(manifest, geojson.features);
+  validateOprhpPackage(manifest, index.features);
+  if (sourceCount('nys-oprhp-') !== oprhpCount) throw new Error('OPRHP index count mismatch');
   if (
     ioverlanderCount !== nonNegativeInteger(counts.outputPrivatePlaces, 'iOverlander output count')
   ) {
     throw new Error('private catalog count does not match its composed index');
   }
-  if (decCount + ioverlanderCount + npsCount + usfsCount + blmCount !== index.features.length) {
-    throw new Error('composed index contains an unrecognized map source');
+  if (decCount + ioverlanderCount + oprhpCount !== index.features.length) {
+    throw new Error('private catalog contains a source outside DEC and iOverlander');
   }
-  if (decCount < 1) throw new Error('composed catalog does not retain its public DEC base');
+  if (decCount < 1) throw new Error('composed catalog does not include held New York agency data');
+  if (
+    publicIndex.features.some(
+      (feature) =>
+        String(feature?.properties?.sourceId ?? '').startsWith('nys-dec-') ||
+        String(feature?.properties?.sourceId ?? '').startsWith('nys-oprhp-') ||
+        feature?.properties?.sourceId === 'private-ioverlander',
+    )
+  ) {
+    throw new Error('public catalog contains private New York data');
+  }
+  const ids = new Set(index.features.map((feature) => feature.id));
+  if (publicIndex.features.some((feature) => ids.has(feature.id))) {
+    throw new Error('public and private New York feature IDs overlap');
+  }
+  const combinedGeojson = {
+    type: 'FeatureCollection',
+    features: [...publicGeojson.features, ...geojson.features],
+  };
+  const combinedIndex = {
+    schemaVersion: 1,
+    features: [...publicIndex.features, ...index.features],
+  };
+  const profileBytes = await verifyArtifact(
+    input,
+    artifactByName(manifest, 'new-york-hikes.private.json'),
+  );
+  const profileManifestBytes = await verifyArtifact(
+    input,
+    artifactByName(manifest, 'new-york-hikes.private.manifest.json'),
+  );
+  const profiles = JSON.parse(profileBytes);
+  const profileManifest = JSON.parse(profileManifestBytes);
+  if (
+    profiles.sourceSha256 !== sha256(geoBytes) ||
+    profileManifest.sourceSha256 !== sha256(geoBytes) ||
+    profileManifest.sha256 !== sha256(profileBytes) ||
+    profileManifest.bytes !== profileBytes.length ||
+    profileManifest.classification !== 'PRIVATE_USER' ||
+    profileManifest.publicDistribution !== false
+  ) {
+    throw new Error('private hike profiles do not match the private map and manifest');
+  }
+  const profileCount = verifyPrivateHikeProfiles(profiles.hikes, geojson);
+  if (profileCount !== profileManifest.featureCount)
+    throw new Error('private hike profile count mismatch');
+  const combinedGeoBytes = Buffer.from(`${JSON.stringify(combinedGeojson)}\n`);
+  const stagedProfiles = { ...profiles, sourceSha256: sha256(combinedGeoBytes) };
 
   const metadata = {
     schemaVersion: 1,
     classification: manifest.classification,
     hasPrivateData: true,
-    label: 'DEC + iOverlander + NPS + USFS + BLM catalog',
-    featureCount: geojson.features.length,
+    label: 'Public New York + private agency + iOverlander catalog',
+    featureCount: combinedGeojson.features.length,
+    sha256: sha256(combinedGeoBytes),
+    hikeProfileCount: profileCount,
     acquiredAt: manifest.generatedAt,
-    attribution:
-      'NYS ITS; NYS DEC; private iOverlander catalog; National Park Service; USDA Forest Service; Bureau of Land Management',
+    attribution: `NYS DEC; ${oprhpCount ? 'NY State Parks (NYS OPRHP); ' : ''}private iOverlander catalog; ${publicManifest.rights.attribution.join('; ')}`,
     sources: [
       {
         id: 'nys-dec',
         label: 'NYS DEC',
         featureCount: decCount,
-        status: 'public offline snapshot',
+        status: 'private rights-held offline snapshot',
       },
       {
         id: 'private-ioverlander',
@@ -178,27 +243,18 @@ export async function stagePrivateMobileMap({
         status:
           'private on-device places with community descriptions and check-ins; contributor identities removed',
       },
-      {
-        id: 'nps',
-        label: 'National Park Service',
-        featureCount: npsCount,
-        status: 'official parks, campgrounds, alerts and boundaries',
-      },
-      {
-        id: 'usfs',
-        label: 'US Forest Service',
-        featureCount: usfsCount,
-        status: 'official ownership, recreation and MVUM snapshot',
-      },
-      {
-        id: 'blm',
-        label: 'Bureau of Land Management',
-        featureCount: blmCount,
-        status:
-          blmCount === 0
-            ? 'official New York query verified; no managed-land features returned'
-            : 'official managed-land snapshot',
-      },
+      ...(oprhpCount
+        ? [
+            {
+              id: 'nys-oprhp',
+              label: 'NY State Parks (NYS OPRHP)',
+              featureCount: oprhpCount,
+              status:
+                'private noncommercial dated reference; temporal snapshots excluded; verify current access',
+            },
+          ]
+        : []),
+      ...publicManifest.catalogSources,
     ],
   };
 
@@ -206,14 +262,21 @@ export async function stagePrivateMobileMap({
   await mkdir(temporary, { recursive: false });
   try {
     await Promise.all([
-      copyFile(join(input, GEOJSON_FILE), join(temporary, GEOJSON_FILE)),
-      copyFile(join(input, INDEX_FILE), join(temporary, INDEX_FILE)),
+      writeFile(join(temporary, GEOJSON_FILE), combinedGeoBytes, {
+        flag: 'wx',
+      }),
+      writeFile(join(temporary, INDEX_FILE), `${JSON.stringify(combinedIndex)}\n`, { flag: 'wx' }),
+      writeFile(
+        join(temporary, 'new-york-hikes.private.json'),
+        `${JSON.stringify(stagedProfiles)}\n`,
+        { flag: 'wx' },
+      ),
       writeFile(join(temporary, 'mobile-manifest.json'), `${JSON.stringify(metadata, null, 2)}\n`, {
         flag: 'wx',
       }),
       writeFile(
         join(temporary, 'mapData.private.ts'),
-        `import mobileMapDataAsset from './${GEOJSON_FILE}';\nimport mobileMapDataIndex from './${INDEX_FILE}';\nimport mobileMapDataMetadata from './mobile-manifest.json';\n\nexport { mobileMapDataAsset, mobileMapDataIndex, mobileMapDataMetadata };\n`,
+        `import mobileMapDataAsset from './${GEOJSON_FILE}';\nimport mobileMapDataIndex from './${INDEX_FILE}';\nimport mobileMapDataMetadata from './mobile-manifest.json';\nimport mobileHikeData from './new-york-hikes.private.json';\n\nexport { mobileMapDataAsset, mobileMapDataIndex, mobileMapDataMetadata, mobileHikeData };\n`,
         { flag: 'wx' },
       ),
     ]);

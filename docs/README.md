@@ -16,6 +16,14 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 
 | Document | Purpose | Primary owner role |
 | --- | --- | --- |
+| [Package operations](PACKAGE_OPERATIONS_2026-09-29.md) | Verified mirrors, fresh restore evidence, weekly source checks and history review | Data lead |
+| [Package maintenance](PACKAGE_MAINTENANCE.md) | API refresh, local cache reuse, external artifacts and Git storage policy | Data lead |
+| [Private/public state deduplication](PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md) | Same-state matching policy, counts, private recovery and rebuild verification | Data lead |
+| [Private deduplication audit fixes](PRIVATE_PUBLIC_DEDUPLICATION_FIXES_2026-09-28.md) | Policy v2 corrections, restored records, private enrichment and activation recovery | Data lead |
+| [NC and Louisiana visitor coverage](NC_LA_VISITOR_COVERAGE_2026-09-28.md) | Updated forest coverage, Indian Creek visitor reference and enforced scope exclusions | Data lead |
+| [Minnesota/Virginia conditional public data](CONDITIONAL_PUBLIC_DATA_2026-09-28.md) | Scoped derivative evidence, noncommercial conditions and reference-only controls | Data lead |
+| [Public state package format](PUBLIC_STATE_PACKAGE_FORMAT.md) | Public/private-compatible format, POI taxonomy, rights boundary and rebuild commands | Data lead |
+| [Public state package inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) | All 50 package counts and validated import parts | Data lead |
 | [Project scope](../PROJECT_SCOPE.md) | Normative product, architecture, privacy, and delivery boundary | Product owner |
 | [Documentation audit](DOCUMENTATION_AUDIT.md) | Identified issues, implemented resolutions, and validation record | Quality lead |
 | [Product and release definition](PRODUCT_RELEASE_DEFINITION.md) | iOS/platform boundary, release vocabulary, exact M4 Product MVP, and exclusions | Product owner |
@@ -29,6 +37,12 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Threat model](THREAT_MODEL.md) | Assets, trust boundaries, threats, mitigations, and residual-risk rules | Security owner |
 | [Bootstrap and environment specification](BOOTSTRAP_AND_ENVIRONMENT.md) | Pinned toolchain, Windows/macOS/device prerequisites, and repository bootstrap | Build owner |
 | [Canonical data specification](CANONICAL_DATA_SPEC.md) | CRS, coordinates, time, units, IDs, geometry, nulls, provenance, and evolution | Data architecture owner |
+| [Current state dataset audit](CURRENT_STATE_DATASET_AUDIT.md) | Bundled state and OSM source inventory, candidate upgrades, and acquisition gates | Data architecture owner |
+| [State agency source validation](STATE_AGENCY_SOURCE_VALIDATION_2026-09-26.md) | Live checks, completeness limits, and reuse-rights findings for 98 primary and 45 supplemental agency sources | Data architecture owner |
+| [Eight failed source URL follow-up](EIGHT_SOURCE_ENDPOINT_FOLLOWUP_2026-09-26.md) | Diagnoses, replacements, and outstanding rights/completeness gates for the failed agency links | Data architecture owner |
+| [State package and planned-layer tracker](STATE_DATA_PACKAGE_TRACKER.md) | Package counts plus exact Arkansas, Idaho, and South Dakota agency/OSM candidates, filters, and release gates | Data architecture owner |
+| [Arkansas, Idaho, and South Dakota agency deep dive](ID_AR_SD_AGENCY_DATASET_DEEP_DIVE_2026-09-26.md) | Source, completeness, currency, and rights evidence behind the three-state plan | Data architecture owner |
+| [Arkansas, Idaho, and South Dakota redistribution check](ID_AR_SD_REDISTRIBUTION_RIGHTS_2026-09-26.md) | Publisher evidence and public offline bundle decision for every selected three-state dataset | Data architecture owner |
 | [Requirements traceability](REQUIREMENTS_TRACEABILITY.md) | Requirement IDs mapped to work packages and verification | Quality lead |
 | [Test and acceptance plan](TEST_AND_ACCEPTANCE_PLAN.md) | Test levels, environments, evidence, and release gates | Quality lead |
 | [Non-functional budgets](NON_FUNCTIONAL_BUDGETS.md) | Numeric performance, durability, size, accuracy, memory, and energy limits | Performance/quality owner |
@@ -91,3 +105,8 @@ Unless a document says otherwise, this initial set is `proposed` and becomes `ac
 - Test cases: `T-<level>-NNN-CNN` under a named suite.
 
 Identifiers are permanent. Retired items keep their ID and point to the replacement.
+
+- [Offline state package loader](STATE_PACKAGE_LOADER.md): complete-state installation, local tiles, indexed search, integrity checks and rollback.
+- [Installable state catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md): all 50 transfer/installed sizes, record and tile counts.
+
+- [Remaining state agency gaps](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md): recovered agency feeds, exact Michigan license, New York private OPRHP integration, scope exclusions and provider dependencies.

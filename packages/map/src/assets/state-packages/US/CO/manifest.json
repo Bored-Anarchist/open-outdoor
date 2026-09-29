@@ -1,0 +1,801 @@
+{
+  "artifacts": {
+    "geojson": {
+      "file": "outdoors.geojson",
+      "featureCount": 31137,
+      "bytes": 56916403,
+      "sha256": "e37bc044fdb31e5b6eb0966a9b1f82e6da2fc8b8f8836d00dcdd22b10ac76e39"
+    },
+    "index": {
+      "file": "index.json",
+      "bytes": 17384220,
+      "sha256": "1285a5abab1cb15bb71d1008e6824033891059efdd9c8ab13d0260e8c788d764"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 2110,
+      "sha256": "fc5aaeb023a9280ff2c2b175e5ab3aca00a908479e5f32b63cd358ce53942fe2"
+    }
+  },
+  "classification": "SOURCE_REDISTRIBUTABLE",
+  "coordinateReferenceSystem": "EPSG:4326",
+  "coverage": {
+    "content": "Public national baseline plus independently eligible agency snapshots; point categories normalized, land/trails/roads retained separately.",
+    "extent": "State polygon and intersecting national-agency features; cross-border features may be present in more than one adjacent state package.",
+    "limitations": [
+      "Dated informational references, not live permission, closure or camping claims.",
+      "Some states have no eligible direct agency feed; source gaps remain explicit.",
+      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+    ]
+  },
+  "disclaimers": [
+    "Map display is informational and is not a legal access, property, camping, closure, fire, or safety determination.",
+    "Confirm current rules and conditions with the responsible land manager before travel."
+  ],
+  "distribution": "public",
+  "featureCount": 31137,
+  "generatedAt": "2026-09-28T00:08:27.254Z",
+  "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
+  "packageId": "outdoor-co",
+  "rights": {
+    "attribution": [
+      "National Park Service",
+      "PAD-US data providers and state stewards",
+      "U.S. Department of Agriculture, Forest Service",
+      "U.S. Department of the Interior, Bureau of Land Management",
+      "U.S. Geological Survey Gap Analysis Project",
+      "Colorado Parks and Wildlife"
+    ],
+    "derivation": true,
+    "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
+    "offlineStorage": true,
+    "redistribution": true,
+    "reviewState": "National source terms and public-use basis recorded; state land records retain PAD-US source lineage. Direct state-layer review remains open.",
+    "sourceTerms": [
+      {
+        "id": "usgs-pad-us-fee-managers",
+        "url": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download"
+      },
+      {
+        "id": "nps-public-trails",
+        "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo"
+      },
+      {
+        "id": "nps-public-points-of-interest",
+        "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo"
+      },
+      {
+        "id": "usfs-national-forest-system-trails",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-recreation-sites",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-mvum-roads",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "usfs-mvum-trails",
+        "url": "https://data.fs.usda.gov/geodata/edw/datasets.php"
+      },
+      {
+        "id": "blm-surface-management-agency",
+        "url": "https://www.blm.gov/services/geospatial/GISData"
+      },
+      {
+        "id": "blm-public-recreation-sites",
+        "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "co-cpw-trails",
+        "url": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/info/iteminfo",
+        "license": "CPW public GIS distribution",
+        "licenseUrl": null
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "agency": "U.S. Geological Survey, Gap Analysis Project",
+      "attribution": [
+        "U.S. Geological Survey Gap Analysis Project",
+        "PAD-US data providers and state stewards"
+      ],
+      "fields": [
+        "OBJECTID",
+        "FeatClass",
+        "Category",
+        "Own_Type",
+        "Own_Name",
+        "Loc_Own",
+        "Mang_Type",
+        "Mang_Name",
+        "Loc_Mang",
+        "Des_Tp",
+        "Loc_Ds",
+        "Unit_Nm",
+        "Loc_Nm",
+        "State_Nm",
+        "Agg_Src",
+        "GIS_Src",
+        "Src_Date",
+        "GIS_Acres",
+        "Pub_Access",
+        "Access_Src",
+        "Access_Dt",
+        "Date_Est",
+        "Comments"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usgs-pad-us-fee-managers",
+      "inventoryFeatureCount": 6844,
+      "name": "USGS PAD-US fee managers",
+      "packagedFeatureCount": 6844,
+      "packagedFeatureSha256": "10188f6f61d6089b5f41b6a7c62e2c7a8d6efd43df52b7074adfb564799634e6",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 6844,
+      "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
+      "unreturnedFeatureCount": 0,
+      "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
+    },
+    {
+      "agency": "National Park Service",
+      "attribution": [
+        "National Park Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "TRLFEATTYPE",
+        "TRLNAME",
+        "TRLALTNAME",
+        "TRLSTATUS",
+        "TRLSURFACE",
+        "TRLTYPE",
+        "TRLCLASS",
+        "TRLUSE",
+        "PUBLICDISPLAY",
+        "DATAACCESS",
+        "ACCESSNOTES",
+        "ORIGINATOR",
+        "UNITCODE",
+        "UNITNAME",
+        "UNITTYPE",
+        "GROUPCODE",
+        "GROUPNAME",
+        "REGIONCODE",
+        "SOURCEDATE",
+        "OPENTOPUBLIC",
+        "SEASONAL",
+        "SEASDESC",
+        "MAINTAINER",
+        "NOTES",
+        "FEATUREID",
+        "MAPSOURCE"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "nps-public-trails",
+      "inventoryFeatureCount": 750,
+      "name": "NPS public trails",
+      "packagedFeatureCount": 750,
+      "packagedFeatureSha256": "8697f7e1237d6068d3f600b30267d40cf1517d939cd1efdcc4b9941181b3f0c5",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 750,
+      "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
+      "unreturnedFeatureCount": 0,
+      "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0"
+    },
+    {
+      "agency": "National Park Service",
+      "attribution": [
+        "National Park Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "POINAME",
+        "POIALTNAME",
+        "POITYPE",
+        "POISTATUS",
+        "PUBLICDISPLAY",
+        "DATAACCESS",
+        "ACCESSNOTES",
+        "ORIGINATOR",
+        "UNITCODE",
+        "UNITNAME",
+        "UNITTYPE",
+        "GROUPCODE",
+        "GROUPNAME",
+        "REGIONCODE",
+        "SOURCEDATE",
+        "OPENTOPUBLIC",
+        "SEASONAL",
+        "SEASDESC",
+        "MAINTAINER",
+        "NOTES",
+        "FEATUREID",
+        "MAPSOURCE"
+      ],
+      "filteredFeatureCount": 116,
+      "geometryPrecision": 5,
+      "id": "nps-public-points-of-interest",
+      "inventoryFeatureCount": 2528,
+      "name": "NPS public points of interest",
+      "packagedFeatureCount": 2412,
+      "packagedFeatureSha256": "554e9568e5099a989a7bf3e3fd1cb8aa9345c4a275d3df054bc0e462d45ff8ab",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 2528,
+      "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
+      "unreturnedFeatureCount": 0,
+      "url": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "trail_name",
+        "trail_type",
+        "trail_cn",
+        "admin_org",
+        "managing_org",
+        "security_id",
+        "attributesubset",
+        "national_trail_designation",
+        "trail_class",
+        "accessibility_status",
+        "trail_surface",
+        "surface_firmness",
+        "typical_trail_grade",
+        "typical_tread_width",
+        "special_mgmt_area",
+        "terra_motorized",
+        "snow_motorized",
+        "water_motorized",
+        "allowed_terra_use",
+        "hiker_pedestrian_managed",
+        "hiker_pedestrian_accpt",
+        "hiker_pedestrian_disc",
+        "hiker_pedestrian_restricted",
+        "bicycle_managed",
+        "bicycle_accpt",
+        "bicycle_disc",
+        "motorcycle_managed",
+        "motorcycle_accpt",
+        "atv_managed",
+        "atv_accpt",
+        "trail_no",
+        "gis_miles",
+        "e_bike_class1_managed",
+        "e_bike_class1_accpt",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "usfs-national-forest-system-trails",
+      "inventoryFeatureCount": 6566,
+      "name": "USFS National Forest System trails",
+      "packagedFeatureCount": 6566,
+      "packagedFeatureSha256": "440ec93f70ad7f35b48425f1cfe236a03644ee7c30d297bc551335dfd33d4834",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 6566,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_TrailNFSPublishWithDataStatus_01/MapServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "site_cn",
+        "region",
+        "site_id",
+        "site_name",
+        "site_type",
+        "activity_type_list",
+        "service_type_list",
+        "seasonal_operational_status",
+        "op_status_reason",
+        "development_status",
+        "development_scale",
+        "site_contact_notes",
+        "recarea_name",
+        "recarea_description",
+        "official_designation",
+        "fee_charged",
+        "fee_type",
+        "fee_description",
+        "operational_hours",
+        "open_season",
+        "best_season",
+        "busiest_season",
+        "maximum_elevation",
+        "minimum_elevation",
+        "important_info",
+        "restrictions",
+        "directions",
+        "latitude",
+        "longitude",
+        "states_spanned",
+        "infra_last_update",
+        "edw_last_modify",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "usfs-recreation-sites",
+      "inventoryFeatureCount": 1905,
+      "name": "USFS recreation sites",
+      "packagedFeatureCount": 1905,
+      "packagedFeatureSha256": "f5425ddbf229e535058353c506ca757a4f051c1342d62018e15a267b777b9d6c",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 1905,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "rte_cn",
+        "id",
+        "name",
+        "bmp",
+        "emp",
+        "seg_length",
+        "gis_miles",
+        "mvum_symbol_name",
+        "jurisdiction",
+        "operationalmaintlevel",
+        "surfacetype",
+        "system",
+        "seasonal",
+        "passengervehicle",
+        "passengervehicle_datesopen",
+        "highclearancevehicle",
+        "highclearancevehicle_datesopen",
+        "truck",
+        "bus",
+        "motorhome",
+        "fourwd_gt50inches",
+        "atv",
+        "motorcycle",
+        "adminorg",
+        "districtname",
+        "forestname",
+        "routestatus",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usfs-mvum-roads",
+      "inventoryFeatureCount": 8853,
+      "name": "USFS motor vehicle use map roads",
+      "packagedFeatureCount": 8853,
+      "packagedFeatureSha256": "1e7151c157c6d8b7cf6be20daec5d87301ad217deac05fe61b2044fbc0384ce2",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 8853,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/1"
+    },
+    {
+      "agency": "U.S. Department of Agriculture, Forest Service",
+      "attribution": [
+        "U.S. Department of Agriculture, Forest Service"
+      ],
+      "fields": [
+        "OBJECTID",
+        "rte_cn",
+        "id",
+        "name",
+        "bmp",
+        "emp",
+        "seg_length",
+        "gis_miles",
+        "mvum_symbol_name",
+        "jurisdiction",
+        "seasonal",
+        "passengervehicle",
+        "passengervehicle_datesopen",
+        "highclearancevehicle",
+        "highclearancevehicle_datesopen",
+        "truck",
+        "bus",
+        "motorhome",
+        "fourwd_gt50inches",
+        "atv",
+        "motorcycle",
+        "adminorg",
+        "districtname",
+        "forestname",
+        "trailstatus",
+        "trailsystem",
+        "trailclass",
+        "globalid"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "usfs-mvum-trails",
+      "inventoryFeatureCount": 964,
+      "name": "USFS motor vehicle use map trails",
+      "packagedFeatureCount": 964,
+      "packagedFeatureSha256": "4c25380e37db17e64944355861c164cc73af6e0fd2c5d70496bd85c843565e3e",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 964,
+      "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
+      "unreturnedFeatureCount": 0,
+      "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_MVUM_02/MapServer/2"
+    },
+    {
+      "agency": "U.S. Department of the Interior, Bureau of Land Management",
+      "attribution": [
+        "U.S. Department of the Interior, Bureau of Land Management"
+      ],
+      "fields": [
+        "OBJECTID",
+        "SMA_ID",
+        "ADMIN_DEPT_CODE",
+        "ADMIN_AGENCY_CODE",
+        "ADMIN_UNIT_NAME",
+        "ADMIN_UNIT_TYPE",
+        "HOLD_ID",
+        "HOLD_DEPT_CODE",
+        "HOLD_AGENCY_CODE",
+        "ADMIN_ST",
+        "FAU_ID"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 4,
+      "id": "blm-surface-management-agency",
+      "inventoryFeatureCount": 1,
+      "name": "BLM surface management agency boundaries",
+      "packagedFeatureCount": 1,
+      "packagedFeatureSha256": "1ba9265c3223135bd6f134075e9de5986375c11955557dd66f6385827e2e85db",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00015,
+      "sourceFeatureCount": 1,
+      "terms": "https://www.blm.gov/services/geospatial/GISData",
+      "unreturnedFeatureCount": 0,
+      "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1"
+    },
+    {
+      "agency": "U.S. Department of the Interior, Bureau of Land Management",
+      "attribution": [
+        "U.S. Department of the Interior, Bureau of Land Management"
+      ],
+      "fields": [
+        "OBJECTID",
+        "FET_TYPE",
+        "FET_SUBTYPE",
+        "FET_NAME",
+        "ADM_UNIT_CD",
+        "ADMIN_ST",
+        "DESCRIPTION",
+        "WEB_LINK",
+        "UNIT_NAME",
+        "SOURCE",
+        "WEB_DISPLAY"
+      ],
+      "filteredFeatureCount": 0,
+      "geometryPrecision": 5,
+      "id": "blm-public-recreation-sites",
+      "inventoryFeatureCount": 1633,
+      "name": "BLM public recreation sites",
+      "packagedFeatureCount": 1633,
+      "packagedFeatureSha256": "a8943243ec6ec07ef9aace0a002a3aa4e5a60adc561ce4bd9fafe4d49b6679ff",
+      "queriedAt": "2026-09-24T01:45:45.510Z",
+      "simplificationDegrees": 0.00003,
+      "sourceFeatureCount": 1633,
+      "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
+      "unreturnedFeatureCount": 0,
+      "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "co-cpw-trails",
+      "state": "CO",
+      "name": "Colorado Parks and Wildlife trail segments",
+      "url": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2",
+      "basisUrl": "https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr",
+      "license": "CPW public GIS distribution",
+      "attribution": "Colorado Parks and Wildlife",
+      "termsUrl": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/info/iteminfo",
+      "rightsStatus": "Supported",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-27T23:55:24.688Z",
+      "sourceUpdated": "2026-08-27T14:25:24.424Z",
+      "featureCount": 1211,
+      "bytes": 1708923,
+      "sha256": "132ed5ea5775350a7dd1e9c43e36eaf1e04cc1d9d108fd087089f04781a3ce03",
+      "metadataSha256": "6006af8ba7a2764011517500eb7b355db1bf408832f7ed5d4094064c55afade3",
+      "termsSha256": "a7f10277b62f7bebbeb444bc3982a2375b91134ea3a73c79aa73fb3990d44c9d",
+      "licenseText": "This map is a product and property of the Colorado Parks and Wildlife, a division of the Colorado Department of Natural Resources. Care should be taken in interpreting these data. Written documents may accompany this map and should be referenced. The Colorado Department of Natural Resources is not responsible and shall not be liable to the user for damages of any kind arising out of the use of data or information provided by the Department, including the installation of the data or information, its use, or the results obtained from its use. ANY DATA OR INFORMATION PROVIDED BY THE DEPARTMENT OF NATURAL RESOURCES IS PROVIDED \"AS IS\" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MECHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Data or information provided by the Department of Natural Resources shall be used and relied upon only at the user's sole risk, and the user agrees to indemnify and hold harmless the Department of Natural Resources, its officials, officers and employees from any liability arising out of the use of the data or information provided.",
+      "serviceItemId": "168fccb0583f42f1afe57de6c9ce846d",
+      "fields": [
+        "FID",
+        "name",
+        "surface",
+        "oneway",
+        "hiking",
+        "horse",
+        "bike",
+        "motorcycle",
+        "atv",
+        "ohv_gt_50",
+        "highway_ve",
+        "dogs",
+        "access",
+        "length_mi_",
+        "manager",
+        "TrailGUID",
+        "PropName",
+        "PropType",
+        "Comments",
+        "Snowmobile",
+        "INPUT_DATE",
+        "EDIT_DATE",
+        "LabelTxt",
+        "d_surface",
+        "d_oneway",
+        "d_hiking",
+        "d_horse",
+        "d_bike",
+        "d_motorcyc",
+        "d_atv",
+        "d_ohv_gt_5",
+        "d_highway_",
+        "d_dogs",
+        "d_PropType",
+        "d_Snowmobi",
+        "Shape__Length",
+        "GlobalID"
+      ],
+      "idField": "FID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "d86c404c6dc156a157151fbb2aa4e339540637a8f554853c6a055bb7fedd6a02",
+          "firstId": 1,
+          "lastId": 200
+        },
+        {
+          "count": 200,
+          "sha256": "0d388c060776debd8608fe06e39e75535d8eacdd0e96701a49a574ba6a272106",
+          "firstId": 201,
+          "lastId": 400
+        },
+        {
+          "count": 200,
+          "sha256": "a5939dad3b8bb2111bb67316ed6e43da2f1d78f7efa8792a56c388e93ca3dbda",
+          "firstId": 401,
+          "lastId": 600
+        },
+        {
+          "count": 200,
+          "sha256": "50c3dd87d64b569c94fa16026d8039599713349f730f27636e989a20ffbfa084",
+          "firstId": 601,
+          "lastId": 800
+        },
+        {
+          "count": 200,
+          "sha256": "f0446f8a60dfe8a0e91da9151f52f0064eaf74d45fefc23d13497263f6c174ac",
+          "firstId": 801,
+          "lastId": 1000
+        },
+        {
+          "count": 200,
+          "sha256": "3fb795c6c15d8d88188c0e3e64a7cf9b89d2e9ffded3a427d3dccfc123ded1af",
+          "firstId": 1001,
+          "lastId": 1200
+        },
+        {
+          "count": 11,
+          "sha256": "d1b878b5e08afbd3f311f0817884f914e9b2e13f07c6a7dbb106f349426ffc22",
+          "firstId": 1201,
+          "lastId": 1211
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 1209,
+      "filteredFeatureCount": 2,
+      "geometryRejections": {
+        "count": 2,
+        "sha256": "3072f1d2020989f7f8f91cf58f36c9418f80717634216aac20b0c043290e6b95"
+      },
+      "packagedFeatureSha256": "e460d92abb4933b01c62aae8c93215cc508f06e6956f7f9875ce441b0a72302d"
+    }
+  ],
+  "state": {
+    "code": "CO",
+    "fips": "08",
+    "name": "Colorado"
+  },
+  "stateForestry": {
+    "agency": "Colorado State Forest Service",
+    "agencyUrl": "https://csfs.colostate.edu/",
+    "directAgencyLayerIncluded": true,
+    "followUp": "See agency source receipts and held-source decisions in this manifest.",
+    "forestNamedPadusFeatureCount": 4,
+    "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
+    "sourceLineageFields": [
+      "Own_Name",
+      "Own_Type",
+      "Mang_Name",
+      "Mang_Type",
+      "GIS_Src",
+      "Agg_Src"
+    ],
+    "stateManagedPadusFeatureCount": 1186
+  },
+  "stateName": "Colorado",
+  "publicDistribution": true,
+  "packageMode": "federal-and-agency",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 31137,
+    "bytes": 56916403,
+    "sha256": "e37bc044fdb31e5b6eb0966a9b1f82e6da2fc8b8f8836d00dcdd22b10ac76e39"
+  },
+  "agency": {
+    "status": "included",
+    "sourceCount": 1,
+    "featureCount": 1209,
+    "sources": [
+      {
+        "id": "co-cpw-trails",
+        "url": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2",
+        "count": 1209,
+        "license": "CPW public GIS distribution",
+        "attribution": "Colorado Parks and Wildlife",
+        "sourceUpdated": "2026-08-27T14:25:24.424Z"
+      }
+    ],
+    "held": []
+  },
+  "poi": {
+    "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
+    "categoryIds": [
+      "campsite",
+      "informal_campsite",
+      "wild_campsite",
+      "farm",
+      "hotel",
+      "hostel",
+      "gas_station",
+      "propane",
+      "mechanic",
+      "water",
+      "sanitation_dump",
+      "shorterm_parking",
+      "ecofriendly",
+      "restaurant",
+      "tourist_attraction",
+      "shopping",
+      "financial",
+      "wifi",
+      "medical",
+      "pet_services",
+      "laundry",
+      "showers",
+      "customs_immigration",
+      "checkpoint",
+      "consulate",
+      "vehicle_insurance",
+      "vehicle_shipping",
+      "vehicle_storage",
+      "road_report",
+      "warning",
+      "overnight-prohibited",
+      "other"
+    ],
+    "featureCount": 5950,
+    "categoryCounts": {
+      "tourist_attraction": 2130,
+      "shorterm_parking": 510,
+      "wild_campsite": 330,
+      "other": 1226,
+      "campsite": 1535,
+      "water": 63,
+      "hotel": 83,
+      "ecofriendly": 56,
+      "laundry": 2,
+      "showers": 3,
+      "restaurant": 4,
+      "sanitation_dump": 6,
+      "gas_station": 1,
+      "shopping": 1
+    },
+    "recordsFromIoverlander": false,
+    "unknownTypesPreserved": true
+  },
+  "import": {
+    "parts": [
+      {
+        "file": "parts/outdoors-001.geojson",
+        "featureCount": 7630,
+        "normalizedFeatureCount": 7630,
+        "positions": 179997,
+        "bytes": 8147902,
+        "sha256": "5d357608d1ff8221b8f6d081d500d24843e6d7eb3b0d884aa2c3e69e57e5b022",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-002.geojson",
+        "featureCount": 8542,
+        "normalizedFeatureCount": 8542,
+        "positions": 180000,
+        "bytes": 7927082,
+        "sha256": "55ad837f6966b8abe91baae97959eb283eb5d0ecd79e82ef544ff6d9fca86690",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-003.geojson",
+        "featureCount": 2447,
+        "normalizedFeatureCount": 2447,
+        "positions": 179958,
+        "bytes": 5273365,
+        "sha256": "3c439f9a4afa8a2fd868dec616e0221f0dae4b7841a21e8476de723075009f58",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-004.geojson",
+        "featureCount": 2393,
+        "normalizedFeatureCount": 2393,
+        "positions": 179987,
+        "bytes": 5241922,
+        "sha256": "66850f226dbc16053f3395664fa2c5e3b44da128ec8d5fda13b9aa1fba96affc",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-005.geojson",
+        "featureCount": 5235,
+        "normalizedFeatureCount": 5235,
+        "positions": 179969,
+        "bytes": 7388969,
+        "sha256": "1aaf8d81bfe3280511403844d31abad01c8d18e95527833577ff4d65ee7d09ae",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-006.geojson",
+        "featureCount": 4185,
+        "normalizedFeatureCount": 4185,
+        "positions": 178006,
+        "bytes": 6034764,
+        "sha256": "ca7e2e4831a00e53433b28577e9aa0561c40fd0a7724673877d61a681c39418d",
+        "parserValidation": "passed"
+      },
+      {
+        "file": "parts/outdoors-007.geojson",
+        "featureCount": 705,
+        "normalizedFeatureCount": 705,
+        "positions": 88402,
+        "bytes": 2183483,
+        "sha256": "e7fbf8a25f71b4d7d87df1366bec5157fd7de7f06645c5e73713b29869c905ac",
+        "parserValidation": "passed"
+      }
+    ],
+    "allPartsParserValidated": true,
+    "maximumActiveDatasets": 5,
+    "maximumCombinedStoreBytes": 52428800,
+    "simultaneousWholeStateActivation": "Not guaranteed; select parts within the app store limits."
+  }
+}

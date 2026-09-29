@@ -14,6 +14,7 @@ const campingCategories = new Set([
   'ACCESSIBLE CAMPSITE',
   'CAMPGROUND',
   'LEAN-TO',
+  'campsite',
 ]);
 const campingAnchor = mapIndex.features.find(
   (feature) =>

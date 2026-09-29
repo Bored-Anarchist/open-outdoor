@@ -20,11 +20,18 @@ if (privateMapData && !existsSync(selectedMapDataModule)) {
     'OPEN_OUTDOOR_PRIVATE_MAP_DATA=1 requires pnpm map:private:stage before Metro starts.',
   );
 }
-config.resolver.resolveRequest = (context, moduleName, platform) =>
-  context.resolveRequest(
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const request = moduleName === mapDataAlias ? selectedMapDataModule : moduleName;
+  // Shared build tools use Node ESM .js specifiers; Metro consumes their .ts sources.
+  const siblingTypeScript =
+    request.startsWith('.') && request.endsWith('.js')
+      ? path.resolve(path.dirname(context.originModulePath), `${request.slice(0, -3)}.ts`)
+      : null;
+  return context.resolveRequest(
     context,
-    moduleName === mapDataAlias ? selectedMapDataModule : moduleName,
+    siblingTypeScript && existsSync(siblingTypeScript) ? siblingTypeScript : request,
     platform,
   );
+};
 
 module.exports = config;

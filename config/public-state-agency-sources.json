@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "ct-deep-property",
+      "state": "CT",
+      "name": "Connecticut DEEP properties",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/Connecticut_DEEP_Property/FeatureServer/0",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection"
+    },
+    {
+      "id": "ct-deep-trails",
+      "state": "CT",
+      "name": "Connecticut DEEP trails",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+      "basisUrl": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Trails_Set/FeatureServer/3",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection"
+    },
+    {
+      "id": "ct-deep-access",
+      "state": "CT",
+      "name": "Connecticut DEEP property access locations",
+      "url": "https://services1.arcgis.com/FjPcSmEFuDYlIdKC/arcgis/rest/services/DEEP_Property_Access_Locations/FeatureServer/0",
+      "basisUrl": "https://ct-deep-gis-open-data-website-ctdeep.hub.arcgis.com/datasets/CTDEEP::deep-property-access-locations/explore",
+      "license": "CC0-1.0",
+      "attribution": "Connecticut Department of Energy and Environmental Protection"
+    },
+    {
+      "id": "ma-dcr-trails",
+      "state": "MA",
+      "name": "MassGIS DCR roads and trails",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Arcs/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "vintage": "2015-06; historical reference, verify current manager maps"
+    },
+    {
+      "id": "ma-dcr-points",
+      "state": "MA",
+      "name": "MassGIS DCR trail and road points",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/DCR_Roads_and_Trails_Pts/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-department-of-conservation-and-recreation-roads-trails",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "vintage": "2015-06; historical reference, verify current manager maps"
+    },
+    {
+      "id": "ma-dcr-land",
+      "state": "MA",
+      "name": "MassGIS DCR protected and recreational open space",
+      "url": "https://arcgisserver.digital.mass.gov/arcgisserver/rest/services/AGOL/openspace/FeatureServer/0",
+      "basisUrl": "https://www.mass.gov/info-details/massgis-data-protected-and-recreational-openspace",
+      "license": "MassGIS freely redistributable derivatives",
+      "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
+      "where": "OWNER_ABRV LIKE 'DCR%'",
+      "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services"
+    },
+    {
+      "id": "ne-park-areas",
+      "state": "NE",
+      "name": "Nebraska Game and Parks park areas",
+      "url": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer/0",
+      "basisUrl": "https://services5.arcgis.com/IOshH1zLrIieqrNk/arcgis/rest/services/Park_Areas/FeatureServer",
+      "license": "No restrictions on use and distribution",
+      "attribution": "Nebraska Game and Parks Commission",
+      "vintage": "Service includes historical closure descriptions; no live access claim"
+    },
+    {
+      "id": "nv-scorp-trails",
+      "state": "NV",
+      "name": "Nevada SCORP nonmotorized trails",
+      "url": "https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/SCORP_NonMoto_Trails_Master/FeatureServer/0",
+      "basisUrl": "https://arcgis.water.nv.gov/arcgis/rest/services/Hosted/SCORP_NonMoto_Trails_Master/FeatureServer/0",
+      "license": "CC0-1.0",
+      "attribution": "Nevada Division of State Parks and contributing trail managers"
+    },
+    {
+      "id": "ut-ugrc-trails",
+      "state": "UT",
+      "name": "Utah UGRC trails and pathways",
+      "url": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/99lidPhWCzftIe9K/ArcGIS/rest/services/TrailsAndPathways/FeatureServer/0",
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "termsUrl": "https://gis.utah.gov/documentation/policy/license/",
+      "attribution": "Utah Geospatial Resource Center (UGRC), SGID; data modified"
+    },
+    {
+      "id": "co-cpw-trails",
+      "state": "CO",
+      "name": "Colorado Parks and Wildlife trail segments",
+      "url": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/2",
+      "basisUrl": "https://data.colorado.gov/Recreation/Trails-in-Colorado-State-Parks/qqnv-7jrr",
+      "license": "CPW public GIS distribution",
+      "attribution": "Colorado Parks and Wildlife",
+      "termsUrl": "https://services5.arcgis.com/ttNGmDvKQA7oeDQ3/ArcGIS/rest/services/CPWAdminData/FeatureServer/info/iteminfo"
+    },
+    {
+      "id": "ar-historical-facilities",
+      "state": "AR",
+      "name": "Arkansas historical Parks and Forestry facilities",
+      "url": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+      "basisUrl": "https://gis.arkansas.gov/arcgis/rest/services/FEATURESERVICES/Location/FeatureServer/24",
+      "where": "owner IN ('ASP','AFC')",
+      "license": "Arkansas no access or use limitations",
+      "termsUrl": "https://gis.arkansas.gov/metadata/HTML/asdi.location.OUTDOOR_RECREATIONAL_FACILITIES_export.html",
+      "attribution": "Arkansas GIS Office; Arkansas State Parks and Forestry Commission",
+      "vintage": "Most facility verification dates are missing or 2011â€“2019; historical reference only, current existence/access unknown"
+    },
+    {
+      "id": "ca-calfire-forests",
+      "state": "CA",
+      "name": "CAL FIRE State Demonstration Forests 2024",
+      "url": "https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b",
+      "basisUrl": "https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/gis-data/stateforests241gdb.zip?hash=993C3D06E549F0308BF78E026D3F3655&rev=0f5f76e0dcd447bd9eee2395eba3c13b",
+      "format": "file-geodatabase",
+      "license": "CAL FIRE credited redistribution; modifications marked",
+      "termsUrl": "https://www.fire.ca.gov/what-we-do/fire-resource-assessment-program/gis-mapping-and-data-analytics",
+      "attribution": "California Department of Forestry and Fire Protection (CAL FIRE); data modified",
+      "vintage": "2024; dated boundary reference; current forest directory says fourteen forests, later service metadata says fifteen; completeness not asserted"
+    },
+    {
+      "id": "mn-dnr-hiking",
+      "state": "MN",
+      "name": "Minnesota DNR filtered hiking trail references",
+      "url": "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/trans_state_park_trails_roads/FeatureServer/0",
+      "basisUrl": "https://gisdata.mn.gov/dataset/trans-state-park-trails-roads",
+      "where": "(use_hike=1 OR use_hiking=1 OR use_selfgu=1 OR use_accpat=1 OR use_wntrhi=1) AND (use_abando IS NULL OR use_abando<>1)",
+      "fields": [
+        "objectid",
+        "trail_name",
+        "road_name",
+        "public_use",
+        "use_hike",
+        "use_hiking",
+        "lengthmile"
+      ],
+      "distributionScope": "noncommercial",
+      "license": "MNDNR credited modified derivatives; reference only",
+      "termsUrl": "https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html",
+      "attribution": "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement"
+    },
+    {
+      "id": "mn-dnr-campgrounds",
+      "state": "MN",
+      "name": "Minnesota DNR filtered forest campground references",
+      "url": "https://enterprise.gisdata.mn.gov/aghost/rest/services/us_mn_state_dnr/struc_state_forest_campgrounds/FeatureServer/1",
+      "basisUrl": "https://gisdata.mn.gov/dataset/struc-state-forest-campgrounds",
+      "where": "site_type LIKE '%Camp%'",
+      "fields": ["objectid", "facility_name", "site_type", "state_forest", "pat_admin_unit"],
+      "distributionScope": "noncommercial",
+      "license": "MNDNR credited modified derivatives; reference only",
+      "termsUrl": "https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html",
+      "attribution": "Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement"
+    },
+    {
+      "id": "va-dcr-trails",
+      "state": "VA",
+      "name": "Virginia DCR State Parks trails",
+      "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0",
+      "distributionScope": "noncommercial",
+      "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+      "termsUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/info/iteminfo?f=json",
+      "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor"
+    },
+    {
+      "id": "va-dcr-boundaries",
+      "state": "VA",
+      "name": "Virginia DCR State Parks boundaries",
+      "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3",
+      "basisUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3",
+      "distributionScope": "noncommercial",
+      "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+      "termsUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/info/iteminfo?f=json",
+      "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor"
+    },
+    {
+      "id": "mi-dnr-hiking",
+      "state": "MI",
+      "name": "Michigan DNR Hiking Trails",
+      "basisUrl": "https://www.michigan.gov/dnr/places/state-trails",
+      "url": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "termsUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/info/iteminfo?f=json",
+      "rightsClearance": "dataset-specific-public-record-license-2026-09-28",
+      "license": "State of Michigan dataset-specific public-record terms; unrestricted use, reproduction and distribution",
+      "attribution": "Michigan Department of Natural Resources; data processed by Open Outdoor; no endorsement",
+      "fields": [
+        "OBJECTID",
+        "HikingName",
+        "TrailNamePrimary",
+        "PRDManagementUnit",
+        "PRDTrailUnit",
+        "TrailOwnership",
+        "TrailAdministrator",
+        "TrailApprovalStatus",
+        "OpenClosedStatusNonmotor",
+        "Hiking",
+        "SurfaceType",
+        "SegmentLengthMiles",
+        "PublicComments",
+        "SpecialRestrictionType",
+        "SpecialDesignation",
+        "LicenseType",
+        "FacilityName",
+        "SiteName",
+        "last_edited_date"
+      ]
+    },
+    {
+      "id": "nc-spo-forest-additions",
+      "state": "NC",
+      "name": "North Carolina Dan River and Backbone Ridge forest tracts",
+      "url": "https://services3.arcgis.com/zMTrRjxZirPAKsKd/arcgis/rest/services/State_Owned_Land_NC_Latest_02/FeatureServer/0",
+      "basisUrl": "https://www.doa.nc.gov/divisions/state-property",
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/e60514c3b78542ef9902e3d7f7a671c1/data?f=json",
+      "licenseUrl": "https://www.nconemap.gov/pages/terms",
+      "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
+      "rightsClearance": "dataset-specific-public-use-policy-2026-09-28",
+      "where": "DeptName='AGRICULTURE' AND DivName='FOREST SERVICE' AND ComplexName IN ('FR SHOEBUCKLE FOREST','FR BACKBONE RIDGE STATE FOREST')",
+      "fields": [
+        "FID",
+        "ComplexName",
+        "DeptName",
+        "DivName",
+        "LandAssetID",
+        "EditDate",
+        "GIS_ACRES"
+      ],
+      "nameField": "ComplexName",
+      "nameOverrides": {
+        "FR SHOEBUCKLE FOREST": "Dan River Educational State Forest",
+        "FR BACKBONE RIDGE STATE FOREST": "Backbone Ridge State Forest"
+      },
+      "nameEvidenceUrl": "https://blog.ncagr.gov/2023/08/07/n-c-forest-service-continues-to-expand-educational-and-recreational-opportunities-for-visitors-to-state-forests/",
+      "datasetPurpose": "managed-land-boundaries",
+      "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
+      "coverageLimitations": "Six named property tracts; not a complete NCFS inventory, visitor entrance map or access authorization. Shoebuckle name normalized to Dan River ESF using the NCFS acquisition announcement. Verify current visitor access with NCFS."
+    }
+  ],
+  "held": [
+    {
+      "state": "MN",
+      "source": "Minnesota DNR complete raw datasets / Forest Stand Inventory",
+      "reason": "Visitor hiking/campground derivatives are included. Entire source datasets remain excluded; forest stand inventory is not a visitor POI dataset."
+    }
+  ]
+}

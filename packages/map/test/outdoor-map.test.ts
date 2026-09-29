@@ -94,7 +94,7 @@ describe('real offline New York map', () => {
       RangeError,
     );
   });
-  it('ships the complete checksum-pinned source inventories with rights/attribution', () => {
+  it('ships checksum-pinned federal inventories without rights-held state agency data', () => {
     expect(createHash('sha256').update(bytes).digest('hex')).toBe(manifest.sha256);
     expect(bytes.length).toBe(manifest.bytes);
     expect(bytes.length).toBeLessThan(24 * 1024 * 1024);
@@ -102,7 +102,10 @@ describe('real offline New York map', () => {
     expect(indexBytes.length).toBe(manifest.indexBytes);
     expect(index.features).toHaveLength(collection.features.length);
     expect(collection.features.length).toBe(manifest.featureCount);
-    expect(collection.features.length).toBeGreaterThan(9000);
+    expect(collection.features.length).toBe(326);
+    expect(
+      collection.features.every((feature) => !feature.properties.sourceId.startsWith('nys-dec-')),
+    ).toBe(true);
     expect(new Set(collection.features.map((f) => f.id)).size).toBe(collection.features.length);
     expect(
       manifest.rights.offlineStorage &&
@@ -112,7 +115,6 @@ describe('real offline New York map', () => {
     expect(manifest.rights.attribution).toEqual(
       expect.arrayContaining([
         'NYS ITS Geospatial Services',
-        'New York State Department of Environmental Conservation',
         'National Park Service',
         'USDA Forest Service',
         'Bureau of Land Management',
@@ -125,7 +127,7 @@ describe('real offline New York map', () => {
       expect(source.pages.reduce((n: number, p: any) => n + p.count, 0)).toBe(source.featureCount);
     }
     expect(manifest.catalogSources).toEqual([
-      expect.objectContaining({ id: 'nys-dec', featureCount: 14_455 }),
+      expect.objectContaining({ id: 'nys-boundary', featureCount: 1 }),
       expect.objectContaining({ id: 'nps', featureCount: 88 }),
       expect.objectContaining({ id: 'usfs', featureCount: 237 }),
       expect.objectContaining({ id: 'blm', featureCount: 0 }),
@@ -158,6 +160,7 @@ describe('real offline New York map', () => {
             'sourceId',
             'unit',
             'category',
+            'sourceCategory',
             'publicUse',
             'sourceUpdated',
             'sourceUrl',
@@ -181,6 +184,7 @@ describe('real offline New York map', () => {
     const sourceIds = new Set(collection.features.map((feature) => feature.properties.sourceId));
     expect([...sourceIds]).toEqual(
       expect.arrayContaining([
+        'nys-boundary',
         'nps-parks-ny',
         'nps-campgrounds-ny',
         'nps-alerts-ny',
@@ -195,15 +199,15 @@ describe('real offline New York map', () => {
       status: expect.stringContaining('verified'),
     });
   });
-  it('finds real named trails without synthetic preserve substitution', () => {
-    expect(searchOutdoorFeatures(collection, 'Slide').length).toBeGreaterThan(0);
+  it('searches retained federal visitor records without state trail substitution', () => {
+    expect(searchOutdoorFeatures(collection, 'Watch Hill').length).toBeGreaterThan(0);
     expect(
-      searchOutdoorFeatures(collection, 'Slide').some((f) => f.properties.kind === 'trail'),
+      searchOutdoorFeatures(collection, 'Watch Hill').some((f) => f.properties.kind === 'poi'),
     ).toBe(true);
     expect(searchOutdoorFeatures(collection, '')).toEqual([]);
-    expect(searchOutdoorFeatures(collection, 'a', 100)).toHaveLength(50);
-    expect(searchOutdoorFeatureIndex(index, 'Slide').map((feature) => feature.id)).toEqual(
-      searchOutdoorFeatures(collection, 'Slide').map((feature) => feature.id),
+    expect(searchOutdoorFeatures(collection, 'a', 100).length).toBeLessThanOrEqual(100);
+    expect(searchOutdoorFeatureIndex(index, 'Watch Hill').map((feature) => feature.id)).toEqual(
+      searchOutdoorFeatures(collection, 'Watch Hill').map((feature) => feature.id),
     );
     expect(index.features.every((feature) => feature.bounds.length === 4)).toBe(true);
     expect(collection.features.some((f) => f.properties.name === 'Hemlock Loop')).toBe(false);
@@ -214,11 +218,11 @@ describe('real offline New York map', () => {
     const parking = createOutdoorPlaceCollection(index, 'shorterm_parking');
     const attractions = createOutdoorPlaceCollection(index, 'tourist_attraction');
     const other = createOutdoorPlaceCollection(index, 'other');
-    expect(all.features).toHaveLength(4641);
-    expect(camping.features.length).toBeGreaterThan(2500);
-    expect(parking.features.length).toBeGreaterThan(1500);
-    expect(attractions.features.length).toBeGreaterThan(100);
-    expect(other.features.length).toBeGreaterThan(150);
+    expect(all.features).toHaveLength(81);
+    expect(camping.features.length).toBe(8);
+    expect(parking.features.length).toBe(15);
+    expect(attractions.features.length).toBe(34);
+    expect(other.features.length).toBe(0);
     expect(camping.features.every((feature) => feature.geometry.type === 'Point')).toBe(true);
     expect(
       camping.features.every((feature) => feature.properties.ioverlanderCategory === 'campsite'),
@@ -337,7 +341,7 @@ describe('real offline New York map', () => {
       style.layers.findIndex((layer) => layer.type === 'symbol'),
     );
     expect(collection.features.filter((feature) => feature.properties.kind === 'poi')).toHaveLength(
-      4641,
+      81,
     );
     expect(
       collection.features.filter((feature) =>
@@ -345,7 +349,7 @@ describe('real offline New York map', () => {
           feature.properties.category,
         ),
       ).length,
-    ).toBeGreaterThan(2500);
+    ).toBe(0);
   });
   it('ships checksum-pinned world and US/Canada tiers with no runtime network resources', async () => {
     await expectPinnedArchive(worldBasemapPath, worldBasemapManifest.archive);

@@ -3,16 +3,30 @@ import {
   outdoorSourceUrl,
 } from '../packages/shared/src/outdoor-details.ts';
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
-const output = new URL('../packages/map/src/assets/', import.meta.url);
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+// This source includes NYS DEC records with unresolved redistribution rights.
+// A project decision alone does not authorize a fresh copy from the publishers.
+const grantPath = new URL('../PrivateData/agency-feeds/ny-publisher-grant.json', import.meta.url);
+let grant;
+try {
+  grant = JSON.parse(await readFile(grantPath, 'utf8'));
+} catch {
+  throw new Error(`Publisher grant required before New York acquisition: ${grantPath.pathname}`);
+}
+const requiredPublishers = ['NYS Department of Environmental Conservation', 'OPEN-NY'];
+if (
+  grant.publisherGrant !== true ||
+  typeof grant.evidenceUrl !== 'string' ||
+  grant.evidenceUrl.trim() === '' ||
+  !requiredPublishers.every((publisher) => grant.publishers?.includes(publisher))
+) {
+  throw new Error('New York publisher grant must cover DEC and OPEN-NY before acquisition');
+}
+const output = new URL(
+  '../PrivateData/catalogs/US/New York/dec-source-acquisition/',
+  import.meta.url,
+);
 const sources = [
-  {
-    id: 'nys-boundary',
-    kind: 'boundary',
-    url: 'https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0',
-    fields: ['OBJECTID', 'NAME', 'DATEMOD'],
-    attribution: 'NYS ITS Geospatial Services',
-  },
   {
     id: 'nys-dec-lands',
     kind: 'land',
@@ -249,7 +263,8 @@ await writeFile(
   JSON.stringify(
     {
       schemaVersion: 1,
-      classification: 'SOURCE_REDISTRIBUTABLE',
+      classification: 'PRIVATE_USER',
+      publicDistribution: false,
       acquiredAt: new Date().toISOString(),
       sha256: hash(bytes),
       bytes: Buffer.byteLength(bytes),
@@ -260,19 +275,14 @@ await writeFile(
       simplificationDegrees: 0.00003,
       geometryPrecision: 5,
       coverage:
-        'New York State boundary and published DEC lands, roads, hiking trails and recreation points. Not a land-ownership survey, current-status feed or camping authorization.',
+        'DEC lands, roads, hiking trails and recreation points. The NYS civil boundary is bundled publicly. Not a land-ownership survey, current-status feed or camping authorization.',
       rights: {
-        license: 'NYS public GIS data terms',
+        license: 'Publisher redistribution review pending',
         offlineStorage: true,
-        redistribution: true,
-        derivedData: true,
-        attribution: [
-          'NYS ITS Geospatial Services',
-          'New York State Department of Environmental Conservation',
-          'OPEN-NY',
-        ],
+        redistribution: false,
+        derivedData: false,
+        attribution: ['New York State Department of Environmental Conservation', 'OPEN-NY'],
         terms: [
-          'https://gis.ny.gov/disclaimer',
           'https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS',
           'https://data.ny.gov/about',
         ],

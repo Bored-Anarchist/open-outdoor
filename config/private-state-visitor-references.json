@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "profiles": [
+    {
+      "id": "ldaf-indian-creek-visitor",
+      "state": "LA",
+      "name": "Indian Creek Recreation Area",
+      "matchSourceId": "private-ioverlander",
+      "matchBounds": [-92.6, 31.0, -92.3, 31.3],
+      "agency": "Louisiana Department of Agriculture and Forestry",
+      "agencyPhone": "318-487-5058",
+      "agencyWebsite": "https://www.ldaf.la.gov/indian-creek-recreation-area",
+      "address": "100 Camp Ground Road, Woodworth, LA 71485",
+      "description": "LDAF manages Indian Creek recreation facilities within Alexander State Forest. Its visitor pages describe RV and primitive camping, swimming, boating, fishing and trails. Published amenities include three beaches, four bath houses, more than 100 campsites and two dump stations. Site availability, fees, restrictions and closures need confirmation with the operator. The campground, primitive camping, hiking and horse-trail maps are linked as raster references; individual facilities and trail routes have no verified geographic geometry in this update.",
+      "amenities": [
+        "Beach areas: 3 (agency reference; current availability unknown)",
+        "Bath houses: 4 (agency reference; current availability unknown)",
+        "Dump stations: 2 (agency reference; current availability unknown)",
+        "Boat launch (agency reference)",
+        "Picnic facilities (agency reference)",
+        "Playground (agency reference)",
+        "Covered pavilions (agency reference)",
+        "RV and primitive camping (agency reference)"
+      ],
+      "reservationUrl": "https://www.ldaf.la.gov/indian-creek-recreation-area/book-your-stay-today",
+      "mapPageUrl": "https://www.ldaf.la.gov/indian-creek-recreation-area/campground-maps",
+      "mapReferences": [
+        {
+          "name": "Campground",
+          "url": "https://images.ctfassets.net/pc5e1rlgfrov/6IAzgjkwmqSHv8IpzDeE9I/e07b60c0a9beb2a6ac417aa8a741e9b1/ICRA_MAP__1_.png"
+        },
+        {
+          "name": "Hiking",
+          "url": "https://images.ctfassets.net/pc5e1rlgfrov/1UmmeNy3aonKcyjMTU7g3y/80f702076247c96b3724ed0d7bb43727/IC_hikingMap.jpg"
+        },
+        {
+          "name": "Horse trail",
+          "url": "https://images.ctfassets.net/pc5e1rlgfrov/5JJFYK7QjcVuOsuJuj25Y4/4874b57c61a657f6f0c873a8e4a86f5d/map_of_horse_trail.jpg"
+        },
+        {
+          "name": "Primitive camping",
+          "url": "https://images.ctfassets.net/pc5e1rlgfrov/35PnHyrs1rO4xPT81gQD5v/ac28c00707a459801a5da2bb594aca8d/IndianCreek.png"
+        }
+      ],
+      "evidence": [
+        {
+          "url": "https://www.ldaf.la.gov/indian-creek-recreation-area",
+          "requiredPatterns": [
+            "Alexander State Forest",
+            "Louisiana Department of Agriculture and Forestry"
+          ]
+        },
+        {
+          "url": "https://www.ldaf.la.gov/indian-creek-recreation-area/activities-amenities",
+          "requiredPatterns": [
+            "3 beach areas",
+            "4 bath houses",
+            "Over 100 campsites",
+            "2 dump stations",
+            "Boat launch",
+            "318.{0,8}487.{0,8}5058"
+          ]
+        },
+        {
+          "url": "https://www.ldaf.la.gov/indian-creek-recreation-area/getting-to-indian-creek",
+          "requiredPatterns": ["100 Camp Ground Road", "Woodworth", "71485"]
+        },
+        {
+          "url": "https://www.ldaf.la.gov/indian-creek-recreation-area/campground-maps",
+          "requiredPatterns": [
+            "ICRA_MAP__1_",
+            "IC_hikingMap",
+            "map_of_horse_trail",
+            "IndianCreek.png"
+          ]
+        },
+        {
+          "url": "https://www.ldaf.la.gov/indian-creek-recreation-area/book-your-stay-today",
+          "requiredPatterns": ["Indian Creek", "resnexus.com"]
+        }
+      ]
+    }
+  ]
+}

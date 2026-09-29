@@ -1,0 +1,4 @@
+mapbox-vector-tile==2.2.0
+pmtiles==3.7.0
+shapely==2.1.2
+pyproj==3.7.2

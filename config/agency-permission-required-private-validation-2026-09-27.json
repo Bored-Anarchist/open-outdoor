@@ -1,0 +1,37 @@
+{
+  "reviewedAt": "2026-09-27",
+  "scope": "Five Permission required roles registered for private evaluation; no redistribution grant is asserted",
+  "roles": [
+    {
+      "id": "registry-mi-parks-cabb7fa608",
+      "privateCollection": false,
+      "projectPrivateApproval": true,
+      "candidateUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "reason": "Project owner approved private staging, but confirmed no Michigan DNR written copying grant. DNR terms require prior written permission; exact DNR hiking layer identified but not acquired"
+    },
+    {
+      "id": "registry-mi-forestry-cabb7fa608",
+      "privateCollection": false,
+      "projectPrivateApproval": true,
+      "candidateUrl": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
+      "reason": "Same DNR copying restriction and project-only approval; exact hiking layer requires state-forest role filtering and written copying permission before acquisition"
+    },
+    {
+      "id": "registry-nj-parks-fbd88e5b9e",
+      "privateCollection": true,
+      "alternateUrl": "https://mapsdep.nj.gov/arcgis/rest/services/Applications/DEP_Trails/MapServer/0",
+      "reason": "Original ZIP returns HTTP 403; NJ State Park Service Trails service layer is available for local validation, with redistribution permission still required"
+    },
+    {
+      "id": "registry-nj-forestry-cecb5c0cc2",
+      "privateCollection": true,
+      "reason": "NJDEP GIS FAQ permits local data use but gates redistribution"
+    },
+    {
+      "id": "registry-nj-forestry-supplement-746fa861b0",
+      "privateCollection": true,
+      "childLayerIds": [0, 25, 31],
+      "reason": "NJDEP GIS FAQ permits local data use but gates redistribution; selected trails, open space, and POI children"
+    }
+  ]
+}
