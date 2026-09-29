@@ -111,7 +111,7 @@
       "license": "Arkansas no access or use limitations",
       "termsUrl": "https://gis.arkansas.gov/metadata/HTML/asdi.location.OUTDOOR_RECREATIONAL_FACILITIES_export.html",
       "attribution": "Arkansas GIS Office; Arkansas State Parks and Forestry Commission",
-      "vintage": "Most facility verification dates are missing or 2011\u00e2\u20ac\u201c2019; historical reference only, current existence/access unknown"
+      "vintage": "Most facility verification dates are missing or 2011â€“2019; historical reference only, current existence/access unknown"
     },
     {
       "id": "ca-calfire-forests",
@@ -212,6 +212,36 @@
         "SiteName",
         "last_edited_date"
       ]
+    },
+    {
+      "id": "nc-spo-forest-additions",
+      "state": "NC",
+      "name": "North Carolina Dan River and Backbone Ridge forest tracts",
+      "url": "https://services3.arcgis.com/zMTrRjxZirPAKsKd/arcgis/rest/services/State_Owned_Land_NC_Latest_02/FeatureServer/0",
+      "basisUrl": "https://www.doa.nc.gov/divisions/state-property",
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/e60514c3b78542ef9902e3d7f7a671c1/data?f=json",
+      "licenseUrl": "https://www.nconemap.gov/pages/terms",
+      "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
+      "rightsClearance": "dataset-specific-public-use-policy-2026-09-28",
+      "where": "DeptName='AGRICULTURE' AND DivName='FOREST SERVICE' AND ComplexName IN ('FR SHOEBUCKLE FOREST','FR BACKBONE RIDGE STATE FOREST')",
+      "fields": [
+        "FID",
+        "ComplexName",
+        "DeptName",
+        "DivName",
+        "LandAssetID",
+        "EditDate",
+        "GIS_ACRES"
+      ],
+      "nameField": "ComplexName",
+      "nameOverrides": {
+        "FR SHOEBUCKLE FOREST": "Dan River Educational State Forest",
+        "FR BACKBONE RIDGE STATE FOREST": "Backbone Ridge State Forest"
+      },
+      "nameEvidenceUrl": "https://blog.ncagr.gov/2023/08/07/n-c-forest-service-continues-to-expand-educational-and-recreational-opportunities-for-visitors-to-state-forests/",
+      "datasetPurpose": "managed-land-boundaries",
+      "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
+      "coverageLimitations": "Six named property tracts; not a complete NCFS inventory, visitor entrance map or access authorization. Shoebuckle name normalized to Dan River ESF using the NCFS acquisition announcement. Verify current visitor access with NCFS."
     }
   ],
   "held": [

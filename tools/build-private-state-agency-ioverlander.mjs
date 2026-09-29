@@ -4,16 +4,30 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
+import { visitorSourceExclusion } from './state-visitor-source-scope.mjs';
+import {
+  attachVisitorReferences,
+  readPrivateVisitorReferences,
+} from './private-state-visitor-references.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const privateRoot = join(repository, 'PrivateData');
 const censusUrl =
   'https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/State_County/MapServer/0/query';
-const resolutions = new Map(
-  JSON.parse(
-    await readFile(join(repository, 'config/agency-pending-source-resolutions-2026-09-27.json')),
-  ).resolutions.map((item) => [item.parentId, item]),
-);
+const resolutions = JSON.parse(
+  await readFile(join(repository, 'config/agency-pending-source-resolutions-2026-09-27.json')),
+).resolutions;
+
+export function privateSourceResolution(receipt, reviews = resolutions) {
+  const matches = reviews.filter(
+    (item) => item.parentId === (receipt.parentSourceId ?? receipt.sourceId),
+  );
+  return (
+    matches.find((item) => item.stageId && item.stageId === receipt.sourceId) ??
+    matches.find((item) => item.url === receipt.sourceUrl) ??
+    matches.find((item) => item.status === 'wrong-subject')
+  );
+}
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
@@ -208,6 +222,7 @@ export function agencyFeature(source, feature, index) {
       'Name',
       'name',
       'NCDA_NAME',
+      'GML_HAB',
       'CampsiteName',
       'PropertyName',
       'DNRNAME',
@@ -231,6 +246,15 @@ export function agencyFeature(source, feature, index) {
       : /^kurtz/i.test(name)
         ? 'Kurtz State Forest'
         : 'Jamie L. Whitten State Forest';
+  if (source.state === 'NC') {
+    name =
+      {
+        'Dupont Recreational State Forest': 'DuPont State Recreational Forest',
+        'Jordan Lake Eductaional State Forest': 'Jordan Lake Educational State Forest',
+        'Mountain Island Lakes Educational State Forest':
+          'Mountain Island Educational State Forest',
+      }[name] ?? name;
+  }
   return {
     type: 'Feature',
     id,
@@ -249,10 +273,17 @@ export function agencyFeature(source, feature, index) {
       sourceId: source.sourceId,
       sourceUrl: source.sourceUrl,
       sourceCategory: String(
-        fields.Sub_Asset ?? fields.Category ?? fields.LOCTYPE ?? fields.DESIG ?? '',
+        fields.Sub_Asset ??
+          fields.Category ??
+          fields.LOCTYPE ??
+          fields.GML_TYPE ??
+          fields.DESIG ??
+          '',
       ),
       sourceUpdated: fields.last_edited_date ?? source.sourceEditDate ?? null,
-      ...(fields.DIVISION ? { agency: String(fields.DIVISION) } : {}),
+      ...((fields.DIVISION ?? fields.GML_OWN)
+        ? { agency: String(fields.DIVISION ?? fields.GML_OWN) }
+        : {}),
       ...(fields.CONTACT_NU ? { agencyPhone: String(fields.CONTACT_NU) } : {}),
       ...(fields.SITE_ADD ? { address: String(fields.SITE_ADD) } : {}),
       ...(fields.WEBLINK ? { agencyWebsite: String(fields.WEBLINK) } : {}),
@@ -276,6 +307,15 @@ const njVisitorUses = new Set([
 export function privateAgencySelection(receipt, features, resolution) {
   let selected = features;
   const filters = [];
+  if (resolution?.excludeFilter) {
+    selected = selected.filter(
+      (feature) =>
+        !Object.entries(resolution.excludeFilter).every(
+          ([field, value]) => feature.properties?.[field] === value,
+        ),
+    );
+    filters.push({ exclude: resolution.excludeFilter });
+  }
   if (resolution?.filter) {
     selected = selected.filter((feature) =>
       Object.entries(resolution.filter).every(
@@ -360,7 +400,8 @@ export async function readAgency(code) {
     ) {
       continue;
     }
-    const resolution = resolutions.get(receipt.parentSourceId ?? receipt.sourceId);
+    if (visitorSourceExclusion(receipt)) continue;
+    const resolution = privateSourceResolution(receipt);
     if (resolution?.status === 'wrong-subject') continue;
     const bytes = await readFile(join(path, receipt.rawFilename));
     if (sha256(bytes) !== receipt.sha256) throw new Error(`${directory}: raw checksum mismatch`);
@@ -406,7 +447,12 @@ export async function buildPrivateStateAgencyIoverlander(code) {
   }
   const output = join(privateRoot, 'catalogs', 'US', state.name, 'current');
   await mkdir(output, { recursive: true });
-  const features = [...ioverlander.features, ...agency.features];
+  const visitorReferences = await readPrivateVisitorReferences(code);
+  const combined = [...ioverlander.features, ...agency.features];
+  const enriched = visitorReferences
+    ? attachVisitorReferences(combined, visitorReferences.references, code)
+    : { features: combined, bindings: [] };
+  const features = enriched.features;
   const collection = Buffer.from(`${JSON.stringify({ type: 'FeatureCollection', features })}\n`);
   const filename = 'agency-ioverlander.private.geojson';
   const manifest = {
@@ -429,6 +475,17 @@ export async function buildPrivateStateAgencyIoverlander(code) {
       featureCount: agency.features.length,
       sources: agency.sources,
     },
+    ...(visitorReferences
+      ? {
+          visitorReferences: {
+            file: 'visitor-references.private.json',
+            sha256: visitorReferences.sha256,
+            bytes: visitorReferences.bytes.length,
+            profileCount: visitorReferences.references.profiles.length,
+            bindings: enriched.bindings,
+          },
+        }
+      : {}),
     output: {
       file: filename,
       featureCount: features.length,
@@ -437,6 +494,8 @@ export async function buildPrivateStateAgencyIoverlander(code) {
     },
   };
   await writeFile(join(output, filename), collection);
+  if (visitorReferences)
+    await writeFile(join(output, 'visitor-references.private.json'), visitorReferences.bytes);
   await writeFile(
     join(output, 'agency-ioverlander.manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,

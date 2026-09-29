@@ -45,6 +45,8 @@ async function stage(feed, evidenceUrl) {
     if (
       receipt.sourceId !== feed.id ||
       receipt.sourceUrl !== feed.url ||
+      receipt.sourceFilter !== feed.where ||
+      JSON.stringify(receipt.sourceFields) !== JSON.stringify(feed.fields) ||
       receipt.publicDistribution !== false ||
       receipt.validationStatus === 'rejected-subject'
     )
@@ -71,7 +73,7 @@ async function stage(feed, evidenceUrl) {
     const response = await nativeCurlFetch(`${feed.url}/query`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ where: '1=1', returnCountOnly: 'true', f: 'json' }),
+      body: new URLSearchParams({ where: feed.where ?? '1=1', returnCountOnly: 'true', f: 'json' }),
     });
     const body = await response.json();
     if (!Number.isSafeInteger(body.count) || body.count < 0) {
@@ -104,11 +106,13 @@ for (const resolution of resolutions) {
       parentSourceId: parent.id,
       name: `${parent.name}: ${resolution.reason}`,
       url: resolution.url,
+      ...(resolution.where ? { where: resolution.where } : {}),
+      ...(resolution.fields ? { fields: resolution.fields } : {}),
       sourceType: resolution.format === 'arcgis-layer' ? 'arcgis-layer' : 'download-file',
       ...(resolution.format === 'zip' ? { downloadFormat: 'zip' } : {}),
     };
     try {
-      Object.assign(result, await stage(feed, parent.url));
+      Object.assign(result, await stage(feed, resolution.evidenceUrl ?? parent.url));
     } catch (error) {
       result.status = 'error';
       result.error = String(error).slice(0, 300);

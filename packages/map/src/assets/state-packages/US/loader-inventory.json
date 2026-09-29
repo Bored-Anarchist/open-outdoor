@@ -839,12 +839,12 @@
       "classification": "SOURCE_REDISTRIBUTABLE",
       "state": "NC",
       "name": "North Carolina",
-      "featureCount": 9535,
-      "sourceSha256": "31d0c11d3884fbe685f973b976fa2d40da7eab3633f53fcec4291155c544bf8b",
-      "generatedAt": "2026-09-28T00:09:32.527Z",
-      "sourceIndexSha256": "03c764bba25617837f515d178126a5e8b79b79afcd64b2ca2ff074de363414fc",
-      "tilesSha256": "075bd33ad55b8a18765f9c16326499f2f0605d499c2fd49a700a1acfecbcc80b",
-      "tilesBytes": 3566063,
+      "featureCount": 9541,
+      "sourceSha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4",
+      "generatedAt": "2026-09-29T02:21:17.324Z",
+      "sourceIndexSha256": "28a0461780657b1c8b721431cc02be63a7238a26b79ca4cd4da4e749c9c60e9f",
+      "tilesSha256": "70c404d2152fa383415e55afaf27162650337fd018d4ddeec4723035b79e4dfc",
+      "tilesBytes": 3601759,
       "maximumZoom": 10,
       "tileCount": 245,
       "bounds": [
@@ -853,11 +853,11 @@
         -75.4601,
         36.5881
       ],
-      "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project",
+      "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
       "file": "NC/state.sqlite",
-      "sha256": "6b7463c84fbd1b3b6e8e0d7136f380e7a3844ba4d80cf07f02462a02e7bb7b80",
-      "bytes": 23592960,
-      "installedBytes": 27159023
+      "sha256": "b19a712f45daf6abc6be02e7117c4223ff08f0a115f63230ea50a23ee01800a1",
+      "bytes": 23658496,
+      "installedBytes": 27260255
     },
     {
       "schemaVersion": 1,

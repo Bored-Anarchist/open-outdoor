@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-09-28",
+  "excludedPurposes": [
+    "forestry-inventory",
+    "land-cover",
+    "planning"
+  ],
+  "excludedUrlPatterns": [
+    "Eco_Inventory_view/FeatureServer/68(?:[/?]|$)",
+    "Forest[_ -]?Stand[_ -]?Inventory",
+    "RDS-2017-0025",
+    "RDS-2019-0038",
+    "/ncfs/ncfap(?:[/?]|$)",
+    "Forest[_ -]?(?:Action[_ -]?Plan|Lands[_ -]?Assessment)",
+    "ncnhde\\.natureserve\\.org/arcgis/rest/services/NC_Public/Managed_Areas/",
+    "/treecanopycover(?:[/?]|$)"
+  ],
+  "reason": "User scope excludes forestry/species inventories, land-cover and planning layers. Verified recreation features and managed-land boundaries are reviewed separately by exact source and subject."
+}

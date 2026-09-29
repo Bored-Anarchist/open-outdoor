@@ -8,8 +8,71 @@ import {
   ioverlanderFeature,
   pointInGeometry,
   privateAgencySelection,
+  privateSourceResolution,
+  agencyFeature,
   readIoverlander,
 } from './build-private-state-agency-ioverlander.mjs';
+
+test('NC forest names and Little Fork owner retain their agency context without changing geometry', () => {
+  const source = { state: 'NC', sourceId: 'forest', sourceUrl: 'https://example.invalid/forest' };
+  const geometry = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [0, 0],
+        [1, 0],
+        [0, 1],
+        [0, 0],
+      ],
+    ],
+  };
+  const littleFork = agencyFeature(
+    source,
+    {
+      geometry,
+      properties: {
+        OBJECTID: 1376,
+        GML_HAB: 'Little Fork State Forest',
+        GML_OWN: 'NC Forest Service',
+        GML_TYPE: 'Game Land',
+      },
+    },
+    0,
+  );
+  assert.equal(littleFork.properties.name, 'Little Fork State Forest');
+  assert.equal(littleFork.properties.agency, 'NC Forest Service');
+  assert.equal(littleFork.properties.kind, 'land');
+  assert.deepEqual(littleFork.geometry, geometry);
+  assert.equal(
+    agencyFeature(
+      source,
+      { geometry, properties: { NCDA_NAME: 'Jordan Lake Eductaional State Forest' } },
+      0,
+    ).properties.name,
+    'Jordan Lake Educational State Forest',
+  );
+});
+
+test('companion source reviews remain bound to their exact source instead of overriding a parent', () => {
+  const reviews = [
+    { parentId: 'forest', url: 'https://example.invalid/bounds', excludeFilter: { NAME: 'Old' } },
+    { parentId: 'forest', url: 'https://example.invalid/points', filter: { NAME: 'Other' } },
+  ];
+  const receipt = { parentSourceId: 'forest', sourceUrl: reviews[0].url };
+  const selected = privateAgencySelection(
+    receipt,
+    [{ properties: { NAME: 'Current' } }, { properties: { NAME: 'Old' } }],
+    privateSourceResolution(receipt, reviews),
+  );
+  assert.deepEqual(
+    selected.selected.map((feature) => feature.properties.NAME),
+    ['Current'],
+  );
+  assert.equal(
+    privateSourceResolution({ ...receipt, sourceUrl: 'https://example.invalid/new' }, reviews),
+    undefined,
+  );
+});
 
 test('multiple iOverlander packages retain state places once and reject corrupt tiles', async () => {
   const root = await mkdtemp(join(tmpdir(), 'private-state-packages-'));

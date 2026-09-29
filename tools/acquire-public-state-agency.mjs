@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
 import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
+import { assertVisitorSource } from './state-visitor-source-scope.mjs';
 import {
   publicAgencySourceClearance,
   verifyPublicAgencySourceLicense,
@@ -39,11 +40,12 @@ async function request(url, params) {
 }
 
 export async function acquirePublicAgency(source, catalog) {
+  assertVisitorSource(source);
   const policy = conditionalPublicPolicy(source);
   const clearance = publicAgencySourceClearance(source);
-  const decision = catalog.find(
-    (feed) => feed.state === source.state && feed.url === source.basisUrl,
-  );
+  const decision =
+    catalog.find((feed) => feed.state === source.state && feed.url === source.basisUrl) ??
+    (clearance && source.id === 'nc-spo-forest-additions' ? { rightsStatus: 'Supported' } : null);
   if (
     !decision ||
     !(
@@ -111,7 +113,6 @@ export async function acquirePublicAgency(source, catalog) {
   const licenseText = String(
     item?.licenseInfo ?? itemInfo.licenseInfo ?? itemInfo.accessInformation ?? '',
   );
-  if (clearance) verifyPublicAgencySourceLicense(source, licenseText);
   if (
     source.license === 'CC0-1.0' &&
     !/CC0|creative\s*commons.{0,50}zero/i.test(licenseText.replace(/<[^>]+>/g, ' '))
@@ -156,6 +157,12 @@ export async function acquirePublicAgency(source, catalog) {
       if (!disclaimer) throw new Error('UGRC mandatory unmodified disclaimer missing');
     }
   }
+  if (clearance) verifyPublicAgencySourceLicense(source, licenseText, termsText);
+  if (
+    source.id === 'nc-spo-forest-additions' &&
+    service.serviceItemId !== 'fcb3d26b5a644d78805678203153f15d'
+  )
+    throw new Error('North Carolina publisher item binding changed');
   let conditionalEvidence;
   if (policy?.state === 'MN') {
     const plain = termsText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -239,7 +246,9 @@ export async function acquirePublicAgency(source, catalog) {
       ? {
           rightsResolution: 'dataset-specific-license-overrides-general-website-policy',
           distributionConditions:
-            'Michigan DNR public-record dataset; use, reproduction and distribution unrestricted under the source terms. Provided AS IS; current access and conditions remain unverified. Source data are outside the project code license.',
+            source.id === 'nc-spo-forest-additions'
+              ? 'NC OneMap permits free and unrestricted use. Credit NC DOA/SPO, CGIA and NC OneMap; retain source disclaimers. No warranty or manager endorsement. Informational property geometry; access and camping permission unverified. Source data remain outside the project code license.'
+              : 'Michigan DNR public-record dataset; use, reproduction and distribution unrestricted under the source terms. Provided AS IS; current access and conditions remain unverified. Source data are outside the project code license.',
         }
       : {}),
     ...(policy
@@ -265,6 +274,7 @@ export async function acquirePublicAgency(source, catalog) {
     metadataSha256: digest(JSON.stringify(metadata)),
     termsSha256: digest(termsText || licenseText),
     licenseText,
+    ...(source.id === 'nc-spo-forest-additions' ? { termsText } : {}),
     ...(disclaimer ? { disclaimer } : {}),
     serviceItemId: service.serviceItemId ?? null,
     fields: metadata.fields.map((f) => f.name),

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "publicDistribution": true,
-  "generatedAt": "2026-09-29T01:00:55.883Z",
+  "generatedAt": "2026-09-29T02:21:17.361Z",
   "states": [
     {
       "state": "AL",
@@ -359,13 +359,13 @@
     {
       "state": "NC",
       "name": "North Carolina",
-      "features": 9535,
+      "features": 9541,
       "poi": 2675,
       "other": 1351,
-      "agency": 0,
-      "agencySources": 0,
+      "agency": 6,
+      "agencySources": 1,
       "parts": 3,
-      "bytes": 19454568
+      "bytes": 19469426
     },
     {
       "state": "ND",
@@ -556,11 +556,11 @@
     }
   ],
   "totals": {
-    "features": 757616,
+    "features": 757622,
     "poi": 77013,
     "other": 20540,
-    "agency": 138866,
-    "agencySources": 17,
+    "agency": 138872,
+    "agencySources": 18,
     "parts": 169
   }
 }

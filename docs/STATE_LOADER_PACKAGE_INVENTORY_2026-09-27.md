@@ -2,7 +2,7 @@
 
 Each state is one `state.sqlite` package. Transfer size is the complete Git LFS SQLite file; installed size adds its extracted local PMTiles archive. No private or iOverlander source records are distributed in these public catalogs. Source coverage, agency rights and historical limitations remain as recorded in the [public source inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md).
 
-All 50 states contain 757,616 catalog records and 25,488 tiles. Combined transfer size is 1,393,651,712 bytes (1.30 GiB); installed size is 1,559,952,099 bytes (1.45 GiB). These totals exclude rollback copies, source downloads, existing basemaps and user data.
+All 50 states contain 757,622 catalog records and 25,488 tiles. Combined transfer size is 1,393,717,248 bytes (1.30 GiB); installed size is 1,560,053,331 bytes (1.45 GiB). These totals exclude rollback copies, source downloads, existing basemaps and user data.
 
 | State | Records | Transfer MiB | Installed MiB | Tiles |
 | --- | ---: | ---: | ---: | ---: |
@@ -38,7 +38,7 @@ All 50 states contain 757,616 catalog records and 25,488 tiles. Combined transfe
 | New Jersey (NJ) | 14,743 | 24.59 | 28.19 | 61 |
 | New Mexico (NM) | 12,896 | 26.73 | 30.46 | 559 |
 | New York (NY) | 326 | 2.20 | 2.57 | 468 |
-| North Carolina (NC) | 9,535 | 22.50 | 25.90 | 245 |
+| North Carolina (NC) | 9,541 | 22.56 | 26.00 | 245 |
 | North Dakota (ND) | 1,125 | 3.88 | 4.68 | 404 |
 | Ohio (OH) | 7,161 | 11.16 | 12.91 | 216 |
 | Oklahoma (OK) | 2,299 | 4.48 | 5.33 | 324 |
@@ -59,6 +59,6 @@ All 50 states contain 757,616 catalog records and 25,488 tiles. Combined transfe
 
 Exact whole-file, tile and source/index SHA-256 checksums are pinned in `packages/map/src/assets/state-packages/US/loader-inventory.json`. Files are installed through the [state package loader](STATE_PACKAGE_LOADER.md); the original manual GeoJSON importer retains its existing limits.
 
-Independent verification passed for all 50 catalogs and all 757,616 original geometries, visitor summaries, feature/search/spatial counts, source/index bindings, full source notices, tile-blob hashes, PMTiles headers/sample tile decoding and read-only queries. The application suite passed 419 tests across 61 files, release checks passed 108 tests, and the Python catalog tests passed six tests. TypeScript, formatting and documentation governance passed. Local iOS/Metro export passed after adding TypeScript-source resolution for Node ESM specifiers. These automated checks do not establish physical phone acceptance.
+Independent verification passed for all 50 catalogs and all 757,622 original geometries, visitor summaries, feature/search/spatial counts, source/index bindings, full source notices, tile-blob hashes, PMTiles headers/sample tile decoding and read-only queries. The application suite passed 419 tests across 61 files, release checks passed 115 tests, and the Python catalog tests passed six tests. TypeScript, formatting and documentation governance passed. Local iOS/Metro export passed again after the NC catalog update. These automated checks do not establish physical phone acceptance.
 
-The complete [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36507140356) passed for code commit `da5b7109fa03f074b990a5e1ca306d792f4f7adb`, including native compilation, Metro/Hermes bundling, app packaging and artifact upload. All five hosted PR jobs passed for that code commit. Physical phone acceptance and production catalog trust integration remain pending.
+The preceding complete [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36507140356) passed for code commit `da5b7109fa03f074b990a5e1ca306d792f4f7adb`, including native compilation, Metro/Hermes bundling, app packaging and artifact upload. All five hosted PR jobs passed for that code commit. Physical phone acceptance and production catalog trust integration remain pending.

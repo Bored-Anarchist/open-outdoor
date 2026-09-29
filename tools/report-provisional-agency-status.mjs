@@ -4,6 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
 import { verifyPublicAgencySourceLicense } from './public-agency-source-clearances.mjs';
+import { visitorSourceExclusion } from './state-visitor-source-scope.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = join(repository, 'PrivateData/agency-feeds');
@@ -48,6 +49,7 @@ for (const state of new Set(feeds.map((feed) => feed.state))) {
     if (
       !item?.parentSourceId ||
       item.publicDistribution !== false ||
+      visitorSourceExclusion(item) ||
       item.validationStatus === 'rejected-subject'
     )
       continue;
@@ -63,7 +65,12 @@ for (const feed of feeds) {
   const child = discovery?.find((item) => item.id === feed.id);
   const stagedChildren = childReceipts.get(feed.id) ?? [];
   let status;
-  if (feed.rightsStatus === 'Permission required') {
+  if (
+    (visitorSourceExclusion(feed) && !stagedChildren.length) ||
+    (receipt && visitorSourceExclusion(receipt))
+  ) {
+    status = 'excluded-visitor-scope';
+  } else if (feed.rightsStatus === 'Permission required') {
     status =
       feed.state === 'MI' && feed.url === michigan?.basisUrl && michigan.publicDistribution === true
         ? 'represented-public-exact-dataset-license'

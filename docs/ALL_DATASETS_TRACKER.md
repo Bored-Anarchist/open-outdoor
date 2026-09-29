@@ -1,8 +1,8 @@
 # Complete outdoor dataset tracker
 
-**Remaining-gap review (2026-09-28):** Michigan's 9,460 hiking records are publicly licensed and packaged. Recovered MD/FL/LA/NC feeds, Mississippi's three state forests and all eight OPRHP feeds are now acquired privately; selected OPRHP visitor records are integrated into New York's private map. Scope exclusions and remaining source-license/current-coverage dependencies are recorded in the [resolution report](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md). OSM POI/trail extracts remain deferred by request. Earlier acquisition-failure and not-acquired statements below are historical.
+**Public packaging update (2026-09-28):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **169 app-parser-validated import parts**. The packages contain **757,622 features**, **77,013 POIs**, and **138,872 eligible direct agency features** in 12 states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
 
-**Public packaging update (2026-09-28):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **169 app-parser-validated import parts**. The packages contain **757,616 features**, **77,013 POIs**, and **138,866 eligible direct agency features** in 11 states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
+**Remaining-gap review (2026-09-28):** Michigan's 9,460 hiking records are publicly licensed and packaged. Recovered MD/FL/LA/NC feeds, Mississippi's three state forests and all eight OPRHP feeds are now acquired privately; selected OPRHP visitor records are integrated into New York's private map. Scope exclusions and remaining source-license/current-coverage dependencies are recorded in the [resolution report](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md). OSM POI/trail extracts remain deferred by request. Earlier acquisition-failure and not-acquired statements below are historical.
 
 **State loader update:** Complete public states can now be installed through the dedicated [offline state package loader](STATE_PACKAGE_LOADER.md), with local PMTiles display, indexed catalog search/details and checksum-verified activation/rollback. Manual GeoJSON import limits remain unchanged. The [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36369753027) passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`. Physical phone acceptance and production catalog trust integration remain pending.
 
@@ -56,7 +56,7 @@ The 50 public packages contain **77,013 POI entries**. **20,540 (26.7%)** retain
 | NJ | 102 | 41 | 0 | 3 validated parts |
 | NM | 1,920 | 386 | 0 | 4 validated parts |
 | NY | 81 | 0 | 0 | 1 validated parts |
-| NC | 2,675 | 1,351 | 0 | 3 validated parts |
+| NC | 2,675 | 1,351 | 6 | 3 validated parts |
 | ND | 54 | 4 | 0 | 1 validated parts |
 | OH | 69 | 1 | 0 | 1 validated parts |
 | OK | 284 | 62 | 0 | 1 validated parts |

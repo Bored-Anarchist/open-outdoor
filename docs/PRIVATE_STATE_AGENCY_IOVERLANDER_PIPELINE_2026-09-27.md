@@ -1,5 +1,7 @@
 # Private state agency + iOverlander pipeline
 
+**September 28 visitor update:** Current coverage and counts are recorded in the [NC/LA follow-up](NC_LA_VISITOR_COVERAGE_2026-09-28.md). All 50 private packages are verified: 535,913 features, including 472,580 agency/DEC/OPRHP records and 63,333 iOverlander places. Forestry inventory, land-cover and planning sources are excluded; 104 of 107 Unconfirmed roles remain represented privately. The dated acquisition history below is superseded by the follow-up and current inventory.
+
 **Remaining-gap review (2026-09-28):** Michigan's 9,460 hiking records are publicly licensed and packaged. Recovered MD/FL/LA/NC feeds, Mississippi's three state forests and all eight OPRHP feeds are now acquired privately; selected OPRHP visitor records are integrated into New York's private map. Scope exclusions and remaining source-license/current-coverage dependencies are recorded in the [resolution report](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md). OSM POI/trail extracts remain deferred by request. Earlier acquisition-failure and not-acquired statements below are historical.
 
 **Status:** private validation is active for the 107 pinned Unconfirmed agency roles. This pipeline writes source data and combined state overlays only under the Git-ignored `PrivateData/` root. The publisher-rights matrix remains Unconfirmed for these roles; public packages and downstream redistribution require a separate grant and release review.
@@ -28,6 +30,7 @@ node tools/stage-private-agency-resolutions.mjs --max-features 200000
 python -m pip install --target PrivateData/vendor -r tools/agency-shapefile-requirements.txt
 python tools/convert-private-agency-shapefiles.py
 python tools/convert-private-agency-kml.py
+node tools/private-state-visitor-references.mjs LA
 node tools/build-private-state-agency-ioverlander.mjs --all
 node tools/package-private-new-york-hikes.mjs
 node tools/stage-private-mobile-map.mjs --input "PrivateData/catalogs/US/New York/current"

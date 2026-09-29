@@ -4,6 +4,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { verifyPrivateHikeProfiles } from './package-private-new-york-hikes.mjs';
 import { validateOprhpPackage } from './package-private-new-york-agencies.mjs';
+import { visitorSourceExclusion } from './state-visitor-source-scope.mjs';
 
 const repository = resolve('.');
 const root = join(repository, 'PrivateData/catalogs/US');
@@ -39,6 +40,31 @@ for (const state of registry.states) {
   const ioverlander = collection.features.filter(
     (feature) => feature.properties?.sourceId === 'private-ioverlander',
   ).length;
+  if (collection.features.some((feature) => visitorSourceExclusion(feature.properties ?? {})))
+    throw new Error(`${state.code}: excluded inventory, land-cover or planning source in package`);
+  if (manifest.visitorReferences) {
+    const reference = manifest.visitorReferences;
+    const referenceBytes = await readFile(join(current, reference.file));
+    const document = JSON.parse(referenceBytes);
+    if (
+      reference.bytes !== referenceBytes.length ||
+      reference.sha256 !== sha256(referenceBytes) ||
+      document.publicDistribution !== false ||
+      document.classification !== 'PRIVATE_USER' ||
+      document.state !== state.code ||
+      document.profiles.length !== reference.profileCount ||
+      reference.bindings.length !== reference.profileCount
+    )
+      throw new Error(`${state.code}: visitor reference checksum or classification mismatch`);
+    for (const binding of reference.bindings) {
+      const feature = collection.features.find((item) => item.id === binding.featureId);
+      if (
+        feature?.properties.agencyVisitorReference?.profileId !== binding.profileId ||
+        feature.properties.agencyVisitorReference.publicDistribution !== false
+      )
+        throw new Error(`${state.code}: visitor reference feature binding mismatch`);
+    }
+  }
   const agency = collection.features.length - ioverlander;
   if (ny) validateOprhpPackage(manifest, collection.features);
   if (
@@ -166,6 +192,8 @@ await writeFile(
     `The inventory verifier checks each package checksum and its feature counts against the manifest. ${rows.filter((r) => r.packageMode === 'agency-and-ioverlander').length} packages contain agency + iOverlander data, New York contains DEC + selected OPRHP + iOverlander, and ${rows.filter((r) => r.packageMode === 'ioverlander-only').length} packages use iOverlander alone because no eligible staged agency records are available.`,
     '',
     `Totals: **${format(totals.agency)} agency/DEC features**, **${format(totals.ioverlander)} iOverlander places**, and **${format(totals.features)} features**. Counts do not establish current access, source completeness, or permission to redistribute.`,
+    '',
+    'The [NC/LA visitor coverage update](NC_LA_VISITOR_COVERAGE_2026-09-28.md) records current NC forest selections and the checksum-bound Indian Creek agency visitor reference. Forestry inventory, land-cover and planning sources are excluded; Oklahoma tree-inventory records are removed from its active visitor package.',
     '',
     `New York also packages **${format(totals.hikeProfiles)} DEC trail elevation profiles**, verified against every packaged trail sample and statistic. Profiles describe existing trail features and are not added to the feature total. Florida includes 76 converted forest polygons; Oklahoma includes 44 historical state-park location points. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md).`,
     '',

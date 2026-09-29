@@ -69,11 +69,14 @@
     },
     {
       "parentId": "registry-nc-forestry-0fbb9ebcbc",
-      "reason": "Exact NCFS boundary feed identified in the official State Forests story map; stage privately while redistribution terms remain unconfirmed Historical coverage: includes former NCFS Rendezvous Mountain; Dan River ESF is absent. Current NCFS directory retained separately; no current access assertion.",
+      "reason": "Historical NCFS visitor forest feed: nine retained records; excludes the obsolete Rendezvous Mountain record following the Parks transfer. Current Little Fork game-land boundary and public SPO Dan River/Backbone Ridge tracts are separately sourced.",
       "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
       "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open",
       "url": "https://services6.arcgis.com/3Sj1fiIDvQtFfbvg/arcgis/rest/services/NCFS_StateForests/FeatureServer/0",
-      "format": "arcgis-layer"
+      "format": "arcgis-layer",
+      "excludeFilter": {
+        "NCDA_NAME": "Rendezvous Mountain Educational State Forest"
+      }
     },
     {
       "parentId": "registry-or-forestry-52c5dde8b7",
@@ -101,12 +104,39 @@
     },
     {
       "parentId": "registry-nc-forestry-0fbb9ebcbc",
-      "reason": "Official NCFS forest locator companion; historical inventory with the same current-directory mismatch as the boundary feed.",
+      "reason": "Historical NCFS visitor forest feed: nine retained records; excludes the obsolete Rendezvous Mountain record following the Parks transfer. Current Little Fork game-land boundary and public SPO Dan River/Backbone Ridge tracts are separately sourced.",
       "evidenceUrl": "https://www.ncagr.gov/divisions/nc-forest-service/state-forests",
       "candidateUrl": "https://www.ncagr.gov/divisions/nc-forest-service/DSRF_ForestMap/open",
       "url": "https://services6.arcgis.com/3Sj1fiIDvQtFfbvg/arcgis/rest/services/NCFS_State_Forests_Points/FeatureServer/0",
       "format": "arcgis-layer",
-      "stageId": "resolved-registry-nc-forestry-0fbb9ebcbc-points"
+      "stageId": "resolved-registry-nc-forestry-0fbb9ebcbc-points",
+      "excludeFilter": {
+        "NCDA_NAME": "Rendezvous Mountain Educational State Forest"
+      }
+    },
+    {
+      "parentId": "registry-nc-forestry-0fbb9ebcbc",
+      "stageId": "resolved-nc-little-fork-2026-09-28",
+      "url": "https://services1.arcgis.com/YfqBAUM5nWR3yhGP/arcgis/rest/services/gamelands_detail/FeatureServer/22",
+      "format": "arcgis-layer",
+      "where": "GML_HAB='Little Fork State Forest' AND GML_OWN='NC Forest Service'",
+      "fields": [
+        "OBJECTID",
+        "GML_HAB",
+        "GML_TYPE",
+        "GML_TRACT",
+        "GML_OWN",
+        "GML_STATUS",
+        "COUNTY",
+        "ACRES",
+        "GameLandID"
+      ],
+      "filter": {
+        "GML_HAB": "Little Fork State Forest",
+        "GML_OWN": "NC Forest Service"
+      },
+      "evidenceUrl": "https://www.ncwildlife.gov/hunting/where-hunt-shoot/game-lands-maps/mountain-game-land-maps",
+      "reason": "NCWRC current visitor game-land boundary of Little Fork State Forest, formerly part of Rendezvous Mountain. Exact subset only; no blanket recreational access or public redistribution claim."
     }
   ]
 }

@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
+import { assertVisitorSource } from './state-visitor-source-scope.mjs';
 
 const repository = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const registryPath = join(repository, 'config/us-state-forestry-agencies.json');
@@ -185,6 +186,7 @@ export async function loadStateAgencyFeedCatalog() {
 
 /** Every feature fetch requires a private, source-specific storage approval. */
 export function assertPrivateAcquisitionApproved(feed, approval, now = new Date()) {
+  assertVisitorSource(feed);
   if (!['arcgis-layer', 'download-file'].includes(feed.sourceType)) {
     throw new Error(
       `${feed.id}: exact ArcGIS layer or direct download required; select a child layer or add an adapter`,
@@ -398,6 +400,7 @@ export async function acquireApprovedDownload(feed, approval, fetchImpl = source
 }
 
 export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch) {
+  assertVisitorSource(feed);
   const collection =
     feed.sourceType === 'arcgis-layer'
       ? await acquireApprovedArcgisLayer(feed, approval, fetchImpl)

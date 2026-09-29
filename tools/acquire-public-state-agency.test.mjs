@@ -48,6 +48,29 @@ test('conditional clearance is limited to exact noncommercial sources and filter
   assert.equal(conditionalPublicPolicy({ ...virginia, distributionScope: 'commercial' }), null);
 });
 
+test('North Carolina clearance binds the exact forest subset and requires both publisher and NC OneMap terms', () => {
+  const source = JSON.parse(
+    readFileSync(new URL('../config/public-state-agency-sources.json', import.meta.url)),
+  ).sources.find((s) => s.id === 'nc-spo-forest-additions');
+  const license =
+    'Written release agreements to authorize use are not required and will not be issued. CGIA Terms: https://www.nconemap.gov/pages/terms';
+  const policy = 'All partner organizations understand this free and unrestricted use policy.';
+  verifyPublicAgencySourceLicense(source, license, policy);
+  assert.throws(() => verifyPublicAgencySourceLicense(source, '', policy), /not confirmed/);
+  assert.throws(() => verifyPublicAgencySourceLicense(source, license, ''), /not confirmed/);
+  for (const patch of [
+    { where: '1=1' },
+    { url: source.url.replace('/0', '/1') },
+    { state: 'LA' },
+    { rightsClearance: 'invented' },
+    { termsUrl: 'https://example.invalid' },
+  ]) {
+    const changed = { ...source, ...patch };
+    assert.equal(publicAgencySourceClearance(changed), null);
+    assert.throws(() => verifyPublicAgencySourceLicense(changed, license, policy), /not confirmed/);
+  }
+});
+
 test('public acquisition rejects permission-held and conditional feeds before network or staging', async () => {
   const source = {
     id: 'synthetic',

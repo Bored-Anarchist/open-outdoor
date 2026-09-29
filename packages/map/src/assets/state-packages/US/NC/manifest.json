@@ -2,19 +2,19 @@
   "artifacts": {
     "geojson": {
       "file": "outdoors.geojson",
-      "featureCount": 9535,
-      "bytes": 19454568,
-      "sha256": "31d0c11d3884fbe685f973b976fa2d40da7eab3633f53fcec4291155c544bf8b"
+      "featureCount": 9541,
+      "bytes": 19469426,
+      "sha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4"
     },
     "index": {
       "file": "index.json",
-      "bytes": 5413120,
-      "sha256": "03c764bba25617837f515d178126a5e8b79b79afcd64b2ca2ff074de363414fc"
+      "bytes": 5422271,
+      "sha256": "28a0461780657b1c8b721431cc02be63a7238a26b79ca4cd4da4e749c9c60e9f"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 451,
-      "sha256": "a1c0b6f4b80e48461c0a9a11411a9ac14834728c7e098a8b8a15999cc957f434"
+      "bytes": 4194,
+      "sha256": "dca7fd90f1b67e8cc3d96af8792b59823a11a630d07f9e6e6a5528f0ecd3c8da"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -25,7 +25,7 @@
     "limitations": [
       "Dated informational references, not live permission, closure or camping claims.",
       "Some states have no eligible direct agency feed; source gaps remain explicit.",
-      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
     ]
   },
   "disclaimers": [
@@ -33,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 9535,
-  "generatedAt": "2026-09-28T00:09:32.527Z",
+  "featureCount": 9541,
+  "generatedAt": "2026-09-29T02:21:17.324Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-nc",
   "rights": {
@@ -43,7 +43,8 @@
       "PAD-US data providers and state stewards",
       "U.S. Department of Agriculture, Forest Service",
       "U.S. Department of the Interior, Bureau of Land Management",
-      "U.S. Geological Survey Gap Analysis Project"
+      "U.S. Geological Survey Gap Analysis Project",
+      "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov."
     ],
     "derivation": true,
     "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
@@ -86,6 +87,14 @@
       {
         "id": "blm-public-recreation-sites",
         "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "nc-spo-forest-additions",
+        "url": "https://www.arcgis.com/sharing/rest/content/items/e60514c3b78542ef9902e3d7f7a671c1/data?f=json",
+        "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
+        "licenseUrl": "https://www.nconemap.gov/pages/terms",
+        "distributionConditions": "NC OneMap permits free and unrestricted use. Credit NC DOA/SPO, CGIA and NC OneMap; retain source disclaimers. No warranty or manager endorsement. Informational property geometry; access and camping permission unverified. Source data remain outside the project code license.",
+        "upstreamRightsStatus": "Supported"
       }
     ]
   },
@@ -502,6 +511,80 @@
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
       "unreturnedFeatureCount": 0,
       "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "nc-spo-forest-additions",
+      "state": "NC",
+      "name": "North Carolina Dan River and Backbone Ridge forest tracts",
+      "url": "https://services3.arcgis.com/zMTrRjxZirPAKsKd/arcgis/rest/services/State_Owned_Land_NC_Latest_02/FeatureServer/0",
+      "basisUrl": "https://www.doa.nc.gov/divisions/state-property",
+      "termsUrl": "https://www.arcgis.com/sharing/rest/content/items/e60514c3b78542ef9902e3d7f7a671c1/data?f=json",
+      "licenseUrl": "https://www.nconemap.gov/pages/terms",
+      "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
+      "rightsClearance": "dataset-specific-public-use-policy-2026-09-28",
+      "where": "DeptName='AGRICULTURE' AND DivName='FOREST SERVICE' AND ComplexName IN ('FR SHOEBUCKLE FOREST','FR BACKBONE RIDGE STATE FOREST')",
+      "fields": [
+        "FID",
+        "DEED_ACRES",
+        "GIS_ACRES",
+        "DeptName",
+        "DivName",
+        "Shape_Leng",
+        "Shape_Area",
+        "ComplexTypeKey",
+        "CountyKey",
+        "ComplexKey",
+        "AssetKey",
+        "ComplexCombinedID",
+        "AssetCombinedID",
+        "EditDate",
+        "LandAssetID",
+        "FileNumber",
+        "ComplexName",
+        "AcquisitionYear",
+        "PROJECTNUM"
+      ],
+      "nameField": "ComplexName",
+      "nameOverrides": {
+        "FR SHOEBUCKLE FOREST": "Dan River Educational State Forest",
+        "FR BACKBONE RIDGE STATE FOREST": "Backbone Ridge State Forest"
+      },
+      "nameEvidenceUrl": "https://blog.ncagr.gov/2023/08/07/n-c-forest-service-continues-to-expand-educational-and-recreational-opportunities-for-visitors-to-state-forests/",
+      "datasetPurpose": "managed-land-boundaries",
+      "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
+      "coverageLimitations": "Six named property tracts; not a complete NCFS inventory, visitor entrance map or access authorization. Shoebuckle name normalized to Dan River ESF using the NCFS acquisition announcement. Verify current visitor access with NCFS.",
+      "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Supported",
+      "rightsResolution": "dataset-specific-license-overrides-general-website-policy",
+      "distributionConditions": "NC OneMap permits free and unrestricted use. Credit NC DOA/SPO, CGIA and NC OneMap; retain source disclaimers. No warranty or manager endorsement. Informational property geometry; access and camping permission unverified. Source data remain outside the project code license.",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-29T02:15:51.932Z",
+      "sourceUpdated": "2026-09-24T10:29:21.654Z",
+      "featureCount": 6,
+      "bytes": 6585,
+      "sha256": "5b6aabe59fe78d36182d73c26d43b4e7bc600061bcd35bc9d97e89792f99c210",
+      "metadataSha256": "1fab82e5e4fb2e0dbf2d78c777daab42f5054d856d704688eb53c68466876691",
+      "termsSha256": "76adcb93414bd60c14bf77cabcd6ff095d66130162cce1c5db636d74ab1ca020",
+      "licenseText": "<div><span style='color:rgb(0, 0, 0); font-family:&quot;Avenir Next W01&quot;, &quot;Avenir Next W00&quot;, &quot;Avenir Next&quot;, Avenir, &quot;Helvetica Neue&quot;, sans-serif; font-size:16px;'><i>DISCLAIMER:</i> </span><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'>The NC Department of Administration, State Property Office is charged with maintaining an inventory of state-owned lands, buildings, and space in buildings for use by state agencies to efficiently and effectively manage their allocated properties. Although effort has been made to ensure the accuracy of information, errors and conditions originating from sources used to develop the data may be reflected in the information supplied. The user must be aware of possible conditions and bear responsibility with respect to errors, collection methodologies, currency, and other conditions related to all data, web services or applications. While every effort has been made by data providers to ensure this information is accurate and reliable, there is no assumption of liability for any damages caused by inaccuracies in the data, web services or applications. There is no warranty, express or implied, nor does the fact of access or distribution constitute any such warranty. Written release agreements to authorize use of the geospatial data, web services, and applications provided by the State Property Office are not required and will not be issued. The use of trade names or commercial products does not constitute their endorsement by the Department of Administration or North Carolina State Government. Any sale of this data must not violate applicable state laws or regulations.</span></font><br /></div><div><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'><br /></span></font></div><div><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'>CGIA Terms: </span></font><a href='https://www.nconemap.gov/pages/terms' target='_blank' rel='nofollow ugc noopener noreferrer'>https://www.nconemap.gov/pages/terms</a></div>",
+      "termsText": "{\"source\":\"PAGEEDITOR\",\"folderId\":null,\"values\":{\"sites\":[{\"id\":\"33650305fdf24a1bb46465e4bc598e93\",\"title\":\"NC OneMap\"},{\"id\":\"a0424edfcf8845c3beb9e56ee6db7508\",\"title\":\"NC OneMap - Copied\"}],\"layout\":{\"sections\":[{\"containment\":\"fixed\",\"isFooter\":false,\"style\":{\"background\":{\"isFile\":false,\"isUrl\":true,\"state\":\"\",\"display\":{},\"transparency\":0,\"position\":{\"x\":\"center\",\"y\":\"center\"},\"color\":\"#f3f3f3\"},\"color\":\"#4d4d4d\",\"rowLayout\":\"box\"},\"rows\":[{\"cards\":[{\"component\":{\"name\":\"markdown-card\",\"settings\":{\"markdown\":\"<h4>Disclaimer</h4>\\n<p>The NC Center for Geographic Information and Analysis (CGIA) is charged with the development and maintenance of NC OneMap and, in cooperation with partner organizations, is committed to offering access to current State geospatial information at no charge. By sharing their content, all partner organizations understand this free and unrestricted use policy. Although every effort has been made to ensure the accuracy of information, errors and conditions originating from sources used to develop the data may be reflected in the information supplied. The user must be aware of possible conditions and bear responsibility with respect to errors, collection methodologies, currency, and other conditions related to all data, web services or applications.<br><br>\\n\\nWhile every effort has been made by data providers to ensure this information is accurate and reliable, there is no assumption of liability for any damages caused by inaccuracies in the data, web services or applications. There is no warranty, express or implied, nor does the fact of access or distribution constitute any such warranty.<br><br>\\n\\nWritten release agreements to authorize use of the geospatial data, web services, and applications found on the NC OneMap website are not required and will not be issued. The use of trade names or commercial products does not constitute their endorsement by CGIA or North Carolina State Government. Any sale of this data must not violate applicable state laws or regulations.</p><p><br></p>\\n\\n<h4>Website Citation</h4><p>When citing NC OneMap in printed or online publications please use the following citation:</p>\\n\\n<pre role=\\\"textbox\\\" tabindex=\\\"0\\\" aria-label=\\\"Code block (read only)\\\"><em>NC OneMap (2019)</em>. North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic<br>Information and Analysis. Available at www.nconemap.gov.</pre><p>\\n</p>\",\"schemaVersion\":2.1}},\"width\":12,\"showEditor\":false}]}],\"visibility\":{\"access\":\"default\",\"groups\":[]}}]},\"updatedAt\":\"2026-07-22T11:46:21.656Z\",\"updatedBy\":\"nconemap\"}}",
+      "serviceItemId": "fcb3d26b5a644d78805678203153f15d",
+      "idField": "FID",
+      "pages": [
+        {
+          "count": 6,
+          "sha256": "1e6875c15ae74fab7cc1f4538e10475dac5364c28a14723decc955980e0f1648",
+          "firstId": 445,
+          "lastId": 726
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 6,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "64e9d108fa78db9defd0b3c0adc0ef610cc53bb401a1941cab8b03e8f174f911"
     }
   ],
   "state": {
@@ -512,7 +595,7 @@
   "stateForestry": {
     "agency": "North Carolina Forest Service",
     "agencyUrl": "https://www.ncforestservice.gov/",
-    "directAgencyLayerIncluded": false,
+    "directAgencyLayerIncluded": true,
     "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 26,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
@@ -528,18 +611,27 @@
   },
   "stateName": "North Carolina",
   "publicDistribution": true,
-  "packageMode": "public-baseline",
+  "packageMode": "federal-and-agency",
   "output": {
     "file": "outdoors.geojson",
-    "featureCount": 9535,
-    "bytes": 19454568,
-    "sha256": "31d0c11d3884fbe685f973b976fa2d40da7eab3633f53fcec4291155c544bf8b"
+    "featureCount": 9541,
+    "bytes": 19469426,
+    "sha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4"
   },
   "agency": {
-    "status": "no-eligible-staged-feed",
-    "sourceCount": 0,
-    "featureCount": 0,
-    "sources": [],
+    "status": "included",
+    "sourceCount": 1,
+    "featureCount": 6,
+    "sources": [
+      {
+        "id": "nc-spo-forest-additions",
+        "url": "https://services3.arcgis.com/zMTrRjxZirPAKsKd/arcgis/rest/services/State_Owned_Land_NC_Latest_02/FeatureServer/0",
+        "count": 6,
+        "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
+        "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
+        "sourceUpdated": "2026-09-24T10:29:21.654Z"
+      }
+    ],
     "held": []
   },
   "poi": {
@@ -600,11 +692,11 @@
     "parts": [
       {
         "file": "parts/outdoors-001.geojson",
-        "featureCount": 6302,
-        "normalizedFeatureCount": 6302,
-        "positions": 178858,
-        "bytes": 7271308,
-        "sha256": "dd6467ad7d2f9d69a1b44b63211f3e07b9c07503fc400c872aa90b52d73a6540",
+        "featureCount": 6308,
+        "normalizedFeatureCount": 6308,
+        "positions": 179091,
+        "bytes": 7285440,
+        "sha256": "9090d5cb1e450f1a02df61eccdf23935b8ccbf89e3b07fa53ea67cd203cd1a02",
         "parserValidation": "passed"
       },
       {

@@ -1,5 +1,7 @@
 # Remaining state agency gaps — resolution, 2026-09-28
 
+**NC/LA follow-up:** The [visitor coverage update](NC_LA_VISITOR_COVERAGE_2026-09-28.md) supersedes this report's NC/LA coverage dependencies and package totals: six SPO forest tracts are added publicly, Little Fork is added privately, obsolete NCFS Rendezvous records are removed, and the existing Indian Creek place has a private agency visitor reference. Inventory, land-cover and planning exclusions are enforced; 379 Oklahoma tree-inventory points are removed. Current totals are 757,622 public and 535,913 private features. The acquisition history below remains dated evidence.
+
 This review addresses the datasets omitted from both systems in the September 28 gap audit. OSM POI/trail extracts are excluded at the user's request. Source acquisition, private packaging, public redistribution and current visitor coverage are separate decisions. Earlier failure and candidate notes in the trackers are historical; this report records the current result.
 
 There are still **50 public state packages** and **50 private state packages**. Public packages now contain **757,616 features**, including **138,866 direct agency records from 17 acquisitions in 11 states**, and **169 validated import parts**. Private packages contain **536,293 features**, including **472,960 agency/DEC/OPRHP records** and **63,333 iOverlander places**. All **5,289** preserved DEC elevation profiles remain verified. These are package entries, not deduplicated national entities.

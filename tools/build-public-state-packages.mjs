@@ -6,6 +6,7 @@ import { publicPoiCategory } from '../packages/shared/dist/public-poi-category.j
 import { ioverlanderCategoryIds } from '../packages/shared/dist/ioverlander.js';
 import { normalizeOutdoorVisitorDetails } from '../packages/shared/dist/outdoor-details.js';
 import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
+import { assertVisitorSource } from './state-visitor-source-scope.mjs';
 import {
   publicAgencySourceClearance,
   verifyPublicAgencySourceLicense,
@@ -121,6 +122,7 @@ export function publicAgencyFeature(source, feature, index) {
   const id = `public-agency:${source.id}:${nativeId}`;
   let name =
     field(p, [
+      ...(source.nameField ? [source.nameField] : []),
       'ACCSS_NAME',
       'NAME',
       'PROPERTY',
@@ -143,6 +145,7 @@ export function publicAgencyFeature(source, feature, index) {
       'ROADNAME',
       'road_name',
     ]) || `${source.name} ${nativeId}`;
+  name = source.nameOverrides?.[name] ?? name;
   const rawType =
     field(p, [
       'POITYPE',
@@ -337,9 +340,11 @@ export async function readPublicAgency(state, config) {
   const sources = [];
   const held = config.held.filter((x) => x.state === state);
   for (const source of config.sources.filter((x) => x.state === state)) {
+    assertVisitorSource(source);
     const directory = join(staging, source.id);
     let receipt;
     receipt = await json(join(directory, 'receipt.json'));
+    assertVisitorSource(receipt);
     if (
       receipt.publicDistribution !== true ||
       receipt.rightsStatus !== 'Supported' ||
@@ -353,7 +358,7 @@ export async function readPublicAgency(state, config) {
         receipt.rightsResolution !== 'dataset-specific-license-overrides-general-website-policy'
       )
         throw new Error('Invalid exact dataset rights clearance');
-      verifyPublicAgencySourceLicense(source, receipt.licenseText ?? '');
+      verifyPublicAgencySourceLicense(source, receipt.licenseText ?? '', receipt.termsText ?? '');
     }
     if (
       source.distributionScope === 'noncommercial' ||
