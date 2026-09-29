@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { publicPoiCategory } from '../packages/shared/dist/public-poi-category.js';
 import { ioverlanderCategoryIds } from '../packages/shared/dist/ioverlander.js';
 import { normalizeOutdoorVisitorDetails } from '../packages/shared/dist/outdoor-details.js';
+import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const assets = join(root, 'packages/map/src/assets');
@@ -134,6 +135,7 @@ export function publicAgencyFeature(source, feature, index) {
       'LABEL',
       'TRAILSYSID',
       'ROADNAME',
+      'road_name',
     ]) || `${source.name} ${nativeId}`;
   const rawType =
     field(p, [
@@ -149,6 +151,7 @@ export function publicAgencyFeature(source, feature, index) {
       'ftype',
       'fcat',
       'TRAILCLASS',
+      'site_type',
       'CLASS',
     ]) || (kind === 'poi' && source.id === 'ct-deep-access' ? 'access point' : kind);
   if (
@@ -196,10 +199,23 @@ export function publicAgencyFeature(source, feature, index) {
       origin: 'public-catalog',
       sourceId: source.id,
       sourceUrl: source.url,
-      unit: field(p, ['PROPERTY', 'PropName', 'SITE_NAME']) || source.name,
+      unit:
+        field(p, ['PROPERTY', 'PropName', 'SITE_NAME', 'state_forest', 'pat_admin_unit']) ||
+        source.name,
       sourceUpdated: source.sourceUpdated,
       publicUse:
-        'Dated agency reference; current visitor access, camping permission and closures are unknown. Verify with the manager.',
+        source.state === 'MN'
+          ? 'MNDNR reference only. Do not use these data for navigation, legal boundaries or legal access. Verify current access and conditions with the manager.'
+          : 'Dated agency reference; current visitor access, camping permission and closures are unknown. Verify with the manager.',
+      ...(source.distributionConditions
+        ? {
+            dataLicense: source.license,
+            dataAttribution: source.attribution,
+            dataTermsUrl: source.termsUrl,
+            distributionConditions: source.distributionConditions,
+          }
+        : {}),
+      ...(source.state === 'MN' ? { navigationAllowed: false } : {}),
       rightsStatus: 'Supported',
       reviewStatus: 'dated-reference',
       details: {
@@ -231,6 +247,11 @@ export function importFeature(feature) {
     'amenities',
     'openingHours',
     'fees',
+    'dataLicense',
+    'dataAttribution',
+    'dataTermsUrl',
+    'distributionConditions',
+    'navigationAllowed',
   ];
   return {
     ...feature,
@@ -312,12 +333,35 @@ export async function readPublicAgency(state, config) {
       receipt.url !== source.url
     )
       throw new Error('Invalid public agency receipt');
+    if (
+      source.distributionScope === 'noncommercial' ||
+      receipt.upstreamRightsStatus === 'Conditional'
+    ) {
+      const policy = conditionalPublicPolicy(source);
+      if (
+        !policy ||
+        receipt.upstreamRightsStatus !== 'Conditional' ||
+        receipt.distributionConditions !== policy.conditions ||
+        receipt.distributionScope !== 'noncommercial' ||
+        receipt.conditionalClearance !== 'conditions-satisfied-for-this-processed-distribution' ||
+        (source.state === 'MN' &&
+          !(receipt.featureCount > 0 && receipt.featureCount < receipt.fullSourceCount))
+      )
+        throw new Error('Conditional source conditions are not satisfied');
+    }
     const raw = await readFile(join(directory, 'raw.geojson'));
     if (sha256(raw) !== receipt.sha256 || raw.length !== receipt.bytes)
       throw new Error('Public agency checksum mismatch');
     const doc = JSON.parse(raw);
     if (doc.features.length !== receipt.featureCount)
       throw new Error('Agency receipt count mismatch');
+    if (
+      source.state === 'MN' &&
+      doc.features.some((f) =>
+        Object.keys(f.properties).some((key) => !source.fields.includes(key)),
+      )
+    )
+      throw new Error('Minnesota derivative includes unselected source fields');
     const rejected = [];
     const converted = doc.features
       .map((f, i) => {
@@ -494,10 +538,25 @@ export async function buildPublicState(state, config, parser) {
               url: s.termsUrl ?? s.url,
               license: s.license,
               licenseUrl: s.licenseUrl ?? null,
+              ...(s.distributionConditions
+                ? {
+                    distributionConditions: s.distributionConditions,
+                    distributionScope: s.distributionScope,
+                    upstreamRightsStatus: s.upstreamRightsStatus,
+                  }
+                : {}),
             })),
           ].map((item) => [`${item.id}|${item.url}`, item]),
         ).values(),
       ],
+      ...(agency.sources.some((s) => s.state === 'VA')
+        ? {
+            distributionScope: 'noncommercial',
+            redistributionForProfit: false,
+            separateDataTerms:
+              'Virginia DCR data are not relicensed under the project code license. See DATA_NOTICES.md.',
+          }
+        : {}),
     },
     coverage: {
       ...(typeof baseManifest.coverage === 'object' ? baseManifest.coverage : {}),
@@ -506,12 +565,12 @@ export async function buildPublicState(state, config, parser) {
       limitations: [
         'Dated informational references, not live permission, closure or camping claims.',
         'Some states have no eligible direct agency feed; source gaps remain explicit.',
-        'No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data.',
+        'No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms.',
       ],
     },
   };
   const noticeText = Buffer.from(
-    `# ${state.name} public data notices\n\n${agency.sources.map((s) => `## ${s.name}\n\nCredit: ${s.attribution}\n\nLicense: ${s.license}${s.licenseUrl ? ` (${s.licenseUrl})` : ''}\n\nSource: ${s.url}\n\nTerms: ${s.termsUrl ?? s.url}\n\nModifications: ${s.modifications}\n\n${s.disclaimer ?? s.licenseText ?? ''}\n`).join('\n')}\nNational and other public-source attributions and terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.\n`,
+    `# ${state.name} public data notices\n\n${agency.sources.map((s) => `## ${s.name}\n\nCredit: ${s.attribution}\n\nLicense: ${s.license}${s.licenseUrl ? ` (${s.licenseUrl})` : ''}\n\nSource: ${s.url}\n\nTerms: ${s.termsUrl ?? s.url}\n\nModifications: ${s.modifications}\n\n${s.distributionConditions ? `Conditions: ${s.distributionConditions}\n\n` : ''}${s.disclaimer ?? s.licenseText ?? ''}\n`).join('\n')}\nNational and other public-source attributions and terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.\n`,
   );
   manifest.artifacts.notices = {
     file: 'DATA_NOTICES.md',
@@ -590,12 +649,17 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const { parseMapDataset } = await import('../dist/public-state-parser/parser.mjs');
   const config = await json(join(root, 'config/public-state-agency-sources.json'));
   const states = (await json(join(root, 'config/us-state-forestry-agencies.json'))).states;
-  const results = [];
-  for (const state of states) {
+  const requested = process.argv.slice(2);
+  const previous = requested.length
+    ? (await json(join(packagesRoot, 'inventory.json'))).states
+    : [];
+  const byState = new Map(previous.map((s) => [s.state, s]));
+  for (const state of states.filter((s) => !requested.length || requested.includes(s.code))) {
     const r = await buildPublicState(state, config, parseMapDataset);
-    results.push(r);
+    byState.set(r.state, r);
     console.log(JSON.stringify(r));
   }
+  const results = states.map((s) => byState.get(s.code)).filter(Boolean);
   if (results.length !== 50) throw new Error('Expected exactly fifty public state packages');
   const inventory = {
     schemaVersion: 1,
@@ -618,7 +682,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     .join('\n');
   await writeFile(
     join(root, 'docs/PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md'),
-    `# Public state package inventory\n\nAll 50 states use a public GeoJSON, search index, and checksum manifest following the private system's package structure. Only redistributable public inputs are used. The iOverlander legend is a taxonomy; no iOverlander records, descriptions, reviews or check-ins are included.\n\nGenerated by \`pnpm map:public:package\`. Every import part passed the real app GeoJSON parser, including byte, coordinate, geometry, expanded-feature and normalized-size checks. Parts can be selected separately; the app still permits only five active imports and 50 MiB total stored imports. Complete states use the separate state.sqlite loader; see STATE_PACKAGE_LOADER.md. Native phone acceptance remains pending.\n\nThe full \`outdoors.geojson\` preserves source details and provenance; \`parts/\` contains bounded visitor properties with unchanged geometry (oversized multipart geometry is separated with parent IDs). Unknown source categories remain Other, with raw type and available amenities preserved. Source category, not name, drives classification; primitive campsites and developed campgrounds remain distinct.\n\n| State | Name | Features | POIs | Other POIs | Direct agency features | Import parts |\n| --- | --- | ---: | ---: | ---: | ---: | ---: |\n${rows}\n\nTotals: **${inventory.totals.features.toLocaleString('en-US')} features**, **${inventory.totals.poi.toLocaleString('en-US')} POIs**, **${inventory.totals.other.toLocaleString('en-US')} Other POIs**, **${inventory.totals.agency.toLocaleString('en-US')} direct agency features**, **${inventory.totals.parts} validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.\n\nAgency receipts record source URLs, current terms checksums, query inventory, field list, edit dates, page checksums, attribution and modifications. Repeated parks/forestry roles ingest a feed only once. Permission-limited, conditional and unconfirmed sources remain excluded. Arkansas facilities, CAL FIRE 2024 boundaries, and Massachusetts's 2015 trails are explicitly dated references; current access and completeness are not asserted. These snapshots make no current access or camping claim.\n\nNew York has the same state package format and a synchronized default app asset. It contains the civil boundary and federal records only; DEC data and their 5,289 profiles remain private. The empty public hike document is rebound to the corrected public map checksum.\n`,
+    `# Public state package inventory\n\nAll 50 states use a public GeoJSON, search index, and checksum manifest following the private system's package structure. Only redistributable public inputs are used. The iOverlander legend is a taxonomy; no iOverlander records, descriptions, reviews or check-ins are included.\n\nGenerated by \`pnpm map:public:package\`. Every import part passed the real app GeoJSON parser, including byte, coordinate, geometry, expanded-feature and normalized-size checks. Parts can be selected separately; the app still permits only five active imports and 50 MiB total stored imports. Complete states use the separate state.sqlite loader; see STATE_PACKAGE_LOADER.md. Native phone acceptance remains pending.\n\nThe full \`outdoors.geojson\` preserves source details and provenance; \`parts/\` contains bounded visitor properties with unchanged geometry (oversized multipart geometry is separated with parent IDs). Unknown source categories remain Other, with raw type and available amenities preserved. Source category, not name, drives classification; primitive campsites and developed campgrounds remain distinct.\n\n| State | Name | Features | POIs | Other POIs | Direct agency features | Import parts |\n| --- | --- | ---: | ---: | ---: | ---: | ---: |\n${rows}\n\nTotals: **${inventory.totals.features.toLocaleString('en-US')} features**, **${inventory.totals.poi.toLocaleString('en-US')} POIs**, **${inventory.totals.other.toLocaleString('en-US')} Other POIs**, **${inventory.totals.agency.toLocaleString('en-US')} direct agency features**, **${inventory.totals.parts} validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.\n\nAgency receipts record source URLs, current terms checksums, query inventory, field list, edit dates, page checksums, attribution and modifications. Repeated parks/forestry roles ingest a feed only once. Uncleared permission-limited and unconfirmed sources remain excluded. Minnesota visitor derivatives and Virginia DCR data are included under their explicit source conditions for the noncommercial application; source terms remain separate from project code licensing. Arkansas facilities, CAL FIRE 2024 boundaries, and Massachusetts's 2015 trails are explicitly dated references; current access and completeness are not asserted. These snapshots make no current access or camping claim.\n\nNew York has the same state package format and a synchronized default app asset. It contains the civil boundary and federal records only; DEC data and their 5,289 profiles remain private. The empty public hike document is rebound to the corrected public map checksum.\n`,
   );
   console.log('TOTALS', JSON.stringify(inventory.totals));
 }

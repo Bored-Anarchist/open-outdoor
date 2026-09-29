@@ -965,7 +965,7 @@ export function OutdoorMap({
   }
 
   async function shareDirectionsDestination(): Promise<void> {
-    if (!selected) return;
+    if (!selected || selected.properties.navigationAllowed === false) return;
 
     const destination = selectedHike
       ? { name: `${selected.properties.name} mapped start`, coordinate: selectedHike.start }
@@ -1001,7 +1001,7 @@ export function OutdoorMap({
   }
 
   async function chooseDirectionsApp(): Promise<void> {
-    if (!selected) return;
+    if (!selected || selected.properties.navigationAllowed === false) return;
 
     const destination = selectedHike
       ? { name: `${selected.properties.name} mapped start`, coordinate: selectedHike.start }
@@ -1726,6 +1726,14 @@ export function OutdoorMap({
               'Current access and camping status are unverified; check the managing agency.'}
           </Text>
 
+          {selectedProperties?.dataAttribution ? (
+            <Text>Data credit: {selectedProperties.dataAttribution}</Text>
+          ) : null}
+
+          {selectedProperties?.distributionConditions ? (
+            <Text>{selectedProperties.distributionConditions}</Text>
+          ) : null}
+
           {selectedSourceUrl ? (
             <ProductButton
               label={
@@ -1787,6 +1795,8 @@ export function OutdoorMap({
             label={selectedHike ? 'Get directions to mapped start' : 'Get directions'}
 
             hint="Choose an installed maps app to route to the selected destination"
+
+            disabled={selected.properties.navigationAllowed === false}
 
             onPress={chooseDirectionsApp}
           />

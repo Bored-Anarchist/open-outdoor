@@ -2,19 +2,19 @@
   "artifacts": {
     "geojson": {
       "file": "outdoors.geojson",
-      "featureCount": 11001,
-      "bytes": 18242722,
-      "sha256": "00ecf191e123bb503d7defe0f6a95b912527ee86bf9860350da5029dfcd5842e"
+      "featureCount": 11676,
+      "bytes": 20211890,
+      "sha256": "a07ffa9921553fe37ce8fb59a40ccf962336a096365048a9eff2c45c400d9b5b"
     },
     "index": {
       "file": "index.json",
-      "bytes": 6189787,
-      "sha256": "8bbf07ded8f0b383234af329939d7e170d40c28604206740d84cea7e72935032"
+      "bytes": 7001178,
+      "sha256": "c217ceaaf56d2383b915aa1882f834efcfe0743405f597d43a942a2f8f673564"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 445,
-      "sha256": "45cc6dfcefb6f9ab182ab68572eb1d1656d1839d6e794cefb8945d0918491615"
+      "bytes": 2577,
+      "sha256": "94dd6d217b3749cbc83fba6c5bad713879af3f86a0d739e2790038c5d5cc6041"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -25,7 +25,7 @@
     "limitations": [
       "Dated informational references, not live permission, closure or camping claims.",
       "Some states have no eligible direct agency feed; source gaps remain explicit.",
-      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
     ]
   },
   "disclaimers": [
@@ -33,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 11001,
-  "generatedAt": "2026-09-28T00:10:06.117Z",
+  "featureCount": 11676,
+  "generatedAt": "2026-09-28T23:53:26.193Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-va",
   "rights": {
@@ -43,7 +43,8 @@
       "PAD-US data providers and state stewards",
       "U.S. Department of Agriculture, Forest Service",
       "U.S. Department of the Interior, Bureau of Land Management",
-      "U.S. Geological Survey Gap Analysis Project"
+      "U.S. Geological Survey Gap Analysis Project",
+      "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor"
     ],
     "derivation": true,
     "licenseBasis": "USGS PAD-US 4.1 public data release; official NPS, USDA Forest Service Enterprise Data, and BLM map-service records. Per-source attribution and use terms are recorded below.",
@@ -86,8 +87,29 @@
       {
         "id": "blm-public-recreation-sites",
         "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+      },
+      {
+        "id": "va-dcr-trails",
+        "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/info/iteminfo?f=json",
+        "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+        "licenseUrl": null,
+        "distributionConditions": "Noncommercial redistribution only; redistribution for profit is prohibited. Credit Virginia Department of Conservation and Recreation. Source data retain their separate terms, outside the project code license.",
+        "distributionScope": "noncommercial",
+        "upstreamRightsStatus": "Conditional"
+      },
+      {
+        "id": "va-dcr-boundaries",
+        "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/info/iteminfo?f=json",
+        "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+        "licenseUrl": null,
+        "distributionConditions": "Noncommercial redistribution only; redistribution for profit is prohibited. Credit Virginia Department of Conservation and Recreation. Source data retain their separate terms, outside the project code license.",
+        "distributionScope": "noncommercial",
+        "upstreamRightsStatus": "Conditional"
       }
-    ]
+    ],
+    "distributionScope": "noncommercial",
+    "redistributionForProfit": false,
+    "separateDataTerms": "Virginia DCR data are not relicensed under the project code license. See DATA_NOTICES.md."
   },
   "schemaVersion": 1,
   "sources": [
@@ -502,6 +524,148 @@
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
       "unreturnedFeatureCount": 0,
       "url": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2"
+    },
+    {
+      "id": "va-dcr-trails",
+      "state": "VA",
+      "name": "Virginia DCR State Parks trails",
+      "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0",
+      "basisUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0",
+      "distributionScope": "noncommercial",
+      "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+      "termsUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/info/iteminfo?f=json",
+      "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
+      "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Conditional",
+      "distributionConditions": "Noncommercial redistribution only; redistribution for profit is prohibited. Credit Virginia Department of Conservation and Recreation. Source data retain their separate terms, outside the project code license.",
+      "conditionalClearance": "conditions-satisfied-for-this-processed-distribution",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-28T23:45:10.880Z",
+      "sourceUpdated": "2026-09-24T19:37:24.065Z",
+      "featureCount": 631,
+      "bytes": 1143471,
+      "sha256": "ab1d14839c41be5a09b9fc50dda12022cf3ffd3f7446434527ae92ea0a5b9306",
+      "metadataSha256": "b66d239c3825962763079b4cccdb1431ca8268f8406a0c7a2dbcad1c6d419c51",
+      "termsSha256": "e5fedf9f5a32ee932e688fa4866393aa9294a3cc21c447766fffefe29eeee4d2",
+      "licenseText": "The re-distribution of this dataset for profit is prohibited. All rights credited to Virginia Department of Conservation and Recreation. ",
+      "serviceItemId": "55d9567f69fe44adaaa9bd0142e7167c",
+      "fields": [
+        "OBJECTID",
+        "Trail_Name",
+        "Trail_User",
+        "BlazeColor",
+        "Difficulty",
+        "Surfacing",
+        "LABEL",
+        "Miles",
+        "District",
+        "GlobalID",
+        "Trail_ID",
+        "Multi_Surface",
+        "Status",
+        "Shape__Length",
+        "Specialty_trail",
+        "Restrictions",
+        "Access_friendly",
+        "ADA",
+        "OffRoadExempt",
+        "OPMDD",
+        "outside_park",
+        "assetid",
+        "parentID"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 200,
+          "sha256": "c4278cccb9ac8b91e4fbd82d433e03aa4102ee5b0871ef9c7bce39dd6f79c5be",
+          "firstId": 3041,
+          "lastId": 3267
+        },
+        {
+          "count": 200,
+          "sha256": "a94aa2a5f12ac839fdf0834f6884abc56547c61a288c35b5f677d92856183822",
+          "firstId": 3268,
+          "lastId": 3477
+        },
+        {
+          "count": 200,
+          "sha256": "d330b50bc9b0e8286a1c2b99d8313259edd69d1e491b10b963ec4ebc4715e2d7",
+          "firstId": 3478,
+          "lastId": 3788
+        },
+        {
+          "count": 31,
+          "sha256": "c62d646dfbfcf9c09836fe26720bedbafe2763ee82829a4cdcb451b10ba35871",
+          "firstId": 3789,
+          "lastId": 3819
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 631,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "a5ec3ab36a905d850a340f3534c39e3d15b43cc63eb607f70e5c7bd08156c186"
+    },
+    {
+      "id": "va-dcr-boundaries",
+      "state": "VA",
+      "name": "Virginia DCR State Parks boundaries",
+      "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3",
+      "basisUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3",
+      "distributionScope": "noncommercial",
+      "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+      "termsUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/info/iteminfo?f=json",
+      "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
+      "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Conditional",
+      "distributionConditions": "Noncommercial redistribution only; redistribution for profit is prohibited. Credit Virginia Department of Conservation and Recreation. Source data retain their separate terms, outside the project code license.",
+      "conditionalClearance": "conditions-satisfied-for-this-processed-distribution",
+      "publicDistribution": true,
+      "retrievedAt": "2026-09-28T23:45:12.570Z",
+      "sourceUpdated": "2026-07-06T18:55:50.108Z",
+      "featureCount": 44,
+      "bytes": 329341,
+      "sha256": "8a6569c017f6a66cf39758817ef5903f0225e09166a8d87aeae93b3ce6582b1e",
+      "metadataSha256": "67329419ea1bb094b661f0f184898dbb33b959c1320e84aab116342b1eb7b479",
+      "termsSha256": "0fa0c5a3dc7960e3c68293445e45e9cd4b234efc0604854070f677c9e51bb33a",
+      "licenseText": "<div style='text-align:Left;'><div><div><p><span>The re-distribution of this dataset for profit is prohibited. All rights credited to Virginia Department of Conservation and Recreation. </span></p></div></div></div>",
+      "serviceItemId": "ed5fd662aff446a2b4bb714159791a0a",
+      "fields": [
+        "OBJECTID",
+        "LABEL",
+        "MA_ID",
+        "DISTRICT",
+        "ACRES",
+        "Shape__Area",
+        "Shape__Length",
+        "GlobalID",
+        "Alias",
+        "DEED_ACRES",
+        "Owner",
+        "YearAcq",
+        "Manager"
+      ],
+      "idField": "OBJECTID",
+      "pages": [
+        {
+          "count": 44,
+          "sha256": "6404b5b26c7926c20cd5d78d9d6baa2fdb942329e97500b8d48b45ffa722247c",
+          "firstId": 1,
+          "lastId": 86
+        }
+      ],
+      "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
+      "packagedFeatureCount": 44,
+      "filteredFeatureCount": 0,
+      "geometryRejections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "packagedFeatureSha256": "43a752b56836d049bf390bbd0f98a3e06c6a36ff55c2cb065f7ea200dffcbfda"
     }
   ],
   "state": {
@@ -512,7 +676,7 @@
   "stateForestry": {
     "agency": "Virginia Department of Forestry",
     "agencyUrl": "https://dof.virginia.gov/",
-    "directAgencyLayerIncluded": false,
+    "directAgencyLayerIncluded": true,
     "followUp": "See agency source receipts and held-source decisions in this manifest.",
     "forestNamedPadusFeatureCount": 69,
     "includedLayer": "State-owned or state-managed public land records in PAD-US; owner and manager types, names, source GIS, aggregator source, and public-access classification are retained per feature.",
@@ -528,25 +692,36 @@
   },
   "stateName": "Virginia",
   "publicDistribution": true,
-  "packageMode": "public-baseline",
+  "packageMode": "federal-and-agency",
   "output": {
     "file": "outdoors.geojson",
-    "featureCount": 11001,
-    "bytes": 18242722,
-    "sha256": "00ecf191e123bb503d7defe0f6a95b912527ee86bf9860350da5029dfcd5842e"
+    "featureCount": 11676,
+    "bytes": 20211890,
+    "sha256": "a07ffa9921553fe37ce8fb59a40ccf962336a096365048a9eff2c45c400d9b5b"
   },
   "agency": {
-    "status": "no-eligible-staged-feed",
-    "sourceCount": 0,
-    "featureCount": 0,
-    "sources": [],
-    "held": [
+    "status": "included",
+    "sourceCount": 2,
+    "featureCount": 675,
+    "sources": [
       {
-        "state": "VA",
-        "source": "Virginia DCR boundaries and trails",
-        "reason": "Noncommercial-only distribution and separate notice remain a conditional distribution gate."
+        "id": "va-dcr-trails",
+        "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Trails/FeatureServer/0",
+        "count": 631,
+        "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+        "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
+        "sourceUpdated": "2026-09-24T19:37:24.065Z"
+      },
+      {
+        "id": "va-dcr-boundaries",
+        "url": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/3",
+        "count": 44,
+        "license": "Virginia DCR noncommercial redistribution; DCR credit required",
+        "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
+        "sourceUpdated": "2026-07-06T18:55:50.108Z"
       }
-    ]
+    ],
+    "held": []
   },
   "poi": {
     "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
@@ -606,29 +781,29 @@
     "parts": [
       {
         "file": "parts/outdoors-001.geojson",
-        "featureCount": 7577,
-        "normalizedFeatureCount": 7577,
-        "positions": 180000,
-        "bytes": 7998947,
-        "sha256": "b21520ddc568eecb6b1533652c82699eff70403614ed8e5a195f83f767f60d4c",
+        "featureCount": 5404,
+        "normalizedFeatureCount": 5404,
+        "positions": 179383,
+        "bytes": 7130464,
+        "sha256": "634d6bbd56a6a1e5765ccff1b252302df977d858eded2dcb41b713c23ba4ce32",
         "parserValidation": "passed"
       },
       {
         "file": "parts/outdoors-002.geojson",
-        "featureCount": 3063,
-        "normalizedFeatureCount": 3063,
-        "positions": 179979,
-        "bytes": 5213117,
-        "sha256": "243a327dc341e6add6f768020e82259346787043a41ab6abbc9fb5b864984be0",
+        "featureCount": 5021,
+        "normalizedFeatureCount": 5021,
+        "positions": 179898,
+        "bytes": 6462697,
+        "sha256": "6ed7a4091d6bf18910b4a0cc56aa84c9e3fcc953ad0863dc8029a51fe1b9451f",
         "parserValidation": "passed"
       },
       {
         "file": "parts/outdoors-003.geojson",
-        "featureCount": 361,
-        "normalizedFeatureCount": 361,
-        "positions": 11953,
-        "bytes": 439616,
-        "sha256": "2c1e2503ca8587f99e8e38e7d06b838e5ba15bf18a0b8b200d97f15399c94ad9",
+        "featureCount": 1251,
+        "normalizedFeatureCount": 1251,
+        "positions": 63593,
+        "bytes": 1942993,
+        "sha256": "02247a225d5dba735a04aa79c64528c360532104dd74d134f56c8704d1568cf2",
         "parserValidation": "passed"
       }
     ],

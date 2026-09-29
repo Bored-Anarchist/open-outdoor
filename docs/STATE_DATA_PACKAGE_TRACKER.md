@@ -1,5 +1,7 @@
 # State Outdoor Data Package Tracker
 
+**Public packaging update (2026-09-28):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **168 app-parser-validated import parts**. The packages contain **748,156 features**, **77,013 POIs**, and **129,406 eligible direct agency features** in 10 states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
+
 **State loader update:** Complete public states can now be installed through the dedicated [offline state package loader](STATE_PACKAGE_LOADER.md), with local PMTiles display, indexed catalog search/details and checksum-verified activation/rollback. Manual GeoJSON import limits remain unchanged. The [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36369753027) passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`. Physical phone acceptance and production catalog trust integration remain pending.
 
 **Public packaging update (2026-09-27):** All **50 states**, including New York, now use the private system's GeoJSON/checksum-manifest structure with public search indexes and **167 app-parser-validated import parts**. The packages contain **739,609 features**, **76,959 POIs**, and **120,859 eligible direct agency features** in eight states. See the [current inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md). The older acquisition-stage notes below are superseded where they say no agency data are public, categories are unmapped, or parts have not been validated. Permission-held data stay private; dated references do not establish current access.
@@ -8,9 +10,9 @@
 
 **Scope:** all 50 public state packages. New York retains its audited civil-boundary/federal baseline, with DEC/OPRHP records excluded. Each state has GeoJSON, search index, source manifest and validated import parts.
 
-**Complete source index and POI readiness:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists nine national source families, nine New York sources, 212 registry roles, 19 selected AR/ID/SD rows and eight OPRHP candidates. The current public inventory has 50 packages and 167 validated import parts. 20,540 of 76,959 POIs retain Other with raw type/amenity details.
+**Complete source index and POI readiness:** The [all-datasets tracker](ALL_DATASETS_TRACKER.md) lists nine national source families, nine New York sources, 212 registry roles, 19 selected AR/ID/SD rows and eight OPRHP candidates. The current public inventory has 50 packages and 168 validated import parts. 20,540 of 77,013 POIs retain Other with raw type/amenity details.
 
-**Agency feed code:** The [private connector plan](STATE_AGENCY_FEED_CONNECTORS.md) retains all 231 registry/selected-plan roles. The separate [public pipeline](PUBLIC_STATE_PACKAGE_FORMAT.md) includes 12 exact eligible acquisitions across eight states. Permission-held data remain private: 107 Unconfirmed roles, five Permission required roles, one Restricted role and six lead-only roles keep their source gates. Minnesota and Virginia retain Conditional distribution gates. Arkansas facilities are public historical references with current operating status unverified.
+**Agency feed code:** The [private connector plan](STATE_AGENCY_FEED_CONNECTORS.md) retains all 231 registry/selected-plan roles. The separate [public pipeline](PUBLIC_STATE_PACKAGE_FORMAT.md) includes 16 exact eligible acquisitions across 10 states. Permission-held data remain private: 107 Unconfirmed roles, five Permission required roles, one Restricted role and six lead-only roles keep their source gates. Minnesota visitor derivatives and Virginia DCR data are included under their source-specific conditions for this noncommercial application. Arkansas facilities are public historical references with current operating status unverified.
 
 **Private validation decision:** The project owner provisionally approved the [exact 107 Unconfirmed registry roles](../config/agency-provisional-private-validation-2026-09-27.json) for evaluation in ignored private storage while publisher permissions are pursued. This enables source and product checks; public packages remain gated by confirmed redistribution rights and release validation. The source-specific local approvals and limits are documented in the [connector plan](STATE_AGENCY_FEED_CONNECTORS.md).
 
@@ -79,7 +81,7 @@
 | MD | Maryland | 4,910 | 694 | 0 | 1 | [Manifest](../packages/map/src/assets/state-packages/US/MD/manifest.json) |
 | MA | Massachusetts | 70,399 | 4,952 | 49,787 | 8 | [Manifest](../packages/map/src/assets/state-packages/US/MA/manifest.json) |
 | MI | Michigan | 21,623 | 597 | 0 | 3 | [Manifest](../packages/map/src/assets/state-packages/US/MI/manifest.json) |
-| MN | Minnesota | 17,854 | 912 | 0 | 3 | [Manifest](../packages/map/src/assets/state-packages/US/MN/manifest.json) |
+| MN | Minnesota | 25,726 | 966 | 7,872 | 4 | [Manifest](../packages/map/src/assets/state-packages/US/MN/manifest.json) |
 | MS | Mississippi | 2,733 | 711 | 0 | 1 | [Manifest](../packages/map/src/assets/state-packages/US/MS/manifest.json) |
 | MO | Missouri | 6,447 | 206 | 0 | 1 | [Manifest](../packages/map/src/assets/state-packages/US/MO/manifest.json) |
 | MT | Montana | 29,557 | 10,241 | 0 | 8 | [Manifest](../packages/map/src/assets/state-packages/US/MT/manifest.json) |
@@ -102,7 +104,7 @@
 | TX | Texas | 12,960 | 1,145 | 0 | 2 | [Manifest](../packages/map/src/assets/state-packages/US/TX/manifest.json) |
 | UT | Utah | 73,606 | 4,214 | 48,130 | 10 | [Manifest](../packages/map/src/assets/state-packages/US/UT/manifest.json) |
 | VT | Vermont | 2,944 | 133 | 0 | 1 | [Manifest](../packages/map/src/assets/state-packages/US/VT/manifest.json) |
-| VA | Virginia | 11,001 | 1,467 | 0 | 3 | [Manifest](../packages/map/src/assets/state-packages/US/VA/manifest.json) |
+| VA | Virginia | 11,676 | 1,467 | 675 | 3 | [Manifest](../packages/map/src/assets/state-packages/US/VA/manifest.json) |
 | WA | Washington | 19,086 | 2,593 | 0 | 5 | [Manifest](../packages/map/src/assets/state-packages/US/WA/manifest.json) |
 | WV | West Virginia | 2,883 | 520 | 0 | 1 | [Manifest](../packages/map/src/assets/state-packages/US/WV/manifest.json) |
 | WI | Wisconsin | 10,355 | 196 | 0 | 2 | [Manifest](../packages/map/src/assets/state-packages/US/WI/manifest.json) |

@@ -51,3 +51,9 @@ The following unmodified Python packages are build-only tools, pinned in `tools/
 | pyproj, Jeffrey Whitaker and contributors | 3.7.2 | [MIT](https://github.com/pyproj4/pyproj/blob/3.7.2/LICENSE) | Unmodified development dependency; its PROJ/native wheel notices remain with the local install. |
 
 The application continues to use its existing platform SQLite and MapLibre runtime dependencies. Build-environment transitive dependencies and native wheel contents must be included when generating the build SBOM; this record does not claim a completed independent release audit.
+
+## Minnesota and Virginia conditional public agency derivatives
+
+Minnesota Department of Natural Resources (MNDNR): selected State Park Trails and Roads hiking records and State Forest Campgrounds visitor records. [MNDNR GIS terms](https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html) remain applicable: credited modified subsets, reference only, no navigation or legal-boundary/access use, no endorsement. Entire source datasets and Forest Stand Inventory are excluded. Complete terms and exact evidence are carried in the Minnesota package notices and acquisition receipts.
+
+Virginia Department of Conservation and Recreation (DCR): State Park Trails and State Park Boundaries. Redistribution for profit is prohibited; these processed data are distributed for this noncommercial application with DCR credit and separate source terms. They are outside the project code license. See [the conditional public-data review](docs/CONDITIONAL_PUBLIC_DATA_2026-09-28.md) and the Virginia package DATA_NOTICES.md.

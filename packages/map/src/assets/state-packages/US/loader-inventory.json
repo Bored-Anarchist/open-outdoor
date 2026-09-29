@@ -579,11 +579,12 @@
       "classification": "SOURCE_REDISTRIBUTABLE",
       "state": "MN",
       "name": "Minnesota",
-      "featureCount": 17854,
-      "sourceSha256": "2da974b6a148787e3a453e0cf2fd83c1a6b08b49eb732dda4518c990cb2067f7",
-      "generatedAt": "2026-09-28T00:09:07.598Z",
-      "tilesSha256": "454c44f04d9047442c16761f26eb40456bde2c0167c2a9c3e4901975d07a0740",
-      "tilesBytes": 4328219,
+      "featureCount": 25726,
+      "sourceSha256": "d0e8d3ad34976835d1f63a29dd6467b755ad4bf595def68f00d342b64ddcbedb",
+      "generatedAt": "2026-09-28T23:53:23.913Z",
+      "sourceIndexSha256": "0d4285f53be6e8eecd2d3088d7520d99255af4d8e69f36225e00b73ab886584c",
+      "tilesSha256": "802a3e216a4e3f832db57c49f0546ad137a48832746c6c637da4f281468cfc1c",
+      "tilesBytes": 4795763,
       "maximumZoom": 10,
       "tileCount": 511,
       "bounds": [
@@ -592,12 +593,11 @@
         -89.4918,
         49.371
       ],
-      "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project",
-      "sourceIndexSha256": "7deff18297be348777e5ea3c7ad1297360b1c46a3627b76c03f03882faae486b",
+      "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Minnesota Department of Natural Resources (MNDNR); filtered and modified by Open Outdoor; no endorsement",
       "file": "MN/state.sqlite",
-      "sha256": "b89a4eb07f3438ce78ac0ac879e28c2750e5dc3724f3293049f3f2f2fed70a73",
-      "bytes": 30400512,
-      "installedBytes": 34728731
+      "sha256": "dd90e64c87a73dd6e1d0843706b7336d7a5899359fc8120c9764f04f01cfd26d",
+      "bytes": 46080000,
+      "installedBytes": 50875763
     },
     {
       "schemaVersion": 1,
@@ -1177,12 +1177,12 @@
       "classification": "SOURCE_REDISTRIBUTABLE",
       "state": "VA",
       "name": "Virginia",
-      "featureCount": 11001,
-      "sourceSha256": "00ecf191e123bb503d7defe0f6a95b912527ee86bf9860350da5029dfcd5842e",
-      "generatedAt": "2026-09-28T00:10:06.117Z",
-      "sourceIndexSha256": "8bbf07ded8f0b383234af329939d7e170d40c28604206740d84cea7e72935032",
-      "tilesSha256": "3ede575b4efece311b0c4e347026c0f3017d625b82ab215196ed9f068c629905",
-      "tilesBytes": 2398928,
+      "featureCount": 11676,
+      "sourceSha256": "a07ffa9921553fe37ce8fb59a40ccf962336a096365048a9eff2c45c400d9b5b",
+      "generatedAt": "2026-09-28T23:53:26.193Z",
+      "sourceIndexSha256": "c217ceaaf56d2383b915aa1882f834efcfe0743405f597d43a942a2f8f673564",
+      "tilesSha256": "3059dccecb16eccce309ef986bf59cd21be61b640ee64aa2ad2298dec272370e",
+      "tilesBytes": 2576198,
       "maximumZoom": 10,
       "tileCount": 246,
       "bounds": [
@@ -1191,11 +1191,11 @@
         -75.2318,
         39.466
       ],
-      "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project",
+      "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
       "file": "VA/state.sqlite",
-      "sha256": "b6c449fb5b7c3d18ce9bf139e8d8659506a01908d89b862703a601529302f17b",
-      "bytes": 20455424,
-      "installedBytes": 22854352
+      "sha256": "8e177a8221d0306f7d8a189ae648bb02898fb8d17e4eb0b0094c53acbfab34ca",
+      "bytes": 23162880,
+      "installedBytes": 25739078
     },
     {
       "schemaVersion": 1,

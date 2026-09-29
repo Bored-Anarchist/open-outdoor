@@ -1,8 +1,8 @@
-# Installable public state catalog inventory — 2026-09-27
+# Installable public state catalog inventory — updated 2026-09-28
 
 Each state is one `state.sqlite` package. Transfer size is the complete Git LFS SQLite file; installed size adds its extracted local PMTiles archive. No private or iOverlander source records are distributed in these public catalogs. Source coverage, agency rights and historical limitations remain as recorded in the [public source inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md).
 
-All 50 states contain 739,609 catalog records and 25,487 tiles. Combined transfer size is 1,355,288,576 bytes (1.26 GiB); installed size is 1,520,324,154 bytes (1.42 GiB). These totals exclude rollback copies, source downloads, existing basemaps and user data.
+All 50 states contain 748,156 catalog records and 25,487 tiles. Combined transfer size is 1,373,675,520 bytes (1.28 GiB); installed size is 1,539,355,912 bytes (1.43 GiB). These totals exclude rollback copies, source downloads, existing basemaps and user data.
 
 | State | Records | Transfer MiB | Installed MiB | Tiles |
 | --- | ---: | ---: | ---: | ---: |
@@ -28,7 +28,7 @@ All 50 states contain 739,609 catalog records and 25,487 tiles. Combined transfe
 | Maryland (MD) | 4,910 | 8.61 | 9.92 | 92 |
 | Massachusetts (MA) | 70,399 | 87.19 | 94.72 | 83 |
 | Michigan (MI) | 21,623 | 28.49 | 31.80 | 411 |
-| Minnesota (MN) | 17,854 | 28.99 | 33.12 | 511 |
+| Minnesota (MN) | 25,726 | 43.95 | 48.52 | 511 |
 | Mississippi (MS) | 2,733 | 5.12 | 5.91 | 215 |
 | Missouri (MO) | 6,447 | 10.15 | 11.68 | 331 |
 | Montana (MT) | 29,557 | 60.20 | 67.73 | 1,104 |
@@ -51,7 +51,7 @@ All 50 states contain 739,609 catalog records and 25,487 tiles. Combined transfe
 | Texas (TX) | 12,960 | 19.68 | 22.81 | 780 |
 | Utah (UT) | 73,606 | 117.22 | 125.75 | 393 |
 | Vermont (VT) | 2,944 | 5.39 | 6.11 | 75 |
-| Virginia (VA) | 11,001 | 19.51 | 21.80 | 246 |
+| Virginia (VA) | 11,676 | 22.09 | 24.55 | 246 |
 | Washington (WA) | 19,086 | 38.28 | 43.16 | 436 |
 | West Virginia (WV) | 2,883 | 5.71 | 6.47 | 143 |
 | Wisconsin (WI) | 10,355 | 17.21 | 19.83 | 341 |
@@ -59,6 +59,6 @@ All 50 states contain 739,609 catalog records and 25,487 tiles. Combined transfe
 
 Exact whole-file, tile and source/index SHA-256 checksums are pinned in `packages/map/src/assets/state-packages/US/loader-inventory.json`. Files are installed through the [state package loader](STATE_PACKAGE_LOADER.md); the original manual GeoJSON importer retains its existing limits.
 
-Independent verification passed for all 50 catalogs and all 739,609 original geometries, visitor summaries, feature/search/spatial counts, source/index bindings, full source notices, tile-blob hashes, PMTiles headers/sample tile decoding and read-only queries. The application suite passed 418 tests across 61 files, release checks passed 102 tests, and the Python catalog tests passed six tests. TypeScript, formatting and documentation governance passed. Local iOS/Metro export passed after adding TypeScript-source resolution for Node ESM specifiers. These automated checks do not establish physical phone acceptance.
+Independent verification passed for all 50 catalogs and all 748,156 original geometries, visitor summaries, feature/search/spatial counts, source/index bindings, full source notices, tile-blob hashes, PMTiles headers/sample tile decoding and read-only queries. The application suite passed 419 tests across 61 files, release checks passed 104 tests, and the Python catalog tests passed six tests. TypeScript, formatting and documentation governance passed. Local iOS/Metro export passed after adding TypeScript-source resolution for Node ESM specifiers. These automated checks do not establish physical phone acceptance.
 
-The complete [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36369753027) passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`, including native Swift compilation, Metro/Hermes bundling, pinned basemap checks, app packaging and artifact upload. All required PR checks passed for that code commit. Physical iPhone acceptance, measured baseline storage accounting and production signed-provenance integration remain release gates.
+The complete [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36369753027) passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`, including native Swift compilation, Metro/Hermes bundling, pinned basemap checks, app packaging and artifact upload. All required PR checks passed for that code commit. The Minnesota/Virginia refresh requires its own native build; the current local iOS/Metro export passed. Physical iPhone acceptance, measured baseline storage accounting and production signed-provenance integration remain release gates.

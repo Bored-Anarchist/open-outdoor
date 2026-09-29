@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "publicDistribution": true,
-  "generatedAt": "2026-09-28T00:10:20.848Z",
+  "generatedAt": "2026-09-28T23:53:26.236Z",
   "states": [
     {
       "state": "AL",
@@ -249,13 +249,13 @@
     {
       "state": "MN",
       "name": "Minnesota",
-      "features": 17854,
-      "poi": 912,
+      "features": 25726,
+      "poi": 966,
       "other": 8,
-      "agency": 0,
-      "agencySources": 0,
-      "parts": 3,
-      "bytes": 27994950
+      "agency": 7872,
+      "agencySources": 2,
+      "parts": 4,
+      "bytes": 39899338
     },
     {
       "state": "MS",
@@ -502,13 +502,13 @@
     {
       "state": "VA",
       "name": "Virginia",
-      "features": 11001,
+      "features": 11676,
       "poi": 1467,
       "other": 625,
-      "agency": 0,
-      "agencySources": 0,
+      "agency": 675,
+      "agencySources": 2,
       "parts": 3,
-      "bytes": 18242722
+      "bytes": 20211890
     },
     {
       "state": "WA",
@@ -556,11 +556,11 @@
     }
   ],
   "totals": {
-    "features": 739609,
-    "poi": 76959,
+    "features": 748156,
+    "poi": 77013,
     "other": 20540,
-    "agency": 120859,
-    "agencySources": 12,
-    "parts": 167
+    "agency": 129406,
+    "agencySources": 16,
+    "parts": 168
   }
 }

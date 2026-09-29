@@ -30,6 +30,11 @@ export interface OutdoorFeatureProperties extends OutdoorVisitorDetails {
   sourceUpdated: string;
   origin?: 'public-catalog' | 'private-catalog';
   sourceUrl?: string;
+  navigationAllowed?: boolean;
+  dataLicense?: string;
+  dataAttribution?: string;
+  dataTermsUrl?: string;
+  distributionConditions?: string;
   communityDescription?: string;
   communityCheckIns?: readonly {
     readonly occurredAt: string;

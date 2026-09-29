@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { conditionalPublicPolicies } from './conditional-public-agency.mjs';
 import {
   normalizePublicFeature,
   publicAgencyFeature,
@@ -18,6 +19,38 @@ const feature = (id, category = 'campground') => ({
     sourceId: 'synthetic-public',
     origin: 'public-catalog',
   },
+});
+
+test('Minnesota campground derivatives retain credit and block navigation through import parts', () => {
+  const source = {
+    ...conditionalPublicPolicies['mn-dnr-campgrounds'],
+    id: 'mn-dnr-campgrounds',
+    name: 'MNDNR campgrounds',
+    license: 'MNDNR GIS license',
+    attribution: 'Minnesota Department of Natural Resources',
+    termsUrl: 'https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html',
+    distributionConditions: conditionalPublicPolicies['mn-dnr-campgrounds'].conditions,
+  };
+  const result = publicAgencyFeature(
+    source,
+    {
+      ...feature('mn'),
+      properties: {
+        objectid: 1,
+        facility_name: 'Visitor campground',
+        site_type: 'Campground',
+        state_forest: 'State forest',
+      },
+    },
+    0,
+  );
+  assert.equal(result.properties.category, 'campsite');
+  assert.equal(result.properties.unit, 'State forest');
+  assert.equal(result.properties.navigationAllowed, false);
+  const imported = splitImportParts([result])[0][0];
+  assert.equal(imported.properties.navigationAllowed, false);
+  assert.equal(imported.properties.dataAttribution, source.attribution);
+  assert.equal(imported.properties.distributionConditions, source.distributionConditions);
 });
 test('agency labels prefer the described facility type over an opaque numeric category', () => {
   const source = {

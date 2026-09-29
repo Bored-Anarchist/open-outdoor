@@ -190,6 +190,15 @@ export function parseMapDataset(input: string, id: string, name: string): Import
             'Imported reference; verify current access and conditions.',
           ),
           sourceUpdated: text(properties.sourceUpdated, 'Not supplied'),
+          ...(properties.navigationAllowed === false ? { navigationAllowed: false } : {}),
+          ...(properties.dataLicense ? { dataLicense: text(properties.dataLicense) } : {}),
+          ...(properties.dataAttribution
+            ? { dataAttribution: text(properties.dataAttribution) }
+            : {}),
+          ...(properties.dataTermsUrl ? { dataTermsUrl: text(properties.dataTermsUrl) } : {}),
+          ...(properties.distributionConditions
+            ? { distributionConditions: text(properties.distributionConditions) }
+            : {}),
           origin: 'private-catalog',
           ...normalizeOutdoorVisitorDetails(properties),
           ...(outdoorSourceUrl(properties.sourceUrl)

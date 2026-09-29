@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { loadStateAgencyFeedCatalog } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
+import { conditionalPublicPolicy } from './conditional-public-agency.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 export const publicAgencyStaging = join(root, '.tmp-public-agency');
@@ -34,13 +35,13 @@ async function request(url, params) {
 }
 
 export async function acquirePublicAgency(source, catalog) {
+  const policy = conditionalPublicPolicy(source);
+  const decision = catalog.find(
+    (feed) => feed.state === source.state && feed.url === source.basisUrl,
+  );
   if (
-    !catalog.some(
-      (feed) =>
-        feed.state === source.state &&
-        feed.url === source.basisUrl &&
-        feed.rightsStatus === 'Supported',
-    )
+    !decision ||
+    !(decision.rightsStatus === 'Supported' || (decision.rightsStatus === 'Conditional' && policy))
   )
     throw new Error(`${source.id}: public source lacks a Supported rights decision`);
   const directory = join(publicAgencyStaging, source.id);
@@ -145,6 +146,39 @@ export async function acquirePublicAgency(source, catalog) {
       if (!disclaimer) throw new Error('UGRC mandatory unmodified disclaimer missing');
     }
   }
+  let conditionalEvidence;
+  if (policy?.state === 'MN') {
+    const plain = termsText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    if (
+      !/creation of derivative works/i.test(plain) ||
+      !/in its entirety may not be/i.test(plain) ||
+      !/MNDNR must be acknowledged/i.test(plain) ||
+      !/should not be used for navigational purposes/i.test(plain)
+    )
+      throw new Error('MNDNR current derivative conditions not confirmed');
+    const metadataUrl = `https://www.arcgis.com/sharing/rest/content/items/${service.serviceItemId}/info/metadata/metadata.xml`;
+    const xml = Buffer.from(await (await nativeCurlFetch(metadataUrl)).arrayBuffer()).toString();
+    if (!/dnr\.state\.mn\.us\/sitetools\/data_software_license\.html/i.test(xml))
+      throw new Error('Exact Minnesota item does not bind the reviewed DNR license');
+    conditionalEvidence = { url: metadataUrl, sha256: digest(xml) };
+    disclaimer = (termsText.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i)?.[1] ?? '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!disclaimer.includes('Terms and Conditions'))
+      throw new Error('MNDNR complete notice missing');
+  }
+  if (
+    policy?.state === 'VA' &&
+    !/re-distribution.{0,60}for profit is prohibited/i.test(licenseText)
+  )
+    throw new Error('Virginia current noncommercial redistribution condition not confirmed');
+  let fullSourceCount;
+  if (policy?.state === 'MN') {
+    fullSourceCount = (
+      await request(source.url + '/query', { where: '1=1', returnCountOnly: 'true', f: 'json' })
+    ).count;
+  }
   const inventory = await request(source.url + '/query', {
     where: source.where ?? '1=1',
     returnIdsOnly: 'true',
@@ -152,6 +186,8 @@ export async function acquirePublicAgency(source, catalog) {
   });
   if (!Array.isArray(inventory.objectIds)) throw new Error('Invalid ID inventory');
   const ids = [...new Set(inventory.objectIds)].sort((a, b) => a - b);
+  if (policy?.state === 'MN' && !(ids.length > 0 && ids.length < fullSourceCount))
+    throw new Error('Minnesota visitor selection must be a proper subset of the complete dataset');
   const features = [];
   const pages = [];
   const idField = inventory.objectIdFieldName ?? metadata.objectIdField;
@@ -159,7 +195,7 @@ export async function acquirePublicAgency(source, catalog) {
     const expected = ids.slice(offset, offset + 200);
     const page = await request(source.url + '/query', {
       objectIds: expected.join(','),
-      outFields: '*',
+      outFields: source.fields?.join(',') ?? '*',
       outSR: '4326',
       returnGeometry: 'true',
       geometryPrecision: '5',
@@ -188,6 +224,17 @@ export async function acquirePublicAgency(source, catalog) {
   const receipt = {
     ...source,
     rightsStatus: 'Supported',
+    upstreamRightsStatus: decision.rightsStatus,
+    ...(policy
+      ? {
+          distributionScope: 'noncommercial',
+          distributionConditions: policy.conditions,
+          conditionalClearance: 'conditions-satisfied-for-this-processed-distribution',
+          ...(fullSourceCount ? { fullSourceCount, selectedFeatureCount: ids.length } : {}),
+          ...(conditionalEvidence ? { conditionalEvidence } : {}),
+          ...(source.fields ? { selectedFields: source.fields } : {}),
+        }
+      : {}),
     publicDistribution: true,
     retrievedAt: new Date().toISOString(),
     sourceUpdated:
@@ -206,8 +253,7 @@ export async function acquirePublicAgency(source, catalog) {
     fields: metadata.fields.map((f) => f.name),
     idField,
     pages,
-    modifications:
-      'Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.',
+    modifications: `${policy?.state === 'MN' ? 'Filtered visitor subset, technical/source fields excluded; ' : ''}Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.`,
   };
   await writeFile(join(directory, 'raw.geojson'), bytes);
   await writeFile(join(directory, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n');
@@ -218,7 +264,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const config = JSON.parse(await readFile(join(root, 'config/public-state-agency-sources.json')));
   const catalog = await loadStateAgencyFeedCatalog();
   const results = [];
-  for (const source of config.sources) {
+  const requested = process.argv.slice(2);
+  for (const source of config.sources.filter(
+    (s) => !requested.length || requested.includes(s.id),
+  )) {
     try {
       const r = await acquirePublicAgency(source, catalog);
       results.push({ id: source.id, status: 'acquired', count: r.featureCount });

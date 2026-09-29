@@ -17,6 +17,19 @@ const feature = (
 const point = { type: 'Point', coordinates: [-74, 42] };
 
 describe('on-device GeoJSON map datasets', () => {
+  it('preserves reference-only and separate source-license conditions through save/restore', () => {
+    const conditions = {
+      navigationAllowed: false,
+      dataLicense: 'MNDNR credited derivative',
+      dataAttribution: 'Minnesota Department of Natural Resources',
+      dataTermsUrl: 'https://www.dnr.state.mn.us/sitetools/data_software_license.html',
+      distributionConditions: 'Reference only; no navigation or legal access claim.',
+    };
+    const dataset = parseMapDataset(collection([feature(point, conditions)]), id, 'MN derivative');
+    const restored = restoreMapDatasets(serializeMapDatasets([dataset]));
+    expect(restored[0]?.index.features[0]?.properties).toMatchObject(conditions);
+    expect(restored[0]?.collection.features[0]?.properties).toMatchObject(conditions);
+  });
   it('retains public source type and identity through local save and restore', () => {
     const dataset = parseMapDataset(
       collection([
