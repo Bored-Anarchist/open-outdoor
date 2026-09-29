@@ -16,6 +16,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 
 | Document | Purpose | Primary owner role |
 | --- | --- | --- |
+| [Private/public state deduplication](PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md) | Same-state matching policy, counts, private recovery and rebuild verification | Data lead |
 | [NC and Louisiana visitor coverage](NC_LA_VISITOR_COVERAGE_2026-09-28.md) | Updated forest coverage, Indian Creek visitor reference and enforced scope exclusions | Data lead |
 | [Minnesota/Virginia conditional public data](CONDITIONAL_PUBLIC_DATA_2026-09-28.md) | Scoped derivative evidence, noncommercial conditions and reference-only controls | Data lead |
 | [Public state package format](PUBLIC_STATE_PACKAGE_FORMAT.md) | Public/private-compatible format, POI taxonomy, rights boundary and rebuild commands | Data lead |

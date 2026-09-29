@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { deduplicatePrivateStatePackage } from './deduplicate-private-state-packages.mjs';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile, mkdir, copyFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -177,6 +178,7 @@ export async function packagePrivateNewYorkAgencies({
     await copyFile(join(catalogDirectory, file), join(snapshot, file), 1).catch((error) => {
       if (error.code !== 'EEXIST') throw error;
     });
+  delete manifest.publicDeduplication;
   manifest.oprhp = {
     publicDistribution: false,
     featureCount: sources.reduce((n, s) => n + s.featureCount, 0),
@@ -211,6 +213,8 @@ export async function packagePrivateNewYorkAgencies({
       catalogDirectory,
       ...(profileDirectory ? { profileDirectory } : {}),
     });
+  if (catalogDirectory === resolve('PrivateData/catalogs/US/New York/current'))
+    await deduplicatePrivateStatePackage(resolve('.'), 'NY', 'New York');
   return {
     features: features.length,
     oprhp: manifest.oprhp.featureCount,

@@ -4,13 +4,15 @@
 
 The inventory verifier checks each package checksum and its feature counts against the manifest. 43 packages contain agency + iOverlander data, New York contains DEC + selected OPRHP + iOverlander, and 6 packages use iOverlander alone because no eligible staged agency records are available.
 
-Totals: **472,580 agency/DEC features**, **63,333 iOverlander places**, and **535,913 features**. Counts do not establish current access, source completeness, or permission to redistribute.
+Totals: **463,830 agency/DEC features**, **63,332 iOverlander places**, and **527,162 features**. Counts do not establish current access, source completeness, or permission to redistribute.
+
+The [private/public deduplication report](PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md) records same-state matches, retained counts, thresholds and recoverable private audit files. Rebuilds automatically apply these checks; inventory verification replays every match against the pinned public package.
 
 The [NC/LA visitor coverage update](NC_LA_VISITOR_COVERAGE_2026-09-28.md) records current NC forest selections and the checksum-bound Indian Creek agency visitor reference. Forestry inventory, land-cover and planning sources are excluded; Oklahoma tree-inventory records are removed from its active visitor package.
 
 New York also packages **5,289 DEC trail elevation profiles**, verified against every packaged trail sample and statistic. Profiles describe existing trail features and are not added to the feature total. Florida includes 76 converted forest polygons; Oklahoma includes 44 historical state-park location points. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md).
 
-California combines both source packages. Connecticut and Massachusetts use their shared source package, filtered to each state boundary. The six fallback packages can add eligible agency data on a later rebuild; their agency permissions remain unchanged.
+California combines both source packages. Connecticut and Massachusetts use their shared source package, filtered to each state boundary. Packages containing only iOverlander can add eligible agency data on a later rebuild; their agency permissions remain unchanged.
 
 | State | Package contents | Agency / DEC features | iOverlander places | Total |
 | --- | --- | ---: | ---: | ---: |
@@ -19,21 +21,21 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | Arizona (AZ) | Agency + iOverlander | 170,035 | 4,246 | 174,281 |
 | Arkansas (AR) | Agency + iOverlander | 436 | 722 | 1,158 |
 | California (CA) | iOverlander only | 0 | 8,021 | 8,021 |
-| Colorado (CO) | Agency + iOverlander | 2,129 | 3,696 | 5,825 |
+| Colorado (CO) | Agency + iOverlander | 920 | 3,696 | 4,616 |
 | Connecticut (CT) | iOverlander only | 0 | 176 | 176 |
-| Delaware (DE) | Agency + iOverlander | 7,681 | 61 | 7,742 |
-| Florida (FL) | Agency + iOverlander | 16,713 | 2,446 | 19,159 |
+| Delaware (DE) | Agency + iOverlander | 7,641 | 61 | 7,702 |
+| Florida (FL) | Agency + iOverlander | 16,699 | 2,446 | 19,145 |
 | Georgia (GA) | Agency + iOverlander | 6,262 | 815 | 7,077 |
-| Hawaii (HI) | Agency + iOverlander | 600 | 79 | 679 |
-| Idaho (ID) | Agency + iOverlander | 70,975 | 1,975 | 72,950 |
+| Hawaii (HI) | Agency + iOverlander | 582 | 79 | 661 |
+| Idaho (ID) | Agency + iOverlander | 63,968 | 1,975 | 65,943 |
 | Illinois (IL) | Agency + iOverlander | 384 | 586 | 970 |
 | Indiana (IN) | Agency + iOverlander | 6,148 | 458 | 6,606 |
 | Iowa (IA) | Agency + iOverlander | 2,876 | 555 | 3,431 |
-| Kansas (KS) | Agency + iOverlander | 543 | 581 | 1,124 |
-| Kentucky (KY) | Agency + iOverlander | 4,092 | 447 | 4,539 |
+| Kansas (KS) | Agency + iOverlander | 541 | 581 | 1,122 |
+| Kentucky (KY) | Agency + iOverlander | 4,091 | 447 | 4,538 |
 | Louisiana (LA) | Agency + iOverlander | 28 | 550 | 578 |
 | Maine (ME) | Agency + iOverlander | 12,942 | 661 | 13,603 |
-| Maryland (MD) | Agency + iOverlander | 627 | 261 | 888 |
+| Maryland (MD) | Agency + iOverlander | 626 | 261 | 887 |
 | Massachusetts (MA) | iOverlander only | 0 | 373 | 373 |
 | Michigan (MI) | iOverlander only | 0 | 1,145 | 1,145 |
 | Minnesota (MN) | iOverlander only | 0 | 836 | 836 |
@@ -43,23 +45,23 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | Nebraska (NE) | iOverlander only | 0 | 504 | 504 |
 | Nevada (NV) | Agency + iOverlander | 30 | 1,637 | 1,667 |
 | New Hampshire (NH) | Agency + iOverlander | 20,012 | 351 | 20,363 |
-| New Jersey (NJ) | Agency + iOverlander | 10,143 | 218 | 10,361 |
-| New Mexico (NM) | Agency + iOverlander | 35 | 2,073 | 2,108 |
+| New Jersey (NJ) | Agency + iOverlander | 9,988 | 218 | 10,206 |
+| New Mexico (NM) | Agency + iOverlander | 34 | 2,073 | 2,107 |
 | New York (NY) | DEC + OPRHP + iOverlander | 40,087 | 1,186 | 41,273 |
 | North Carolina (NC) | Agency + iOverlander | 67 | 1,019 | 1,086 |
 | North Dakota (ND) | Agency + iOverlander | 48 | 389 | 437 |
 | Ohio (OH) | Agency + iOverlander | 11,572 | 611 | 12,183 |
 | Oklahoma (OK) | Agency + iOverlander | 44 | 563 | 607 |
-| Oregon (OR) | Agency + iOverlander | 1,114 | 3,486 | 4,600 |
-| Pennsylvania (PA) | Agency + iOverlander | 2,286 | 797 | 3,083 |
-| Rhode Island (RI) | Agency + iOverlander | 3,244 | 71 | 3,315 |
+| Oregon (OR) | Agency + iOverlander | 1,109 | 3,486 | 4,595 |
+| Pennsylvania (PA) | Agency + iOverlander | 2,213 | 797 | 3,010 |
+| Rhode Island (RI) | Agency + iOverlander | 3,193 | 71 | 3,264 |
 | South Carolina (SC) | Agency + iOverlander | 324 | 491 | 815 |
 | South Dakota (SD) | Agency + iOverlander | 298 | 716 | 1,014 |
 | Tennessee (TN) | Agency + iOverlander | 5,789 | 777 | 6,566 |
 | Texas (TX) | Agency + iOverlander | 6,681 | 2,912 | 9,593 |
-| Utah (UT) | Agency + iOverlander | 93 | 3,715 | 3,808 |
-| Vermont (VT) | Agency + iOverlander | 4,741 | 406 | 5,147 |
-| Virginia (VA) | Agency + iOverlander | 2,662 | 920 | 3,582 |
+| Utah (UT) | Agency + iOverlander | 93 | 3,714 | 3,807 |
+| Vermont (VT) | Agency + iOverlander | 4,575 | 406 | 4,981 |
+| Virginia (VA) | Agency + iOverlander | 2,655 | 920 | 3,575 |
 | Washington (WA) | Agency + iOverlander | 7,426 | 3,283 | 10,709 |
 | West Virginia (WV) | Agency + iOverlander | 5,834 | 354 | 6,188 |
 | Wisconsin (WI) | Agency + iOverlander | 123 | 866 | 989 |
@@ -69,6 +71,7 @@ California combines both source packages. Connecticut and Massachusetts use thei
 
 ```text
 node tools/build-private-state-agency-ioverlander.mjs --all
+node tools/deduplicate-private-state-packages.mjs --all
 node tools/report-private-state-packages.mjs
 ```
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { deduplicatePrivateStatePackage } from './deduplicate-private-state-packages.mjs';
 import { resolve } from 'node:path';
 import { buildIoverlanderPrivateCatalog } from '../packages/data/dist/ioverlander-private.js';
 import { packagePrivateNewYorkHikes } from './package-private-new-york-hikes.mjs';
@@ -55,6 +56,9 @@ if (
     catalogDirectory: result.outputDirectory,
     ...(args.get('profiles') ? { profileDirectory: resolve(args.get('profiles')) } : {}),
   });
+
+if (result.outputDirectory === resolve('PrivateData/catalogs/US/New York/current'))
+  await deduplicatePrivateStatePackage(resolve('.'), 'NY', 'New York');
 
 process.stdout.write(
   `${JSON.stringify({ outputDirectory: result.outputDirectory, counts: result.counts }, null, 2)}\n`,

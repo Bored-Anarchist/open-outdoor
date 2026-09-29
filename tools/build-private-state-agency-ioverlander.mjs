@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { deduplicatePrivateStatePackage } from './deduplicate-private-state-packages.mjs';
 import { nativeCurlFetch } from './native-curl-fetch.mjs';
 import { visitorSourceExclusion } from './state-visitor-source-scope.mjs';
 import {
@@ -500,7 +501,8 @@ export async function buildPrivateStateAgencyIoverlander(code) {
     join(output, 'agency-ioverlander.manifest.json'),
     `${JSON.stringify(manifest, null, 2)}\n`,
   );
-  return manifest;
+  await deduplicatePrivateStatePackage(repository, code, state.name);
+  return JSON.parse(await readFile(join(output, 'agency-ioverlander.manifest.json'), 'utf8'));
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

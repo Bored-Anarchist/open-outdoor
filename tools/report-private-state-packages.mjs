@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { deduplicatePrivateStatePackage } from './deduplicate-private-state-packages.mjs';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -14,6 +15,9 @@ const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 for (const state of registry.states) {
   const current = join(root, state.name, 'current');
   const ny = state.code === 'NY';
+  const dedup = await deduplicatePrivateStatePackage(repository, state.code, state.name, {
+    verifyOnly: true,
+  });
   const manifest = JSON.parse(
     await readFile(
       join(current, ny ? 'manifest.json' : 'agency-ioverlander.manifest.json'),
@@ -121,6 +125,7 @@ for (const state of registry.states) {
   rows.push({
     state: state.code,
     name: state.name,
+    duplicatesRemoved: dedup.removed,
     packageMode: ny
       ? manifest.oprhp?.featureCount
         ? 'dec-oprhp-and-ioverlander'
@@ -193,11 +198,13 @@ await writeFile(
     '',
     `Totals: **${format(totals.agency)} agency/DEC features**, **${format(totals.ioverlander)} iOverlander places**, and **${format(totals.features)} features**. Counts do not establish current access, source completeness, or permission to redistribute.`,
     '',
+    'The [private/public deduplication report](PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md) records same-state matches, retained counts, thresholds and recoverable private audit files. Rebuilds automatically apply these checks; inventory verification replays every match against the pinned public package.',
+    '',
     'The [NC/LA visitor coverage update](NC_LA_VISITOR_COVERAGE_2026-09-28.md) records current NC forest selections and the checksum-bound Indian Creek agency visitor reference. Forestry inventory, land-cover and planning sources are excluded; Oklahoma tree-inventory records are removed from its active visitor package.',
     '',
     `New York also packages **${format(totals.hikeProfiles)} DEC trail elevation profiles**, verified against every packaged trail sample and statistic. Profiles describe existing trail features and are not added to the feature total. Florida includes 76 converted forest polygons; Oklahoma includes 44 historical state-park location points. See the [integration report](PRIVATE_PACKAGE_INTEGRATION_2026-09-27.md).`,
     '',
-    'California combines both source packages. Connecticut and Massachusetts use their shared source package, filtered to each state boundary. The six fallback packages can add eligible agency data on a later rebuild; their agency permissions remain unchanged.',
+    'California combines both source packages. Connecticut and Massachusetts use their shared source package, filtered to each state boundary. Packages containing only iOverlander can add eligible agency data on a later rebuild; their agency permissions remain unchanged.',
     '',
     '| State | Package contents | Agency / DEC features | iOverlander places | Total |',
     '| --- | --- | ---: | ---: | ---: |',
@@ -210,10 +217,47 @@ await writeFile(
     '',
     '```text',
     'node tools/build-private-state-agency-ioverlander.mjs --all',
+    'node tools/deduplicate-private-state-packages.mjs --all',
     'node tools/report-private-state-packages.mjs',
     '```',
     '',
     'New York uses its separate reviewed DEC+iOverlander builder followed by `node tools/package-private-new-york-agencies.mjs`. Selected public-designated OPRHP trails and facilities, camping and park locators are private dated references. Unchanged park polygons and temporal feeds remain separate private reference snapshots. Its civil boundary, NPS, and USFS data remain in the public system. See [remaining-gap resolution](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md).',
+    '',
+  ].join('\n'),
+);
+await writeFile(
+  'docs/PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md',
+  [
+    '# Private packages deduplicated against public state packages',
+    '',
+    'All 50 active packages under Git-ignored `PrivateData/catalogs/US/<state>/current/` were compared only with the public package for the same state. Public data and its manifests remain unchanged. This report publishes counts only; original records, community narratives, match IDs and coordinates remain private.',
+    '',
+    `Removed **${format(rows.reduce((n, r) => n + r.duplicatesRemoved, 0))} duplicate private entries** across **${rows.filter((r) => r.duplicatesRemoved > 0).length} states**. Retained **${format(totals.features)} private features**: **${format(totals.agency)} agency/DEC/OPRHP records** and **${format(totals.ioverlander)} iOverlander places**. New York's reviewed identity catalog, map/index and 5,289 DEC profiles remain unchanged; it has zero qualifying public matches.`,
+    '',
+    'The public feature wins when both entries have the same normalized exact source-layer URL and external record ID with matching geometry dimension. Otherwise matching requires a meaningful normalized name, compatible POI categories and the same geometry dimension. Points must be within 25 meters. Lines and polygons must have bounds within 20 meters, length/area ratio at least 98%, and bidirectional vertex/midpoint-to-segment distances no greater than 20 meters. This accommodates public rounding and simplification. Generic names alone, nearby facilities, overlapping land parcels, and points inside park boundaries are insufficient.',
+    '',
+    'These are conservative automatic matches, not a claim that every semantic duplicate or alternate-name record has been resolved. Different representations and uncertain matches stay private for review. Rights, access and currency classifications are unchanged.',
+    '',
+    'Each private manifest pins the public GeoJSON checksum, policy version, output checksum, complete pre-deduplication input and match report. The ignored `before-public-dedup.geojson` and `public-dedup.private.json` preserve every original feature and removed private detail. Repeated runs replay the preserved input, so counts do not drift; a changed public package triggers reconciliation against that input. Raw sources are untouched. Builders apply deduplication after composition; inventory verification rejects stale public pins or a replay mismatch.',
+    '',
+    '| State | Private entries removed | Retained agency / DEC | Retained iOverlander | Retained total |',
+    '| --- | ---: | ---: | ---: | ---: |',
+    ...rows.map(
+      (r) =>
+        `| ${r.name} (${r.state}) | ${format(r.duplicatesRemoved)} | ${format(r.agency)} | ${format(r.ioverlander)} | ${format(r.total)} |`,
+    ),
+    '',
+    '## Rebuild and verify',
+    '',
+    '```text',
+    'node tools/build-private-state-agency-ioverlander.mjs --all',
+    'node tools/deduplicate-private-state-packages.mjs --all',
+    'node tools/deduplicate-private-state-packages.mjs --verify',
+    'node tools/report-private-state-packages.mjs',
+    'node --test tools/private-public-dedup.test.mjs',
+    '```',
+    '',
+    'New York keeps its separate reviewed builder. Future public matches affecting its identity catalog or DEC profile bindings require a coordinated rebuild; the tool fails before modifying that package. The current 50-state verification confirms no such matches.',
     '',
   ].join('\n'),
 );
