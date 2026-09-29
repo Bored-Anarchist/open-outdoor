@@ -41,7 +41,7 @@ $env:OPEN_OUTDOOR_PUBLIC_ARTIFACT_BASE_URL = 'https://your-artifact-host.example
 pnpm map:public:restore -- CO --parts
 ```
 
-No host is provisioned or configured by this change. Populate a mirror from verified generated local outputs using your storage provider's tooling. Restore streams one file at a time, skips intact local files, verifies committed size/SHA-256, and replaces only verified files. Redirects and credential-bearing base URLs are rejected. Restoration does not activate phone catalogs or grant distribution rights. API rebuilds may differ from historical snapshots: restore historical pins from a mirror or review and commit new rebuild pins.
+This checkout now has a verified local external mirror configured in ignored `.private/package-maintenance.json`; other clones need their own configuration. No cloud host was provisioned. See the [operations report](PACKAGE_OPERATIONS_2026-09-29.md) for backup and restore evidence. Populate a mirror from verified generated local outputs using your storage provider's tooling. Restore streams one file at a time, skips intact local files, verifies committed size/SHA-256, and replaces only verified files. Redirects and credential-bearing base URLs are rejected. Restoration does not activate phone catalogs or grant distribution rights. API rebuilds may differ from historical snapshots: restore historical pins from a mirror or review and commit new rebuild pins.
 
 ## Private refresh and recovery
 
@@ -63,3 +63,15 @@ Do not clear `PrivateData/` as a cache. Keep active and previous inputs, communi
 ## Validation
 
 Maintenance tests cover revision/query invalidation, corrupted caches, private approval and failed refresh recovery, streaming artifact integrity and prohibited Git paths. Existing source/package tests remain in quality checks. Full dataset verification runs locally after inputs are present; code CI does not store full catalogs.
+
+## Backup and recurring-check commands
+
+```powershell
+pnpm map:packages:backup public D:\OutdoorArtifacts\public
+pnpm map:packages:backup private D:\OutdoorArtifacts\private
+pnpm map:sources:check
+```
+
+Backups must be outside the repository. Restrict private-folder access before copying. The backup receipt is completed only after all pinned files are verified. Immutable checksum objects share storage across release views; no snapshots are automatically deleted. Private backups cover active catalogs and pinned deduplication recovery/enrichment, not all original source archives. Keep the two channels separate.
+
+The source checker fetches exact API layer metadata without feature records. It stores baselines and reports in ignored `.tmp-package-maintenance/`; pending changes persist across checks. Run `pnpm map:sources:check --acknowledge` only after every pending source change has been rebuilt, independently verified and backed up. A first observation baseline does not prove package freshness. The weekly heartbeat uses these commands and existing source-specific pipelines.

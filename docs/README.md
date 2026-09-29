@@ -16,6 +16,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 
 | Document | Purpose | Primary owner role |
 | --- | --- | --- |
+| [Package operations](PACKAGE_OPERATIONS_2026-09-29.md) | Verified mirrors, fresh restore evidence, weekly source checks and history review | Data lead |
 | [Package maintenance](PACKAGE_MAINTENANCE.md) | API refresh, local cache reuse, external artifacts and Git storage policy | Data lead |
 | [Private/public state deduplication](PRIVATE_PUBLIC_STATE_DEDUPLICATION_2026-09-28.md) | Same-state matching policy, counts, private recovery and rebuild verification | Data lead |
 | [Private deduplication audit fixes](PRIVATE_PUBLIC_DEDUPLICATION_FIXES_2026-09-28.md) | Policy v2 corrections, restored records, private enrichment and activation recovery | Data lead |

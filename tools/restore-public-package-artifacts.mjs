@@ -58,7 +58,7 @@ export async function restoreArtifact(path, descriptor, streamFactory) {
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const args = process.argv.slice(2).filter((arg) => arg !== '--');
   const fromIndex = args.indexOf('--from');
-  const from = fromIndex < 0 ? null : args[fromIndex + 1];
+  let from = fromIndex < 0 ? null : args[fromIndex + 1];
   if (fromIndex >= 0 && (!from || from.startsWith('--')))
     throw new Error('--from needs a directory');
   if (fromIndex >= 0) args.splice(fromIndex, 2);
@@ -69,6 +69,16 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       'Usage: pnpm map:public:restore -- NY CA [--parts] [--from external-directory]',
     );
   const base = process.env.OPEN_OUTDOOR_PUBLIC_ARTIFACT_BASE_URL;
+  if (!from && !base) {
+    try {
+      const settings = JSON.parse(
+        await readFile(join(root, '.private/package-maintenance.json'), 'utf8'),
+      );
+      from = settings.publicRelease ?? null;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
   if (!from && !base)
     throw new Error(
       'Set OPEN_OUTDOOR_PUBLIC_ARTIFACT_BASE_URL or use --from. No artifact host is preconfigured.',
