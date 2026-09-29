@@ -2,7 +2,7 @@
 
 The current [inventory](PUBLIC_STATE_PACKAGE_INVENTORY_2026-09-27.md) and [format/rebuild guide](PUBLIC_STATE_PACKAGE_FORMAT.md) replace the earlier category/import gate decision. Existing source rights classifications remain unchanged. Minnesota and Virginia conditional derivatives are cleared for this scoped noncommercial distribution; see the [condition review](CONDITIONAL_PUBLIC_DATA_2026-09-28.md).
 
-**State loader update:** The dedicated [offline state loader](STATE_PACKAGE_LOADER.md) installs complete catalogs with local tiles, search, checksum verification and rollback. The previous unsigned iOS build passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`; the refreshed packages and source-condition UI require a new build. Physical phone acceptance and production catalog trust integration remain pending.
+**State loader update:** The dedicated [offline state loader](STATE_PACKAGE_LOADER.md) installs complete catalogs with local tiles, search, checksum verification and rollback. The [unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36501088339) passed for code commit `277ba6d193f92f53cdc697b4b6cac9e1dcc72ce5`, including the refreshed Minnesota/Virginia packages and source-condition UI. All required PR checks passed for follow-up commit `d1fb34df11cfd968ada2a26d940a12dc71cce2c8`. Physical phone acceptance and production catalog trust integration remain pending.
 
 | Data | Current decision | Remaining limits |
 | --- | --- | --- |
