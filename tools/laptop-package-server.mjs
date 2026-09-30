@@ -6,6 +6,7 @@ import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { pipeline } from 'node:stream/promises';
 import { advertiseLaptop, canViewPairingPage, pairingPage } from './laptop-pairing.mjs';
+import { loadLaptopUpdateSigner } from './laptop-update-signing.mjs';
 
 const defaultRoot = fileURLToPath(
   new URL('../packages/map/src/assets/state-packages/US/', import.meta.url),
@@ -77,6 +78,7 @@ async function verifiedFile(root, pin) {
 export async function createLaptopPackageServer({
   root = defaultRoot,
   token = randomBytes(16).toString('hex'),
+  signer,
 } = {}) {
   if (!/^[a-f0-9]{32}$/.test(token)) throw new Error('Invalid pairing code.');
   const directory = await realpath(root);
@@ -102,16 +104,26 @@ export async function createLaptopPackageServer({
       missing.push(pin.state);
     }
   }
-  const catalog = JSON.stringify({
-    schemaVersion: 1,
-    packages: [...packages.values()].map(({ state, name, bytes, installedBytes, sha256 }) => ({
-      state,
-      name,
-      bytes,
-      installedBytes,
-      sha256,
-    })),
-  });
+  const catalog = JSON.stringify(
+    signer
+      ? {
+          schemaVersion: 2,
+          signingKey: signer.identity,
+          packages: await signer.seal([...packages.values()]),
+        }
+      : {
+          schemaVersion: 1,
+          packages: [...packages.values()].map(
+            ({ state, name, bytes, installedBytes, sha256 }) => ({
+              state,
+              name,
+              bytes,
+              installedBytes,
+              sha256,
+            }),
+          ),
+        },
+  );
   if (Buffer.byteLength(catalog) > 64 * 1024) throw new Error('Public catalog is too large.');
   const expected = Buffer.from(`Bearer ${token}`);
   const server = createServer(async (request, response) => {
@@ -143,7 +155,7 @@ export async function createLaptopPackageServer({
       )
         return fail(403, 'Open the pairing page on the laptop itself.');
       try {
-        const page = await pairingPage(`http://${host}`, token);
+        const page = await pairingPage(`http://${host}`, token, signer?.identity.keyId);
         response.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
           'Content-Security-Policy':
@@ -210,14 +222,27 @@ async function main() {
   if (!Number.isInteger(port) || port < 1024 || port > 65535)
     throw new Error('Choose a port between 1024 and 65535.');
   console.log('Verifying local public state packages…');
-  const { server, token, availableStates, missingStates } = await createLaptopPackageServer();
-  if (!availableStates.length)
+  const signer = await loadLaptopUpdateSigner();
+  let result;
+  try {
+    result = await createLaptopPackageServer({ signer });
+  } catch (error) {
+    await signer.close();
+    throw error;
+  }
+  const { server, token, availableStates, missingStates } = result;
+  if (!availableStates.length) {
+    await signer.close();
     throw new Error(
       'No verified state.sqlite files found. Restore public packages with pnpm map:public:restore STATE, then retry.',
     );
+  }
   await new Promise((accept, reject) => {
     server.once('error', reject);
     server.listen(port, host, accept);
+  }).catch(async (error) => {
+    await signer.close();
+    throw error;
   });
   let stopDiscovery = () => {};
   try {
@@ -228,7 +253,7 @@ async function main() {
     console.log('Nearby discovery is unavailable. Use QR or manual pairing.');
   }
   console.log(
-    `\nOpen Outdoor → Explore → Offline state packages → Connect to laptop\nOpen http://${host}:${port}/pair on this laptop to show the pairing QR code.\nLaptop address: http://${host}:${port}\nPairing code: ${token}\n${availableStates.length} verified public states available.`,
+    `\nOpen Outdoor → Explore → Offline state packages → Connect to laptop\nOpen http://${host}:${port}/pair on this laptop to show the pairing QR code.\nLaptop address: http://${host}:${port}\nPairing code: ${token}\nSigning fingerprint: ${signer.identity.keyId}\n${availableStates.length} verified public states available.`,
   );
   if (missingStates.length)
     console.log(
@@ -241,6 +266,7 @@ async function main() {
     stopDiscovery();
     server.close();
     server.closeAllConnections();
+    void signer.close();
   };
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);

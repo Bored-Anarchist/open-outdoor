@@ -41,3 +41,16 @@ it('bounds, filters and deduplicates discovery data without trusting advertised 
   ])
     expect(() => parseDiscoveredLaptops(raw)).toThrow();
 });
+
+it('version-two QR pairing carries an independent signing fingerprint', () => {
+  const signerFingerprint = 'c'.repeat(64);
+  expect(parseLaptopPairingQr(JSON.stringify({ ...pair, version: 2, signerFingerprint }))).toEqual({
+    address,
+    pairingCode,
+    signerFingerprint,
+  });
+  for (const value of ['', 'short', 'g'.repeat(64), 'c'.repeat(65), null])
+    expect(() =>
+      parseLaptopPairingQr(JSON.stringify({ ...pair, version: 2, signerFingerprint: value })),
+    ).toThrow('Scan the pairing QR code');
+});

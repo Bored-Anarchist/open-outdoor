@@ -2,18 +2,24 @@ import Bonjour from 'bonjour-service';
 import QRCode from 'qrcode';
 import { randomBytes } from 'node:crypto';
 
-export function pairingPayload(address, pairingCode) {
-  return JSON.stringify({ type: 'open-outdoor-laptop', version: 1, address, pairingCode });
+export function pairingPayload(address, pairingCode, signerFingerprint) {
+  return JSON.stringify({
+    type: 'open-outdoor-laptop',
+    version: signerFingerprint ? 2 : 1,
+    address,
+    pairingCode,
+    ...(signerFingerprint ? { signerFingerprint } : {}),
+  });
 }
 
-export async function pairingPage(address, pairingCode) {
-  const svg = await QRCode.toString(pairingPayload(address, pairingCode), {
+export async function pairingPage(address, pairingCode, signerFingerprint) {
+  const svg = await QRCode.toString(pairingPayload(address, pairingCode, signerFingerprint), {
     type: 'svg',
     errorCorrectionLevel: 'M',
     margin: 4,
   });
   // Both values originate in the validated server configuration, never request input.
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect Open Outdoor</title><style>body{font:20px system-ui;max-width:560px;margin:40px auto;padding:20px;background:#fff;color:#152820}svg{width:100%;max-width:440px}code{overflow-wrap:anywhere}h1{font-size:30px}</style><main><h1>Connect your phone</h1><p>Keep both devices on the same trusted Wi-Fi. In Open Outdoor, choose Connect to laptop, then Scan pairing QR code.</p>${svg.replace('<svg ', '<svg role="img" aria-label="Laptop pairing QR code" ')}<p>Laptop address: <code>${address}</code></p><p>Manual pairing code: <code>${pairingCode}</code></p><p>Keep the laptop server running. Closing the server expires this code. Downloads use local HTTP.</p></main></html>`;
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect Open Outdoor</title><style>body{font:20px system-ui;max-width:560px;margin:40px auto;padding:20px;background:#fff;color:#152820}svg{width:100%;max-width:440px}code{overflow-wrap:anywhere}h1{font-size:30px}</style><main><h1>Connect your phone</h1><p>Keep both devices on the same trusted Wi-Fi. In Open Outdoor, choose Connect to laptop, then Scan pairing QR code.</p>${svg.replace('<svg ', '<svg role="img" aria-label="Laptop pairing QR code" ')}<p>Laptop address: <code>${address}</code></p><p>Manual pairing code: <code>${pairingCode}</code></p>${signerFingerprint ? `<p>Signing fingerprint: <code>${signerFingerprint}</code></p><p>Approve this laptop for state updates only after comparing this fingerprint or scanning this page.</p>` : ''}<p>Keep the laptop server running. Closing the server expires this code. Downloads use local HTTP.</p></main></html>`;
 }
 
 export function canViewPairingPage(remoteAddress, localAddress, fetchSite) {

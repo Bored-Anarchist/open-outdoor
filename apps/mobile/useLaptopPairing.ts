@@ -9,7 +9,7 @@ import { nativeSpikes } from './nativeSpikes';
 
 export function useLaptopPairing(
   enabled: boolean,
-  connect: (address: string, code: string) => Promise<boolean>,
+  connect: (address: string, code: string, signerFingerprint?: string) => Promise<boolean>,
   onAddress: (address: string) => void,
 ) {
   const [laptops, setLaptops] = useState<readonly DiscoveredLaptop[]>([]);
@@ -73,7 +73,7 @@ export function useLaptopPairing(
       const pair = parseLaptopPairingQr(raw);
       callbacks.current.onAddress(pair.address);
       setStatus('');
-      await callbacks.current.connect(pair.address, pair.pairingCode);
+      await callbacks.current.connect(pair.address, pair.pairingCode, pair.signerFingerprint);
     } catch (error) {
       if (request === generation.current && active.current)
         setStatus(

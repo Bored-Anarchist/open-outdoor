@@ -11,6 +11,9 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
   private var pending: Promise?
   private var baseURL: URL?
   private var pairingCode = ""
+  private var expectedFingerprint = ""
+  private var signingPublicKey = ""
+  private var catalogCache: Data?
   private var offered: [OpenOutdoorStatePackages.Pin] = []
   private var incoming: OpenOutdoorStatePackages.Pin?
   private var catalogData = Data()
@@ -55,7 +58,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
     task = download ? next.downloadTask(with: request) : next.dataTask(with: request)
     task?.resume()
   }
-  func connect(_ input: String, code: String, promise: Promise) {
+  func connect(_ input: String, code: String, fingerprint: String = "", promise: Promise) {
     guard pending == nil else { promise.reject("LAPTOP_BUSY", "Wait for the current transfer or cancel it."); return }
     disconnect()
     do {
@@ -64,6 +67,8 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
         throw failure("Paste the 32-character pairing code shown in the laptop terminal.")
       }
       pairingCode = code
+      guard fingerprint.isEmpty || fingerprint.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil && fingerprint.utf8.count == 64 else { throw failure("Use the signing fingerprint shown on the laptop pairing page.") }
+      expectedFingerprint = fingerprint
       try start(path: "v1/catalog", promise: promise, download: false)
     } catch { disconnect(); promise.reject("LAPTOP_CONNECT_FAILED", error.localizedDescription) }
   }
@@ -94,6 +99,29 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
     baseURL = nil
     pairingCode = ""
     offered = []
+    expectedFingerprint = ""
+    signingPublicKey = ""
+    catalogCache = nil
+  }
+  func refresh(_ promise: Promise) {
+    do { try start(path: "v1/catalog", promise: promise, download: false) }
+    catch { promise.reject("LAPTOP_REFRESH_FAILED", error.localizedDescription) }
+  }
+  func approveSigner(_ promise: Promise) {
+    guard pending == nil, let cache = catalogCache, !expectedFingerprint.isEmpty, !signingPublicKey.isEmpty else { promise.reject("LAPTOP_TRUST_FAILED", "Scan the current laptop QR code or enter its signing fingerprint before approving updates."); return }
+    do {
+      // The independent QR/manual fingerprint must match before an API key can be enrolled.
+      _ = try catalogResult(cache)
+      try store.approveUpdateSigner(signingPublicKey, fingerprint: expectedFingerprint)
+      promise.resolve(try catalogResult(cache))
+    } catch { promise.reject("LAPTOP_TRUST_FAILED", error.localizedDescription) }
+  }
+  func revokeSigner(_ promise: Promise) {
+    guard pending == nil, let cache = catalogCache, !signingPublicKey.isEmpty else { promise.reject("LAPTOP_TRUST_FAILED", "Connect to the laptop before changing update trust."); return }
+    do {
+      try store.trust().revoke(OpenOutdoorStateUpdateTrust.fingerprint(signingPublicKey))
+      promise.resolve(try catalogResult(cache))
+    } catch { promise.reject("LAPTOP_TRUST_FAILED", error.localizedDescription) }
   }
   private func finish(value: String? = nil, error: String? = nil) {
     let promise = pending
@@ -153,7 +181,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
         throw failure("The state download was incomplete. Reconnect and retry.")
       }
       phase = "verifying"
-      let result = try store.install(location) // Reuses build pins, disk checks, hashes and atomic activation.
+      let result = try store.install(location, authorizedPin: pin) // Reuses signed/build authorization, disk checks and atomic activation.
       finish(value: result)
     } catch { finish(error: error.localizedDescription) }
   }
@@ -167,7 +195,51 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
     }
     guard incoming == nil else { finish(error: "The state download was incomplete. Reconnect and retry."); return }
     do {
-      guard let catalog = try JSONSerialization.jsonObject(with: catalogData) as? [String: Any],
+      let result = try catalogResult(catalogData)
+      catalogCache = catalogData
+      finish(value: result)
+    } catch {
+      baseURL = nil; pairingCode = ""; offered = []; signingPublicKey = ""; catalogCache = nil
+      finish(error: error.localizedDescription)
+    }
+  }
+  private func catalogResult(_ data: Data) throws -> String {
+      guard let catalog = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+        let packages = catalog["packages"] as? [[String: Any]], packages.count <= 50 else { throw failure("The laptop's state list is not supported.") }
+      if catalog["schemaVersion"] as? Int == 2 {
+        guard let identity = catalog["signingKey"] as? [String: String], let publicKey = identity["publicKey"],
+          let id = identity["keyId"], try OpenOutdoorStateUpdateTrust.fingerprint(publicKey) == id,
+          expectedFingerprint.isEmpty || expectedFingerprint == id else { throw failure("The laptop signing key does not match its pairing page. Scan the current QR code.") }
+        let trust = try store.trust()
+        let trusted = trust.isTrusted(publicKey)
+        var seen = Set<String>()
+        var accepted: [OpenOutdoorStatePackages.Pin] = []
+        var values: [[String: Any]] = []
+        var blocked = 0
+        for entry in packages {
+          let ticket = try JSONDecoder().decode(OpenOutdoorStateUpdateTrust.Ticket.self, from: JSONSerialization.data(withJSONObject: entry))
+          // Invalid signatures abort the entire list. Stale but valid snapshots are counted separately.
+          let manifest = try trust.inspect(ticket, publicKey: publicKey, requireTrusted: false, checkReplay: false)
+          guard seen.insert(manifest.state).inserted else { throw failure("The laptop's state list contains duplicate states.") }
+          do {
+            let pin = try store.updatePin(ticket, publicKey: publicKey, requireTrusted: false)
+            let pinned = store.supportedPins().first(where: { $0.state == pin.state && $0.sha256 == pin.sha256 && $0.bytes == pin.bytes && $0.tilesSha256 == pin.tilesSha256 && $0.installedBytes == pin.installedBytes })
+            if trusted { accepted.append(pin) }
+            else if let pinned, !trust.hasAcceptedUpdate(pin.state) { accepted.append(pinned) }
+            var value: [String: Any] = ["state": manifest.state, "name": manifest.name, "sha256": manifest.sha256,
+              "bytes": manifest.bytes, "installedBytes": manifest.installedBytes, "generatedAt": manifest.generatedAt,
+              "revision": manifest.revision, "requiresTrust": !trusted && (pinned == nil || trust.hasAcceptedUpdate(pin.state))]
+            value["signed"] = true
+            values.append(value)
+          } catch { blocked += 1 }
+        }
+        signingPublicKey = publicKey
+        offered = accepted
+        let result: [String: Any] = ["packages": values, "unsupportedCount": 0, "blockedCount": blocked,
+          "signerFingerprint": id, "signerTrusted": trusted, "canTrustSigner": expectedFingerprint == id]
+        return String(data: try JSONSerialization.data(withJSONObject: result), encoding: .utf8)!
+      }
+      guard expectedFingerprint.isEmpty,
         catalog["schemaVersion"] as? Int == 1, let packages = catalog["packages"] as? [[String: Any]],
         packages.count <= 50 else { throw failure("The laptop's state list is not supported.") }
       var seen = Set<String>()
@@ -182,10 +254,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
       offered = accepted
       let values = try JSONSerialization.jsonObject(with: JSONEncoder().encode(accepted))
       let result: [String: Any] = ["packages": values, "unsupportedCount": packages.count - accepted.count]
-      finish(value: String(data: try JSONSerialization.data(withJSONObject: result), encoding: .utf8)!)
-    } catch {
-      baseURL = nil; pairingCode = ""; offered = []
-      finish(error: "The laptop's state list is not supported. Restore the public packages for this app version and restart the server.")
-    }
+      signingPublicKey = ""
+      return String(data: try JSONSerialization.data(withJSONObject: result), encoding: .utf8)!
   }
 }

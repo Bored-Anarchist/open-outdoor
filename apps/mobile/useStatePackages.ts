@@ -28,10 +28,25 @@ export function useStatePackages(query: string) {
   const [laptopStatus, setLaptopStatus] = useState('');
   const [laptopBusy, setLaptopBusy] = useState(false);
   const [laptopProgress, setLaptopProgress] = useState<LaptopTransferProgress | null>(null);
+  const [trustedLaptopSigners, setTrustedLaptopSigners] = useState<readonly string[]>([]);
   const mounted = useRef(true);
   const inFlight = useRef(false);
   const detailRequest = useRef(0);
   const laptopRequest = useRef(0);
+  async function refreshTrustedSigners() {
+    if (!nativeSpikes.laptopUpdatesAvailable) return;
+    const values = JSON.parse(await nativeSpikes.trustedLaptopSigners()) as unknown;
+    if (
+      !Array.isArray(values) ||
+      values.length > 8 ||
+      values.some((value) => typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value))
+    )
+      throw new Error('The saved laptop trust list is invalid.');
+    if (mounted.current) setTrustedLaptopSigners(values);
+  }
+  useEffect(() => {
+    void refreshTrustedSigners().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!nativeSpikes.laptopPackagesAvailable) return;
@@ -190,11 +205,11 @@ export function useStatePackages(query: string) {
     }
   }
 
-  async function connectLaptop(address: string, code: string): Promise<boolean> {
+  async function connectLaptop(address: string, code: string, fingerprint = ''): Promise<boolean> {
     if (!ready || inFlight.current || !nativeSpikes.laptopPackagesAvailable) return false;
     let connection;
     try {
-      connection = validateLaptopConnection(address, code);
+      connection = validateLaptopConnection(address, code, fingerprint);
     } catch (error) {
       setLaptopStatus(
         error instanceof Error ? error.message : 'Check the laptop address and pairing code.',
@@ -208,15 +223,18 @@ export function useStatePackages(query: string) {
     setLaptopCatalog(null);
     setLaptopStatus('Connecting to laptop… Allow Local Network access if asked.');
     try {
-      const payload = await nativeSpikes.connectLaptopPackages(
-        connection.address,
-        connection.pairingCode,
-      );
+      const payload = nativeSpikes.laptopUpdatesAvailable
+        ? await nativeSpikes.connectLaptopUpdates(
+            connection.address,
+            connection.pairingCode,
+            connection.signerFingerprint ?? '',
+          )
+        : await nativeSpikes.connectLaptopPackages(connection.address, connection.pairingCode);
       if (!mounted.current || request !== laptopRequest.current) return false;
       const catalog = JSON.parse(payload) as LaptopCatalog;
       setLaptopCatalog(catalog);
       setLaptopStatus(
-        `${catalog.packages.length} supported states available.${catalog.unsupportedCount ? ` ${catalog.unsupportedCount} states require a different app build.` : ''}${catalog.packages.length ? ' Choose a state to download.' : ' Restore matching public packages on the laptop and reconnect.'}`,
+        `${catalog.packages.length} states available.${catalog.unsupportedCount ? ` ${catalog.unsupportedCount} states require a different app build.` : ''}${catalog.blockedCount ? ` ${catalog.blockedCount} older or conflicting updates were blocked.` : ''}${catalog.signerFingerprint && !catalog.signerTrusted ? ' Approve this laptop to enable newer signed packages.' : catalog.packages.length ? ' Choose a state to download or update.' : ' Restore matching public packages on the laptop and reconnect.'}`,
       );
       return true;
     } catch (error) {
@@ -239,6 +257,70 @@ export function useStatePackages(query: string) {
     setLaptopStatus('Laptop disconnected. Installed states remain available offline.');
     await nativeSpikes.disconnectLaptopPackages().catch(() => {});
   }
+  async function changeLaptopCatalog(action: () => Promise<string>, message: string) {
+    if (!mounted.current || !nativeSpikes.laptopUpdatesAvailable || inFlight.current) return;
+    inFlight.current = true;
+    const request = ++laptopRequest.current;
+    setBusy(true);
+    setLaptopStatus(message);
+    try {
+      const catalog = JSON.parse(await action()) as LaptopCatalog;
+      await refreshTrustedSigners();
+      if (mounted.current && request === laptopRequest.current) {
+        setLaptopCatalog(catalog);
+        setLaptopStatus(
+          catalog.signerTrusted
+            ? 'Signed updates are enabled for this laptop. Choose a state to install or update.'
+            : 'Laptop update trust is not enabled. Installed maps are kept; newer packages require approval.',
+        );
+      }
+    } catch (error) {
+      if (mounted.current && request === laptopRequest.current)
+        setLaptopStatus(
+          error instanceof Error ? error.message : 'Could not update the laptop package list.',
+        );
+    } finally {
+      inFlight.current = false;
+      if (mounted.current) setBusy(false);
+    }
+  }
+
+  async function revokeSavedLaptopSigner(fingerprint: string) {
+    if (
+      !nativeSpikes.laptopUpdatesAvailable ||
+      inFlight.current ||
+      !/^[a-f0-9]{64}$/.test(fingerprint)
+    )
+      return;
+    inFlight.current = true;
+    setBusy(true);
+    try {
+      await nativeSpikes.revokeStateUpdateSigner(fingerprint);
+      await refreshTrustedSigners();
+      if (mounted.current) {
+        setLaptopCatalog((current) =>
+          current?.signerFingerprint === fingerprint
+            ? {
+                ...current,
+                signerTrusted: false,
+                packages: current.packages.map((entry) => ({ ...entry, requiresTrust: true })),
+              }
+            : current,
+        );
+        setLaptopStatus(
+          'Laptop update trust removed. Installed maps and rollback history are kept.',
+        );
+      }
+    } catch (error) {
+      if (mounted.current)
+        setLaptopStatus(
+          error instanceof Error ? error.message : 'Could not remove laptop update trust.',
+        );
+    } finally {
+      inFlight.current = false;
+      if (mounted.current) setBusy(false);
+    }
+  }
 
   return {
     packages,
@@ -248,6 +330,21 @@ export function useStatePackages(query: string) {
     busy,
     status,
     laptopAvailable: nativeSpikes.laptopPackagesAvailable,
+    laptopUpdatesAvailable: nativeSpikes.laptopUpdatesAvailable,
+    trustedLaptopSigners,
+    revokeSavedLaptopSigner,
+    approveLaptopUpdates: () =>
+      changeLaptopCatalog(() => nativeSpikes.approveLaptopUpdates(), 'Saving laptop update trust…'),
+    revokeLaptopUpdates: () =>
+      changeLaptopCatalog(
+        () => nativeSpikes.revokeLaptopUpdates(),
+        'Removing laptop update trust…',
+      ),
+    refreshLaptopPackages: () =>
+      changeLaptopCatalog(
+        () => nativeSpikes.refreshLaptopPackages(),
+        'Checking available state updates…',
+      ),
     laptopCatalog,
     laptopStatus,
     laptopBusy,

@@ -22,6 +22,8 @@ The project scope names candidate technologies and data sources, but naming a ca
 
 These unmodified pinned dependencies run on the laptop or in synthetic tests and are not bundled into the mobile application. Source, binary and offline redistribution is permitted with the complete licenses linked below; public/private distribution does not change those obligations. No retention/deletion obligations are introduced. Notices accompany source and any distribution of the laptop tooling; release SBOMs cover exact transitive packages. Native scanning uses the existing Apple SDK's AVFoundation framework.
 
+Signed laptop updates add original, AI-assisted project code and synthetic tests under Apache-2.0. Node's built-in crypto/filesystem APIs and Apple's CryptoKit/Security frameworks provide signing, verification and device-only trust persistence. No additional dependency, third-party data or production signing key is incorporated; runtime-generated synthetic private test keys are never emitted in fixture vectors or artifacts.
+
 - bonjour-service 1.4.4, ON LX Limited (2021), with portions by Thomas Watson Steen (2015–2016), MIT. [Canonical source](https://github.com/onlxltd/bonjour-service), [complete license](docs/licenses/bonjour-service.txt). Laptop-only mDNS publication; scoped address configuration without dependency modifications.
 - qrcode 1.5.4, Ryan Day (2012), MIT. [Canonical source](https://github.com/soldair/node-qrcode), [complete license](docs/licenses/qrcode.txt). Laptop-only SVG QR generation.
 - jsQR 1.4.0, Cosmo Wolfe and contributors, Apache-2.0. [Canonical source](https://github.com/cozmo/jsQR), [complete license](docs/licenses/jsqr.txt). Test-only independent QR decoding; no third-party image is incorporated.

@@ -6,6 +6,13 @@ const native = vi.hoisted(() => ({
   statePackagesAvailable: true,
   laptopPackagesAvailable: true,
   laptopPairingAvailable: true,
+  laptopUpdatesAvailable: false,
+  connectLaptopUpdates: vi.fn(),
+  approveLaptopUpdates: vi.fn(),
+  revokeLaptopUpdates: vi.fn(),
+  refreshLaptopPackages: vi.fn(),
+  trustedLaptopSigners: vi.fn(),
+  revokeStateUpdateSigner: vi.fn(),
   discoverLaptopPackages: vi.fn(),
   cancelLaptopDiscovery: vi.fn(),
   scanLaptopPairingQr: vi.fn(),
@@ -86,6 +93,9 @@ function deferred<T>() {
 beforeEach(() => {
   vi.resetAllMocks();
   native.laptopPairingAvailable = true;
+  native.laptopUpdatesAvailable = false;
+  native.trustedLaptopSigners.mockResolvedValue('[]');
+  native.revokeStateUpdateSigner.mockResolvedValue(undefined);
   native.discoverLaptopPackages.mockResolvedValue('[]');
   native.cancelLaptopDiscovery.mockResolvedValue(undefined);
   native.cancelLaptopPairingQr.mockResolvedValue(undefined);
@@ -348,4 +358,133 @@ it('supports manual entry in older builds and camera denial/cancellation in newe
   await act(async () => button('Scan pairing QR code').props.onPress());
   expect(JSON.stringify(tree!.toJSON())).toContain('Scan cancelled');
   expect(native.connectLaptopPackages).not.toHaveBeenCalled();
+});
+
+it('passes the independently scanned signing fingerprint and requires explicit trust for newer packages', async () => {
+  native.laptopUpdatesAvailable = true;
+  const updated = {
+    ...pin,
+    sha256: 'b'.repeat(64),
+    generatedAt: '2026-09-30T00:00:00.000Z',
+    revision: 2,
+    requiresTrust: true,
+    signed: true,
+  };
+  const fingerprint = 'c'.repeat(64);
+  const candidate = {
+    packages: [updated],
+    unsupportedCount: 0,
+    signerFingerprint: fingerprint,
+    signerTrusted: false,
+    canTrustSigner: true,
+  };
+  native.connectLaptopUpdates.mockResolvedValue(JSON.stringify(candidate));
+  native.scanLaptopPairingQr.mockResolvedValueOnce(
+    JSON.stringify({
+      type: 'open-outdoor-laptop',
+      version: 2,
+      address,
+      pairingCode: code,
+      signerFingerprint: fingerprint,
+    }),
+  );
+  await mount();
+  await openPanel();
+  await act(async () => button('Scan pairing QR code').props.onPress());
+  expect(native.connectLaptopUpdates).toHaveBeenCalledWith(address, code, fingerprint);
+  expect(native.approveLaptopUpdates).not.toHaveBeenCalled();
+  expect(button('Update Synthetic New York').props.disabled).toBe(true);
+  native.approveLaptopUpdates.mockResolvedValueOnce(
+    JSON.stringify({
+      ...candidate,
+      signerTrusted: true,
+      packages: [{ ...updated, requiresTrust: false }],
+    }),
+  );
+  await act(async () => button('Trust this laptop for updates').props.onPress());
+  expect(native.approveLaptopUpdates).toHaveBeenCalledTimes(1);
+  expect(button('Update Synthetic New York').props.disabled).toBe(false);
+  expect(
+    tree!.root
+      .findAllByType('text')
+      .some((entry) => entry.children.join('').includes('Available snapshot bbbbbbbbbbbb')),
+  ).toBe(true);
+  expect(JSON.stringify(tree!.toJSON())).toContain('2026-09-30');
+  native.downloadLaptopPackage.mockResolvedValueOnce(
+    JSON.stringify([{ ...updated, visible: true }]),
+  );
+  await act(async () => button('Update Synthetic New York').props.onPress());
+  expect(service.packages[0]!.sha256).toBe(updated.sha256);
+  expect(button('Synthetic New York installed').props.disabled).toBe(true);
+  native.revokeLaptopUpdates.mockResolvedValueOnce(JSON.stringify(candidate));
+  await act(async () => button('Stop trusting laptop updates').props.onPress());
+  expect(native.revokeLaptopUpdates).toHaveBeenCalledTimes(1);
+  expect(service.packages[0]!.sha256).toBe(updated.sha256);
+});
+
+it('manual pairing cannot enroll an API-provided key without a compared fingerprint, and ignores stale refresh', async () => {
+  native.laptopUpdatesAvailable = true;
+  const candidate = {
+    packages: [],
+    unsupportedCount: 0,
+    signerFingerprint: 'c'.repeat(64),
+    signerTrusted: false,
+    canTrustSigner: false,
+  };
+  native.connectLaptopUpdates.mockResolvedValueOnce(JSON.stringify(candidate));
+  await mount();
+  await openPanel();
+  await act(async () => {
+    await service.connectLaptop(address, code);
+  });
+  expect(native.connectLaptopUpdates).toHaveBeenCalledWith(address, code, '');
+  expect(
+    tree!.root
+      .findAllByType('button')
+      .some((entry) => entry.props.label === 'Trust this laptop for updates'),
+  ).toBe(false);
+  const refresh = deferred<string>();
+  native.refreshLaptopPackages.mockReturnValueOnce(refresh.promise);
+  await act(async () => button('Check for state updates').props.onPress());
+  await act(async () => app.listeners.forEach((listener) => listener('background')));
+  await act(async () => refresh.resolve(JSON.stringify(candidate)));
+  expect(service.laptopCatalog).toBeNull();
+  expect(service.busy).toBe(false);
+});
+
+it('a failed signing-key approval keeps installed packages and releases controls', async () => {
+  native.laptopUpdatesAvailable = true;
+  const candidate = {
+    packages: [],
+    unsupportedCount: 0,
+    signerFingerprint: 'c'.repeat(64),
+    signerTrusted: false,
+    canTrustSigner: true,
+  };
+  native.connectLaptopUpdates.mockResolvedValueOnce(JSON.stringify(candidate));
+  native.approveLaptopUpdates.mockRejectedValueOnce(new Error('Could not save update trust'));
+  await mount();
+  await openPanel();
+  await act(async () => {
+    await service.connectLaptop(address, code, 'c'.repeat(64));
+  });
+  await act(async () => button('Trust this laptop for updates').props.onPress());
+  expect(service.laptopCatalog?.signerTrusted).toBe(false);
+  expect(service.packages).toEqual(installed);
+  expect(service.busy).toBe(false);
+  expect(service.laptopStatus).toContain('Could not save update trust');
+});
+
+it('revokes a saved laptop key while offline without connecting or changing installed states', async () => {
+  native.laptopUpdatesAvailable = true;
+  native.trustedLaptopSigners
+    .mockResolvedValueOnce(JSON.stringify(['c'.repeat(64)]))
+    .mockResolvedValueOnce('[]');
+  await mount();
+  await openPanel();
+  await act(async () => button('Remove update trust cccccccccccc').props.onPress());
+  expect(native.revokeStateUpdateSigner).toHaveBeenCalledWith('c'.repeat(64));
+  expect(native.connectLaptopUpdates).not.toHaveBeenCalled();
+  expect(service.trustedLaptopSigners).toEqual([]);
+  expect(service.packages).toEqual(installed);
 });

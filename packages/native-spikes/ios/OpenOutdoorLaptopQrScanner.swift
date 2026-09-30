@@ -141,11 +141,15 @@ private final class LaptopQrController: UIViewController, AVCaptureMetadataOutpu
       guard let raw = (object as? AVMetadataMachineReadableCodeObject)?.stringValue else { continue }
       guard raw.utf8.count <= 1024, let data = raw.data(using: .utf8),
         let value = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-        value["type"] as? String == "open-outdoor-laptop", value["version"] as? Int == 1,
+        value["type"] as? String == "open-outdoor-laptop", [1, 2].contains(value["version"] as? Int ?? 0),
         let address = value["address"] as? String, (try? OpenOutdoorLaptopEndpoint.url(address)) != nil,
         let code = value["pairingCode"] as? String, code.utf8.count == 32, code.range(of: "^[a-f0-9]{32}$", options: .regularExpression) != nil else {
         guidance.text = "That QR code is not an Open Outdoor laptop pairing code. Scan the code on the laptop pairing page."
         continue
+      }
+      if value["version"] as? Int == 2 {
+        guard let fingerprint = value["signerFingerprint"] as? String, fingerprint.utf8.count == 64,
+          fingerprint.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil else { continue }
       }
       complete(raw, nil); return
     }

@@ -94,9 +94,20 @@ export interface Phase0PhysicalDiagnosticReport {
 }
 
 interface OpenOutdoorNativeSpikesModule {
+  readonly laptopUpdatesEnabled: boolean;
   readonly loadStatePackages: (registry: string) => Promise<string>;
   readonly pickStatePackage: () => Promise<string | null>;
   readonly connectLaptopPackages: (address: string, code: string) => Promise<string>;
+  readonly connectLaptopUpdates: (
+    address: string,
+    code: string,
+    fingerprint: string,
+  ) => Promise<string>;
+  readonly approveLaptopUpdates: () => Promise<string>;
+  readonly revokeLaptopUpdates: () => Promise<string>;
+  readonly refreshLaptopPackages: () => Promise<string>;
+  readonly trustedLaptopSigners: () => Promise<string>;
+  readonly revokeStateUpdateSigner: (fingerprint: string) => Promise<void>;
   readonly discoverLaptopPackages: () => Promise<string>;
   readonly cancelLaptopDiscovery: () => Promise<void>;
   readonly scanLaptopPairingQr: () => Promise<string | null>;
@@ -168,6 +179,16 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 export const nativeSpikes = {
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
   laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',
+  laptopUpdatesAvailable:
+    module?.laptopUpdatesEnabled === true && typeof module?.connectLaptopUpdates === 'function',
+  connectLaptopUpdates: (address: string, code: string, fingerprint: string) =>
+    requiredModule().connectLaptopUpdates(address, code, fingerprint),
+  approveLaptopUpdates: () => requiredModule().approveLaptopUpdates(),
+  revokeLaptopUpdates: () => requiredModule().revokeLaptopUpdates(),
+  refreshLaptopPackages: () => requiredModule().refreshLaptopPackages(),
+  trustedLaptopSigners: () => requiredModule().trustedLaptopSigners(),
+  revokeStateUpdateSigner: (fingerprint: string) =>
+    requiredModule().revokeStateUpdateSigner(fingerprint),
   laptopPairingAvailable:
     typeof module?.discoverLaptopPackages === 'function' &&
     typeof module?.scanLaptopPairingQr === 'function',

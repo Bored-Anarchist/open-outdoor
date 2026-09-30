@@ -15,6 +15,7 @@ export interface InstalledStatePackage {
   readonly featureCount: number;
   readonly installedBytes: number;
   readonly generatedAt: string;
+  readonly revision?: number;
   readonly maximumZoom: number;
   readonly bounds: [number, number, number, number];
   readonly tilesUri: string;

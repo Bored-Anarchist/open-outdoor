@@ -4,11 +4,19 @@ export interface LaptopStatePackage {
   readonly sha256: string;
   readonly bytes: number;
   readonly installedBytes: number;
+  readonly generatedAt?: string;
+  readonly revision?: number;
+  readonly requiresTrust?: boolean;
+  readonly signed?: boolean;
 }
 
 export interface LaptopCatalog {
   readonly packages: readonly LaptopStatePackage[];
   readonly unsupportedCount: number;
+  readonly blockedCount?: number;
+  readonly signerFingerprint?: string;
+  readonly signerTrusted?: boolean;
+  readonly canTrustSigner?: boolean;
 }
 
 export interface LaptopTransferProgress {
@@ -37,12 +45,25 @@ export function validateLaptopAddress(address: string): string {
   return `http://${parts.join('.')}:${port}`;
 }
 
-export function validateLaptopConnection(address: string, pairingCode: string) {
+export function validateLaptopConnection(
+  address: string,
+  pairingCode: string,
+  signerFingerprint = '',
+) {
   const normalized = validateLaptopAddress(address);
   const code = pairingCode.trim().toLowerCase();
   if (!/^[a-f0-9]{32}$/.test(code))
     throw new Error('Paste the 32-character pairing code shown in the laptop terminal.');
-  return { address: normalized, pairingCode: code };
+  const fingerprint = signerFingerprint.trim().toLowerCase().replace(/\s/g, '');
+  if (fingerprint && !/^[a-f0-9]{64}$/.test(fingerprint))
+    throw new Error(
+      'Enter the complete 64-character signing fingerprint shown on the laptop pairing page.',
+    );
+  return {
+    address: normalized,
+    pairingCode: code,
+    ...(fingerprint ? { signerFingerprint: fingerprint } : {}),
+  };
 }
 
 export interface DiscoveredLaptop {
@@ -56,12 +77,22 @@ export function parseLaptopPairingQr(raw: string) {
     const value = JSON.parse(raw);
     if (
       value.type !== 'open-outdoor-laptop' ||
-      value.version !== 1 ||
+      (value.version !== 1 && value.version !== 2) ||
       typeof value.address !== 'string' ||
       typeof value.pairingCode !== 'string'
     )
       throw new Error();
-    return validateLaptopConnection(value.address, value.pairingCode);
+    if (
+      value.version === 2 &&
+      (typeof value.signerFingerprint !== 'string' ||
+        !/^[a-f0-9]{64}$/.test(value.signerFingerprint))
+    )
+      throw new Error();
+    return validateLaptopConnection(
+      value.address,
+      value.pairingCode,
+      value.version === 2 ? value.signerFingerprint : '',
+    );
   } catch {
     throw new Error('Scan the pairing QR code shown by the Open Outdoor laptop server.');
   }

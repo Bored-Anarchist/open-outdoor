@@ -14,6 +14,7 @@ export function LaptopPackages({
   const [open, setOpen] = useState(false);
   const [address, setAddress] = useState('');
   const [code, setCode] = useState('');
+  const [fingerprint, setFingerprint] = useState('');
   const pairing = useLaptopPairing(
     open && service.laptopAvailable && !service.laptopCatalog,
     service.connectLaptop,
@@ -49,6 +50,27 @@ export function LaptopPackages({
       />
       {open && (
         <>
+          {service.trustedLaptopSigners.length > 0 && (
+            <>
+              <Text accessibilityRole="header">Trusted update laptops</Text>
+              <Text>
+                You can stop trusting a laptop even while offline. Installed maps stay available.
+              </Text>
+              {service.trustedLaptopSigners.map((saved) => (
+                <View key={saved} style={{ gap: 6 }}>
+                  <Text selectable>{saved}</Text>
+                  <ProductButton
+                    label={`Remove update trust ${saved.slice(0, 12)}`}
+                    hint="Revoke this saved laptop key without a network connection; keep maps and replay protection"
+                    disabled={service.busy}
+                    onPress={() => {
+                      void service.revokeSavedLaptopSigner(saved);
+                    }}
+                  />
+                </View>
+              ))}
+            </>
+          )}
           <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
             Connect to laptop
           </Text>
@@ -139,11 +161,28 @@ export function LaptopPackages({
                     }
                     busy={service.laptopBusy}
                     onPress={() => {
-                      void service.connectLaptop(address, code).then((connected) => {
+                      void service.connectLaptop(address, code, fingerprint).then((connected) => {
                         if (connected) setCode('');
                       });
                     }}
                   />
+                  {service.laptopUpdatesAvailable && (
+                    <>
+                      <Text>Signing fingerprint (optional for manual pairing)</Text>
+                      <TextInput
+                        accessibilityLabel="Laptop signing fingerprint"
+                        accessibilityHint="Copy the full signing fingerprint from the laptop pairing page to enable update trust approval"
+                        placeholder="64-character fingerprint"
+                        placeholderTextColor={palette.muted}
+                        value={fingerprint}
+                        onChangeText={setFingerprint}
+                        editable={!service.busy && !pairing.scanning}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        style={inputStyle}
+                      />
+                    </>
+                  )}
                 </>
               )}
               <Text accessibilityLiveRegion={service.laptopBusy ? 'none' : 'polite'}>
@@ -162,6 +201,65 @@ export function LaptopPackages({
               {service.laptopCatalog && (
                 <>
                   <Text>Connected to {address.trim()}</Text>
+                  {service.laptopCatalog.signerFingerprint && (
+                    <>
+                      <Text>
+                        {service.laptopCatalog.signerTrusted
+                          ? 'This laptop is trusted for signed state updates.'
+                          : 'Newer state packages require your approval of this laptop.'}
+                      </Text>
+                      <Text selectable>
+                        Signing fingerprint: {service.laptopCatalog.signerFingerprint}
+                      </Text>
+                      {!service.laptopCatalog.signerTrusted &&
+                        (service.laptopCatalog.canTrustSigner ? (
+                          <>
+                            <Text>
+                              Approve only the laptop whose pairing page you scanned or compared.
+                              Trust stays on this phone until you remove it; installed maps and
+                              replay protection are retained.
+                            </Text>
+                            <ProductButton
+                              label="Trust this laptop for updates"
+                              hint="Save this verified laptop signing key and allow compatible public state updates"
+                              disabled={service.busy}
+                              onPress={() => {
+                                void service.approveLaptopUpdates();
+                              }}
+                            />
+                          </>
+                        ) : (
+                          <Text>
+                            To approve updates, disconnect and scan the laptop's QR code or enter
+                            the signing fingerprint from its pairing page.
+                          </Text>
+                        ))}
+                      {service.laptopCatalog.signerTrusted && (
+                        <ProductButton
+                          label="Stop trusting laptop updates"
+                          hint="Block future updates signed by this laptop; keep installed maps and rollback protection"
+                          disabled={service.busy}
+                          onPress={() => {
+                            void service.revokeLaptopUpdates();
+                          }}
+                        />
+                      )}
+                      <ProductButton
+                        label="Check for state updates"
+                        hint="Refresh signed packages available from this connected laptop"
+                        disabled={service.busy}
+                        onPress={() => {
+                          void service.refreshLaptopPackages();
+                        }}
+                      />
+                      {!!service.laptopCatalog.blockedCount && (
+                        <Text>
+                          {service.laptopCatalog.blockedCount} older or conflicting packages were
+                          blocked.
+                        </Text>
+                      )}
+                    </>
+                  )}
                   <ProductButton
                     label="Disconnect laptop"
                     hint="Forget the connection and pairing code; keep installed states"
@@ -172,6 +270,7 @@ export function LaptopPackages({
                     }}
                   />
                   {service.laptopCatalog.packages.map((entry) => {
+                    const current = service.packages.find((item) => item.state === entry.state);
                     const installed = service.packages.some(
                       (current) => current.sha256 === entry.sha256 && !current.integrityError,
                     );
@@ -182,10 +281,32 @@ export function LaptopPackages({
                           {(entry.bytes / 1048576).toFixed(1)} MiB download ·{' '}
                           {(entry.installedBytes / 1048576).toFixed(1)} MiB installed
                         </Text>
+                        {current && (
+                          <Text>
+                            Installed snapshot {current.sha256.slice(0, 12)} · Packaged{' '}
+                            {current.generatedAt?.slice(0, 10) || 'date unavailable'}
+                          </Text>
+                        )}
+                        {entry.generatedAt && (
+                          <Text>
+                            Available snapshot {entry.sha256.slice(0, 12)} · Packaged{' '}
+                            {entry.generatedAt.slice(0, 10)}
+                            {entry.revision ? ` · Version ${entry.revision}` : ''}
+                          </Text>
+                        )}
+                        {entry.requiresTrust && !installed && (
+                          <Text>Trust this laptop before installing this signed update.</Text>
+                        )}
                         <ProductButton
-                          label={installed ? `${entry.name} installed` : `Download ${entry.name}`}
+                          label={
+                            installed
+                              ? `${entry.name} installed`
+                              : current
+                                ? `Update ${entry.name}`
+                                : `Download ${entry.name}`
+                          }
                           hint="Download, verify and install this state for offline use"
-                          disabled={service.busy || installed}
+                          disabled={service.busy || installed || entry.requiresTrust === true}
                           onPress={() => {
                             void service.installFromLaptop(entry.state);
                           }}

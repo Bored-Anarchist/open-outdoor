@@ -40,6 +40,20 @@ test('the pairing page is restricted to this laptop and first-party browser visi
   assert.equal(canViewPairingPage('192.168.1.20', '192.168.1.20', 'same-site'), false);
 });
 
+test('signed-update QR carries only public fingerprint metadata alongside the session code', async () => {
+  const fingerprint = 'c'.repeat(64);
+  assert.deepEqual(JSON.parse(pairingPayload(address, code, fingerprint)), {
+    type: 'open-outdoor-laptop',
+    version: 2,
+    address,
+    pairingCode: code,
+    signerFingerprint: fingerprint,
+  });
+  const page = await pairingPage(address, code, fingerprint);
+  assert.ok(page.includes(fingerprint));
+  assert.doesNotMatch(page, /PRIVATE KEY/);
+});
+
 test('Bonjour publishes only the chosen IPv4 interface and never advertises a credential or device name', () => {
   let options,
     config,

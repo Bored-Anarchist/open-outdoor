@@ -36,6 +36,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("OpenOutdoorNativeSpikes")
+    Constant("laptopUpdatesEnabled") { self.statePackageStore.laptopUpdatesEnabled }
 
     AsyncFunction("loadStatePackages") { (registry: String) -> String in
       try self.statePackageStore.load(registry)
@@ -54,6 +55,19 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     }.runOnQueue(statePackageQueue)
     AsyncFunction("connectLaptopPackages") { (address: String, code: String, promise: Promise) in
       self.laptopPackages.connect(address, code: code, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("connectLaptopUpdates") { (address: String, code: String, fingerprint: String, promise: Promise) in
+      self.laptopPackages.connect(address, code: code, fingerprint: fingerprint, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("approveLaptopUpdates") { (promise: Promise) in self.laptopPackages.approveSigner(promise) }.runOnQueue(statePackageQueue)
+    AsyncFunction("revokeLaptopUpdates") { (promise: Promise) in self.laptopPackages.revokeSigner(promise) }.runOnQueue(statePackageQueue)
+    AsyncFunction("refreshLaptopPackages") { (promise: Promise) in self.laptopPackages.refresh(promise) }.runOnQueue(statePackageQueue)
+    AsyncFunction("trustedLaptopSigners") { () -> String in
+      let values = try self.statePackageStore.trust().trustedFingerprints()
+      return String(data: try JSONEncoder().encode(values), encoding: .utf8)!
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("revokeStateUpdateSigner") { (fingerprint: String) in
+      try self.statePackageStore.trust().revoke(fingerprint)
     }.runOnQueue(statePackageQueue)
     AsyncFunction("downloadLaptopPackage") { (state: String, promise: Promise) in
       self.laptopPackages.download(state, promise: promise)
