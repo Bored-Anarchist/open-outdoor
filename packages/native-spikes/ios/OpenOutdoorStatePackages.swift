@@ -57,6 +57,7 @@ internal final class OpenOutdoorStatePackages {
   private let baselineReserve: Int64 = 1024 * 1024 * 1024
   private let ceiling: Int64 = 3 * 1024 * 1024 * 1024
   private let reserve: Int64 = 2 * 1024 * 1024 * 1024
+  private let registryLimit = 1024 * 1024 // Up to fifty current/previous signed proofs; still bounded.
 
   private func failure(_ message: String) -> NSError {
     NSError(domain: "OpenOutdoorStatePackage", code: 1,
@@ -76,31 +77,33 @@ internal final class OpenOutdoorStatePackages {
     }
     return try root().appendingPathComponent("\(pin.state)-\(pin.sha256).\(suffix)")
   }
+  private func decodeEntries(_ data: Data) throws -> [Entry] {
+    guard data.count <= registryLimit else { throw failure("State package registry is invalid.") }
+    let decoded = try JSONDecoder().decode([Entry].self, from: data)
+    guard decoded.count <= 50 else { throw failure("State package registry is invalid.") }
+    return decoded
+  }
   private func entries() throws -> [Entry] {
     let url = try root().appendingPathComponent("active.json")
     let backup = try root().appendingPathComponent("active.previous.json")
     guard manager.fileExists(atPath: url.path) || manager.fileExists(atPath: backup.path) else { return [] }
     do {
-      let data = try Data(contentsOf: url)
-      guard data.count < 128 * 1024 else { throw failure("State package registry is invalid.") }
-      return try JSONDecoder().decode([Entry].self, from: data)
+      return try decodeEntries(Data(contentsOf: url))
     } catch {
-      let data = try Data(contentsOf: backup)
-      guard data.count < 128 * 1024 else { throw failure("State package registry recovery failed.") }
-      let restored = try JSONDecoder().decode([Entry].self, from: data)
+      let restored = try decodeEntries(Data(contentsOf: backup))
       registryRecovered = true
       return restored
     }
   }
   private func save(_ entries: [Entry]) throws {
+    let payload = try JSONEncoder().encode(entries)
+    _ = try decodeEntries(payload) // Reject an oversized registry before changing either pointer.
     let url = try root().appendingPathComponent("active.json")
-    if let old = try? Data(contentsOf: url), old.count < 128 * 1024,
-      (try? JSONDecoder().decode([Entry].self, from: old)) != nil {
+    if let old = try? Data(contentsOf: url), (try? decodeEntries(old)) != nil {
       let backup = try root().appendingPathComponent("active.previous.json")
       try old.write(to: backup, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
       try OpenOutdoorFilePolicy.apply(backup, protection: .completeUntilFirstUserAuthentication)
     }
-    let payload = try JSONEncoder().encode(entries)
     try payload.write(to: url,
       options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     try OpenOutdoorFilePolicy.apply(url, protection: .completeUntilFirstUserAuthentication)
