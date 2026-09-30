@@ -81,6 +81,25 @@ test('only canonical RFC1918 IPv4 laptop addresses are allowed', () => {
     assert.equal(isPrivateIPv4(host), false, host);
 });
 
+test('QR pairing page is laptop-only, uncached, unframeable, and rejects cross-site requests', async (t) => {
+  const root = await fixture(t);
+  await stateFile(root, 'NY');
+  const { get } = await serve(t, root);
+  const response = await get('/pair', { headers: { Authorization: '' } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-frame-options'), 'DENY');
+  assert.match(response.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+  const page = await response.text();
+  assert.match(page, /<svg/);
+  assert.equal(page.includes(token), true);
+  assert.equal((await get('/pair', { headers: { 'Sec-Fetch-Site': 'cross-site' } })).status, 403);
+  assert.equal((await get('/pair', { headers: { Origin: 'https://example.com' } })).status, 403);
+  assert.equal((await get('/pair', { method: 'POST' })).status, 405);
+  assert.equal((await (await get('/v1/catalog')).text()).includes(token), false);
+});
+
 test('paired clients list verified public states and download identical bytes', async (t) => {
   const root = await fixture(t, [pin('NY'), pin('CA'), pin('MA')]);
   await stateFile(root, 'NY');

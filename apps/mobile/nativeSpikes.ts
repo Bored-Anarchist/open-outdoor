@@ -97,6 +97,10 @@ interface OpenOutdoorNativeSpikesModule {
   readonly loadStatePackages: (registry: string) => Promise<string>;
   readonly pickStatePackage: () => Promise<string | null>;
   readonly connectLaptopPackages: (address: string, code: string) => Promise<string>;
+  readonly discoverLaptopPackages: () => Promise<string>;
+  readonly cancelLaptopDiscovery: () => Promise<void>;
+  readonly scanLaptopPairingQr: () => Promise<string | null>;
+  readonly cancelLaptopPairingQr: () => Promise<void>;
   readonly downloadLaptopPackage: (state: string) => Promise<string>;
   readonly laptopPackageProgress: () => Promise<string>;
   readonly cancelLaptopPackage: () => Promise<void>;
@@ -164,6 +168,13 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 export const nativeSpikes = {
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
   laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',
+  laptopPairingAvailable:
+    typeof module?.discoverLaptopPackages === 'function' &&
+    typeof module?.scanLaptopPairingQr === 'function',
+  discoverLaptopPackages: () => requiredModule().discoverLaptopPackages(),
+  cancelLaptopDiscovery: () => requiredModule().cancelLaptopDiscovery(),
+  scanLaptopPairingQr: () => requiredModule().scanLaptopPairingQr(),
+  cancelLaptopPairingQr: () => requiredModule().cancelLaptopPairingQr(),
   connectLaptopPackages: (address: string, code: string) =>
     requiredModule().connectLaptopPackages(address, code),
   downloadLaptopPackage: (state: string) => requiredModule().downloadLaptopPackage(state),

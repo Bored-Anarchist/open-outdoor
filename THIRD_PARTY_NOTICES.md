@@ -18,6 +18,14 @@ Each release must generate a software bill of materials and a separate data/asse
 
 The project scope names candidate technologies and data sources, but naming a candidate is not a license determination and does not mean it is included. No candidate enters source control, CI artifacts, catalogs, or releases until its manifest passes the rights process in [the data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md).
 
+## Laptop discovery and QR pairing (reviewed 2026-09-30)
+
+These unmodified pinned dependencies run on the laptop or in synthetic tests and are not bundled into the mobile application. Source, binary and offline redistribution is permitted with the complete licenses linked below; public/private distribution does not change those obligations. No retention/deletion obligations are introduced. Notices accompany source and any distribution of the laptop tooling; release SBOMs cover exact transitive packages. Native scanning uses the existing Apple SDK's AVFoundation framework.
+
+- bonjour-service 1.4.4, ON LX Limited (2021), with portions by Thomas Watson Steen (2015–2016), MIT. [Canonical source](https://github.com/onlxltd/bonjour-service), [complete license](docs/licenses/bonjour-service.txt). Laptop-only mDNS publication; scoped address configuration without dependency modifications.
+- qrcode 1.5.4, Ryan Day (2012), MIT. [Canonical source](https://github.com/soldair/node-qrcode), [complete license](docs/licenses/qrcode.txt). Laptop-only SVG QR generation.
+- jsQR 1.4.0, Cosmo Wolfe and contributors, Apache-2.0. [Canonical source](https://github.com/cozmo/jsQR), [complete license](docs/licenses/jsqr.txt). Test-only independent QR decoding; no third-party image is incorporated.
+
 ## WP-501 assets
 
 The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) inventories the original, AI-assisted Open Outdoor tokens, icon geometry and map styles under Apache-2.0. Playwright 1.62.1 (Apache-2.0) is a pinned development-only browser acceptance dependency; it is not shipped in the mobile application.

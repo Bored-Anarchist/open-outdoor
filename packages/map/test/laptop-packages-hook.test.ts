@@ -5,6 +5,11 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const native = vi.hoisted(() => ({
   statePackagesAvailable: true,
   laptopPackagesAvailable: true,
+  laptopPairingAvailable: true,
+  discoverLaptopPackages: vi.fn(),
+  cancelLaptopDiscovery: vi.fn(),
+  scanLaptopPairingQr: vi.fn(),
+  cancelLaptopPairingQr: vi.fn(),
   loadStatePackages: vi.fn(),
   searchStatePackages: vi.fn(),
   statePackageDetail: vi.fn(),
@@ -17,7 +22,7 @@ const native = vi.hoisted(() => ({
   disconnectLaptopPackages: vi.fn(),
 }));
 const app = vi.hoisted(() => ({
-  listener: null as null | ((state: string) => void),
+  listeners: new Set<(state: string) => void>(),
   removed: vi.fn(),
 }));
 vi.mock('../../../apps/mobile/nativeSpikes', () => ({ nativeSpikes: native }));
@@ -26,8 +31,13 @@ vi.mock('../../../apps/mobile/node_modules/react-native', () => ({
   TextInput: 'input',
   AppState: {
     addEventListener: (_event: string, listener: (state: string) => void) => {
-      app.listener = listener;
-      return { remove: app.removed };
+      app.listeners.add(listener);
+      return {
+        remove: () => {
+          app.listeners.delete(listener);
+          app.removed();
+        },
+      };
     },
   },
 }));
@@ -75,6 +85,11 @@ function deferred<T>() {
 }
 beforeEach(() => {
   vi.resetAllMocks();
+  native.laptopPairingAvailable = true;
+  native.discoverLaptopPackages.mockResolvedValue('[]');
+  native.cancelLaptopDiscovery.mockResolvedValue(undefined);
+  native.cancelLaptopPairingQr.mockResolvedValue(undefined);
+  native.scanLaptopPairingQr.mockResolvedValue(null);
   native.loadStatePackages.mockResolvedValue(JSON.stringify(installed));
   native.connectLaptopPackages.mockResolvedValue(catalog);
   native.downloadLaptopPackage.mockResolvedValue(JSON.stringify(installed));
@@ -179,7 +194,7 @@ it('forgets the connection on backgrounding and rejects a late catalog response'
     operation = service.connectLaptop(address, code);
   });
   await act(async () => {
-    app.listener?.('background');
+    app.listeners.forEach((listener) => listener('background'));
   });
   expect(native.disconnectLaptopPackages).toHaveBeenCalled();
   await act(async () => {
@@ -200,7 +215,7 @@ it('keeps a connection alive during the iOS Local Network permission dialog', as
     operation = service.connectLaptop(address, code);
   });
   await act(async () => {
-    app.listener?.('inactive');
+    app.listeners.forEach((listener) => listener('inactive'));
   });
   expect(native.disconnectLaptopPackages).not.toHaveBeenCalled();
   await act(async () => {
@@ -234,4 +249,103 @@ it('renders labelled inputs and installed state feedback with disabled duplicate
   expect(
     tree!.root.findAllByType('button').some((button) => button.props.label === 'Disconnect laptop'),
   ).toBe(true);
+});
+
+function button(label: string) {
+  return tree!.root.findAllByType('button').find((entry) => entry.props.label === label)!;
+}
+async function openPanel() {
+  await act(async () => button('Connect to laptop').props.onPress());
+}
+
+it('automatically discovers on opening, fills a selected address, and ignores late results after close', async () => {
+  const discovery = deferred<string>();
+  native.discoverLaptopPackages.mockReturnValueOnce(discovery.promise);
+  await mount();
+  expect(native.discoverLaptopPackages).not.toHaveBeenCalled();
+  await openPanel();
+  expect(native.discoverLaptopPackages).toHaveBeenCalledTimes(1);
+  await act(async () => discovery.resolve(JSON.stringify([{ name: 'Synthetic laptop', address }])));
+  await act(async () => button('Use Synthetic laptop').props.onPress());
+  expect(tree!.root.findAllByType('input')[0]!.props.value).toBe(address);
+  const late = deferred<string>();
+  native.discoverLaptopPackages.mockReturnValueOnce(late.promise);
+  await act(async () => button('Search again').props.onPress());
+  await act(async () => button('Close laptop connection').props.onPress());
+  await act(async () => late.resolve(JSON.stringify([{ name: 'Late laptop', address }])));
+  expect(native.cancelLaptopDiscovery).toHaveBeenCalled();
+  expect(
+    tree!.root.findAllByType('button').some((entry) => entry.props.label === 'Use Late laptop'),
+  ).toBe(false);
+});
+
+it('scans once, preserves pairing during permission prompts, and connects without typing', async () => {
+  const scan = deferred<string | null>();
+  native.scanLaptopPairingQr.mockReturnValueOnce(scan.promise);
+  await mount();
+  await openPanel();
+  native.cancelLaptopPairingQr.mockClear();
+  const press = button('Scan pairing QR code').props.onPress;
+  await act(async () => {
+    press();
+    press();
+  });
+  expect(native.scanLaptopPairingQr).toHaveBeenCalledTimes(1);
+  await act(async () => app.listeners.forEach((listener) => listener('inactive')));
+  expect(native.cancelLaptopPairingQr).not.toHaveBeenCalled();
+  await act(async () =>
+    scan.resolve(
+      JSON.stringify({ type: 'open-outdoor-laptop', version: 1, address, pairingCode: code }),
+    ),
+  );
+  expect(native.connectLaptopPackages).toHaveBeenCalledWith(address, code);
+  expect(service.laptopCatalog?.packages).toEqual([pin]);
+  expect(tree!.root.findAllByType('input')).toHaveLength(0);
+});
+
+it('does not connect from an unsafe QR or a scan completing after background cancellation', async () => {
+  native.scanLaptopPairingQr.mockResolvedValueOnce(
+    JSON.stringify({
+      type: 'open-outdoor-laptop',
+      version: 1,
+      address: 'http://example.com:8765',
+      pairingCode: code,
+    }),
+  );
+  await mount();
+  await openPanel();
+  await act(async () => button('Scan pairing QR code').props.onPress());
+  expect(native.connectLaptopPackages).not.toHaveBeenCalled();
+  const late = deferred<string | null>();
+  native.scanLaptopPairingQr.mockReturnValueOnce(late.promise);
+  await act(async () => button('Scan pairing QR code').props.onPress());
+  await act(async () => app.listeners.forEach((listener) => listener('background')));
+  await act(async () =>
+    late.resolve(
+      JSON.stringify({ type: 'open-outdoor-laptop', version: 1, address, pairingCode: code }),
+    ),
+  );
+  expect(native.cancelLaptopPairingQr).toHaveBeenCalled();
+  expect(native.connectLaptopPackages).not.toHaveBeenCalled();
+});
+
+it('supports manual entry in older builds and camera denial/cancellation in newer builds', async () => {
+  native.laptopPairingAvailable = false;
+  await mount();
+  await openPanel();
+  expect(native.discoverLaptopPackages).not.toHaveBeenCalled();
+  expect(tree!.root.findAllByType('input')).toHaveLength(2);
+  await act(async () => tree!.unmount());
+  tree = undefined;
+  native.laptopPairingAvailable = true;
+  native.scanLaptopPairingQr.mockRejectedValueOnce(
+    new Error('Allow Camera access or use manual entry.'),
+  );
+  await mount();
+  await openPanel();
+  await act(async () => button('Scan pairing QR code').props.onPress());
+  expect(JSON.stringify(tree!.toJSON())).toContain('Allow Camera access');
+  await act(async () => button('Scan pairing QR code').props.onPress());
+  expect(JSON.stringify(tree!.toJSON())).toContain('Scan cancelled');
+  expect(native.connectLaptopPackages).not.toHaveBeenCalled();
 });

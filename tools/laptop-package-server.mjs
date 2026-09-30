@@ -5,6 +5,7 @@ import { networkInterfaces } from 'node:os';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { pipeline } from 'node:stream/promises';
+import { advertiseLaptop, canViewPairingPage, pairingPage } from './laptop-pairing.mjs';
 
 const defaultRoot = fileURLToPath(
   new URL('../packages/map/src/assets/state-packages/US/', import.meta.url),
@@ -131,6 +132,30 @@ export async function createLaptopPackageServer({
       (request.headers['content-length'] && request.headers['content-length'] !== '0')
     )
       return fail(403, 'Local app connections only.');
+    if (request.url === '/pair') {
+      if (request.method !== 'GET') return fail(405, 'Read-only package server.');
+      if (
+        !canViewPairingPage(
+          address,
+          request.socket.localAddress?.replace(/^::ffff:/, ''),
+          request.headers['sec-fetch-site'],
+        )
+      )
+        return fail(403, 'Open the pairing page on the laptop itself.');
+      try {
+        const page = await pairingPage(`http://${host}`, token);
+        response.writeHead(200, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Content-Security-Policy':
+            "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'; base-uri 'none'",
+          'X-Frame-Options': 'DENY',
+          'Referrer-Policy': 'no-referrer',
+        });
+        return response.end(page);
+      } catch {
+        return fail(500, 'Pairing page unavailable. Use the terminal pairing code.');
+      }
+    }
     const supplied = Buffer.from(request.headers.authorization ?? '');
     if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected))
       return fail(401, 'Pairing code required.');
@@ -194,8 +219,16 @@ async function main() {
     server.once('error', reject);
     server.listen(port, host, accept);
   });
+  let stopDiscovery = () => {};
+  try {
+    stopDiscovery = advertiseLaptop(host, port, {
+      onError: () => console.log('Nearby discovery is unavailable. Use QR or manual pairing.'),
+    });
+  } catch {
+    console.log('Nearby discovery is unavailable. Use QR or manual pairing.');
+  }
   console.log(
-    `\nOpen Outdoor → Explore → Offline state packages → Connect to laptop\nLaptop address: http://${host}:${port}\nPairing code: ${token}\n${availableStates.length} verified public states available.`,
+    `\nOpen Outdoor → Explore → Offline state packages → Connect to laptop\nOpen http://${host}:${port}/pair on this laptop to show the pairing QR code.\nLaptop address: http://${host}:${port}\nPairing code: ${token}\n${availableStates.length} verified public states available.`,
   );
   if (missingStates.length)
     console.log(
@@ -205,6 +238,7 @@ async function main() {
     'Keep this terminal open. Use a trusted local network; transfers use HTTP. Ctrl+C stops sharing and expires this pairing code.',
   );
   const stop = () => {
+    stopDiscovery();
     server.close();
     server.closeAllConnections();
   };

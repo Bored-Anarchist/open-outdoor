@@ -10,6 +10,8 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private let statePackageQueue = DispatchQueue(label: "org.openoutdoor.state-packages")
   private lazy var statePackagePicker = OpenOutdoorStatePackagePicker(store: statePackageStore, queue: statePackageQueue)
   private lazy var laptopPackages = OpenOutdoorLaptopPackages(store: statePackageStore, queue: statePackageQueue)
+  private lazy var laptopDiscovery = OpenOutdoorLaptopDiscovery()
+  private lazy var laptopQrScanner = OpenOutdoorLaptopQrScanner()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -67,7 +69,16 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     }.runOnQueue(statePackageQueue)
     OnDestroy {
       self.statePackageQueue.async { self.laptopPackages.disconnect() }
+      DispatchQueue.main.async { self.laptopDiscovery.cancel(); self.laptopQrScanner.cancel() }
     }
+    AsyncFunction("discoverLaptopPackages") { (promise: Promise) in
+      self.laptopDiscovery.discover(promise)
+    }.runOnQueue(.main)
+    AsyncFunction("cancelLaptopDiscovery") { self.laptopDiscovery.cancel() }.runOnQueue(.main)
+    AsyncFunction("scanLaptopPairingQr") { (promise: Promise) in
+      self.laptopQrScanner.scan(promise)
+    }.runOnQueue(.main)
+    AsyncFunction("cancelLaptopPairingQr") { self.laptopQrScanner.cancel() }.runOnQueue(.main)
 
     AsyncFunction("pickMapDataset") { (promise: Promise) in
       self.mapDatasetPicker.pick(promise: promise)

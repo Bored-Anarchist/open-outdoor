@@ -3,6 +3,7 @@ import { TextInput, View } from 'react-native';
 import { ProductText as Text, useAnnouncement } from './accessibility';
 import { ProductButton, usePalette } from './ProductComponents';
 import type { useStatePackages } from './useStatePackages';
+import { useLaptopPairing } from './useLaptopPairing';
 
 export function LaptopPackages({
   service,
@@ -13,6 +14,14 @@ export function LaptopPackages({
   const [open, setOpen] = useState(false);
   const [address, setAddress] = useState('');
   const [code, setCode] = useState('');
+  const pairing = useLaptopPairing(
+    open && service.laptopAvailable && !service.laptopCatalog,
+    service.connectLaptop,
+    (value) => {
+      setAddress(value);
+      setCode('');
+    },
+  );
   // Announce outcomes, while the transfer's changing byte counter remains readable on demand.
   useAnnouncement(service.laptopBusy ? '' : service.laptopStatus);
   const inputStyle = {
@@ -45,8 +54,8 @@ export function LaptopPackages({
           </Text>
           <Text>
             Keep both devices on the same trusted Wi-Fi. Start Open Outdoor’s package server on your
-            laptop, then enter the address and pairing code shown there. Downloaded states stay on
-            this phone and work offline.
+            laptop, then scan its pairing QR code or enter the address and code shown there.
+            Downloaded states stay on this phone and work offline.
           </Text>
           {!service.laptopAvailable ? (
             <Text>Install an app build with laptop connections to enable this feature.</Text>
@@ -54,6 +63,42 @@ export function LaptopPackages({
             <>
               {!service.laptopCatalog && (
                 <>
+                  {pairing.available && (
+                    <>
+                      <Text accessibilityLiveRegion="polite">{pairing.status}</Text>
+                      {pairing.laptops.map((laptop) => (
+                        <View key={laptop.address} style={{ gap: 6 }}>
+                          <Text>
+                            {laptop.name} · {laptop.address}
+                          </Text>
+                          <ProductButton
+                            label={`Use ${laptop.name}`}
+                            hint="Fill this laptop address, then scan its QR code or enter its pairing code"
+                            disabled={service.busy || pairing.scanning}
+                            onPress={() => setAddress(laptop.address)}
+                          />
+                        </View>
+                      ))}
+                      <ProductButton
+                        label="Search again"
+                        hint="Search nearby laptops on this Wi-Fi for five seconds"
+                        disabled={service.busy || pairing.discovering || pairing.scanning}
+                        busy={pairing.discovering}
+                        onPress={() => {
+                          void pairing.discover();
+                        }}
+                      />
+                      <ProductButton
+                        label="Scan pairing QR code"
+                        hint="Open the camera to scan the code on the laptop pairing page"
+                        disabled={!service.ready || service.busy || pairing.scanning}
+                        onPress={() => {
+                          void pairing.scan();
+                        }}
+                      />
+                      <Text>Manual entry is also available below.</Text>
+                    </>
+                  )}
                   <Text>Laptop address</Text>
                   <TextInput
                     accessibilityLabel="Laptop address"
@@ -62,7 +107,7 @@ export function LaptopPackages({
                     placeholderTextColor={palette.muted}
                     value={address}
                     onChangeText={setAddress}
-                    editable={!service.busy}
+                    editable={!service.busy && !pairing.scanning}
                     autoCapitalize="none"
                     autoCorrect={false}
                     keyboardType="url"
@@ -76,7 +121,7 @@ export function LaptopPackages({
                     placeholderTextColor={palette.muted}
                     value={code}
                     onChangeText={setCode}
-                    editable={!service.busy}
+                    editable={!service.busy && !pairing.scanning}
                     autoCapitalize="none"
                     autoCorrect={false}
                     secureTextEntry
@@ -85,7 +130,13 @@ export function LaptopPackages({
                   <ProductButton
                     label="Browse laptop packages"
                     hint="Connect and list supported public state packages"
-                    disabled={!service.ready || service.busy || !address.trim() || !code.trim()}
+                    disabled={
+                      !service.ready ||
+                      service.busy ||
+                      pairing.scanning ||
+                      !address.trim() ||
+                      !code.trim()
+                    }
                     busy={service.laptopBusy}
                     onPress={() => {
                       void service.connectLaptop(address, code).then((connected) => {
