@@ -143,7 +143,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
                   completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
     guard self.session === session else { completionHandler(.cancel); return }
     failureReason = responseError(response)
-    if response.expectedContentLength > catalogLimit { failureReason = "The laptop's state list is too large." }
+    if response.expectedContentLength > Int64(catalogLimit) { failureReason = "The laptop's state list is too large." }
     completionHandler(failureReason == nil ? .allow : .cancel)
   }
   func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
