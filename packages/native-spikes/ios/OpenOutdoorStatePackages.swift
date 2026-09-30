@@ -247,6 +247,23 @@ internal final class OpenOutdoorStatePackages {
     }
     return String(data: try JSONSerialization.data(withJSONObject: result), encoding: .utf8)!
   }
+  func supportedPins() -> [Pin] { allowed }
+  func preflight(_ pin: Pin, download: Bool = false) throws {
+    guard allowed.contains(where: { $0.state == pin.state && $0.sha256 == pin.sha256 && $0.bytes == pin.bytes }) else {
+      throw failure("This state requires a newer supported app build.")
+    }
+    let active = try entries()
+    let current = active.reduce(baselineReserve) { $0 + $1.current.installedBytes }
+    let replaced = active.first(where: { $0.current.state == pin.state })
+    let incomingCombined = current - (replaced?.current.installedBytes ?? 0) + pin.installedBytes
+    guard incomingCombined <= ceiling else {
+      throw failure("Installed reference catalogs exceed 3 GiB. Remove a state package first.")
+    }
+    let rollback = active.reduce(Int64(0)) { $0 + ($1.previous?.installedBytes ?? 0) }
+    let required = current + rollback + incomingCombined + max(baselineReserve, incomingCombined / 4) + reserve + (download ? pin.bytes : 0)
+    let free = (try manager.attributesOfFileSystem(forPath: root().path)[.systemFreeSize] as? NSNumber)?.int64Value ?? 0
+    guard free >= required else { throw failure("Not enough free space for this state, rollback and reserve. Remove a state package or free storage first.") }
+  }
   func install(_ source: URL) throws -> String {
     let size = try source.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
     guard size.isRegularFile == true, let bytes = size.fileSize, bytes > 0, Int64(bytes) <= ceiling else {
@@ -259,17 +276,8 @@ internal final class OpenOutdoorStatePackages {
     }
     var active = try entries()
     if active.contains(where: { $0.current.sha256 == pin.sha256 && $0.quarantined != true }) && valid(pin) { return try list() }
-    let current = active.reduce(baselineReserve) { $0 + $1.current.installedBytes }
     let replaced = active.first(where: { $0.current.state == pin.state })
-    let incomingCombined = current - (replaced?.current.installedBytes ?? 0) + pin.installedBytes
-    guard incomingCombined <= ceiling else {
-      throw failure("Installed reference catalogs exceed 3 GiB. Remove a state package first.")
-    }
-    // Current references serve as rollback; retained previous versions also occupy disk.
-    let rollback = active.reduce(Int64(0)) { $0 + ($1.previous?.installedBytes ?? 0) }
-    let required = current + rollback + incomingCombined + max(baselineReserve, incomingCombined / 4) + reserve
-    let free = (try manager.attributesOfFileSystem(forPath: root().path)[.systemFreeSize] as? NSNumber)?.int64Value ?? 0
-    guard free >= required else { throw failure("Not enough free space. State activation requires \(required) bytes including rollback and reserve.") }
+    try preflight(pin)
     let target = try file(pin, "sqlite")
     let temporary = target.appendingPathExtension("staging")
     if manager.fileExists(atPath: temporary.path) { try manager.removeItem(at: temporary) }

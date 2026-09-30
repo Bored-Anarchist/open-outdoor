@@ -213,6 +213,8 @@ Every bundle includes a schema version, content version, covered region, source/
 
 The private user database never shares a writable database file with a reference catalog. An update stages and verifies a new catalog, migrates private associations transactionally, switches catalogs atomically, and retains a compatible rollback catalog until successful launch. Catalog activation or rollback must never delete an activity, user trail, note, photo, favorite, private correction, or audit event.
 
+The owner-approved Connect to laptop extension (2026-09-30) allows explicitly selected public state packages to transfer from a paired laptop over local Wi-Fi. The read-only laptop server serves only verified public packages; the phone retains build-pinned integrity checks and offline installation. This introduces no hosted runtime service, cloud account, background synchronization or private-data upload. See [Connect to laptop](docs/CONNECT_TO_LAPTOP.md) for transport, storage and acceptance limits.
+
 Private and public reference bundles may be queried as a composed read-only catalog, but each result retains its origin and rights metadata. Export and diagnostics default to excluding private-extension records unless the user explicitly selects a permitted export.
 
 On iOS, active recording, sealed user data, attachments, catalogs, diagnostics, and backups follow the explicit protection and system-backup rules in the [iOS data protection and backup policy](docs/IOS_DATA_PROTECTION_AND_BACKUP.md). Private user data and regenerable catalogs are excluded from implicit app-container backups; supported recovery uses the user-initiated encrypted backup.

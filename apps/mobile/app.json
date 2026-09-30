@@ -12,6 +12,8 @@
       "deploymentTarget": "16.4",
       "supportsTablet": false,
       "infoPlist": {
+        "NSLocalNetworkUsageDescription": "Open Outdoor connects to your laptop on Wi-Fi only when you choose to browse and download public state packages for offline use.",
+        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true },
         "NSLocationWhenInUseUsageDescription": "Open Outdoor uses your location while the map is open to show your position as a GPS dot, and while you explicitly record an outdoor activity.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor uses Always Location only to continue an outdoor activity you explicitly started while the screen is locked.",
         "NSMotionUsageDescription": "Open Outdoor uses barometer data during an active recording to improve elevation estimates.",

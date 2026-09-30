@@ -11,6 +11,7 @@ const native = vi.hoisted(() => ({
   changeStatePackage: vi.fn(),
 }));
 vi.mock('../../../apps/mobile/nativeSpikes', () => ({ nativeSpikes: native }));
+vi.mock('../../../apps/mobile/node_modules/react-native', () => ({ AppState: {} }));
 import { useStatePackages } from '../../../apps/mobile/useStatePackages';
 
 let service: ReturnType<typeof useStatePackages>;

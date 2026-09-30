@@ -9,6 +9,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private let statePackageStore = OpenOutdoorStatePackages()
   private let statePackageQueue = DispatchQueue(label: "org.openoutdoor.state-packages")
   private lazy var statePackagePicker = OpenOutdoorStatePackagePicker(store: statePackageStore, queue: statePackageQueue)
+  private lazy var laptopPackages = OpenOutdoorLaptopPackages(store: statePackageStore, queue: statePackageQueue)
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -49,6 +50,24 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     AsyncFunction("statePackageDetail") { (id: String) -> String? in
       try self.statePackageStore.detail(id)
     }.runOnQueue(statePackageQueue)
+    AsyncFunction("connectLaptopPackages") { (address: String, code: String, promise: Promise) in
+      self.laptopPackages.connect(address, code: code, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("downloadLaptopPackage") { (state: String, promise: Promise) in
+      self.laptopPackages.download(state, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("laptopPackageProgress") { () -> String in
+      try self.laptopPackages.progress()
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("cancelLaptopPackage") {
+      self.laptopPackages.cancel()
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("disconnectLaptopPackages") {
+      self.laptopPackages.disconnect()
+    }.runOnQueue(statePackageQueue)
+    OnDestroy {
+      self.statePackageQueue.async { self.laptopPackages.disconnect() }
+    }
 
     AsyncFunction("pickMapDataset") { (promise: Promise) in
       self.mapDatasetPicker.pick(promise: promise)

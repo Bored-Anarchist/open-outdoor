@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
+import { laptopTransferMessage, validateLaptopConnection } from '@open-outdoor/map';
 import type {
   InstalledStatePackage,
   OutdoorFeature,
   OutdoorFeatureSummary,
+  LaptopCatalog,
+  LaptopTransferProgress,
 } from '@open-outdoor/map';
 import registry from '../../packages/map/src/assets/state-packages/US/loader-inventory.json';
 import { nativeSpikes } from './nativeSpikes';
@@ -20,9 +24,61 @@ export function useStatePackages(query: string) {
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const [laptopCatalog, setLaptopCatalog] = useState<LaptopCatalog | null>(null);
+  const [laptopStatus, setLaptopStatus] = useState('');
+  const [laptopBusy, setLaptopBusy] = useState(false);
+  const [laptopProgress, setLaptopProgress] = useState<LaptopTransferProgress | null>(null);
   const mounted = useRef(true);
   const inFlight = useRef(false);
   const detailRequest = useRef(0);
+  const laptopRequest = useRef(0);
+
+  useEffect(() => {
+    if (!nativeSpikes.laptopPackagesAvailable) return;
+    const subscription = AppState.addEventListener('change', (state) => {
+      // Permission dialogs briefly make iOS inactive; only leaving the foreground cancels.
+      if (state === 'background') {
+        laptopRequest.current++;
+        setLaptopCatalog(null);
+        setLaptopStatus(
+          'Laptop disconnected. Keep the app open during a transfer, then reconnect to retry.',
+        );
+        void nativeSpikes.disconnectLaptopPackages().catch(() => {});
+      }
+    });
+    return () => {
+      laptopRequest.current++;
+      subscription.remove();
+      void nativeSpikes.disconnectLaptopPackages().catch(() => {});
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!laptopBusy) return;
+    let active = true;
+    let polling = false;
+    const timer = setInterval(() => {
+      if (polling) return;
+      polling = true;
+      void nativeSpikes
+        .laptopPackageProgress()
+        .then((payload) => {
+          if (!active || !mounted.current) return;
+          const progress = JSON.parse(payload) as LaptopTransferProgress;
+          setLaptopProgress(progress);
+          const message = laptopTransferMessage(progress);
+          if (message) setLaptopStatus(message);
+        })
+        .catch(() => {})
+        .finally(() => {
+          polling = false;
+        });
+    }, 1000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [laptopBusy]);
 
   useEffect(() => {
     mounted.current = true;
@@ -92,10 +148,15 @@ export function useStatePackages(query: string) {
     }
   }
 
-  async function operation(action: () => Promise<string | null>) {
+  async function operation(action: () => Promise<string | null>, laptop = false) {
     if (!ready || inFlight.current) return;
     inFlight.current = true;
     setBusy(true);
+    if (laptop) {
+      setLaptopBusy(true);
+      setLaptopProgress({ phase: 'downloading', receivedBytes: 0, totalBytes: 0 });
+      setLaptopStatus('Downloading the selected state. Keep the app open…');
+    }
     setStatus('Verifying the state package and available storage…');
     try {
       const payload = await action();
@@ -105,14 +166,78 @@ export function useStatePackages(query: string) {
           setDetail(null);
           setPackages(JSON.parse(payload));
           setStatus('State packages updated. Your place notes and recordings are kept.');
+          if (laptop)
+            setLaptopStatus(
+              'State installed and ready offline. You can disconnect from the laptop.',
+            );
         } else setStatus('State package selection cancelled.');
       }
     } catch (error) {
-      if (mounted.current) setStatus(error instanceof Error ? error.message : String(error));
+      if (mounted.current) {
+        const message = error instanceof Error ? error.message : String(error);
+        setStatus(message);
+        if (laptop) setLaptopStatus(message);
+      }
     } finally {
       inFlight.current = false;
-      if (mounted.current) setBusy(false);
+      if (mounted.current) {
+        setBusy(false);
+        if (laptop) {
+          setLaptopBusy(false);
+          setLaptopProgress(null);
+        }
+      }
     }
+  }
+
+  async function connectLaptop(address: string, code: string): Promise<boolean> {
+    if (!ready || inFlight.current || !nativeSpikes.laptopPackagesAvailable) return false;
+    let connection;
+    try {
+      connection = validateLaptopConnection(address, code);
+    } catch (error) {
+      setLaptopStatus(
+        error instanceof Error ? error.message : 'Check the laptop address and pairing code.',
+      );
+      return false;
+    }
+    const request = ++laptopRequest.current;
+    inFlight.current = true;
+    setBusy(true);
+    setLaptopBusy(true);
+    setLaptopCatalog(null);
+    setLaptopStatus('Connecting to laptop… Allow Local Network access if asked.');
+    try {
+      const payload = await nativeSpikes.connectLaptopPackages(
+        connection.address,
+        connection.pairingCode,
+      );
+      if (!mounted.current || request !== laptopRequest.current) return false;
+      const catalog = JSON.parse(payload) as LaptopCatalog;
+      setLaptopCatalog(catalog);
+      setLaptopStatus(
+        `${catalog.packages.length} supported states available.${catalog.unsupportedCount ? ` ${catalog.unsupportedCount} states require a different app build.` : ''}${catalog.packages.length ? ' Choose a state to download.' : ' Restore matching public packages on the laptop and reconnect.'}`,
+      );
+      return true;
+    } catch (error) {
+      if (mounted.current && request === laptopRequest.current)
+        setLaptopStatus(error instanceof Error ? error.message : 'Could not connect to laptop.');
+      return false;
+    } finally {
+      inFlight.current = false;
+      if (mounted.current) {
+        setBusy(false);
+        setLaptopBusy(false);
+        setLaptopProgress(null);
+      }
+    }
+  }
+
+  async function disconnectLaptop() {
+    laptopRequest.current++;
+    setLaptopCatalog(null);
+    setLaptopStatus('Laptop disconnected. Installed states remain available offline.');
+    await nativeSpikes.disconnectLaptopPackages().catch(() => {});
   }
 
   return {
@@ -122,6 +247,16 @@ export function useStatePackages(query: string) {
     ready,
     busy,
     status,
+    laptopAvailable: nativeSpikes.laptopPackagesAvailable,
+    laptopCatalog,
+    laptopStatus,
+    laptopBusy,
+    laptopProgress,
+    connectLaptop,
+    disconnectLaptop,
+    cancelLaptop: () => nativeSpikes.cancelLaptopPackage().catch(() => {}),
+    installFromLaptop: (state: string) =>
+      operation(() => nativeSpikes.downloadLaptopPackage(state), true),
     select,
     clearSelection: () => {
       detailRequest.current++;

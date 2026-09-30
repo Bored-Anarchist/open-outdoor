@@ -6,7 +6,7 @@ The current development loader uses a compiled checksum allowlist; production si
 
 See the [50-state installable catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md) for exact transfer and installed sizes. The original GeoJSON/index packages and parser-validated import parts remain available for export and smaller manual imports.
 
-The native installer recognizes only the exact package checksums pinned in the app's `loader-inventory.json`. Restore the complete file from owner-managed external artifact storage using the checksums in the corresponding Git revision; see [package maintenance](PACKAGE_MAINTENANCE.md). A newer catalog needs an app build containing its updated pin. No network acquisition or automatic update is performed on the phone.
+The native installer recognizes only the exact package checksums pinned in the app's `loader-inventory.json`. Restore the complete file from owner-managed external artifact storage using the checksums in the corresponding Git revision; see [package maintenance](PACKAGE_MAINTENANCE.md). A newer catalog needs an app build containing its updated pin. The optional [Connect to laptop](CONNECT_TO_LAPTOP.md) flow browses and downloads existing public state packages over local Wi-Fi, with explicit selection, pairing, progress and cancellation. No automatic update or upstream source acquisition is performed on the phone.
 
 ## Map, search and details
 

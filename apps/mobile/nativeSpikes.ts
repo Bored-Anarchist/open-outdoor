@@ -96,6 +96,11 @@ export interface Phase0PhysicalDiagnosticReport {
 interface OpenOutdoorNativeSpikesModule {
   readonly loadStatePackages: (registry: string) => Promise<string>;
   readonly pickStatePackage: () => Promise<string | null>;
+  readonly connectLaptopPackages: (address: string, code: string) => Promise<string>;
+  readonly downloadLaptopPackage: (state: string) => Promise<string>;
+  readonly laptopPackageProgress: () => Promise<string>;
+  readonly cancelLaptopPackage: () => Promise<void>;
+  readonly disconnectLaptopPackages: () => Promise<void>;
   readonly changeStatePackage: (state: string, action: string) => Promise<string>;
   readonly searchStatePackages: (query: string) => Promise<string>;
   readonly statePackageDetail: (id: string) => Promise<string | null>;
@@ -158,6 +163,13 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 
 export const nativeSpikes = {
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
+  laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',
+  connectLaptopPackages: (address: string, code: string) =>
+    requiredModule().connectLaptopPackages(address, code),
+  downloadLaptopPackage: (state: string) => requiredModule().downloadLaptopPackage(state),
+  laptopPackageProgress: () => requiredModule().laptopPackageProgress(),
+  cancelLaptopPackage: () => requiredModule().cancelLaptopPackage(),
+  disconnectLaptopPackages: () => requiredModule().disconnectLaptopPackages(),
   loadStatePackages: (registry: string) => requiredModule().loadStatePackages(registry),
   pickStatePackage: () => requiredModule().pickStatePackage(),
   changeStatePackage: (state: string, action: string) =>

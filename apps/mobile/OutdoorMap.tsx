@@ -3,6 +3,7 @@ import { HikeCaptureControls, type HikeCaptureActions } from './HikeCaptureContr
 import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
 
 import { HikeDetails } from './HikeDetails';
+import { LaptopPackages } from './LaptopPackages';
 
 import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
 
@@ -2151,6 +2152,7 @@ export function OutdoorMap({
       )}
 
       <ProductCard title="Offline state packages">
+        <LaptopPackages service={statePackages} />
         <Text>
           Install a state.sqlite package from Files. Each state works offline as one package, with
           searchable places, trails and land records. Manual import limits do not apply.
@@ -2158,7 +2160,7 @@ export function OutdoorMap({
         <ProductButton
           label="Install or update a state"
           hint="Choose a supported state package from Files"
-          disabled={!statePackages.ready}
+          disabled={!statePackages.ready || statePackages.busy}
           busy={statePackages.busy}
           onPress={() => {
             void statePackages.install();
