@@ -7,12 +7,15 @@ internal final class OpenOutdoorLaptopQrScanner {
   private var pending: Promise?
   private var controller: LaptopQrController?
   private var generation = 0
+  private var activationObserver: NSObjectProtocol?
+  private var backgroundObserver: NSObjectProtocol?
 
   func scan(_ promise: Promise) {
     guard pending == nil else { promise.reject("QR_BUSY", "A pairing scan is already open."); return }
     generation += 1
     let request = generation
     pending = promise
+    backgroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: .main) { [weak self] _ in self?.cancel() }
     switch AVCaptureDevice.authorizationStatus(for: .video) {
     case .authorized: present(request)
     case .notDetermined:
@@ -27,8 +30,16 @@ internal final class OpenOutdoorLaptopQrScanner {
   }
   func cancel() { finish() }
   private func present(_ request: Int) {
-    guard generation == request, pending != nil,
-      let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first(where: { $0.activationState == .foregroundActive }),
+    guard generation == request, pending != nil else { return }
+    // The permission callback can precede the app becoming active again.
+    guard UIApplication.shared.applicationState == .active else {
+      if activationObserver == nil {
+        activationObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in self?.present(request) }
+      }
+      return
+    }
+    if let activationObserver { NotificationCenter.default.removeObserver(activationObserver); self.activationObserver = nil }
+    guard let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first(where: { $0.activationState == .foregroundActive }),
       let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else {
       finish(error: "Open the app to scan the laptop pairing code."); return
     }
@@ -44,6 +55,8 @@ internal final class OpenOutdoorLaptopQrScanner {
     guard let promise = pending else { return }
     generation += 1
     pending = nil
+    if let activationObserver { NotificationCenter.default.removeObserver(activationObserver); self.activationObserver = nil }
+    if let backgroundObserver { NotificationCenter.default.removeObserver(backgroundObserver); self.backgroundObserver = nil }
     controller?.completion = nil
     controller?.stop()
     controller?.dismiss(animated: true)
