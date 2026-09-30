@@ -2,6 +2,7 @@
   "expo": {
     "name": "Open Outdoor Local",
     "slug": "open-outdoor",
+    "icon": "./assets/app-icon.png",
     "version": "0.1.0",
     "platforms": ["ios"],
     "orientation": "portrait",
