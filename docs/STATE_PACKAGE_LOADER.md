@@ -2,11 +2,11 @@
 
 The app has a dedicated path for installing complete public state catalogs. Select one `state.sqlite` file in **Explore → Offline state packages → Install or update a state**. Each state is one package regardless of its GeoJSON import-part count. State catalog installation does not pass through the manual GeoJSON importer or consume its five slots or 50 MiB allowance.
 
-The current development loader uses a compiled checksum allowlist; production signed-provenance and catalog-trust integration remain separate release gates under ADR-031.
+Files imports use a compiled checksum allowlist. Open Outdoor Local additionally supports [signed updates from an explicitly trusted laptop](LAPTOP_STATE_UPDATES.md), without rebuilding the app for compatible state snapshots. Production signed-provenance and release-keyring integration remain separate gates under ADR-031.
 
 See the [50-state installable catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md) for exact transfer and installed sizes. The original GeoJSON/index packages and parser-validated import parts remain available for export and smaller manual imports.
 
-The native installer recognizes only the exact package checksums pinned in the app's `loader-inventory.json`. Restore the complete file from owner-managed external artifact storage using the checksums in the corresponding Git revision; see [package maintenance](PACKAGE_MAINTENANCE.md). A newer catalog needs an app build containing its updated pin. No network acquisition or automatic update is performed on the phone.
+The native Files installer recognizes exact checksums pinned in the app's `loader-inventory.json`. Restore files from owner-managed external artifact storage using the corresponding revision's checksums; see [package maintenance](PACKAGE_MAINTENANCE.md). The optional [Connect to laptop](CONNECT_TO_LAPTOP.md) flow also accepts compatible public state snapshots signed by a laptop whose independent fingerprint you explicitly approved. Such updates retain hashes, storage checks, replay protection and atomic rollback; a new schema/app-major reader still requires a matching build. No automatic update or upstream source acquisition runs on the phone.
 
 ## Map, search and details
 

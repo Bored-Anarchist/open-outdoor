@@ -126,3 +126,13 @@ Accepted for implementation on 2026-09-27 following the user’s direction to ad
 Development catalogs use the app build’s compiled checksum allowlist. This does not replace ADR-031’s production signed-provenance, channel-trust and replay acceptance. Native compilation, physical iPhone measurements, measured baseline storage accounting and production catalog trust integration remain release gates. The five-file/50 MiB manual-import allowance is unchanged.
 
 Implementation validation: the [complete unsigned iOS build](https://github.com/Bored-Anarchist/open-outdoor/actions/runs/36369753027) passed for code commit `dbd9bcd8aae2ac2aa4dafaa40bd05494ae420b7e`. All 50 public catalogs passed independent source/geometry/index/notices/tile verification. This records automated compilation and packaging evidence; physical-device and production-trust acceptance remain outstanding.
+
+## ADR-052 — Explicit laptop-owned signing for local state updates
+
+Status: accepted for implementation. Date: 2026-09-30. Authority: the owner accepted the proposed feature to update compatible state packages without rebuilding the app, with signed manifests, snapshot/date comparison and retained rollback.
+
+Open Outdoor Local may enroll a laptop public key only after an independently scanned/manually compared SHA-256 fingerprint and a separate explicit approval. Each public state snapshot uses the existing Ed25519 envelope format with the distinct `paired-laptop-v1` root, compatibility bounds, hashes, sizes and a durable revision. Device-only Keychain records retain public-key history and per-state revision/digest/date floors across removal, explicit rollback and revocation. Exact retries remain allowed; stale/conflicting network activation is rejected. Revocation works offline and preserves already verified maps and rollback history.
+
+This extends ADR-051's local development loader path. It does not supersede ADR-031/WP-010 production release trust, provision a production keyring, weaken private/public separation or claim release acceptance. The native installer gates laptop-owned signature activation/enrollment to `org.openoutdoor.local`; production identities continue to require their independently controlled release trust. Files imports retain compiled pins. No new dependency or private-data migration is introduced.
+
+Validation uses synthetic Node signing/transport tests, app/helper/UI tests and the same native CryptoKit trust class with injected persistence on macOS, followed by an unsigned iOS build. Physical update, lock/interruption, rollback/replay and key-loss/revocation cases remain required. See [signed laptop state updates](LAPTOP_STATE_UPDATES.md).

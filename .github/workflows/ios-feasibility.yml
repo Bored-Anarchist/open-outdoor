@@ -34,6 +34,15 @@ jobs:
         run: npm install --global pnpm@11.20.0
       - shell: bash
         run: pnpm install --frozen-lockfile
+      - name: Verify native signed-update trust
+        # Exercises the same CryptoKit/Keychain trust implementation using synthetic in-memory persistence.
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .tmp-laptop-native
+          node tools/laptop-update-test-vectors.mjs > .tmp-laptop-native/vectors.json
+          swiftc packages/native-spikes/ios/OpenOutdoorStateUpdateTrust.swift tools/laptop-update-native-tests.swift -o .tmp-laptop-native/trust-tests
+          .tmp-laptop-native/trust-tests .tmp-laptop-native/vectors.json
       - name: Build unsigned device application
         shell: bash
         run: pwsh -NoProfile -File scripts/Build-IosUnsigned.ps1

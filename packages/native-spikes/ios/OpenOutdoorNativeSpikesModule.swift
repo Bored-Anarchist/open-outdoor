@@ -9,6 +9,9 @@ public final class OpenOutdoorNativeSpikesModule: Module {
   private let statePackageStore = OpenOutdoorStatePackages()
   private let statePackageQueue = DispatchQueue(label: "org.openoutdoor.state-packages")
   private lazy var statePackagePicker = OpenOutdoorStatePackagePicker(store: statePackageStore, queue: statePackageQueue)
+  private lazy var laptopPackages = OpenOutdoorLaptopPackages(store: statePackageStore, queue: statePackageQueue)
+  private lazy var laptopDiscovery = OpenOutdoorLaptopDiscovery()
+  private lazy var laptopQrScanner = OpenOutdoorLaptopQrScanner()
 #if DEBUG || OPEN_OUTDOOR_PHASE0_DIAGNOSTICS
   private var phase0DiagnosticsInstance: OpenOutdoorPhase0Diagnostics?
   private var phase0PerformanceInstance: OpenOutdoorPhase0PerformanceDiagnostics?
@@ -33,6 +36,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("OpenOutdoorNativeSpikes")
+    Constant("laptopUpdatesEnabled") { self.statePackageStore.laptopUpdatesEnabled }
 
     AsyncFunction("loadStatePackages") { (registry: String) -> String in
       try self.statePackageStore.load(registry)
@@ -49,6 +53,46 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     AsyncFunction("statePackageDetail") { (id: String) -> String? in
       try self.statePackageStore.detail(id)
     }.runOnQueue(statePackageQueue)
+    AsyncFunction("connectLaptopPackages") { (address: String, code: String, promise: Promise) in
+      self.laptopPackages.connect(address, code: code, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("connectLaptopUpdates") { (address: String, code: String, fingerprint: String, promise: Promise) in
+      self.laptopPackages.connect(address, code: code, fingerprint: fingerprint, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("approveLaptopUpdates") { (promise: Promise) in self.laptopPackages.approveSigner(promise) }.runOnQueue(statePackageQueue)
+    AsyncFunction("revokeLaptopUpdates") { (promise: Promise) in self.laptopPackages.revokeSigner(promise) }.runOnQueue(statePackageQueue)
+    AsyncFunction("refreshLaptopPackages") { (promise: Promise) in self.laptopPackages.refresh(promise) }.runOnQueue(statePackageQueue)
+    AsyncFunction("trustedLaptopSigners") { () -> String in
+      let values = try self.statePackageStore.trust().trustedFingerprints()
+      return String(data: try JSONEncoder().encode(values), encoding: .utf8)!
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("revokeStateUpdateSigner") { (fingerprint: String) in
+      try self.statePackageStore.trust().revoke(fingerprint)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("downloadLaptopPackage") { (state: String, promise: Promise) in
+      self.laptopPackages.download(state, promise: promise)
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("laptopPackageProgress") { () -> String in
+      try self.laptopPackages.progress()
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("cancelLaptopPackage") {
+      self.laptopPackages.cancel()
+    }.runOnQueue(statePackageQueue)
+    AsyncFunction("disconnectLaptopPackages") {
+      self.laptopPackages.disconnect()
+    }.runOnQueue(statePackageQueue)
+    OnDestroy {
+      self.statePackageQueue.async { self.laptopPackages.disconnect() }
+      DispatchQueue.main.async { self.laptopDiscovery.cancel(); self.laptopQrScanner.cancel() }
+    }
+    AsyncFunction("discoverLaptopPackages") { (promise: Promise) in
+      self.laptopDiscovery.discover(promise)
+    }.runOnQueue(.main)
+    AsyncFunction("cancelLaptopDiscovery") { self.laptopDiscovery.cancel() }.runOnQueue(.main)
+    AsyncFunction("scanLaptopPairingQr") { (promise: Promise) in
+      self.laptopQrScanner.scan(promise)
+    }.runOnQueue(.main)
+    AsyncFunction("cancelLaptopPairingQr") { self.laptopQrScanner.cancel() }.runOnQueue(.main)
 
     AsyncFunction("pickMapDataset") { (promise: Promise) in
       self.mapDatasetPicker.pick(promise: promise)

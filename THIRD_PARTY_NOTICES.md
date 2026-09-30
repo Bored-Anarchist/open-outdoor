@@ -18,6 +18,16 @@ Each release must generate a software bill of materials and a separate data/asse
 
 The project scope names candidate technologies and data sources, but naming a candidate is not a license determination and does not mean it is included. No candidate enters source control, CI artifacts, catalogs, or releases until its manifest passes the rights process in [the data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md).
 
+## Laptop discovery and QR pairing (reviewed 2026-09-30)
+
+These unmodified pinned dependencies run on the laptop or in synthetic tests and are not bundled into the mobile application. Source, binary and offline redistribution is permitted with the complete licenses linked below; public/private distribution does not change those obligations. No retention/deletion obligations are introduced. Notices accompany source and any distribution of the laptop tooling; release SBOMs cover exact transitive packages. Native scanning uses the existing Apple SDK's AVFoundation framework.
+
+Signed laptop updates add original, AI-assisted project code and synthetic tests under Apache-2.0. Node's built-in crypto/filesystem APIs and Apple's CryptoKit/Security frameworks provide signing, verification and device-only trust persistence. No additional dependency, third-party data or production signing key is incorporated; runtime-generated synthetic private test keys are never emitted in fixture vectors or artifacts.
+
+- bonjour-service 1.4.4, ON LX Limited (2021), with portions by Thomas Watson Steen (2015–2016), MIT. [Canonical source](https://github.com/onlxltd/bonjour-service), [complete license](docs/licenses/bonjour-service.txt). Laptop-only mDNS publication; scoped address configuration without dependency modifications.
+- qrcode 1.5.4, Ryan Day (2012), MIT. [Canonical source](https://github.com/soldair/node-qrcode), [complete license](docs/licenses/qrcode.txt). Laptop-only SVG QR generation.
+- jsQR 1.4.0, Cosmo Wolfe and contributors, Apache-2.0. [Canonical source](https://github.com/cozmo/jsQR), [complete license](docs/licenses/jsqr.txt). Test-only independent QR decoding; no third-party image is incorporated.
+
 ## WP-501 assets
 
 The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) inventories the original, AI-assisted Open Outdoor tokens, icon geometry and map styles under Apache-2.0. Playwright 1.62.1 (Apache-2.0) is a pinned development-only browser acceptance dependency; it is not shipped in the mobile application.
@@ -57,3 +67,7 @@ The application continues to use its existing platform SQLite and MapLibre runti
 Minnesota Department of Natural Resources (MNDNR): selected State Park Trails and Roads hiking records and State Forest Campgrounds visitor records. [MNDNR GIS terms](https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html) remain applicable: credited modified subsets, reference only, no navigation or legal-boundary/access use, no endorsement. Entire source datasets and Forest Stand Inventory are excluded. Complete terms and exact evidence are carried in the Minnesota package notices and acquisition receipts.
 
 Virginia Department of Conservation and Recreation (DCR): State Park Trails and State Park Boundaries. Redistribution for profit is prohibited; these processed data are distributed for this noncommercial application with DCR credit and separate source terms. They are outside the project code license. See [the conditional public-data review](docs/CONDITIONAL_PUBLIC_DATA_2026-09-28.md) and the Virginia package DATA_NOTICES.md.
+
+## Home-screen app icon (2026-09-30)
+
+The mountain and winding trail artwork in `apps/mobile/assets/app-icon.png` was created with the built-in image generation tool at the project owner's request. No third-party reference, stock image or existing brand mark was supplied. This original AI-assisted project asset is distributed under the repository's Apache-2.0 terms. Its exact generation prompt, source format and Expo integration are recorded in [the asset provenance](apps/mobile/assets/README.md). Native icon generation resizes the opaque square master; iOS applies the corner mask. No additional runtime dependency is introduced.

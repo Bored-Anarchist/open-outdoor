@@ -107,6 +107,8 @@ Unless a document says otherwise, this initial set is `proposed` and becomes `ac
 Identifiers are permanent. Retired items keep their ID and point to the replacement.
 
 - [Offline state package loader](STATE_PACKAGE_LOADER.md): complete-state installation, local tiles, indexed search, integrity checks and rollback.
+- [Connect to laptop](CONNECT_TO_LAPTOP.md): nearby discovery, QR/manual pairing, public state downloads over local Wi-Fi and offline installation.
+- [Signed laptop state updates](LAPTOP_STATE_UPDATES.md): explicit fingerprint trust, snapshot/date comparison, updates without rebuilding the local app, replay protection and offline revocation.
 - [Installable state catalog inventory](STATE_LOADER_PACKAGE_INVENTORY_2026-09-27.md): all 50 transfer/installed sizes, record and tile counts.
 
 - [Remaining state agency gaps](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md): recovered agency feeds, exact Michigan license, New York private OPRHP integration, scope exclusions and provider dependencies.

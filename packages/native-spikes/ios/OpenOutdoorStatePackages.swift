@@ -5,7 +5,7 @@ import SQLite3
 import UIKit
 import UniformTypeIdentifiers
 
-/// Build-pinned public catalogs. Never opens or writes the recorder/user database.
+/// Build-pinned or independently laptop-authorized public catalogs. Never writes user data.
 internal final class OpenOutdoorStatePackages {
   struct Pin: Codable {
     let state: String
@@ -15,6 +15,7 @@ internal final class OpenOutdoorStatePackages {
     let installedBytes: Int64
     let tilesBytes: Int64
     let tilesSha256: String
+    var update: OpenOutdoorStateUpdateTrust.Ticket? = nil
   }
   struct Entry: Codable {
     var current: Pin
@@ -23,11 +24,40 @@ internal final class OpenOutdoorStatePackages {
     var quarantined: Bool?
   }
   private var allowed: [Pin] = []
+  private var updateTrust: OpenOutdoorStateUpdateTrust?
+  var laptopUpdatesEnabled: Bool { Bundle.main.bundleIdentifier == "org.openoutdoor.local" }
+  func approveUpdateSigner(_ publicKey: String, fingerprint: String) throws {
+    guard laptopUpdatesEnabled else { throw failure("Laptop-owned update trust is available in the local app build. Production catalog trust uses its separately provisioned release keyring.") }
+    try trust().approve(publicKey, expectedFingerprint: fingerprint)
+  }
+  func trust() throws -> OpenOutdoorStateUpdateTrust {
+    if let updateTrust { return updateTrust }
+    let next = try OpenOutdoorStateUpdateTrust()
+    updateTrust = next
+    return next
+  }
+  func updatePin(_ ticket: OpenOutdoorStateUpdateTrust.Ticket, publicKey: String, requireTrusted: Bool) throws -> Pin {
+    guard laptopUpdatesEnabled else { throw failure("This app build does not accept laptop-owned update signatures.") }
+    let manifest = try trust().inspect(ticket, publicKey: publicKey, requireTrusted: requireTrusted)
+    guard allowed.contains(where: { $0.state == manifest.state }) else { throw failure("This app does not support that state.") }
+    var pin = try JSONDecoder().decode(Pin.self, from: JSONEncoder().encode(manifest))
+    pin.update = ticket
+    return pin
+  }
+  private func verifyUpdate(_ pin: Pin, installed: Bool = false) throws {
+    guard let ticket = pin.update else { return }
+    guard installed || laptopUpdatesEnabled else { throw failure("This app build does not accept laptop-owned update signatures.") }
+    let manifest = try trust().verify(ticket, installed: installed)
+    guard manifest.state == pin.state, manifest.sha256 == pin.sha256, manifest.bytes == pin.bytes,
+      manifest.installedBytes == pin.installedBytes, manifest.tilesBytes == pin.tilesBytes,
+      manifest.tilesSha256 == pin.tilesSha256, manifest.name == pin.name else { throw failure("State update identity does not match its signature.") }
+  }
   private var registryRecovered = false
   private let manager = FileManager.default
   private let baselineReserve: Int64 = 1024 * 1024 * 1024
   private let ceiling: Int64 = 3 * 1024 * 1024 * 1024
   private let reserve: Int64 = 2 * 1024 * 1024 * 1024
+  private let registryLimit = 1024 * 1024 // Up to fifty current/previous signed proofs; still bounded.
 
   private func failure(_ message: String) -> NSError {
     NSError(domain: "OpenOutdoorStatePackage", code: 1,
@@ -47,31 +77,33 @@ internal final class OpenOutdoorStatePackages {
     }
     return try root().appendingPathComponent("\(pin.state)-\(pin.sha256).\(suffix)")
   }
+  private func decodeEntries(_ data: Data) throws -> [Entry] {
+    guard data.count <= registryLimit else { throw failure("State package registry is invalid.") }
+    let decoded = try JSONDecoder().decode([Entry].self, from: data)
+    guard decoded.count <= 50 else { throw failure("State package registry is invalid.") }
+    return decoded
+  }
   private func entries() throws -> [Entry] {
     let url = try root().appendingPathComponent("active.json")
     let backup = try root().appendingPathComponent("active.previous.json")
     guard manager.fileExists(atPath: url.path) || manager.fileExists(atPath: backup.path) else { return [] }
     do {
-      let data = try Data(contentsOf: url)
-      guard data.count < 128 * 1024 else { throw failure("State package registry is invalid.") }
-      return try JSONDecoder().decode([Entry].self, from: data)
+      return try decodeEntries(Data(contentsOf: url))
     } catch {
-      let data = try Data(contentsOf: backup)
-      guard data.count < 128 * 1024 else { throw failure("State package registry recovery failed.") }
-      let restored = try JSONDecoder().decode([Entry].self, from: data)
+      let restored = try decodeEntries(Data(contentsOf: backup))
       registryRecovered = true
       return restored
     }
   }
   private func save(_ entries: [Entry]) throws {
+    let payload = try JSONEncoder().encode(entries)
+    _ = try decodeEntries(payload) // Reject an oversized registry before changing either pointer.
     let url = try root().appendingPathComponent("active.json")
-    if let old = try? Data(contentsOf: url), old.count < 128 * 1024,
-      (try? JSONDecoder().decode([Entry].self, from: old)) != nil {
+    if let old = try? Data(contentsOf: url), (try? decodeEntries(old)) != nil {
       let backup = try root().appendingPathComponent("active.previous.json")
       try old.write(to: backup, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
       try OpenOutdoorFilePolicy.apply(backup, protection: .completeUntilFirstUserAuthentication)
     }
-    let payload = try JSONEncoder().encode(entries)
     try payload.write(to: url,
       options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
     try OpenOutdoorFilePolicy.apply(url, protection: .completeUntilFirstUserAuthentication)
@@ -125,7 +157,7 @@ internal final class OpenOutdoorStatePackages {
   private func metadata(_ pin: Pin) throws -> [String: Any] {
     let db = try open(file(pin, "sqlite"))
     defer { sqlite3_close(db) }
-    guard let value = try rows(db, "SELECT value FROM metadata WHERE key='manifest'").first?.first,
+    guard let value = try rows(db, "SELECT value FROM metadata WHERE key='manifest' AND length(value)<=1048576 LIMIT 1").first?.first,
       let object = try JSONSerialization.jsonObject(with: Data(value.utf8)) as? [String: Any],
       object["channel"] as? String == "public", object["schemaVersion"] as? Int == 1,
       object["state"] as? String == pin.state,
@@ -133,11 +165,16 @@ internal final class OpenOutdoorStatePackages {
       object["tilesSha256"] as? String == pin.tilesSha256 else {
       throw failure("State catalog compatibility or classification failed.")
     }
+    if let ticket = pin.update {
+      let manifest = try trust().verify(ticket, installed: true)
+      guard object["generatedAt"] as? String == manifest.generatedAt, object["name"] as? String == manifest.name else { throw failure("State update name or packaging date does not match its signature.") }
+    }
     return object
   }
   private func valid(_ pin: Pin) -> Bool {
     do {
-      guard pin.bytes > 0, pin.tilesBytes > 127, pin.installedBytes == pin.bytes + pin.tilesBytes,
+      try verifyUpdate(pin, installed: true)
+      guard pin.bytes > 0, pin.bytes <= ceiling, pin.tilesBytes > 127, pin.tilesBytes <= ceiling, pin.installedBytes == pin.bytes + pin.tilesBytes,
         pin.installedBytes <= ceiling else { return false }
       guard try hash(file(pin, "sqlite")) == pin.sha256,
         try hash(file(pin, "pmtiles")) == pin.tilesSha256 else { return false }
@@ -242,35 +279,64 @@ internal final class OpenOutdoorStatePackages {
       value["installedBytes"] = entry.current.installedBytes
       value["visible"] = entry.visible
       value["canRollback"] = entry.previous != nil
+      if let ticket = entry.current.update { value["revision"] = ticket.envelope.antiReplayVersion }
       value["tilesUri"] = try file(entry.current, "pmtiles").absoluteString
       return value
     }
     return String(data: try JSONSerialization.data(withJSONObject: result), encoding: .utf8)!
   }
-  func install(_ source: URL) throws -> String {
-    let size = try source.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
-    guard size.isRegularFile == true, let bytes = size.fileSize, bytes > 0, Int64(bytes) <= ceiling else {
-      throw failure("Select a valid state SQLite package within the 3 GiB reference budget.")
+  func supportedPins() -> [Pin] { allowed }
+  func preflight(_ pin: Pin, download: Bool = false) throws {
+    guard pin.update != nil || allowed.contains(where: { $0.state == pin.state && $0.sha256 == pin.sha256 && $0.bytes == pin.bytes }) else {
+      throw failure("This state requires a newer supported app build.")
     }
-    let checksum = try hash(source)
-    guard let pin = allowed.first(where: { $0.sha256 == checksum && $0.bytes == Int64(bytes) }),
-      pin.installedBytes == pin.bytes + pin.tilesBytes, pin.tilesBytes > 127 else {
-      throw failure("This file does not match a state package supported by this app build.")
+    let active = try entries()
+    if let ticket = pin.update {
+      try verifyUpdate(pin)
+      let manifest = try trust().verify(ticket)
+      if let current = active.first(where: { $0.current.state == pin.state }), current.quarantined != true,
+        let currentDate = try metadata(current.current)["generatedAt"] as? String,
+        let previousDate = OpenOutdoorStateUpdateTrust.date(currentDate),
+        let incomingDate = OpenOutdoorStateUpdateTrust.date(manifest.generatedAt) {
+        guard incomingDate >= previousDate else { throw failure("An older state snapshot was rejected. Use explicit rollback instead.") }
+      }
+    } else if try trust().hasAcceptedUpdate(pin.state) {
+      throw failure("Use a signed state update or explicit rollback instead of installing an older build-pinned file.")
     }
-    var active = try entries()
-    if active.contains(where: { $0.current.sha256 == pin.sha256 && $0.quarantined != true }) && valid(pin) { return try list() }
     let current = active.reduce(baselineReserve) { $0 + $1.current.installedBytes }
     let replaced = active.first(where: { $0.current.state == pin.state })
     let incomingCombined = current - (replaced?.current.installedBytes ?? 0) + pin.installedBytes
     guard incomingCombined <= ceiling else {
       throw failure("Installed reference catalogs exceed 3 GiB. Remove a state package first.")
     }
-    // Current references serve as rollback; retained previous versions also occupy disk.
     let rollback = active.reduce(Int64(0)) { $0 + ($1.previous?.installedBytes ?? 0) }
-    let required = current + rollback + incomingCombined + max(baselineReserve, incomingCombined / 4) + reserve
+    let required = current + rollback + incomingCombined + max(baselineReserve, incomingCombined / 4) + reserve + (download ? pin.bytes : 0)
     let free = (try manager.attributesOfFileSystem(forPath: root().path)[.systemFreeSize] as? NSNumber)?.int64Value ?? 0
-    guard free >= required else { throw failure("Not enough free space. State activation requires \(required) bytes including rollback and reserve.") }
+    guard free >= required else { throw failure("Not enough free space for this state, rollback and reserve. Remove a state package or free storage first.") }
+  }
+  func install(_ source: URL, authorizedPin: Pin? = nil) throws -> String {
+    let size = try source.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+    guard size.isRegularFile == true, let bytes = size.fileSize, bytes > 0, Int64(bytes) <= ceiling else {
+      throw failure("Select a valid state SQLite package within the 3 GiB reference budget.")
+    }
+    let checksum = try hash(source)
+    guard let pin = authorizedPin ?? allowed.first(where: { $0.sha256 == checksum && $0.bytes == Int64(bytes) }),
+      pin.sha256 == checksum, pin.bytes == Int64(bytes),
+      pin.installedBytes == pin.bytes + pin.tilesBytes, pin.tilesBytes > 127 else {
+      throw failure("This file does not match a state package supported by this app build.")
+    }
+    var active = try entries()
+    if active.contains(where: { $0.current.sha256 == pin.sha256 && $0.quarantined != true }) && valid(pin) { return try list() }
+    let replaced = active.first(where: { $0.current.state == pin.state })
+    try preflight(pin)
     let target = try file(pin, "sqlite")
+    var activated = false
+    defer {
+      if !activated, let latest = try? entries(), !latest.contains(where: { $0.current.sha256 == pin.sha256 || $0.previous?.sha256 == pin.sha256 }) {
+        try? manager.removeItem(at: target)
+        if let tiles = try? file(pin, "pmtiles") { try? manager.removeItem(at: tiles) }
+      }
+    }
     let temporary = target.appendingPathExtension("staging")
     if manager.fileExists(atPath: temporary.path) { try manager.removeItem(at: temporary) }
     try manager.copyItem(at: source, to: temporary)
@@ -281,12 +347,14 @@ internal final class OpenOutdoorStatePackages {
     try OpenOutdoorFilePolicy.apply(target, protection: .completeUntilFirstUserAuthentication)
     try extractTiles(pin)
     guard valid(pin) else { throw failure("State activation verification failed.") }
+    if let ticket = pin.update { try trust().accept(ticket) }
     let prior = replaced?.current.sha256 == pin.sha256 ? replaced?.previous : replaced?.current
     let next = Entry(current: pin, previous: prior.flatMap { valid($0) ? $0 : nil },
       visible: replaced?.quarantined == true ? true : replaced?.visible ?? true, quarantined: false)
     active.removeAll { $0.current.state == pin.state }
     active.append(next)
     try save(active) // Atomic publication after every validation and extraction succeeds.
+    activated = true
     let payload = try list()
     try pruneUnreferenced(active)
     return payload

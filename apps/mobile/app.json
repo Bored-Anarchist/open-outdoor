@@ -2,6 +2,7 @@
   "expo": {
     "name": "Open Outdoor Local",
     "slug": "open-outdoor",
+    "icon": "./assets/app-icon.png",
     "version": "0.1.0",
     "platforms": ["ios"],
     "orientation": "portrait",
@@ -12,6 +13,10 @@
       "deploymentTarget": "16.4",
       "supportsTablet": false,
       "infoPlist": {
+        "NSLocalNetworkUsageDescription": "Open Outdoor finds nearby laptops when you open Connect to laptop and downloads the public state packages you choose for offline use.",
+        "NSBonjourServices": ["_openoutdoor._tcp"],
+        "NSCameraUsageDescription": "Open Outdoor uses the camera only when you choose to scan a laptop pairing QR code. Images are not saved or uploaded.",
+        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true },
         "NSLocationWhenInUseUsageDescription": "Open Outdoor uses your location while the map is open to show your position as a GPS dot, and while you explicitly record an outdoor activity.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor uses Always Location only to continue an outdoor activity you explicitly started while the screen is locked.",
         "NSMotionUsageDescription": "Open Outdoor uses barometer data during an active recording to improve elevation estimates.",

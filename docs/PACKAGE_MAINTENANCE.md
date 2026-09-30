@@ -12,7 +12,7 @@ Prefer reviewed APIs, state-specific queries and selected fields. National basel
 
 Public agency raw inputs stay in `.tmp-public-agency/`; normalized national caches stay in `.tmp-state-source-cache/`. These are disposable ignored caches. Private inputs stay in `PrivateData/agency-feeds/`. ZIP/KML/geodatabase-only sources still require local downloads. iOverlander updates use reviewed local archives; no iOverlander API is assumed.
 
-This is revision-based reuse, not record-level delta synchronization. Changed sources fetch selected records in pages. Phones still install a complete replacement state SQLite file and require a build with its updated checksum pin.
+This is revision-based reuse, not record-level delta synchronization. Changed sources fetch selected records in pages. Phones install a complete replacement SQLite file. Files imports require a matching compiled checksum; [signed laptop updates](LAPTOP_STATE_UPDATES.md) let Open Outdoor Local install compatible snapshots without rebuilding the app after explicit signer approval. Restart the laptop server after a rebuild to publish the new inventory.
 
 ## Public update commands
 

@@ -94,8 +94,28 @@ export interface Phase0PhysicalDiagnosticReport {
 }
 
 interface OpenOutdoorNativeSpikesModule {
+  readonly laptopUpdatesEnabled: boolean;
   readonly loadStatePackages: (registry: string) => Promise<string>;
   readonly pickStatePackage: () => Promise<string | null>;
+  readonly connectLaptopPackages: (address: string, code: string) => Promise<string>;
+  readonly connectLaptopUpdates: (
+    address: string,
+    code: string,
+    fingerprint: string,
+  ) => Promise<string>;
+  readonly approveLaptopUpdates: () => Promise<string>;
+  readonly revokeLaptopUpdates: () => Promise<string>;
+  readonly refreshLaptopPackages: () => Promise<string>;
+  readonly trustedLaptopSigners: () => Promise<string>;
+  readonly revokeStateUpdateSigner: (fingerprint: string) => Promise<void>;
+  readonly discoverLaptopPackages: () => Promise<string>;
+  readonly cancelLaptopDiscovery: () => Promise<void>;
+  readonly scanLaptopPairingQr: () => Promise<string | null>;
+  readonly cancelLaptopPairingQr: () => Promise<void>;
+  readonly downloadLaptopPackage: (state: string) => Promise<string>;
+  readonly laptopPackageProgress: () => Promise<string>;
+  readonly cancelLaptopPackage: () => Promise<void>;
+  readonly disconnectLaptopPackages: () => Promise<void>;
   readonly changeStatePackage: (state: string, action: string) => Promise<string>;
   readonly searchStatePackages: (query: string) => Promise<string>;
   readonly statePackageDetail: (id: string) => Promise<string | null>;
@@ -158,6 +178,30 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 
 export const nativeSpikes = {
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
+  laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',
+  laptopUpdatesAvailable:
+    module?.laptopUpdatesEnabled === true && typeof module?.connectLaptopUpdates === 'function',
+  connectLaptopUpdates: (address: string, code: string, fingerprint: string) =>
+    requiredModule().connectLaptopUpdates(address, code, fingerprint),
+  approveLaptopUpdates: () => requiredModule().approveLaptopUpdates(),
+  revokeLaptopUpdates: () => requiredModule().revokeLaptopUpdates(),
+  refreshLaptopPackages: () => requiredModule().refreshLaptopPackages(),
+  trustedLaptopSigners: () => requiredModule().trustedLaptopSigners(),
+  revokeStateUpdateSigner: (fingerprint: string) =>
+    requiredModule().revokeStateUpdateSigner(fingerprint),
+  laptopPairingAvailable:
+    typeof module?.discoverLaptopPackages === 'function' &&
+    typeof module?.scanLaptopPairingQr === 'function',
+  discoverLaptopPackages: () => requiredModule().discoverLaptopPackages(),
+  cancelLaptopDiscovery: () => requiredModule().cancelLaptopDiscovery(),
+  scanLaptopPairingQr: () => requiredModule().scanLaptopPairingQr(),
+  cancelLaptopPairingQr: () => requiredModule().cancelLaptopPairingQr(),
+  connectLaptopPackages: (address: string, code: string) =>
+    requiredModule().connectLaptopPackages(address, code),
+  downloadLaptopPackage: (state: string) => requiredModule().downloadLaptopPackage(state),
+  laptopPackageProgress: () => requiredModule().laptopPackageProgress(),
+  cancelLaptopPackage: () => requiredModule().cancelLaptopPackage(),
+  disconnectLaptopPackages: () => requiredModule().disconnectLaptopPackages(),
   loadStatePackages: (registry: string) => requiredModule().loadStatePackages(registry),
   pickStatePackage: () => requiredModule().pickStatePackage(),
   changeStatePackage: (state: string, action: string) =>
