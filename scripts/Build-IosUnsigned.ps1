@@ -2,7 +2,7 @@
 param()
 
 if ($IsWindows) {
-    throw 'The unsigned iOS archive must be built by the pinned macOS workflow. See docs/IOS_SIDELOAD_FEASIBILITY.md.'
+    throw 'The unsigned iOS archive must be built by the pinned macOS workflow. See docs/guides/IOS_SIDELOAD_FEASIBILITY.md.'
 }
 
 $sourceCommit = (& git rev-parse HEAD).Trim()

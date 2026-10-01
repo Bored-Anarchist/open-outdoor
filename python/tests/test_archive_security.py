@@ -2,7 +2,7 @@ import io
 import unittest
 import zipfile
 
-from tools.archive_security import inspect_zip
+from tools.lib.archive_security import inspect_zip
 
 
 class ArchiveSecurityTests(unittest.TestCase):

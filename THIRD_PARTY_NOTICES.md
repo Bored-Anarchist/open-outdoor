@@ -16,11 +16,11 @@ Each release must generate a software bill of materials and a separate data/asse
 
 ## Known planned integrations
 
-The project scope names candidate technologies and data sources, but naming a candidate is not a license determination and does not mean it is included. No candidate enters source control, CI artifacts, catalogs, or releases until its manifest passes the rights process in [the data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md).
+The project scope names candidate technologies and data sources, but naming a candidate is not a license determination and does not mean it is included. No candidate enters source control, CI artifacts, catalogs, or releases until its manifest passes the rights process in [the data, privacy, and rights plan](docs/reference/DATA_PRIVACY_RIGHTS_PLAN.md).
 
 ## Security audit dependency updates (reviewed 2026-09-30)
 
-The [security audit](docs/SECURITY_CODE_QUALITY_AUDIT_2026-09-30.md#dependency-advisory-findings-after-authorized-npm-verification) updates these unmodified upstream development/build dependencies. Project changes are dependency selection and scoped resolution overrides, with exact registry integrity hashes retained in `pnpm-lock.yaml`; no third-party source patch is distributed. The three new compatibility tests and synthetic PNG fixture are project-authored/AI-assisted Apache-2.0 material.
+The [security audit](docs/archive/reports/SECURITY_CODE_QUALITY_AUDIT_2026-09-30.md#dependency-advisory-findings-after-authorized-npm-verification) updates these unmodified upstream development/build dependencies. Project changes are dependency selection and scoped resolution overrides, with exact registry integrity hashes retained in `pnpm-lock.yaml`; no third-party source patch is distributed. The three new compatibility tests and synthetic PNG fixture are project-authored/AI-assisted Apache-2.0 material.
 
 | Package and exact version | Canonical owner/source | License and copyright notice |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ Signed laptop updates add original, AI-assisted project code and synthetic tests
 
 ## WP-501 assets
 
-The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) inventories the original, AI-assisted Open Outdoor tokens, icon geometry and map styles under Apache-2.0. Playwright 1.62.1 (Apache-2.0) is a pinned development-only browser acceptance dependency; it is not shipped in the mobile application.
+The [product design system](docs/reference/PRODUCT_DESIGN_SYSTEM.md) inventories the original, AI-assisted Open Outdoor tokens, icon geometry and map styles under Apache-2.0. Playwright 1.62.1 (Apache-2.0) is a pinned development-only browser acceptance dependency; it is not shipped in the mobile application.
 
 WP-502/WP-503 add axe-core 4.13.0 (MPL-2.0) and React/React Test Renderer 19.2.3 (MIT) as pinned development-only audit/test dependencies. No third-party visuals or native runtime dependencies were added. New implementation and test fixtures are project-authored with AI assistance under Apache-2.0; physical evidence remains deferred under ADR-049.
 
@@ -68,7 +68,7 @@ The app includes the native renderer license text alongside map attribution. Pre
 
 The current public New York snapshot supersedes the earlier snapshot described above: DEC records and hike profiles are held in the private system. Its 326 public features contain the civil boundary and eligible federal records. All 50 public states retain their exact source receipts, rights classifications, attribution and full `DATA_NOTICES.md` under `packages/map/src/assets/state-packages/US/<state>/`; the SQLite loader embeds those notices and exposes them in the app. Converting the public GeoJSON to indexed SQLite and simplified display tiles does not change the original data license or access limitations. No iOverlander source records or permission-held agency datasets are included in these public catalogs.
 
-The following unmodified Python packages are build-only tools, pinned in `tools/state-loader-requirements.txt` and installed locally in a Git-ignored directory. Their code and native libraries are not embedded in the catalogs or mobile app. Canonical licenses accompany the installed distributions; redistribution of the tools themselves must retain the applicable full license and copyright notices. No additional retention or deletion obligation is introduced by these direct tools.
+The following unmodified Python packages are build-only tools, pinned in the optional dependency groups in [pyproject.toml](pyproject.toml), with transitive versions and wheel hashes in `uv.lock`. They are installed locally in the Git-ignored environment. Their code and native libraries are not embedded in the catalogs or mobile app. Canonical licenses accompany the installed distributions; redistribution of the tools themselves must retain the applicable full license and copyright notices. No additional retention or deletion obligation is introduced by these direct tools.
 
 | Tool and owner | Exact version | License and canonical source | Modifications / distribution |
 | --- | --- | --- | --- |
@@ -83,7 +83,7 @@ The application continues to use its existing platform SQLite and MapLibre runti
 
 Minnesota Department of Natural Resources (MNDNR): selected State Park Trails and Roads hiking records and State Forest Campgrounds visitor records. [MNDNR GIS terms](https://www.dnr.state.mn.us/sitetools/data_software_license_plain.html) remain applicable: credited modified subsets, reference only, no navigation or legal-boundary/access use, no endorsement. Entire source datasets and Forest Stand Inventory are excluded. Complete terms and exact evidence are carried in the Minnesota package notices and acquisition receipts.
 
-Virginia Department of Conservation and Recreation (DCR): State Park Trails and State Park Boundaries. Redistribution for profit is prohibited; these processed data are distributed for this noncommercial application with DCR credit and separate source terms. They are outside the project code license. See [the conditional public-data review](docs/CONDITIONAL_PUBLIC_DATA_2026-09-28.md) and the Virginia package DATA_NOTICES.md.
+Virginia Department of Conservation and Recreation (DCR): State Park Trails and State Park Boundaries. Redistribution for profit is prohibited; these processed data are distributed for this noncommercial application with DCR credit and separate source terms. They are outside the project code license. See [the conditional public-data review](docs/archive/reports/CONDITIONAL_PUBLIC_DATA_2026-09-28.md) and the Virginia package DATA_NOTICES.md.
 
 ## Home-screen app icon (2026-09-30)
 

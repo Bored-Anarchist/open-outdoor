@@ -4,13 +4,13 @@ param(
 )
 
 if ($IsWindows) {
-    throw 'The unsigned iOS archive must be built on macOS. See docs/IOS_SIDELOAD_FEASIBILITY.md.'
+    throw 'The unsigned iOS archive must be built on macOS. See docs/guides/IOS_SIDELOAD_FEASIBILITY.md.'
 }
 
 $resolvedCatalog = Resolve-Path -LiteralPath $CatalogPath
 $stagedData = Join-Path (Resolve-Path 'apps/mobile').Path '.private-map-data'
 try {
-    node tools/stage-private-mobile-map.mjs --input $resolvedCatalog.Path
+    node tools/packages/stage-private-mobile-map.mjs --input $resolvedCatalog.Path
     if ($LASTEXITCODE -ne 0) { throw 'Private map staging failed.' }
 
     $manifest = Get-Content -Raw -LiteralPath (Join-Path $resolvedCatalog.Path 'manifest.json') | ConvertFrom-Json

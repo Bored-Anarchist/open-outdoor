@@ -5,6 +5,7 @@ node_modules
 PrivateData
 apps/mobile/.private-map-data
 .tmp-*
+.scratch
 dist
 coverage
 docs/evidence/artifacts/*.json

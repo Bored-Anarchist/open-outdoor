@@ -36,7 +36,10 @@
       "evidence": "docs/evidence/artifacts/phase2-guided-report-0081bea.json (17/17 official probes)"
     },
     "publicPackReproducibility": { "status": "passed", "evidence": "T-REL-002-C01 through C03" },
-    "publicationBoundary": { "status": "passed", "evidence": "tools/public-boundary.mjs --scan ." },
+    "publicationBoundary": {
+      "status": "passed",
+      "evidence": "tools/quality/public-boundary.mjs --scan ."
+    },
     "rightsAndAttribution": {
       "status": "passed",
       "evidence": "T-INT-003-C01 and C06 plus WP-209 source inventory"

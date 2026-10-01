@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { describe, expect, it } from 'vitest';
 import { validateConnectorManifest } from '../src/connector.js';
 // @ts-expect-error source tooling is intentionally plain Node ESM
-import { createSource } from '../../../tools/source.mjs';
+import { createSource } from '../../../tools/catalog/source.mjs';
 
 describe('WP-401 generated connector', () => {
   it('generates every artifact and runs the generated contract without registration edits', async () => {

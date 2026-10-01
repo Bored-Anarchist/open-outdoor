@@ -313,7 +313,7 @@
     },
     "publicationBoundary": {
       "passed": true,
-      "evidence": "tools/public-boundary.mjs --scan ."
+      "evidence": "tools/quality/public-boundary.mjs --scan ."
     },
     "rightsAndAttribution": {
       "passed": true,

@@ -38,12 +38,12 @@
 | WP-305 | [Composed public/private/user experience](WP-305.md) | Accepted in the Phase 3 test disposition |
 | WP-306 | [Complete encrypted backup/restore](WP-306.md) | Accepted in the Phase 3 test disposition |
 | WP-307 | [Field hardening](WP-307.md) | Phase 3 tests accepted; endurance conditionally approved for Phase 5 |
-| WP-401 | [Connector scaffolding CLI](WP-401.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
-| WP-402 | [Reusable acquisition adapters](WP-402.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
-| WP-403 | [User-controlled import ecosystem](WP-403.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
-| WP-404 | [Permission-gated adapter shells](WP-404.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
-| WP-405 | [Private extension compatibility](WP-405.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
-| WP-406 | [Connector operations](WP-406.md) | Accepted in the [Phase 4 disposition](../PHASE_4_GATE_REPORT.md) |
+| WP-401 | [Connector scaffolding CLI](WP-401.md) | Accepted in the [Phase 4 disposition](../archive/phases/PHASE_4_GATE_REPORT.md) |
+| WP-402 | [Reusable acquisition adapters](WP-402.md) | Accepted in the [Phase 4 disposition](../archive/phases/PHASE_4_GATE_REPORT.md) |
+| WP-403 | [User-controlled import ecosystem](WP-403.md) | Accepted in the [Phase 4 disposition](../archive/phases/PHASE_4_GATE_REPORT.md) |
+| WP-404 | [Permission-gated adapter shells](WP-404.md) | Accepted in the [Phase 4 disposition](../archive/phases/PHASE_4_GATE_REPORT.md) |
+| WP-405 | [Private extension compatibility](WP-405.md) | Accepted in the [Phase 4 disposition](../archive/phases/PHASE_4_GATE_REPORT.md) |
+| WP-406 | [Connector operations](WP-406.md) | Accepted in the [Phase 4 disposition](../archive/phases/PHASE_4_GATE_REPORT.md) |
 | WP-501 | [Product design system](WP-501.md) | Implemented; Phase 5 automatic preflight owner-accepted |
 | WP-502 | [Production accessibility](WP-502.md) | Automated verification accepted; physical acceptance pending |
 | WP-503 | [Production performance and endurance](WP-503.md) | Automated verification accepted; physical acceptance pending |

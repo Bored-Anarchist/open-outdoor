@@ -1,14 +1,14 @@
 # Contributing to Open Outdoor
 
-Thank you for helping build Open Outdoor. The project is in planning/bootstrap status; implementation work must follow an accepted work package and decision baseline.
+Thank you for helping build Open Outdoor. The repository includes the mobile app, browser fixture, data pipelines and acceptance tooling. Implementation work must follow an accepted work package and decision baseline; physical-device and release acceptance remain separate gates.
 
 ## Before contributing
 
 Read:
 
 - [Project scope](PROJECT_SCOPE.md)
-- [Development workflow](docs/DEVELOPMENT_WORKFLOW.md)
-- [Data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md)
+- [Development workflow](docs/guides/DEVELOPMENT_WORKFLOW.md)
+- [Data, privacy, and rights plan](docs/reference/DATA_PRIVACY_RIGHTS_PLAN.md)
 - [Security policy](SECURITY.md)
 - [Code of conduct](CODE_OF_CONDUCT.md)
 
@@ -29,13 +29,19 @@ Use the repository's issue forms and pull-request template. Blank public issues 
 
 Run applicable checks locally before pushing. Keep commits and force-updates deliberate so hosted CI is not repeatedly triggered for work that can be validated on the contributor's computer.
 
-The repository does not yet implement the planned application build commands. Until WP-002 completes, run the WP-001 governance check from a public Windows checkout:
+Use the pinned toolchain from the [bootstrap guide](docs/guides/BOOTSTRAP_AND_ENVIRONMENT.md). Run these public checks locally before opening a PR:
 
 ```powershell
+pnpm quality
+pnpm python:test
+pnpm test:privacy
+pnpm build:web
 ./scripts/Test-Wp001.ps1
 ```
 
-Repository protections and the required-check rollout are defined in the [public repository controls](docs/REPOSITORY_CONTROLS.md).
+Use `pnpm docs:generate` after changing tracked inventories or agency policy. Optional GIS/loader dependency groups and scratch cleanup are described in [tooling](tools/README.md). Add new tooling tests under `tools/test` and Python tests under `python/tests` so discovery includes them.
+
+Repository protections and the required-check rollout are defined in the [public repository controls](docs/reference/REPOSITORY_CONTROLS.md).
 
 ## Contribution attestation and identity privacy
 

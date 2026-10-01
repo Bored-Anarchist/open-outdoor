@@ -2,9 +2,9 @@
 
 Open Outdoor is a planned open-source, offline-first iOS application for trail discovery, camping information, and GPS hike recording. The initial reference implementation targets New York, an iPhone 14, and a Windows-first contributor workflow. The browser is a QA harness; Android and turn-by-turn navigation are not in the initial scope.
 
-The repository contains an iOS candidate with recording, retained acceptance evidence and a [native geographic map](docs/BUNDLED_NATIVE_MAP.md). Explore combines bundled world and US/Canada OpenStreetMap/Protomaps overview tiers with bundled NYS DEC lands, roads, hiking trails and recreation points. Every installation uses the same fixed offline basemap. Optional public state packages are installed from Files or downloaded over local Wi-Fi through [Connect to laptop](docs/CONNECT_TO_LAPTOP.md); installed maps render offline. Physical acceptance and independent release review remain pending.
+The repository contains an iOS candidate with recording, retained acceptance evidence and a [native geographic map](docs/reference/BUNDLED_NATIVE_MAP.md). Explore combines bundled world and US/Canada OpenStreetMap/Protomaps overview tiers with bundled NYS DEC lands, roads, hiking trails and recreation points. Every installation uses the same fixed offline basemap. Optional public state packages are installed from Files or downloaded over local Wi-Fi through [Connect to laptop](docs/guides/CONNECT_TO_LAPTOP.md); installed maps render offline. Physical acceptance and independent release review remain pending.
 
-Full state packages are generated locally or restored from external artifact storage; Git holds their manifests and checksums. See [package maintenance](docs/PACKAGE_MAINTENANCE.md) for API updates and restore commands.
+Full state packages are generated locally or restored from external artifact storage; Git holds their manifests and checksums. See [package maintenance](docs/guides/PACKAGE_MAINTENANCE.md) for API updates and restore commands.
 
 ## Phase 0 developer bootstrap
 
@@ -23,15 +23,15 @@ Private composition is optional and must point outside this checkout. The iOS fe
 
 - [Consolidated project scope](PROJECT_SCOPE.md)
 - [Build-document index](docs/README.md)
-- [Work-package breakdown](docs/WORK_PACKAGE_BREAKDOWN.md)
-- [Implementation roadmap](docs/IMPLEMENTATION_ROADMAP.md)
-- [System architecture](docs/ARCHITECTURE.md)
-- [Requirements traceability matrix](docs/REQUIREMENTS_TRACEABILITY.md)
-- [Product and release definition](docs/PRODUCT_RELEASE_DEFINITION.md)
-- [Test and acceptance plan](docs/TEST_AND_ACCEPTANCE_PLAN.md)
-- [Data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md)
-- [Private extension guide](docs/PRIVATE_EXTENSION_GUIDE.md)
-- [Connector scaffolding, acquisition, and private imports](docs/CONNECTOR_ECOSYSTEM.md)
+- [Work-package breakdown](docs/reference/WORK_PACKAGE_BREAKDOWN.md)
+- [Implementation roadmap](docs/reference/IMPLEMENTATION_ROADMAP.md)
+- [System architecture](docs/reference/ARCHITECTURE.md)
+- [Requirements traceability matrix](docs/reference/REQUIREMENTS_TRACEABILITY.md)
+- [Product and release definition](docs/reference/PRODUCT_RELEASE_DEFINITION.md)
+- [Test and acceptance plan](docs/reference/TEST_AND_ACCEPTANCE_PLAN.md)
+- [Data, privacy, and rights plan](docs/reference/DATA_PRIVACY_RIGHTS_PLAN.md)
+- [Private extension guide](docs/guides/PRIVATE_EXTENSION_GUIDE.md)
+- [Connector scaffolding, acquisition, and private imports](docs/reference/CONNECTOR_ECOSYSTEM.md)
 
 ## Core product areas
 
@@ -47,19 +47,19 @@ The public repository may contain open-source code, documentation, synthetic/red
 
 Private data can be composed from an external access-controlled Windows root or a confidential downstream repository. Git history is treated as indefinite: expiring, revocable, deletion-bound, mutable personal, raw, media, diagnostic, and generated catalog data stays in external private storage. Private automation uses isolated ephemeral jobs and never exposes secrets/data to untrusted pull requests.
 
-Implementation begins with Phase 0 in the [work-package breakdown](docs/WORK_PACKAGE_BREAKDOWN.md). The Phase 0 exit gate must pass before feature development proceeds. The first Product MVP is M4/Phase 3, when offline trails, camping evidence, and GPS recording work together.
+Implementation begins with Phase 0 in the [work-package breakdown](docs/reference/WORK_PACKAGE_BREAKDOWN.md). The Phase 0 exit gate must pass before feature development proceeds. The first Product MVP is M4/Phase 3, when offline trails, camping evidence, and GPS recording work together.
 
 ## Project policies
 
 - [Apache License 2.0](LICENSE), [NOTICE](NOTICE), and [third-party notices](THIRD_PARTY_NOTICES.md)
 - [Contributing](CONTRIBUTING.md), [governance](GOVERNANCE.md), and [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Security policy](SECURITY.md)
-- [Public repository controls](docs/REPOSITORY_CONTROLS.md)
+- [Public repository controls](docs/reference/REPOSITORY_CONTROLS.md)
 
 Public contributions use project handles, privacy-protected commit addresses, and an account-bound rights attestation—no additional personal identifying details. Hosted CI is local-first and path/gate-filtered to minimize GitHub Actions minutes.
 
-Phase 4 connector acceptance evidence and the retired runner procedure are preserved in the [historical guide](docs/PHASE_4_GUIDED_ACCEPTANCE.md).
+Phase 4 connector acceptance evidence and the retired runner procedure are preserved in the [historical guide](docs/archive/phases/PHASE_4_GUIDED_ACCEPTANCE.md).
 
-The [product design system](docs/PRODUCT_DESIGN_SYSTEM.md) documents WP-501 tokens, components, states and map appearances. Run `pnpm test:design:browser` for the synthetic browser acceptance matrix.
+The [product design system](docs/reference/PRODUCT_DESIGN_SYSTEM.md) documents WP-501 tokens, components, states and map appearances. Run `pnpm test:design:browser` for the synthetic browser acceptance matrix.
 
-Run `pnpm phase5:quality` for WP-502/WP-503 automated accessibility and performance review. [Production quality](docs/PRODUCTION_QUALITY.md) documents the owner-approved deferral of physical testing to Phase 5 end.
+Run `pnpm phase5:quality` for WP-502/WP-503 automated accessibility and performance review. [Production quality](docs/reference/PRODUCTION_QUALITY.md) documents the owner-approved deferral of physical testing to Phase 5 end.
