@@ -59,11 +59,13 @@ export class RecorderStateMachine {
   private observations = new Map<number, TrackObservation>();
 
   get state(): RecorderState {
-    return this.current;
+    return { ...this.current };
   }
 
   get committedObservations(): readonly TrackObservation[] {
-    return [...this.observations.values()].sort((left, right) => left.sequence - right.sequence);
+    return structuredClone(
+      [...this.observations.values()].sort((left, right) => left.sequence - right.sequence),
+    );
   }
 
   start(sessionId: string, mode: TrackingMode, checkpointAt: string): RecorderState {
@@ -78,7 +80,7 @@ export class RecorderStateMachine {
       highestCommittedSequence: 0,
       checkpointAt,
     };
-    return this.current;
+    return this.state;
   }
 
   pause(checkpointAt: string): RecorderState {
@@ -86,7 +88,7 @@ export class RecorderStateMachine {
       throw new RecorderTransitionError(this.current.kind, 'pause');
     }
     this.current = { ...this.current, kind: 'paused', checkpointAt };
-    return this.current;
+    return this.state;
   }
 
   resume(checkpointAt: string): RecorderState {
@@ -94,27 +96,34 @@ export class RecorderStateMachine {
       throw new RecorderTransitionError(this.current.kind, 'resume');
     }
     this.current = { ...this.current, kind: 'recording', checkpointAt };
-    return this.current;
+    return this.state;
   }
 
   commit(observations: readonly TrackObservation[], checkpointAt: string): RecorderState {
     if (this.current.kind !== 'recording' && this.current.kind !== 'paused') {
       throw new RecorderTransitionError(this.current.kind, 'commit');
     }
+    // Validate the entire batch before changing committed state, including duplicate
+    // sequences within this batch. A rejected batch must be safe to retry.
+    const staged = new Map<number, TrackObservation>();
+    let highest = this.current.highestCommittedSequence;
     for (const observation of observations) {
-      const prior = this.observations.get(observation.sequence);
+      if (!Number.isSafeInteger(observation.sequence) || observation.sequence < 1)
+        throw new RangeError('observation sequence must be a positive safe integer');
+      const prior = staged.get(observation.sequence) ?? this.observations.get(observation.sequence);
       if (prior !== undefined && JSON.stringify(prior) !== JSON.stringify(observation)) {
         throw new Error(`conflicting observation ${observation.sequence}`);
       }
-      this.observations.set(observation.sequence, observation);
+      staged.set(observation.sequence, structuredClone(observation));
+      highest = Math.max(highest, observation.sequence);
     }
+    for (const [sequence, observation] of staged) this.observations.set(sequence, observation);
     this.current = {
       ...this.current,
-      highestCommittedSequence:
-        this.committedObservations.at(-1)?.sequence ?? this.current.highestCommittedSequence,
+      highestCommittedSequence: highest,
       checkpointAt,
     };
-    return this.current;
+    return this.state;
   }
 
   interrupt(reason: Extract<RecorderState, { kind: 'recoverable' }>['reason']): RecorderState {
@@ -128,7 +137,7 @@ export class RecorderStateMachine {
       highestCommittedSequence: this.current.highestCommittedSequence,
       reason,
     };
-    return this.current;
+    return this.state;
   }
 
   recover(checkpointAt: string): RecorderState {
@@ -142,7 +151,7 @@ export class RecorderStateMachine {
       highestCommittedSequence: this.current.highestCommittedSequence,
       checkpointAt,
     };
-    return this.current;
+    return this.state;
   }
 
   finish(finishedAt: string): RecorderState {
@@ -155,7 +164,7 @@ export class RecorderStateMachine {
       finalSequence: this.current.highestCommittedSequence,
       finishedAt,
     };
-    return this.current;
+    return this.state;
   }
 }
 

@@ -36,6 +36,7 @@ A change that affects product behavior, privacy, source rights, distribution, ar
 | [Architecture](ARCHITECTURE.md) | Components, data planes, interfaces, trust boundaries, and proposed repository layout | Architecture owner |
 | [Threat model](THREAT_MODEL.md) | Assets, trust boundaries, threats, mitigations, and residual-risk rules | Security owner |
 | [Security and code quality audit](SECURITY_CODE_QUALITY_AUDIT_2026-09-30.md) | Original line evidence, confirmed findings, corrective diffs, tests, and review limits | Security/quality owner |
+| [Repository audit follow-up](SECURITY_CODE_QUALITY_AUDIT_FOLLOWUP_2026-09-30.md) | Eight further corrections, baseline failure evidence, CI gate outcomes, and geographic/resource edge cases | Security/quality owner |
 | [Bootstrap and environment specification](BOOTSTRAP_AND_ENVIRONMENT.md) | Pinned toolchain, Windows/macOS/device prerequisites, and repository bootstrap | Build owner |
 | [Canonical data specification](CANONICAL_DATA_SPEC.md) | CRS, coordinates, time, units, IDs, geometry, nulls, provenance, and evolution | Data architecture owner |
 | [Current state dataset audit](CURRENT_STATE_DATASET_AUDIT.md) | Bundled state and OSM source inventory, candidate upgrades, and acquisition gates | Data architecture owner |

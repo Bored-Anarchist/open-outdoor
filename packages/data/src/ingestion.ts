@@ -124,7 +124,17 @@ function isUnsafeArchivePath(path: string): boolean {
     normalized === '' ||
     normalized.startsWith('/') ||
     /^[a-zA-Z]:/.test(normalized) ||
-    normalized.split('/').some((part) => part === '..' || part === '')
+    normalized
+      .split('/')
+      .some(
+        (part) =>
+          part === '.' ||
+          part === '..' ||
+          part === '' ||
+          /[:\u0000-\u001f<>"|?*]/.test(part) ||
+          /[. ]$/.test(part) ||
+          /^(?:con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(part),
+      )
   );
 }
 
@@ -132,10 +142,20 @@ export function inspectArchiveEntries(
   entries: readonly ArchiveEntryMetadata[],
   limits: ArchiveLimits,
 ): void {
+  if (
+    !Number.isSafeInteger(limits.maxEntries) ||
+    limits.maxEntries <= 0 ||
+    !Number.isSafeInteger(limits.maxExpandedBytes) ||
+    limits.maxExpandedBytes <= 0 ||
+    !Number.isFinite(limits.maxCompressionRatio) ||
+    limits.maxCompressionRatio <= 0
+  )
+    throw new IngestionSecurityError('archive-expanded-limit', 'archive limits are invalid');
   if (entries.length > limits.maxEntries) {
     throw new IngestionSecurityError('archive-entry-limit', 'archive contains too many entries');
   }
   let totalExpandedBytes = 0;
+  const paths = new Map<string, ArchiveEntryMetadata['kind']>();
   for (const entry of entries) {
     if (isUnsafeArchivePath(entry.path)) {
       throw new IngestionSecurityError('archive-path-traversal', 'archive path is unsafe');
@@ -143,6 +163,12 @@ export function inspectArchiveEntries(
     if (entry.kind === 'symbolic-link' || entry.kind === 'hard-link') {
       throw new IngestionSecurityError('archive-link', 'archive links are not accepted');
     }
+    if (entry.kind !== 'file' && entry.kind !== 'directory')
+      throw new IngestionSecurityError('archive-link', 'archive member type is invalid');
+    const normalized = entry.path.replaceAll('\\', '/').toLowerCase();
+    if (paths.has(normalized))
+      throw new IngestionSecurityError('archive-path-traversal', 'archive paths collide');
+    paths.set(normalized, entry.kind);
     if (
       !Number.isSafeInteger(entry.compressedBytes) ||
       entry.compressedBytes < 0 ||
@@ -164,6 +190,14 @@ export function inspectArchiveEntries(
         'compression-ratio-limit',
         'archive entry exceeds the configured compression ratio',
       );
+    }
+  }
+  // A file cannot also be the parent of another member, regardless of entry order.
+  for (const name of paths.keys()) {
+    const parts = name.split('/');
+    for (let count = 1; count < parts.length; count++) {
+      if (paths.get(parts.slice(0, count).join('/')) === 'file')
+        throw new IngestionSecurityError('archive-path-traversal', 'archive parent is a file');
     }
   }
 }

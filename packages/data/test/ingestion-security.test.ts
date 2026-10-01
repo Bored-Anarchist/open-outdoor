@@ -111,6 +111,68 @@ afterEach(async () => {
 });
 
 describe('WP-202 ingestion security and raw boundary', () => {
+  it.each([
+    'folder/NUL.txt',
+    'folder/file:stream',
+    'folder/file.',
+    'folder/file ',
+    './file',
+    'folder/a?b',
+    'folder/a\u0000b',
+  ])('rejects unsafe Windows archive path %s', (path) => {
+    expect(() =>
+      inspectArchiveEntries([{ path, kind: 'file', compressedBytes: 1, expandedBytes: 1 }], {
+        maxEntries: 5,
+        maxExpandedBytes: 100,
+        maxCompressionRatio: 10,
+      }),
+    ).toThrow(IngestionSecurityError);
+  });
+
+  it.each([
+    ['folder/a', 'folder/A'],
+    ['folder/a', 'folder\\a'],
+    ['folder', 'folder/a'],
+    ['folder/a', 'folder'],
+  ])('rejects colliding or conflicting archive paths %s and %s', (first, second) => {
+    expect(() =>
+      inspectArchiveEntries(
+        [first, second].map((path) => ({
+          path,
+          kind: 'file' as const,
+          compressedBytes: 1,
+          expandedBytes: 1,
+        })),
+        { maxEntries: 5, maxExpandedBytes: 100, maxCompressionRatio: 10 },
+      ),
+    ).toThrow(IngestionSecurityError);
+  });
+
+  it.each([NaN, Infinity, 0, -1])('rejects invalid archive budgets %s', (limit) => {
+    for (const key of ['maxEntries', 'maxExpandedBytes', 'maxCompressionRatio']) {
+      expect(() =>
+        inspectArchiveEntries([], {
+          maxEntries: 5,
+          maxExpandedBytes: 100,
+          maxCompressionRatio: 10,
+          [key]: limit,
+        }),
+      ).toThrow(IngestionSecurityError);
+    }
+  });
+
+  it('accepts a directory and its nested file', () => {
+    expect(() =>
+      inspectArchiveEntries(
+        [
+          { path: 'folder', kind: 'directory', compressedBytes: 0, expandedBytes: 0 },
+          { path: 'folder/file', kind: 'file', compressedBytes: 1, expandedBytes: 1 },
+        ],
+        { maxEntries: 5, maxExpandedBytes: 100, maxCompressionRatio: 10 },
+      ),
+    ).not.toThrow();
+  });
+
   it('repairs missing provenance on retry instead of treating an orphaned payload as complete', async () => {
     const f = await rawFixture();
     await mkdir(f.directory);

@@ -17,6 +17,48 @@ const gpx =
   '</trkseg></trk></gpx>';
 
 describe('WP-106 route import/export privacy', () => {
+  it.each([NaN, Infinity, 0, -1, 1.5])('rejects invalid public parser limits %s', (limit) => {
+    for (const limits of [{ maximumBytes: limit }, { maximumPoints: limit }]) {
+      expect(() => importGpx(gpx, limits)).toThrow(RouteFileError);
+      expect(() => importGeoJson('{}', limits)).toThrow(RouteFileError);
+    }
+  });
+
+  it.each([
+    [
+      [179.99, 0],
+      [-179.99, 0],
+    ],
+    [
+      [-179.99, 0],
+      [179.99, 0],
+    ],
+    [
+      [30, 85],
+      [60, 85],
+    ],
+  ] as const)('trims both endpoints by geodesic distance across %j', (start, end) => {
+    const trimmed = trimSensitiveEndpoints([start, end], 200);
+    expect(geodesicDistanceM(start, trimmed[0]!)).toBeCloseTo(200, 2);
+    expect(geodesicDistanceM(end, trimmed.at(-1)!)).toBeCloseTo(200, 2);
+    expect(geodesicDistanceM(trimmed[0]!, trimmed.at(-1)!)).toBeCloseTo(
+      geodesicDistanceM(start, end) - 400,
+      2,
+    );
+  });
+
+  it('rejects an ambiguous antipodal route instead of claiming privacy trimming succeeded', () => {
+    expect(() =>
+      trimSensitiveEndpoints(
+        [
+          [0, 0],
+          [180, 0],
+        ],
+        200,
+      ),
+    ).toThrow(RouteFileError);
+  });
+
   it('imports GPX as private and rejects entity-bearing XML', () => {
     expect(importGpx(gpx)).toMatchObject({ name: 'Private hike', private: true });
     expect(() =>

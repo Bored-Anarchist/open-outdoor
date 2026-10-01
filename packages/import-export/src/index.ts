@@ -59,6 +59,19 @@ function enforceInput(value: string, maximumBytes: number): void {
   }
 }
 
+function validatedLimits(limits: Partial<{ maximumBytes: number; maximumPoints: number }>) {
+  const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
+  const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
+  if (
+    !Number.isSafeInteger(maximumBytes) ||
+    maximumBytes <= 0 ||
+    !Number.isSafeInteger(maximumPoints) ||
+    maximumPoints <= 0
+  )
+    throw new RouteFileError('MALFORMED_INPUT', 'invalid import limits');
+  return { maximumBytes, maximumPoints };
+}
+
 function xmlDecode(value: string): string {
   return value
     .replaceAll('&lt;', '<')
@@ -72,8 +85,7 @@ export function importGpx(
   input: string,
   limits: Partial<{ maximumBytes: number; maximumPoints: number }> = {},
 ): ImportedRoute {
-  const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
-  const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
+  const { maximumBytes, maximumPoints } = validatedLimits(limits);
   enforceInput(input, maximumBytes);
   if (/<!DOCTYPE|<!ENTITY|<script\b|<\?xml-stylesheet/i.test(input)) {
     throw new RouteFileError('UNSAFE_XML', 'active or entity-bearing XML is not accepted');
@@ -134,8 +146,7 @@ export function importGeoJson(
   input: string,
   limits: Partial<{ maximumBytes: number; maximumPoints: number }> = {},
 ): ImportedRoute {
-  const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
-  const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
+  const { maximumBytes, maximumPoints } = validatedLimits(limits);
   enforceInput(input, maximumBytes);
   let parsed: unknown;
   try {
@@ -180,7 +191,30 @@ interface TrimmedRoute {
 }
 
 function interpolateCoordinate(left: Coordinate, right: Coordinate, fraction: number): Coordinate {
-  return [left[0] + (right[0] - left[0]) * fraction, left[1] + (right[1] - left[1]) * fraction];
+  // Follow the same great-circle arc used to measure the trim distance. Linear
+  // longitude interpolation takes the long way around when crossing the date line.
+  const radians = Math.PI / 180;
+  const vector = ([longitude, latitude]: Coordinate) =>
+    [
+      Math.cos(latitude * radians) * Math.cos(longitude * radians),
+      Math.cos(latitude * radians) * Math.sin(longitude * radians),
+      Math.sin(latitude * radians),
+    ] as const;
+  const a = vector(left);
+  const b = vector(right);
+  const angle = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
+  if (angle < 1e-12) return left;
+  if (Math.PI - angle < 1e-8)
+    throw new RouteFileError(
+      'NO_USABLE_GEOMETRY',
+      'privacy trim crosses an ambiguous antipodal segment',
+    );
+  const start = Math.sin((1 - fraction) * angle) / Math.sin(angle);
+  const end = Math.sin(fraction * angle) / Math.sin(angle);
+  const x = start * a[0] + end * b[0];
+  const y = start * a[1] + end * b[1];
+  const z = start * a[2] + end * b[2];
+  return [Math.atan2(y, x) / radians, Math.atan2(z, Math.hypot(x, y)) / radians];
 }
 
 function interpolateTimestamp(

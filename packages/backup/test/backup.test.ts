@@ -76,6 +76,77 @@ function legacyContainer(): Uint8Array {
 }
 
 describe('WP-107 authenticated all-or-nothing backup restore', () => {
+  it.each([null, {}, { createdAt: '2026-09-30T00:00:00Z', manifest: null, attachments: [] }])(
+    'rejects malformed decrypted payload %j with a typed error',
+    (payload) => {
+      expect(() =>
+        validateDecryptedBackup(
+          payload as unknown as Parameters<typeof validateDecryptedBackup>[0],
+        ),
+      ).toThrow(BackupError);
+    },
+  );
+
+  it('rejects malformed authenticated manifests and attachment records', () => {
+    const snapshot = fixture();
+    const attachment = {
+      id: 'photo-1',
+      fileName: 'photo.jpg',
+      bytes: 'AQID',
+      ownerType: null,
+      ownerId: null,
+      mediaType: null,
+    };
+    const expected = {
+      ...attachment,
+      byteLength: 3,
+      sha256: createHash('sha256')
+        .update(new Uint8Array([1, 2, 3]))
+        .digest('hex'),
+    };
+    const manifest = {
+      privateSchemaVersion: snapshot.schemaVersion,
+      snapshotHash: createHash('sha256').update(JSON.stringify(snapshot)).digest('hex'),
+      recordCounts: {
+        activities: 1,
+        userTrails: 0,
+        associations: 0,
+        overlays: 0,
+        revisions: 0,
+        importExportHistory: 0,
+        settings: 0,
+        catalogInventory: 0,
+      },
+      attachmentCount: 1,
+      attachments: [expected],
+    };
+    const payload = {
+      createdAt: '2026-09-30T00:00:00Z',
+      snapshot,
+      manifest,
+      attachments: [attachment],
+    };
+    for (const candidate of [
+      { ...payload, manifest: { ...manifest, recordCounts: null } },
+      { ...payload, manifest: { ...manifest, attachments: [] } },
+      { ...payload, manifest: { ...manifest, attachments: [null] } },
+      { ...payload, attachments: [null] },
+      { ...payload, attachments: [{ ...attachment, id: '' }] },
+      { ...payload, attachments: [{ ...attachment, fileName: null }] },
+      { ...payload, attachments: [{ ...attachment, bytes: {} }] },
+      { ...payload, attachments: [{ ...attachment, ownerType: 'unknown' }] },
+      { ...payload, attachments: [{ ...attachment, ownerId: 'orphan' }] },
+    ])
+      expect(() =>
+        validateDecryptedBackup(
+          candidate as unknown as Parameters<typeof validateDecryptedBackup>[0],
+        ),
+      ).toThrow(BackupError);
+    expect(validateDecryptedBackup(payload)).toMatchObject({
+      attachments: [{ id: 'photo-1', bytes: new Uint8Array([1, 2, 3]) }],
+    });
+  });
+
   it('rejects an export that exceeds a bounded restorable container size', () => {
     expect(() =>
       createEncryptedBackup(
