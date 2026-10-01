@@ -1,4 +1,5 @@
-import { createHash } from 'node:crypto';
+import { createHash, generateKeyPairSync, sign, verify } from 'node:crypto';
+import { catalogSignaturePayload, verifyCatalogCandidate } from '../../config/src/catalog-trust.js';
 import { describe, expect, it } from 'vitest';
 import {
   CatalogActivationCoordinator,
@@ -19,7 +20,9 @@ function candidate(
   return {
     catalogId: 'catalog-v2',
     catalogBytes: bytes,
-    manifestBytes: new TextEncoder().encode('{"contentVersion":2}'),
+    manifestBytes: new TextEncoder().encode(
+      JSON.stringify({ contentVersion: 2, catalogChecksum: sha256(bytes) }),
+    ),
     signatureEnvelope: { signature: 'fixture' },
     catalogChecksum: sha256(bytes),
     contentVersion: 2,
@@ -47,7 +50,8 @@ const trust: CatalogTrustVerifier = {
   verify: (value, lastAcceptedVersion) => {
     if (value.signatureEnvelope === null) throw new Error('signature missing');
     if (lastAcceptedVersion >= 2) throw new Error('replayed version');
-    return { contentVersion: 2, channel: 'public' };
+    const manifest = JSON.parse(new TextDecoder().decode(value.manifestBytes));
+    return { contentVersion: 2, channel: 'public', catalogChecksum: manifest.catalogChecksum };
   },
 };
 
@@ -56,6 +60,84 @@ function coordinator(repository: InMemoryCatalogActivationRepository, verifier =
 }
 
 describe('WP-303 catalog staging, activation, and rollback', () => {
+  it('rejects substituted catalog bytes even when the original manifest signature is valid', () => {
+    const keys = generateKeyPairSync('ed25519');
+    const original = candidate();
+    const envelope = {
+      schemaVersion: 1,
+      algorithm: 'Ed25519',
+      channel: 'public' as const,
+      trustRoot: 'audit-fixture',
+      keyId: 'audit-key',
+      antiReplayVersion: 2,
+      manifestSha256: sha256(original.manifestBytes),
+      signedAt: '2026-09-30T00:00:00Z',
+    };
+    const signatureEnvelope = {
+      ...envelope,
+      signature: sign(
+        null,
+        Buffer.from(catalogSignaturePayload(envelope)),
+        keys.privateKey,
+      ).toString('base64'),
+    };
+    const verifier: CatalogTrustVerifier = {
+      verify: (value, lastAcceptedVersion) => {
+        const result = verifyCatalogCandidate(
+          { manifestBytes: value.manifestBytes, envelope: value.signatureEnvelope },
+          {
+            channel: 'public',
+            trustRoot: 'audit-fixture',
+            allowUnsignedDevelopment: false,
+            keys: [
+              {
+                keyId: 'audit-key',
+                algorithm: 'Ed25519',
+                status: 'active',
+                publicKeyPem: keys.publicKey.export({ format: 'pem', type: 'spki' }).toString(),
+              },
+            ],
+          },
+          lastAcceptedVersion,
+          {
+            sha256Hex: sha256,
+            verifyEd25519: ({ payload, publicKeyPem, signatureBase64 }) =>
+              verify(
+                null,
+                Buffer.from(payload),
+                publicKeyPem,
+                Buffer.from(signatureBase64, 'base64'),
+              ),
+          },
+        );
+        const manifest = JSON.parse(new TextDecoder().decode(value.manifestBytes));
+        return {
+          contentVersion: manifest.contentVersion,
+          channel: result.channel,
+          catalogChecksum: manifest.catalogChecksum,
+        };
+      },
+    };
+    const substituted = new TextEncoder().encode('substituted catalog data');
+    const repository = new InMemoryCatalogActivationRepository('catalog-v1', 1, 'private-digest');
+    expect(() =>
+      coordinator(repository, verifier).activate(
+        candidate({
+          signatureEnvelope,
+          catalogBytes: substituted,
+          catalogChecksum: sha256(substituted),
+          incomingCombinedBytes: substituted.byteLength,
+        }),
+        environment,
+      ),
+    ).toThrow(/trust result/);
+    expect(repository.activeCatalogId()).toBe('catalog-v1');
+    expect(repository.lastAcceptedVersion()).toBe(1);
+    const clean = new InMemoryCatalogActivationRepository('catalog-v1', 1, 'private-digest');
+    expect(
+      coordinator(clean, verifier).activate(candidate({ signatureEnvelope }), environment).status,
+    ).toBe('activated');
+  });
   const checkpoints: readonly ActivationCheckpoint[] = [
     'before-copy',
     'after-copy',
@@ -120,7 +202,9 @@ describe('WP-303 catalog staging, activation, and rollback', () => {
         expected: 'signature missing',
       },
       {
-        verifier: { verify: () => ({ contentVersion: 2, channel: 'private' }) },
+        verifier: {
+          verify: () => ({ contentVersion: 2, channel: 'private', catalogChecksum: sha256(bytes) }),
+        },
         expected: 'TRUST_REJECTED',
       },
       {

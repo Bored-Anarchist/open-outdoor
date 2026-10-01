@@ -208,7 +208,15 @@ export function createEncryptedBackup(
   attachments: readonly BackupAttachment[],
   passphrase: string,
   createdAt = new Date().toISOString(),
+  maximumContainerBytes = MAXIMUM_CONTAINER_BYTES,
 ): Uint8Array {
+  if (
+    !Number.isSafeInteger(maximumContainerBytes) ||
+    maximumContainerBytes <= 0 ||
+    maximumContainerBytes > MAXIMUM_CONTAINER_BYTES
+  ) {
+    throw new BackupError('INPUT_INVALID', 'backup container limit is invalid');
+  }
   migratePrivateSnapshot(snapshot);
   if (!Number.isFinite(Date.parse(createdAt))) {
     throw new BackupError('INPUT_INVALID', 'backup creation timestamp is invalid');
@@ -246,6 +254,22 @@ export function createEncryptedBackup(
     salt: salt.toString('base64'),
     nonce: nonce.toString('base64'),
   };
+  const snapshotJson = JSON.stringify(snapshot);
+  const outerOverhead = Buffer.byteLength(
+    JSON.stringify({ header, ciphertext: '', authenticationTag: 'a'.repeat(24) }),
+  );
+  const fits = (plaintextBytes: number) =>
+    outerOverhead + 4 * Math.ceil(plaintextBytes / 3) <= maximumContainerBytes;
+  // Attachments are base64 inside encrypted JSON, then ciphertext is base64 again.
+  // Reject an impossible container before allocating the attachment strings.
+  const minimumPayloadBytes =
+    Buffer.byteLength(snapshotJson) +
+    attachments.reduce(
+      (total, attachment) => total + 4 * Math.ceil(attachment.bytes.byteLength / 3),
+      0,
+    );
+  if (!fits(minimumPayloadBytes))
+    throw new BackupError('INPUT_INVALID', 'backup exceeds the restorable container size limit');
   const payload: DecryptedBackupPayload = {
     createdAt,
     manifest: createManifest(snapshot, attachments),
@@ -259,13 +283,14 @@ export function createEncryptedBackup(
       mediaType: attachment.mediaType ?? null,
     })),
   };
+  const plaintext = Buffer.from(JSON.stringify(payload));
+  if (!fits(plaintext.byteLength)) {
+    throw new BackupError('INPUT_INVALID', 'backup exceeds the restorable container size limit');
+  }
   const key = deriveKey(passphrase, salt);
   const cipher = createCipheriv('aes-256-gcm', key, nonce);
   cipher.setAAD(Buffer.from(canonicalHeader(header)));
-  const ciphertext = Buffer.concat([
-    cipher.update(Buffer.from(JSON.stringify(payload))),
-    cipher.final(),
-  ]);
+  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
   const container: SerializedContainer = {
     header,
     ciphertext: ciphertext.toString('base64'),
@@ -302,7 +327,12 @@ function parseContainer(container: Uint8Array): SerializedContainer {
   ) {
     throw new BackupError('FORMAT_UNSUPPORTED', 'backup algorithms or version are unsupported');
   }
-  if (typeof candidate.ciphertext !== 'string' || typeof candidate.authenticationTag !== 'string') {
+  if (
+    typeof candidate.ciphertext !== 'string' ||
+    typeof candidate.authenticationTag !== 'string' ||
+    typeof header.salt !== 'string' ||
+    typeof header.nonce !== 'string'
+  ) {
     throw new BackupError('INPUT_INVALID', 'backup cryptographic fields are missing');
   }
   return candidate as SerializedContainer;
@@ -527,7 +557,11 @@ export function evaluatePreUninstallBackup(
       ? Number.NEGATIVE_INFINITY
       : Date.parse(state.privateDataChangedAt);
   if (!Number.isFinite(verifiedAt)) reasons.push('BACKUP_MISSING');
-  else if (!Number.isFinite(changedAt) || changedAt > verifiedAt) reasons.push('BACKUP_STALE');
+  else if (
+    state.privateDataChangedAt !== null &&
+    (!Number.isFinite(changedAt) || changedAt > verifiedAt)
+  )
+    reasons.push('BACKUP_STALE');
   if (!state.independentRecoverySecretConfirmed) reasons.push('RECOVERY_SECRET_NOT_CONFIRMED');
   return { safeToContinue: reasons.length === 0, reasons };
 }

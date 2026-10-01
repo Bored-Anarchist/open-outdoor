@@ -7,6 +7,7 @@ import json
 import sys
 import zipfile
 from pathlib import Path
+from archive_security import inspect_zip
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / ".tmp-public-geo"))
@@ -20,6 +21,7 @@ from shapely.ops import transform  # noqa: E402
 archive = Path(sys.argv[1]).resolve()
 output = Path(sys.argv[2]).resolve()
 with zipfile.ZipFile(archive) as bundle:
+    inspect_zip(bundle)
     directories = {name.split("/")[0] for name in bundle.namelist() if ".gdb/" in name}
 if len(directories) != 1:
     raise ValueError("expected one geodatabase directory")

@@ -202,8 +202,12 @@ export class FixtureTrackerAdapter implements ProductionTrackerAdapter {
 
   async finish(): Promise<{ readonly sessionId: string; readonly finalSequence: number }> {
     const checkpoint = this.checkpoint();
+    const finalSequence = this.batches.reduce(
+      (highest, batch) => Math.max(highest, batch.observations.at(-1)?.sequence ?? 0),
+      checkpoint.highestCommittedSequence,
+    );
     this.sessionId = null;
-    return { sessionId: checkpoint.sessionId, finalSequence: checkpoint.highestCommittedSequence };
+    return { sessionId: checkpoint.sessionId, finalSequence };
   }
 
   async recover(): Promise<TrackerCheckpoint | null> {

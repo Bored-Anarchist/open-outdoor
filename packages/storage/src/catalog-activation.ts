@@ -28,7 +28,12 @@ export interface CatalogTrustVerifier {
   readonly verify: (
     candidate: Pick<CatalogActivationCandidate, 'manifestBytes' | 'signatureEnvelope'>,
     lastAcceptedVersion: number,
-  ) => { readonly contentVersion: number; readonly channel: 'public' | 'private' | 'local' };
+  ) => {
+    readonly contentVersion: number;
+    readonly channel: 'public' | 'private' | 'local';
+    /** Extracted from the authenticated manifest, never from the activation candidate. */
+    readonly catalogChecksum: string;
+  };
 }
 
 export interface CatalogActivationEnvironment {
@@ -231,6 +236,7 @@ export class CatalogActivationCoordinator {
     const trust = this.trust.verify(candidate, this.repository.lastAcceptedVersion());
     if (
       trust.contentVersion !== candidate.contentVersion ||
+      trust.catalogChecksum !== stagedChecksum ||
       trust.channel !== candidate.channel ||
       trust.channel !== environment.expectedChannel
     ) {

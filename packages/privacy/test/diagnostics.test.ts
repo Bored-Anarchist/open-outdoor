@@ -2,6 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { authorizeDiagnosticExport, diagnosticExpiry, redactDiagnostic } from '../src/index.js';
 
 describe('local diagnostics contract', () => {
+  it('redacts complete bearer credentials and credentials in free-text diagnostic errors', () => {
+    expect(
+      redactDiagnostic({
+        message: 'Bearer abc+/def== password=synthetic api_key=fixture',
+        credential: 'fixture-value',
+        privateKey: 'fixture-key',
+        session: 'fixture-session',
+      }),
+    ).toEqual({
+      message: 'Bearer [REDACTED] [REDACTED] [REDACTED]',
+      credential: '[REDACTED]',
+      privateKey: '[REDACTED]',
+      session: '[REDACTED]',
+    });
+  });
   it('redacts secrets, identifiers, and precise locations recursively', () => {
     const value = redactDiagnostic({
       authorization: 'Bearer test-token',

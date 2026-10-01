@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 import type {
   Connector,
@@ -212,6 +212,8 @@ export class RawArtifactStore {
       throw new IngestionSecurityError('rights-denied', 'raw retention must be explicit');
     }
     const checksum = createHash('sha256').update(payload).digest('hex');
+    await mkdir(this.root, { recursive: true });
+    const canonicalRoot = await realpath(this.root);
     const directory = resolve(this.root, checksum.slice(0, 2));
     const payloadPath = resolve(directory, `${checksum}.raw`);
     const metadataPath = resolve(directory, `${checksum}.json`);
@@ -219,16 +221,58 @@ export class RawArtifactStore {
       throw new IngestionSecurityError('boundary-violation', 'artifact escaped the raw root');
     }
     await mkdir(directory, { recursive: true });
+    if (
+      (await lstat(directory)).isSymbolicLink() ||
+      !containsPath(canonicalRoot, await realpath(directory))
+    ) {
+      throw new IngestionSecurityError(
+        'boundary-violation',
+        'artifact directory escaped the raw root',
+      );
+    }
+    for (const path of [payloadPath, metadataPath]) {
+      const stat = await lstat(path).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== 'ENOENT') throw error;
+        return null;
+      });
+      if (stat && (!stat.isFile() || stat.isSymbolicLink())) {
+        throw new IngestionSecurityError(
+          'boundary-violation',
+          'artifact path is not a regular file',
+        );
+      }
+    }
     try {
       await writeFile(payloadPath, payload, { flag: 'wx' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      const existing = await readFile(payloadPath);
+      if (createHash('sha256').update(existing).digest('hex') !== checksum) throw error;
+    }
+    // A payload alone is not a successful acquisition. Retry an orphaned metadata write,
+    // and never hide permission/disk errors just because the payload already exists.
+    try {
       await writeFile(metadataPath, `${JSON.stringify(metadata)}\n`, {
         encoding: 'utf8',
         flag: 'wx',
       });
     } catch (error) {
-      const existing = await readFile(payloadPath).catch(() => null);
-      if (!existing || createHash('sha256').update(existing).digest('hex') !== checksum)
-        throw error;
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      const existing = JSON.parse(await readFile(metadataPath, 'utf8'));
+      if (
+        !existing ||
+        typeof existing !== 'object' ||
+        Array.isArray(existing) ||
+        Object.keys(existing).length !== Object.keys(metadata).length ||
+        Object.entries(metadata).some(
+          ([key, value]) => key !== 'retrievedAt' && existing[key] !== value,
+        )
+      ) {
+        throw new IngestionSecurityError(
+          'validation-failure',
+          'raw artifact metadata conflicts with its retained provenance',
+        );
+      }
     }
     return {
       externalId: metadata.externalId,

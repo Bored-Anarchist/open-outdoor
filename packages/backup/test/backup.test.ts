@@ -76,6 +76,43 @@ function legacyContainer(): Uint8Array {
 }
 
 describe('WP-107 authenticated all-or-nothing backup restore', () => {
+  it('rejects an export that exceeds a bounded restorable container size', () => {
+    expect(() =>
+      createEncryptedBackup(
+        fixture(),
+        [{ id: 'photo', fileName: 'photo.jpg', bytes: new Uint8Array(1024) }],
+        passphrase,
+        '2026-09-30T00:00:00Z',
+        1024,
+      ),
+    ).toThrow(/restorable container/);
+    expect(() =>
+      createEncryptedBackup(fixture(), [], passphrase, '2026-09-30T00:00:00Z', 1024),
+    ).toThrow(/restorable container/);
+    const backup = createEncryptedBackup(fixture(), [], passphrase, '2026-09-30T00:00:00Z', 4096);
+    expect(backup.byteLength).toBeLessThanOrEqual(4096);
+    expect(stageEncryptedRestore(backup, passphrase).snapshot.activities).toHaveLength(1);
+  });
+  it('rejects malformed salt and nonce values with a typed backup error', () => {
+    for (const field of ['salt', 'nonce']) {
+      const container = JSON.parse(
+        new TextDecoder().decode(createEncryptedBackup(fixture(), [], passphrase)),
+      );
+      container.header[field] = { invalid: true };
+      expect(() =>
+        stageEncryptedRestore(Buffer.from(JSON.stringify(container)), passphrase),
+      ).toThrow(BackupError);
+    }
+  });
+  it('accepts a verified backup when no later private change is recorded', () => {
+    expect(
+      evaluatePreUninstallBackup({
+        verifiedAt: '2026-09-30T00:00:00Z',
+        privateDataChangedAt: null,
+        independentRecoverySecretConfirmed: true,
+      }),
+    ).toEqual({ safeToContinue: true, reasons: [] });
+  });
   it('round trips private data and selected attachments', () => {
     const bytes = createEncryptedBackup(
       fixture(),

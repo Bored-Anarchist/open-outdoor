@@ -70,4 +70,36 @@ describe('WP-106 route import/export privacy', () => {
     expect(new TextDecoder().decode(sanitized.bytes)).not.toContain('Exif');
     expect(sanitized.removedMetadata).toBe(true);
   });
+  it('removes metadata between JPEG scans and discards data after EOI', () => {
+    const scan = [0xff, 0xda, 0, 2, 1, 0xff, 0, 2, 0xff, 0xd0, 3];
+    const exif = [0xff, 0xe1, 0, 8, 69, 120, 105, 102, 0, 0];
+    const jpeg = new Uint8Array([0xff, 0xd8, ...scan, ...exif, ...scan, 0xff, 0xd9, ...exif]);
+    expect(removePhotoMetadata(jpeg, 'image/jpeg').bytes).toEqual(
+      new Uint8Array([0xff, 0xd8, ...scan, ...scan, 0xff, 0xd9]),
+    );
+  });
+  it('handles a one-MiB JPEG scan without spreading pixels into function arguments', () => {
+    const jpeg = new Uint8Array(1024 * 1024);
+    jpeg.set([0xff, 0xd8, 0xff, 0xda, 0, 2]);
+    jpeg.set([0xff, 0xd9], jpeg.length - 2);
+    const sanitized = removePhotoMetadata(jpeg, 'image/jpeg').bytes;
+    expect(sanitized.length).toBe(jpeg.length);
+    expect(sanitized.every((value, index) => value === jpeg[index])).toBe(true);
+  });
+  it('handles a one-MiB PNG chunk without spreading pixels into function arguments', () => {
+    const dataLength = 1024 * 1024;
+    const png = new Uint8Array(8 + 12 + dataLength + 12);
+    png.set([137, 80, 78, 71, 13, 10, 26, 10]);
+    new DataView(png.buffer).setUint32(8, dataLength);
+    png.set(new TextEncoder().encode('IDAT'), 12);
+    png.set(new TextEncoder().encode('IEND'), png.length - 8);
+    const sanitized = removePhotoMetadata(png, 'image/png').bytes;
+    expect(sanitized.length).toBe(png.length);
+    expect(sanitized.every((value, index) => value === png[index])).toBe(true);
+  });
+  it('rejects truncated JPEG scans without certifying them as sanitized', () => {
+    expect(() =>
+      removePhotoMetadata(new Uint8Array([0xff, 0xd8, 0xff, 0xda, 0, 2, 1]), 'image/jpeg'),
+    ).toThrow(RouteFileError);
+  });
 });
