@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [string]$PmtilesExecutable = 'pmtiles',
-    [string]$WorkDirectory = '.tmp-offline-basemap/rebuild',
+    [string]$WorkDirectory = '.scratch/offline-basemap/rebuild',
     [string]$OutputDirectory = 'packages/map/src/assets'
 )
 
@@ -28,7 +28,7 @@ Invoke-WebRequest -Uri $naturalEarth -OutFile $naturalEarthPath -MaximumRedirect
 if ((Get-FileHash -LiteralPath $naturalEarthPath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $naturalEarthSha256) {
     throw 'Natural Earth input does not match the pinned SHA-256.'
 }
-node tools/create-us-canada-basemap-region.mjs $naturalEarthPath $regionPath
+node tools/acquisition/create-us-canada-basemap-region.mjs $naturalEarthPath $regionPath
 if ($LASTEXITCODE -ne 0) { throw 'US/Canada region generation failed.' }
 
 & $pmtilesCommand.Source extract $sourceArchive $worldPath --maxzoom=6 --overfetch=0

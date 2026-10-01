@@ -2,7 +2,7 @@
 
 ## Supported status
 
-The repository is in development and has no production release or LTS line. GOVERNANCE.md defines the support matrix and end-of-support commitments required for the first production release. Development fixes are best effort. Only explicitly supported versions receive security fixes unless the repository owner approves an exceptional backport. See [release security](docs/RELEASE_SECURITY.md) for signing-key rotation, dependency triage and independent verification.
+The repository is in development and has no production release or LTS line. GOVERNANCE.md defines the support matrix and end-of-support commitments required for the first production release. Development fixes are best effort. Only explicitly supported versions receive security fixes unless the repository owner approves an exceptional backport. See [release security](docs/reference/RELEASE_SECURITY.md) for signing-key rotation, dependency triage and independent verification.
 
 ## Reporting a vulnerability or sensitive incident
 
@@ -50,4 +50,4 @@ The project does not promise monetary rewards. Good-faith research that avoids p
 
 ## Incident response
 
-The detailed containment process is defined in the [threat model](docs/THREAT_MODEL.md), [diagnostics plan](docs/DIAGNOSTICS_PLAN.md), and [data/privacy plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md). Deleting a visible file does not close a Git-history, cache, artifact, or secret exposure.
+The detailed containment process is defined in the [threat model](docs/reference/THREAT_MODEL.md), [diagnostics plan](docs/reference/DIAGNOSTICS_PLAN.md), and [data/privacy plan](docs/reference/DATA_PRIVACY_RIGHTS_PLAN.md). Deleting a visible file does not close a Git-history, cache, artifact, or secret exposure.

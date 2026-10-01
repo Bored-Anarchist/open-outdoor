@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { scanPublicBoundary } from '../../../tools/public-boundary.mjs';
+import { scanPublicBoundary } from '../../../tools/quality/public-boundary.mjs';
 
 describe('public publication boundary', () => {
   it.each([

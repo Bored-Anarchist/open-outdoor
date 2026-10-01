@@ -39,10 +39,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p .tmp-laptop-native
-          node tools/laptop-update-test-vectors.mjs > .tmp-laptop-native/vectors.json
-          swiftc packages/native-spikes/ios/OpenOutdoorStateUpdateTrust.swift tools/laptop-update-native-tests.swift -o .tmp-laptop-native/trust-tests
-          .tmp-laptop-native/trust-tests .tmp-laptop-native/vectors.json
+          mkdir -p .scratch/laptop-native
+          node tools/laptop/laptop-update-test-vectors.mjs > .scratch/laptop-native/vectors.json
+          swiftc packages/native-spikes/ios/OpenOutdoorStateUpdateTrust.swift tools/laptop/laptop-update-native-tests.swift -o .scratch/laptop-native/trust-tests
+          .scratch/laptop-native/trust-tests .scratch/laptop-native/vectors.json
       - name: Build unsigned device application
         shell: bash
         run: pwsh -NoProfile -File scripts/Build-IosUnsigned.ps1

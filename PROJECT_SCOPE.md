@@ -172,7 +172,7 @@ The repository includes a `privacy-boundary` quality gate that:
 
 If private material reaches GitHub, deleting the visible file is insufficient because Git history, caches, forks, logs, and downloaded artifacts may retain it. The incident procedure must immediately revoke affected secrets, stop releases, assess exposure, remove or rotate the data where possible, follow GitHub's sensitive-data removal process, and record a private post-incident review. Public notification must not reproduce the sensitive content.
 
-The [threat model](docs/THREAT_MODEL.md) is the normative asset/boundary/mitigation register. Operational and crash evidence follows the [local diagnostics plan](docs/DIAGNOSTICS_PLAN.md): no hosted telemetry by default, bounded local retention, forbidden-field redaction, user preview, and explicit export only.
+The [threat model](docs/reference/THREAT_MODEL.md) is the normative asset/boundary/mitigation register. Operational and crash evidence follows the [local diagnostics plan](docs/reference/DIAGNOSTICS_PLAN.md): no hosted telemetry by default, bounded local retention, forbidden-field redaction, user preview, and explicit export only.
 
 ## 7. Delivery architecture
 
@@ -185,7 +185,7 @@ The [threat model](docs/THREAT_MODEL.md) is the normative asset/boundary/mitigat
 - Versioned regional SQLite/vector-tile bundles generated on a local or controlled build machine.
 - A source-connector SDK, validation harness, and scaffolding command so new authorized datasets can be added without source-specific mobile changes.
 - Private-extension discovery through an external path or private downstream package set, never through a hard-coded public dependency on a private repository.
-- The [canonical data specification](docs/CANONICAL_DATA_SPEC.md) defines CRS, axes, units, time, IDs, geometry, unknown values, provenance, and schema evolution across all components.
+- The [canonical data specification](docs/reference/CANONICAL_DATA_SPEC.md) defines CRS, axes, units, time, IDs, geometry, unknown values, provenance, and schema evolution across all components.
 
 ## 8. Data planes and update path
 
@@ -213,11 +213,11 @@ Every bundle includes a schema version, content version, covered region, source/
 
 The private user database never shares a writable database file with a reference catalog. An update stages and verifies a new catalog, migrates private associations transactionally, switches catalogs atomically, and retains a compatible rollback catalog until successful launch. Catalog activation or rollback must never delete an activity, user trail, note, photo, favorite, private correction, or audit event.
 
-The owner-approved Connect to laptop extension (2026-09-30) allows selected public state packages to transfer over local Wi-Fi, with bounded Bonjour discovery, camera QR pairing and manual fallback. Open Outdoor Local additionally accepts compatible [signed laptop state updates](docs/LAPTOP_STATE_UPDATES.md) after independent fingerprint comparison and explicit signer approval, without rebuilding the app for each snapshot. Hashes, replay/date checks, storage limits, atomic activation and explicit rollback remain enforced; production release trust is separate under ADR-031. Discovery excludes credentials and persistent device identifiers; camera frames are never saved or uploaded. No hosted runtime service, cloud account, background synchronization or private-data upload is introduced. See [Connect to laptop](docs/CONNECT_TO_LAPTOP.md).
+The owner-approved Connect to laptop extension (2026-09-30) allows selected public state packages to transfer over local Wi-Fi, with bounded Bonjour discovery, camera QR pairing and manual fallback. Open Outdoor Local additionally accepts compatible [signed laptop state updates](docs/guides/LAPTOP_STATE_UPDATES.md) after independent fingerprint comparison and explicit signer approval, without rebuilding the app for each snapshot. Hashes, replay/date checks, storage limits, atomic activation and explicit rollback remain enforced; production release trust is separate under ADR-031. Discovery excludes credentials and persistent device identifiers; camera frames are never saved or uploaded. No hosted runtime service, cloud account, background synchronization or private-data upload is introduced. See [Connect to laptop](docs/guides/CONNECT_TO_LAPTOP.md).
 
 Private and public reference bundles may be queried as a composed read-only catalog, but each result retains its origin and rights metadata. Export and diagnostics default to excluding private-extension records unless the user explicitly selects a permitted export.
 
-On iOS, active recording, sealed user data, attachments, catalogs, diagnostics, and backups follow the explicit protection and system-backup rules in the [iOS data protection and backup policy](docs/IOS_DATA_PROTECTION_AND_BACKUP.md). Private user data and regenerable catalogs are excluded from implicit app-container backups; supported recovery uses the user-initiated encrypted backup.
+On iOS, active recording, sealed user data, attachments, catalogs, diagnostics, and backups follow the explicit protection and system-backup rules in the [iOS data protection and backup policy](docs/reference/IOS_DATA_PROTECTION_AND_BACKUP.md). Private user data and regenerable catalogs are excluded from implicit app-container backups; supported recovery uses the user-initiated encrypted backup.
 
 ### 8.1 Catalog correction and promotion loop
 
@@ -267,7 +267,7 @@ Initial reference ceilings carried forward from the supplied scope are:
 - combined installed public and private read-only reference data at most 3 GiB, including at most 1.5 GiB basemap, 1 GiB catalog/search/elevation content, and 512 MiB eligible media; and
 - enough free space for the new bundle, bounded migration workspace, rollback copy, and at least 2 GiB remaining after activation.
 
-Public and private component reports remain separate while the 3 GiB installed ceiling applies to their combined active total. Preflight uses the exact formula and provisional budgets in [NON_FUNCTIONAL_BUDGETS.md](docs/NON_FUNCTIONAL_BUDGETS.md), which requires at least 9 GiB free for maximum 3 GiB current plus 3 GiB incoming catalogs, workspace/decompression, and reserve. Private user data is never silently evicted. Raising a limit requires measured install, refresh, activation, rollback, and first-launch tests on the reference device.
+Public and private component reports remain separate while the 3 GiB installed ceiling applies to their combined active total. Preflight uses the exact formula and provisional budgets in [NON_FUNCTIONAL_BUDGETS.md](docs/reference/NON_FUNCTIONAL_BUDGETS.md), which requires at least 9 GiB free for maximum 3 GiB current plus 3 GiB incoming catalogs, workspace/decompression, and reserve. Private user data is never silently evicted. Raising a limit requires measured install, refresh, activation, rollback, and first-launch tests on the reference device.
 
 The build fails when a component or total exceeds its ceiling and reports size by region, source, entity/media class, zoom, distribution class, and artifact. Reducing zoom detail, eligible media, or secondary regions is preferred to removing safety-critical rules, restrictions, attribution, or private user records.
 
@@ -749,13 +749,13 @@ User flows and low-fidelity wireframes precede final styling. A reusable compone
 
 Production acceptance requires consistent components, complete error/empty/offline/private-origin states, no placeholder copy/imagery, no unresolved critical accessibility defect, acceptable map/scroll/launch/memory performance, and passing physical-device VoiceOver, Dynamic Type, contrast, touch-target, bold-text, reduced-motion, dark-mode, outdoor-readability, energy, and endurance gates.
 
-Accessibility targets and severity/test rules are defined in [ACCESSIBILITY_STANDARD.md](docs/ACCESSIBILITY_STANDARD.md): WCAG 2.2 Level AA where applicable plus native iOS accessibility acceptance.
+Accessibility targets and severity/test rules are defined in [ACCESSIBILITY_STANDARD.md](docs/reference/ACCESSIBILITY_STANDARD.md): WCAG 2.2 Level AA where applicable plus native iOS accessibility acceptance.
 
 ## 21. Phased delivery
 
-The release terms prototype, recorder alpha, data alpha, product MVP, extensible beta, and production candidate are defined in [PRODUCT_RELEASE_DEFINITION.md](docs/PRODUCT_RELEASE_DEFINITION.md). Product MVP means the Phase 3/M4 release in which trails, camping evidence, and GPS tracking work together offline; no earlier milestone may use that label.
+The release terms prototype, recorder alpha, data alpha, product MVP, extensible beta, and production candidate are defined in [PRODUCT_RELEASE_DEFINITION.md](docs/reference/PRODUCT_RELEASE_DEFINITION.md). Product MVP means the Phase 3/M4 release in which trails, camping evidence, and GPS tracking work together offline; no earlier milestone may use that label.
 
-Package accountability, required roles, capacity, hardware profiles, and cost categories are controlled by the [resource and RACI plan](docs/RESOURCE_AND_RACI_PLAN.md). Work cannot enter progress without one accountable public project handle or role alias and the required environment/cost source; legal names and personal contact details are not required in public planning records.
+Package accountability, required roles, capacity, hardware profiles, and cost categories are controlled by the [resource and RACI plan](docs/reference/RESOURCE_AND_RACI_PLAN.md). Work cannot enter progress without one accountable public project handle or role alias and the required environment/cost source; legal names and personal contact details are not required in public planning records.
 
 ### Phase 0 — open foundation and feasibility gate
 

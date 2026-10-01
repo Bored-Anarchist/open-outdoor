@@ -1,12 +1,20 @@
 [CmdletBinding()]
-param([switch]$SkipInstall)
+param(
+    [switch]$SkipInstall,
+    [ValidateSet('gis', 'loader')][string[]]$PythonGroups = @()
+)
 
 $ErrorActionPreference = 'Stop'
 $workspace = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $release = Get-Content -LiteralPath (Join-Path $workspace 'config/release.json') -Raw | ConvertFrom-Json
 
 function Assert-ExactVersion([string]$Command, [string]$Expected) {
-    $actual = (& $Command --version).Trim().TrimStart('v')
+    $versionText = (& $Command --version).Trim()
+    $actual = switch ($Command) {
+        'python' { $versionText -replace '^Python ', '' }
+        'uv' { $versionText -replace '^uv ([0-9]+\.[0-9]+\.[0-9]+)(?: \([^)]+\))?$', '$1' }
+        default { $versionText.TrimStart('v') }
+    }
     if ($LASTEXITCODE -ne 0 -or $actual -ne $Expected) {
         throw "$Command $Expected is required; found '$actual'."
     }
@@ -22,7 +30,9 @@ if (-not $SkipInstall) {
     try {
         pnpm install --frozen-lockfile
         if ($LASTEXITCODE -ne 0) { throw 'pnpm install failed.' }
-        uv sync --frozen
+        $syncArguments = @('sync', '--frozen')
+        foreach ($group in $PythonGroups) { $syncArguments += @('--group', $group) }
+        uv @syncArguments
         if ($LASTEXITCODE -ne 0) { throw 'uv sync failed.' }
     }
     finally { Pop-Location }

@@ -35,7 +35,7 @@
     }
   },
   "hostedCi": {
-    "report": "docs/PHASE_0_GATE_REPORT.md#hosted-ci-usage",
+    "report": "docs/archive/phases/PHASE_0_GATE_REPORT.md#hosted-ci-usage",
     "cleanWindow": {
       "startsAfter": "2026-08-21T23:40:00Z",
       "requiredApplicableRuns": 20,

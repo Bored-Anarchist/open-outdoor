@@ -176,7 +176,7 @@ describe('WP-405 private extension compatibility', () => {
     const root = await fixture();
     const result = await promisify(execFile)(
       process.execPath,
-      ['tools/private-compatibility.mjs'],
+      ['tools/catalog/private-compatibility.mjs'],
       { env: { ...process.env, OUTDOOR_PRIVATE_ROOT: root } },
     );
     expect(result.stdout).toContain('passed');
@@ -184,7 +184,7 @@ describe('WP-405 private extension compatibility', () => {
     await writeFile(join(root, 'open-outdoor.private.json'), '{malformed synthetic');
     const failure = await promisify(execFile)(
       process.execPath,
-      ['tools/private-compatibility.mjs'],
+      ['tools/catalog/private-compatibility.mjs'],
       { env: { ...process.env, OUTDOOR_PRIVATE_ROOT: root } },
     ).catch((error) => error as { stderr: string });
     expect(failure.stderr).not.toContain(root);

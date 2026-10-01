@@ -46,7 +46,7 @@ $requiredFiles = @(
     '.github/ISSUE_TEMPLATE/scope-proposal.yml',
     '.github/workflows/documentation-integrity.yml',
     '.github/rulesets/main.json',
-    'docs/REPOSITORY_CONTROLS.md',
+    'docs/reference/REPOSITORY_CONTROLS.md',
     'docs/evidence/WP-001.md'
 )
 
@@ -183,7 +183,7 @@ if (Test-Path -LiteralPath $rulesetPath -PathType Leaf) {
 }
 
 $markdownFiles = Get-ChildItem -LiteralPath $repositoryRoot -Recurse -File -Filter '*.md' |
-    Where-Object { $_.FullName -notmatch '[\\/](?:\.git|\.pnpm-store|\.tmp-[^\\/]+|\.venv|node_modules|dist|coverage)[\\/]' }
+    Where-Object { $_.FullName -notmatch '[\\/](?:\.scratch|\.git|\.pnpm-store|\.tmp-[^\\/]+|\.venv|node_modules|dist|coverage)[\\/]' }
 foreach ($markdownFile in $markdownFiles) {
     $markdown = Get-Content -Raw -LiteralPath $markdownFile.FullName
     foreach ($match in [regex]::Matches($markdown, '\[[^\]]+\]\((?<target>[^)\s]+)')) {

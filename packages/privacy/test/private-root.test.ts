@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   composeSyntheticPrivateCatalog,
   validatePrivateRoot,
-} from '../../../tools/private-root-lib.mjs';
+} from '../../../tools/lib/private-root-lib.mjs';
 
 async function privateRoot() {
   const root = await mkdtemp(join(tmpdir(), 'open-outdoor-private-'));

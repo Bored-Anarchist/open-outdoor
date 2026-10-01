@@ -24,14 +24,14 @@ jobs:
       - shell: bash
         run: |
           set -euo pipefail
-          test -s docs/ACCESSIBILITY_STANDARD.md
-          test -s docs/REQUIREMENTS_TRACEABILITY.md
-          test -s docs/TEST_AND_ACCEPTANCE_PLAN.md
+          test -s docs/reference/ACCESSIBILITY_STANDARD.md
+          test -s docs/reference/REQUIREMENTS_TRACEABILITY.md
+          test -s docs/reference/TEST_AND_ACCEPTANCE_PLAN.md
       - id: design
         shell: bash
         run: |
           changed="$(git diff --name-only HEAD^ HEAD 2>/dev/null || git ls-files)"
-          if grep -Eq '^(apps/|packages/(shared|map)/|tools/design-browser-qa.mjs|package.json|pnpm-lock.yaml|.github/workflows/design-accessibility-traceability.yml)' <<<"$changed"; then
+          if grep -Eq '^(apps/|packages/(shared|map)/|tools/quality/design-browser-qa.mjs|package.json|pnpm-lock.yaml|.github/workflows/design-accessibility-traceability.yml)' <<<"$changed"; then
             echo 'run=true' >> "$GITHUB_OUTPUT"
           fi
       - if: steps.design.outputs.run == 'true'

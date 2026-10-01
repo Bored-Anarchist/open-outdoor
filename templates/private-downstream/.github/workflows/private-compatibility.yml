@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node tools/private-compatibility.mjs --proposed-core "$PUBLIC_CHECKOUT/config/extension-api.json"
+          node tools/catalog/private-compatibility.mjs --proposed-core "$PUBLIC_CHECKOUT/config/extension-api.json"
       - name: Run clean public build with private extensions disabled
         shell: bash
         run: |
