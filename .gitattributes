@@ -23,3 +23,5 @@ pnpm-lock.yaml text eol=lf
 *.pmtiles binary
 packages/map/src/assets/us-canada-territories-z7-z9.pmtiles filter=lfs diff=lfs merge=lfs -text
 packages/map/src/assets/state-packages/US/*/DATA_NOTICES.md text eol=lf
+docs/reference/STATE_DATA_PACKAGE_TRACKER.md text eol=lf
+docs/reference/ALL_DATASETS_TRACKER.md text eol=lf

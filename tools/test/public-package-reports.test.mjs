@@ -35,7 +35,7 @@ const manifests = [
 ];
 const policy = { planned: [] };
 
-test('freshness gate rejects a missing or manually edited report and regeneration repairs it', async () => {
+test('freshness gate tolerates Windows line endings but rejects missing or edited reports', async () => {
   const root = await mkdtemp(join(tmpdir(), 'outdoor-reports-'));
   try {
     const base = join(root, 'packages/map/src/assets/state-packages/US');
@@ -49,6 +49,17 @@ test('freshness gate rejects a missing or manually edited report and regeneratio
     );
     await writePublicPackageReports({ root });
     await writePublicPackageReports({ root, check: true });
+    const windowsReports = new Map();
+    for (const name of ['STATE_DATA_PACKAGE_TRACKER.md', 'ALL_DATASETS_TRACKER.md']) {
+      const path = join(root, 'docs/reference', name);
+      const windowsText = (await readFile(path, 'utf8')).replaceAll('\n', '\r\n');
+      await writeFile(path, windowsText);
+      windowsReports.set(path, windowsText);
+    }
+    await writePublicPackageReports({ root, check: true });
+    for (const [path, windowsText] of windowsReports) {
+      assert.equal(await readFile(path, 'utf8'), windowsText);
+    }
     await writeFile(join(root, 'docs/reference/STATE_DATA_PACKAGE_TRACKER.md'), 'manual edit');
     await assert.rejects(
       writePublicPackageReports({ root, check: true }),

@@ -153,7 +153,8 @@ export async function writePublicPackageReports({ root = repository, check = fal
     } catch (error) {
       if (error.code !== 'ENOENT') throw error;
     }
-    if (existing === text) continue;
+    // Windows checkouts/editors can use CRLF without changing report content.
+    if (existing?.replaceAll('\r\n', '\n') === text) continue;
     if (check) throw new Error(`Stale generated report: ${path}; run pnpm docs:generate`);
     await writeFile(join(root, path), text);
   }
