@@ -18,6 +18,23 @@ Each release must generate a software bill of materials and a separate data/asse
 
 The project scope names candidate technologies and data sources, but naming a candidate is not a license determination and does not mean it is included. No candidate enters source control, CI artifacts, catalogs, or releases until its manifest passes the rights process in [the data, privacy, and rights plan](docs/DATA_PRIVACY_RIGHTS_PLAN.md).
 
+## Security audit dependency updates (reviewed 2026-09-30)
+
+The [security audit](docs/SECURITY_CODE_QUALITY_AUDIT_2026-09-30.md#dependency-advisory-findings-after-authorized-npm-verification) updates these unmodified upstream development/build dependencies. Project changes are dependency selection and scoped resolution overrides, with exact registry integrity hashes retained in `pnpm-lock.yaml`; no third-party source patch is distributed. The three new compatibility tests and synthetic PNG fixture are project-authored/AI-assisted Apache-2.0 material.
+
+| Package and exact version | Canonical owner/source | License and copyright notice |
+| --- | --- | --- |
+| Vite 8.0.16 | [Vite contributors](https://github.com/vitejs/vite) | MIT; Evan You and Vite contributors. Retain the complete distributed `LICENSE.md`, including bundled third-party notices. |
+| Vitest and matching internal packages 4.1.11 | [Vitest contributors](https://github.com/vitest-dev/vitest) | MIT; Vitest contributors. Retain distributed `LICENSE.md` and its bundled notices. |
+| @xmldom/xmldom 0.8.15 and 0.9.12 | [xmldom contributors](https://github.com/xmldom/xmldom) | MIT; Christopher J. Brody, @jindw and contributors. Retain distributed `LICENSE` copyright and permission text. |
+| fast-uri 3.1.8 | [Fastify team](https://github.com/fastify/fast-uri) | BSD-3-Clause; Gary Court and the Fastify team. Retain distributed `LICENSE`, including disclaimer and nonendorsement terms. |
+| js-yaml 4.3.2 | [nodeca / js-yaml contributors](https://github.com/nodeca/js-yaml) | MIT; Vitaly Puzrin. Retain distributed `LICENSE`. |
+| brace-expansion 5.0.12 | [Julian Gruber / brace-expansion contributors](https://github.com/juliangruber/brace-expansion) | MIT; Julian Gruber. Retain distributed `LICENSE`. |
+| Metro 0.84.6 and its matching helper packages | [Meta / Metro contributors](https://github.com/react/metro) | MIT; Meta Platforms, Inc. and affiliates. Retain the complete upstream `LICENSE` when redistributing the build tools. |
+| UUID 11.1.1, scoped to xcode 3.0.1 | [uuidjs contributors](https://github.com/uuidjs/uuid) | MIT; Robert Kieffer and contributors. Retain distributed `LICENSE.md`. |
+
+These licenses permit source, binary, offline, public and private redistribution subject to their complete notices and disclaimers; no additional data-retention/deletion obligation is introduced. Notices accompany source/tool distributions and their release artifacts. Build tools are not added to the mobile runtime. The generated release SBOM remains responsible for the full resolved transitive inventory and any separately bundled Metro runtime code; this review does not replace release-wide license verification.
+
 ## Laptop discovery and QR pairing (reviewed 2026-09-30)
 
 These unmodified pinned dependencies run on the laptop or in synthetic tests and are not bundled into the mobile application. Source, binary and offline redistribution is permitted with the complete licenses linked below; public/private distribution does not change those obligations. No retention/deletion obligations are introduced. Notices accompany source and any distribution of the laptop tooling; release SBOMs cover exact transitive packages. Native scanning uses the existing Apple SDK's AVFoundation framework.

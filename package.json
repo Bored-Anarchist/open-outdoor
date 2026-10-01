@@ -11,10 +11,11 @@
     "source": "node tools/source.mjs",
     "private:compatibility": "node tools/private-compatibility.mjs",
     "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/Bootstrap.ps1",
-    "quality": "pnpm map:storage:verify && pnpm quality:types && pnpm quality:format && pnpm release:verify && pnpm test && pnpm test:release",
+    "quality": "pnpm map:storage:verify && pnpm quality:types && pnpm quality:format && pnpm release:verify && pnpm test && pnpm test:release && pnpm test:dependencies",
     "quality:types": "tsc -b packages/shared packages/data packages/privacy packages/config packages/tracking packages/storage packages/map packages/import-export packages/backup packages/recorder apps/browser-fixture apps/mobile",
     "quality:format": "prettier --check .",
     "test": "vitest run",
+    "test:dependencies": "node --test tools/dependency-compatibility.test.mjs",
     "test:fixtures": "vitest run packages/data",
     "test:privacy": "vitest run packages/privacy && node tools/public-boundary.mjs --scan .",
     "test:catalog-trust": "vitest run packages/config/test/catalog-trust.test.ts",
@@ -85,8 +86,8 @@
     "react": "19.2.3",
     "react-test-renderer": "19.2.3",
     "typescript": "6.0.3",
-    "vite": "8.0.0",
-    "vitest": "4.1.0",
+    "vite": "8.0.16",
+    "vitest": "4.1.11",
     "yaml": "2.9.0"
   }
 }
