@@ -390,6 +390,7 @@ function AppContent({
       return true;
     } catch (error) {
       setStatus('Start failed: ' + errorMessage(error));
+      if (application?.recorder.stateMachine.state.kind === 'paused') setRecorderState('paused');
 
       return false;
     } finally {
@@ -510,6 +511,7 @@ function AppContent({
       return summary.ascentM;
     } catch (error) {
       setStatus('Finish failed: ' + errorMessage(error));
+      if (application?.recorder.stateMachine.state.kind === 'paused') setRecorderState('paused');
 
       return null;
     } finally {

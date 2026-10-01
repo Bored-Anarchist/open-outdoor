@@ -23,6 +23,7 @@ const RESTORE_RESERVE_BYTES = 64 * 1024 * 1024;
 
 function validAttachmentName(value: string): boolean {
   return (
+    typeof value === 'string' &&
     value.length > 0 &&
     value.length <= 255 &&
     value !== '.' &&
@@ -208,7 +209,15 @@ export function createEncryptedBackup(
   attachments: readonly BackupAttachment[],
   passphrase: string,
   createdAt = new Date().toISOString(),
+  maximumContainerBytes = MAXIMUM_CONTAINER_BYTES,
 ): Uint8Array {
+  if (
+    !Number.isSafeInteger(maximumContainerBytes) ||
+    maximumContainerBytes <= 0 ||
+    maximumContainerBytes > MAXIMUM_CONTAINER_BYTES
+  ) {
+    throw new BackupError('INPUT_INVALID', 'backup container limit is invalid');
+  }
   migratePrivateSnapshot(snapshot);
   if (!Number.isFinite(Date.parse(createdAt))) {
     throw new BackupError('INPUT_INVALID', 'backup creation timestamp is invalid');
@@ -246,6 +255,22 @@ export function createEncryptedBackup(
     salt: salt.toString('base64'),
     nonce: nonce.toString('base64'),
   };
+  const snapshotJson = JSON.stringify(snapshot);
+  const outerOverhead = Buffer.byteLength(
+    JSON.stringify({ header, ciphertext: '', authenticationTag: 'a'.repeat(24) }),
+  );
+  const fits = (plaintextBytes: number) =>
+    outerOverhead + 4 * Math.ceil(plaintextBytes / 3) <= maximumContainerBytes;
+  // Attachments are base64 inside encrypted JSON, then ciphertext is base64 again.
+  // Reject an impossible container before allocating the attachment strings.
+  const minimumPayloadBytes =
+    Buffer.byteLength(snapshotJson) +
+    attachments.reduce(
+      (total, attachment) => total + 4 * Math.ceil(attachment.bytes.byteLength / 3),
+      0,
+    );
+  if (!fits(minimumPayloadBytes))
+    throw new BackupError('INPUT_INVALID', 'backup exceeds the restorable container size limit');
   const payload: DecryptedBackupPayload = {
     createdAt,
     manifest: createManifest(snapshot, attachments),
@@ -259,13 +284,14 @@ export function createEncryptedBackup(
       mediaType: attachment.mediaType ?? null,
     })),
   };
+  const plaintext = Buffer.from(JSON.stringify(payload));
+  if (!fits(plaintext.byteLength)) {
+    throw new BackupError('INPUT_INVALID', 'backup exceeds the restorable container size limit');
+  }
   const key = deriveKey(passphrase, salt);
   const cipher = createCipheriv('aes-256-gcm', key, nonce);
   cipher.setAAD(Buffer.from(canonicalHeader(header)));
-  const ciphertext = Buffer.concat([
-    cipher.update(Buffer.from(JSON.stringify(payload))),
-    cipher.final(),
-  ]);
+  const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
   const container: SerializedContainer = {
     header,
     ciphertext: ciphertext.toString('base64'),
@@ -302,7 +328,12 @@ function parseContainer(container: Uint8Array): SerializedContainer {
   ) {
     throw new BackupError('FORMAT_UNSUPPORTED', 'backup algorithms or version are unsupported');
   }
-  if (typeof candidate.ciphertext !== 'string' || typeof candidate.authenticationTag !== 'string') {
+  if (
+    typeof candidate.ciphertext !== 'string' ||
+    typeof candidate.authenticationTag !== 'string' ||
+    typeof header.salt !== 'string' ||
+    typeof header.nonce !== 'string'
+  ) {
     throw new BackupError('INPUT_INVALID', 'backup cryptographic fields are missing');
   }
   return candidate as SerializedContainer;
@@ -348,7 +379,35 @@ function isCurrentManifest(
 export function validateDecryptedBackup(
   payload: DecryptedBackupPayload | LegacyDecryptedBackupPayload,
 ): RestoredPrivateData {
+  if (
+    typeof payload !== 'object' ||
+    payload === null ||
+    typeof payload.manifest !== 'object' ||
+    payload.manifest === null ||
+    !Array.isArray(payload.attachments) ||
+    typeof payload.createdAt !== 'string'
+  )
+    throw new BackupError('INTEGRITY_FAILED', 'backup payload structure is invalid');
   const { snapshot, manifest } = payload;
+  if (isCurrentManifest(manifest)) {
+    if (
+      typeof manifest.recordCounts !== 'object' ||
+      manifest.recordCounts === null ||
+      typeof manifest.snapshotHash !== 'string' ||
+      !/^[a-f0-9]{64}$/.test(manifest.snapshotHash) ||
+      !Array.isArray(manifest.attachments) ||
+      manifest.attachments.length !== payload.attachments.length
+    )
+      throw new BackupError('INTEGRITY_FAILED', 'backup manifest structure is invalid');
+  } else if (
+    'recordCounts' in manifest ||
+    'snapshotHash' in manifest ||
+    'attachments' in manifest ||
+    typeof manifest.attachmentHashes !== 'object' ||
+    manifest.attachmentHashes === null ||
+    Array.isArray(manifest.attachmentHashes)
+  )
+    throw new BackupError('INTEGRITY_FAILED', 'backup manifest structure is invalid');
   if (!Number.isFinite(Date.parse(payload.createdAt))) {
     throw new BackupError('INTEGRITY_FAILED', 'backup creation timestamp is invalid');
   }
@@ -394,11 +453,24 @@ export function validateDecryptedBackup(
   const restoredIds = new Set<string>();
   for (const [index, attachment] of payload.attachments.entries()) {
     const expected = isCurrentManifest(manifest) ? manifest.attachments[index] : undefined;
+    if (
+      typeof attachment !== 'object' ||
+      attachment === null ||
+      typeof attachment.id !== 'string' ||
+      attachment.id.length === 0 ||
+      typeof attachment.bytes !== 'string' ||
+      (isCurrentManifest(manifest) && (typeof expected !== 'object' || expected === null))
+    )
+      throw new BackupError('INTEGRITY_FAILED', 'backup attachment structure is invalid');
     const ownerType = 'ownerType' in attachment ? attachment.ownerType : null;
     const ownerId = 'ownerId' in attachment ? attachment.ownerId : null;
     const mediaType = 'mediaType' in attachment ? attachment.mediaType : null;
     if (
       restoredIds.has(attachment.id) ||
+      (ownerType !== null && !['activity', 'user-trail', 'place'].includes(ownerType)) ||
+      (ownerType === null) !== (ownerId === null) ||
+      (ownerId !== null && (typeof ownerId !== 'string' || ownerId.length === 0)) ||
+      (mediaType !== null && typeof mediaType !== 'string') ||
       !validAttachmentName(attachment.fileName) ||
       Buffer.from(attachment.bytes, 'base64').byteLength > MAXIMUM_ATTACHMENT_BYTES ||
       (expected !== undefined &&
@@ -435,7 +507,7 @@ export function validateDecryptedBackup(
       : attachment.bytes.byteLength;
     const actual = digest(attachment.bytes);
     if (
-      expectedHash === undefined ||
+      typeof expectedHash !== 'string' ||
       expectedLength !== attachment.bytes.byteLength ||
       expectedHash.length !== actual.length ||
       !timingSafeEqual(Buffer.from(expectedHash), Buffer.from(actual))
@@ -527,7 +599,11 @@ export function evaluatePreUninstallBackup(
       ? Number.NEGATIVE_INFINITY
       : Date.parse(state.privateDataChangedAt);
   if (!Number.isFinite(verifiedAt)) reasons.push('BACKUP_MISSING');
-  else if (!Number.isFinite(changedAt) || changedAt > verifiedAt) reasons.push('BACKUP_STALE');
+  else if (
+    state.privateDataChangedAt !== null &&
+    (!Number.isFinite(changedAt) || changedAt > verifiedAt)
+  )
+    reasons.push('BACKUP_STALE');
   if (!state.independentRecoverySecretConfirmed) reasons.push('RECOVERY_SECRET_NOT_CONFIRMED');
   return { safeToContinue: reasons.length === 0, reasons };
 }

@@ -1,9 +1,28 @@
-import { access, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
+import { isAbsolute, relative, resolve, sep } from 'node:path';
 
 function isWithin(parent, child) {
   const relation = relative(parent, child);
-  return relation === '' || (!relation.startsWith('..') && !isAbsolute(relation));
+  return (
+    relation === '' ||
+    (relation !== '..' && !relation.startsWith(`..${sep}`) && !isAbsolute(relation))
+  );
+}
+
+async function confinedPath(root, candidate, allowMissing = false) {
+  const target = resolve(root, candidate);
+  if (!isWithin(root, target)) throw new Error('private path escapes the private root');
+  let current = root;
+  for (const part of relative(root, target).split(sep).filter(Boolean)) {
+    current = resolve(current, part);
+    const stat = await lstat(current).catch((error) => {
+      if (allowMissing && error.code === 'ENOENT') return null;
+      throw error;
+    });
+    if (stat && (stat.isSymbolicLink() || !isWithin(root, await realpath(current))))
+      throw new Error('linked paths are not allowed in the private root');
+  }
+  return target;
 }
 
 export async function validatePrivateRoot(candidate, publicCheckout = process.cwd()) {
@@ -14,8 +33,7 @@ export async function validatePrivateRoot(candidate, publicCheckout = process.cw
   if (isWithin(checkout, root) || isWithin(root, checkout)) {
     throw new Error('private root and public checkout must not contain one another');
   }
-  const manifestPath = resolve(root, 'open-outdoor.private.json');
-  await access(manifestPath);
+  const manifestPath = await confinedPath(root, 'open-outdoor.private.json');
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
   if (
     manifest.schemaVersion !== 1 ||
@@ -38,17 +56,20 @@ export async function validatePrivateRoot(candidate, publicCheckout = process.cw
     const connectorPath = resolve(root, connector);
     if (!isWithin(root, connectorPath))
       throw new Error('private connector escapes the private root');
-    await access(connectorPath);
-    connectorPaths.push(connectorPath);
+    connectorPaths.push(await confinedPath(root, connector));
   }
   return { root, manifest, manifestPath, connectorPaths };
 }
 
 export async function composeSyntheticPrivateCatalog(candidate, publicCheckout = process.cwd()) {
   const validated = await validatePrivateRoot(candidate, publicCheckout);
-  const outputDirectory = resolve(validated.root, 'output');
+  const outputDirectory = await confinedPath(validated.root, 'output', true);
   await mkdir(outputDirectory, { recursive: true });
-  const outputPath = resolve(outputDirectory, 'synthetic-private-catalog.json');
+  const outputPath = await confinedPath(
+    validated.root,
+    'output/synthetic-private-catalog.json',
+    true,
+  );
   const catalog = {
     schemaVersion: 1,
     classification: 'private',

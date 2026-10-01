@@ -23,6 +23,49 @@ function point(sequence: number, overrides: Partial<TrackObservation> = {}): Tra
 }
 
 describe('WP-103 production tracking state machine', () => {
+  it('rejects a conflicting batch atomically and leaves it safe to retry', () => {
+    const recorder = new RecorderStateMachine();
+    recorder.start('session-1', 'balanced', '2026-08-23T12:00:00.000Z');
+    recorder.commit([point(1)], '2026-08-23T12:00:01.000Z');
+    const before = recorder.state;
+    expect(() => recorder.commit([point(2), point(1, { altitudeM: 999 })], 'later')).toThrow(
+      /conflicting/,
+    );
+    expect(recorder.state).toEqual(before);
+    expect(recorder.committedObservations).toEqual([point(1)]);
+    expect(() => recorder.commit([point(2), point(2, { altitudeM: 999 })], 'later')).toThrow(
+      /conflicting/,
+    );
+    expect(recorder.committedObservations).toEqual([point(1)]);
+    expect(recorder.commit([point(2)], '2026-08-23T12:00:02.000Z')).toMatchObject({
+      highestCommittedSequence: 2,
+    });
+  });
+
+  it('protects committed observations and lifecycle state from caller mutation', () => {
+    const recorder = new RecorderStateMachine();
+    const started = recorder.start('session-1', 'balanced', '2026-08-23T12:00:00.000Z');
+    Object.assign(started, { kind: 'idle' });
+    const observation = point(1);
+    recorder.commit([observation], '2026-08-23T12:00:01.000Z');
+    Object.assign(observation.coordinate, { 0: 0 });
+    Object.assign(recorder.committedObservations[0]!.coordinate, { 0: 1 });
+    Object.assign(recorder.state, { highestCommittedSequence: 99 });
+    expect(recorder.committedObservations).toEqual([point(1)]);
+    expect(recorder.finish('2026-08-23T12:00:02.000Z')).toMatchObject({ finalSequence: 1 });
+  });
+
+  it.each([0, -1, NaN, Infinity, 1.5])(
+    'rejects invalid sequence %s without accepting earlier points',
+    (sequence) => {
+      const recorder = new RecorderStateMachine();
+      recorder.start('session-1', 'balanced', '2026-08-23T12:00:00.000Z');
+      expect(() => recorder.commit([point(1), point(sequence)], 'later')).toThrow(RangeError);
+      expect(recorder.committedObservations).toEqual([]);
+      expect(recorder.state).toMatchObject({ highestCommittedSequence: 0 });
+    },
+  );
+
   it('supports start, pause, resume, recovery, duplicate commit, and finish', () => {
     const recorder = new RecorderStateMachine();
     recorder.start('session-1', 'balanced', '2026-08-23T12:00:00.000Z');

@@ -1,5 +1,5 @@
 const forbiddenKey =
-  /(?:authorization|cookie|email|latitude|longitude|pass(?:word|phrase)?|secret|token|user.?id)/i;
+  /(?:authorization|cookie|credential|email|latitude|longitude|pass(?:word|phrase)?|private.?key|secret|session|token|user.?id)/i;
 
 export type DiagnosticScalar = boolean | number | string | null;
 export type DiagnosticValue =
@@ -17,7 +17,15 @@ export function redactDiagnostic(value: DiagnosticValue): DiagnosticValue {
   }
   if (typeof value === 'string') {
     return value
-      .replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, 'Bearer [REDACTED]')
+      .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED]')
+      .replace(
+        /\b(?:api[_-]?key|token|secret|password|passphrase)\s*[:=]\s*[^\s,;]+/gi,
+        '[REDACTED]',
+      )
+      .replace(
+        /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
+        '[REDACTED]',
+      )
       .replace(/\b[A-F0-9]{32,}\b/gi, '[REDACTED]');
   }
   return value;

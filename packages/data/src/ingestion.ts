@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, realpath, writeFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve } from 'node:path';
 import type {
   Connector,
@@ -124,7 +124,17 @@ function isUnsafeArchivePath(path: string): boolean {
     normalized === '' ||
     normalized.startsWith('/') ||
     /^[a-zA-Z]:/.test(normalized) ||
-    normalized.split('/').some((part) => part === '..' || part === '')
+    normalized
+      .split('/')
+      .some(
+        (part) =>
+          part === '.' ||
+          part === '..' ||
+          part === '' ||
+          /[:\u0000-\u001f<>"|?*]/.test(part) ||
+          /[. ]$/.test(part) ||
+          /^(?:con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(part),
+      )
   );
 }
 
@@ -132,10 +142,20 @@ export function inspectArchiveEntries(
   entries: readonly ArchiveEntryMetadata[],
   limits: ArchiveLimits,
 ): void {
+  if (
+    !Number.isSafeInteger(limits.maxEntries) ||
+    limits.maxEntries <= 0 ||
+    !Number.isSafeInteger(limits.maxExpandedBytes) ||
+    limits.maxExpandedBytes <= 0 ||
+    !Number.isFinite(limits.maxCompressionRatio) ||
+    limits.maxCompressionRatio <= 0
+  )
+    throw new IngestionSecurityError('archive-expanded-limit', 'archive limits are invalid');
   if (entries.length > limits.maxEntries) {
     throw new IngestionSecurityError('archive-entry-limit', 'archive contains too many entries');
   }
   let totalExpandedBytes = 0;
+  const paths = new Map<string, ArchiveEntryMetadata['kind']>();
   for (const entry of entries) {
     if (isUnsafeArchivePath(entry.path)) {
       throw new IngestionSecurityError('archive-path-traversal', 'archive path is unsafe');
@@ -143,6 +163,12 @@ export function inspectArchiveEntries(
     if (entry.kind === 'symbolic-link' || entry.kind === 'hard-link') {
       throw new IngestionSecurityError('archive-link', 'archive links are not accepted');
     }
+    if (entry.kind !== 'file' && entry.kind !== 'directory')
+      throw new IngestionSecurityError('archive-link', 'archive member type is invalid');
+    const normalized = entry.path.replaceAll('\\', '/').toLowerCase();
+    if (paths.has(normalized))
+      throw new IngestionSecurityError('archive-path-traversal', 'archive paths collide');
+    paths.set(normalized, entry.kind);
     if (
       !Number.isSafeInteger(entry.compressedBytes) ||
       entry.compressedBytes < 0 ||
@@ -164,6 +190,14 @@ export function inspectArchiveEntries(
         'compression-ratio-limit',
         'archive entry exceeds the configured compression ratio',
       );
+    }
+  }
+  // A file cannot also be the parent of another member, regardless of entry order.
+  for (const name of paths.keys()) {
+    const parts = name.split('/');
+    for (let count = 1; count < parts.length; count++) {
+      if (paths.get(parts.slice(0, count).join('/')) === 'file')
+        throw new IngestionSecurityError('archive-path-traversal', 'archive parent is a file');
     }
   }
 }
@@ -212,6 +246,8 @@ export class RawArtifactStore {
       throw new IngestionSecurityError('rights-denied', 'raw retention must be explicit');
     }
     const checksum = createHash('sha256').update(payload).digest('hex');
+    await mkdir(this.root, { recursive: true });
+    const canonicalRoot = await realpath(this.root);
     const directory = resolve(this.root, checksum.slice(0, 2));
     const payloadPath = resolve(directory, `${checksum}.raw`);
     const metadataPath = resolve(directory, `${checksum}.json`);
@@ -219,16 +255,58 @@ export class RawArtifactStore {
       throw new IngestionSecurityError('boundary-violation', 'artifact escaped the raw root');
     }
     await mkdir(directory, { recursive: true });
+    if (
+      (await lstat(directory)).isSymbolicLink() ||
+      !containsPath(canonicalRoot, await realpath(directory))
+    ) {
+      throw new IngestionSecurityError(
+        'boundary-violation',
+        'artifact directory escaped the raw root',
+      );
+    }
+    for (const path of [payloadPath, metadataPath]) {
+      const stat = await lstat(path).catch((error: NodeJS.ErrnoException) => {
+        if (error.code !== 'ENOENT') throw error;
+        return null;
+      });
+      if (stat && (!stat.isFile() || stat.isSymbolicLink())) {
+        throw new IngestionSecurityError(
+          'boundary-violation',
+          'artifact path is not a regular file',
+        );
+      }
+    }
     try {
       await writeFile(payloadPath, payload, { flag: 'wx' });
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      const existing = await readFile(payloadPath);
+      if (createHash('sha256').update(existing).digest('hex') !== checksum) throw error;
+    }
+    // A payload alone is not a successful acquisition. Retry an orphaned metadata write,
+    // and never hide permission/disk errors just because the payload already exists.
+    try {
       await writeFile(metadataPath, `${JSON.stringify(metadata)}\n`, {
         encoding: 'utf8',
         flag: 'wx',
       });
     } catch (error) {
-      const existing = await readFile(payloadPath).catch(() => null);
-      if (!existing || createHash('sha256').update(existing).digest('hex') !== checksum)
-        throw error;
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      const existing = JSON.parse(await readFile(metadataPath, 'utf8'));
+      if (
+        !existing ||
+        typeof existing !== 'object' ||
+        Array.isArray(existing) ||
+        Object.keys(existing).length !== Object.keys(metadata).length ||
+        Object.entries(metadata).some(
+          ([key, value]) => key !== 'retrievedAt' && existing[key] !== value,
+        )
+      ) {
+        throw new IngestionSecurityError(
+          'validation-failure',
+          'raw artifact metadata conflicts with its retained provenance',
+        );
+      }
     }
     return {
       externalId: metadata.externalId,

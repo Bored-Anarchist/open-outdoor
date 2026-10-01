@@ -160,6 +160,21 @@ const coverage: OfflineBundleCoverage = {
 };
 
 describe('WP-304 offline explore, search, and details', () => {
+  it('filters a large trail without exceeding the JavaScript argument limit', () => {
+    const trail = records[1]!;
+    const coordinates: [number, number][] = Array.from({ length: 200_000 }, (_, i) => [
+      -74 + i / 2_000_000,
+      44.1,
+    ]);
+    const index = new OfflineExploreIndex(
+      [{ ...trail, geometry: { type: 'LineString', coordinates } }],
+      coverage,
+      '2026-09-01T12:00:00.000Z',
+    );
+    expect(index.search({ bounds: [-74.1, 44, -73.8, 44.2] })).toHaveLength(1);
+    expect(index.search({ bounds: [-70, 44, -69, 45] })).toHaveLength(0);
+  });
+
   it('T-E2E-001-C01 performs text, spatial, and facet filtering with no network capability', () => {
     const index = new OfflineExploreIndex(records, coverage, '2026-09-01T12:00:00.000Z', {
       [landId]: camping,

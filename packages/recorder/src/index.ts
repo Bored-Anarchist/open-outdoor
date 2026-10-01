@@ -111,6 +111,9 @@ export class RecorderCoordinator {
   private operations: Promise<void> = Promise.resolve();
   private synchronizationDirty = false;
   private pendingAcknowledgement: number | null = null;
+  private stopped: { readonly sessionId: string; readonly finalSequence: number } | null = null;
+  private stoppedFromRecording = false;
+  private pendingFinish: FinishedActivitySummary | null = null;
   private serialize<T>(operation: () => Promise<T>): Promise<T> {
     const result = this.operations.then(operation);
     this.operations = result.then(
@@ -171,31 +174,58 @@ export class RecorderCoordinator {
     startedAt = new Date().toISOString(),
     plannedFeatureId?: string,
   ): Promise<RecordedActivity> {
+    if (this.pendingFinish || !['idle', 'finished'].includes(this.stateMachine.state.kind))
+      throw new Error('finish or recover the current recording before starting another');
+    if (!Number.isFinite(Date.parse(startedAt))) throw new Error('invalid recording start time');
     if (
       plannedFeatureId !== undefined &&
       (!plannedFeatureId.trim() || plannedFeatureId.length > 4096)
     )
       throw new Error('Invalid expected hike reference');
     const { sessionId } = await this.tracker.start(mode);
-    this.stateMachine.start(sessionId, mode, startedAt);
-    const activity = this.repository.createActivity({
-      id: activityId(sessionId),
-      name,
-      mode,
-      lifecycle: 'recording',
-      startedAt,
-      finishedAt: null,
-    });
-    if (plannedFeatureId !== undefined)
-      this.repository.saveAssociation({
-        id: `hike-plan-${activity.id}`,
-        activityId: activity.id,
-        catalogTrailId: plannedFeatureId,
-        userTrailId: null,
-        state: 'resolved',
+    this.stopped = null;
+    try {
+      this.stateMachine.start(sessionId, mode, startedAt);
+      const activity = this.repository.createActivity({
+        id: activityId(sessionId),
+        name,
+        mode,
+        lifecycle: 'recording',
+        startedAt,
+        finishedAt: null,
       });
-    await this.persist(sessionId, 0);
-    return activity;
+      if (plannedFeatureId !== undefined)
+        this.repository.saveAssociation({
+          id: `hike-plan-${activity.id}`,
+          activityId: activity.id,
+          catalogTrailId: plannedFeatureId,
+          userTrailId: null,
+          state: 'resolved',
+        });
+      await this.persist(sessionId, 0);
+      return activity;
+    } catch (error) {
+      return this.suspendAfterFailure(error, startedAt);
+    }
+  }
+
+  private async suspendAfterFailure(error: unknown, recordedAt: string): Promise<never> {
+    try {
+      await this.tracker.pause();
+      if (this.stateMachine.state.kind === 'recording') this.stateMachine.pause(recordedAt);
+    } catch (pauseError) {
+      // The native stop path stops sensors before closing its durable spool.
+      try {
+        await this.tracker.finish();
+      } catch (stopError) {
+        throw new AggregateError(
+          [error, pauseError, stopError],
+          'Recording persistence and sensor shutdown failed; recover the native session.',
+        );
+      }
+      if (this.stateMachine.state.kind === 'recording') this.stateMachine.interrupt('native-error');
+    }
+    throw error;
   }
 
   private async pauseUnlocked(recordedAt = new Date().toISOString()): Promise<void> {
@@ -211,21 +241,28 @@ export class RecorderCoordinator {
   }
 
   private async resumeUnlocked(recordedAt = new Date().toISOString()): Promise<void> {
-    await this.tracker.resume();
-    this.stateMachine.resume(recordedAt);
-    this.repository.updateActivityLifecycle(activityId(this.activeSessionId()), 'recording');
-    await this.persist(
-      this.activeSessionId(),
-      this.stateMachine.state.kind === 'recording'
-        ? this.stateMachine.state.highestCommittedSequence
-        : 0,
-    );
+    if (this.stopped) throw new Error('retry Finish to save the stopped recording');
+    try {
+      await this.tracker.resume();
+      this.stateMachine.resume(recordedAt);
+      this.repository.updateActivityLifecycle(activityId(this.activeSessionId()), 'recording');
+      await this.persist(
+        this.activeSessionId(),
+        this.stateMachine.state.kind === 'recording'
+          ? this.stateMachine.state.highestCommittedSequence
+          : 0,
+      );
+    } catch (error) {
+      return this.suspendAfterFailure(error, recordedAt);
+    }
   }
 
   private async recoverUnlocked(
     recordedAt = new Date().toISOString(),
     reason: 'process-termination' | 'permission-loss' | 'native-error' = 'process-termination',
   ): Promise<RecordedActivity | null> {
+    if (this.stopped || this.pendingFinish)
+      throw new Error('retry Finish to save the stopped recording');
     const priorState = this.stateMachine.state;
     if (priorState.kind === 'recording' || priorState.kind === 'paused') {
       this.stateMachine.interrupt(reason);
@@ -316,7 +353,7 @@ export class RecorderCoordinator {
         verticalAccuracyM: observation.verticalAccuracyM ?? null,
         altitudeM: observation.altitudeM ?? null,
         pressureKPa: observation.pressureKPa ?? null,
-        paused: observation.paused ?? state.kind === 'paused',
+        paused: observation.paused ?? (state.kind === 'paused' && !this.stoppedFromRecording),
       })),
     );
     await this.persist(state.sessionId, replay.highestCommittedSequence);
@@ -330,16 +367,15 @@ export class RecorderCoordinator {
   private async finishUnlocked(
     finishedAt = new Date().toISOString(),
   ): Promise<FinishedActivitySummary> {
-    for (let batch = 0; batch < 10_000; batch += 1) {
-      const state = this.stateMachine.state;
-      const before =
-        state.kind === 'recording' || state.kind === 'paused' ? state.highestCommittedSequence : 0;
-      const after = await this.synchronizeUnlocked(finishedAt);
-      if (after === before) break;
-      if (batch === 9_999) throw new Error('tracking spool exceeded the bounded drain limit');
-    }
+    if (this.pendingFinish) return this.commitPendingFinish();
+    if (!Number.isFinite(Date.parse(finishedAt))) throw new Error('invalid recording finish time');
     const sessionId = this.activeSessionId();
-    const stopped = await this.tracker.finish();
+    // Stop sensors before any database work that may fail. Retain the stop result
+    // so a retry drains the same sealed spool without trying to stop it twice.
+    const stopped = this.stopped ?? (await this.tracker.finish());
+    if (!this.stopped) this.stoppedFromRecording = this.stateMachine.state.kind === 'recording';
+    this.stopped = stopped;
+    if (this.stateMachine.state.kind === 'recording') this.stateMachine.pause(finishedAt);
     for (let batch = 0; batch < 10_000; batch += 1) {
       const state = this.stateMachine.state;
       const committed =
@@ -377,17 +413,28 @@ export class RecorderCoordinator {
       elevationProfile: elevation.elevationProfile,
       inputFingerprint: `${sessionId}:${observations.length}:${observations.at(-1)?.sequence ?? 0}`,
     });
-    const finalSequence =
-      this.stateMachine.state.kind === 'finished' ? this.stateMachine.state.finalSequence : 0;
-    await this.persist(sessionId, finalSequence);
-    await this.tracker.finalize?.(sessionId, finalSequence);
-    return {
+    this.pendingFinish = {
       activity,
       distanceM: distance.distanceM,
       ascentM: elevation.ascentM,
       descentM: elevation.descentM,
       elevationConfidence: elevation.source,
     };
+    return this.commitPendingFinish();
+  }
+
+  private async commitPendingFinish(): Promise<FinishedActivitySummary> {
+    const summary = this.pendingFinish;
+    const stopped = this.stopped;
+    if (!summary || !stopped) throw new Error('no pending recording finish');
+    await this.persist(stopped.sessionId, stopped.finalSequence);
+    await this.tracker.finalize?.(stopped.sessionId, stopped.finalSequence);
+    this.pendingFinish = null;
+    this.stopped = null;
+    this.stoppedFromRecording = false;
+    this.synchronizationDirty = false;
+    this.pendingAcknowledgement = null;
+    return summary;
   }
 }
 

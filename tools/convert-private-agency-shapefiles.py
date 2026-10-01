@@ -14,6 +14,7 @@ import sys
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+from archive_security import inspect_zip
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "PrivateData" / "vendor"))
@@ -102,6 +103,7 @@ def convert(source: dict) -> dict:
     if sha256(raw) != receipt["sha256"]:
         raise ValueError(f"{parent}: raw ZIP checksum mismatch")
     with zipfile.ZipFile(io.BytesIO(raw)) as archive:
+        inspect_zip(archive)
         prefix = source["member"]
         parts = {
             suffix: archive.read(f"{prefix}.{suffix}") for suffix in ("shp", "shx", "dbf", "prj")

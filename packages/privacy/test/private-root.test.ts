@@ -1,4 +1,4 @@
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -24,6 +24,28 @@ async function privateRoot() {
 }
 
 describe('external private-root composition', () => {
+  it('rejects linked connector and output directories outside the private root', async () => {
+    const root = await privateRoot();
+    const outside = await mkdtemp(join(tmpdir(), 'open-outdoor-linked-target-'));
+    await symlink(
+      outside,
+      join(root, 'connectors', 'linked'),
+      process.platform === 'win32' ? 'junction' : 'dir',
+    );
+    const manifestPath = join(root, 'open-outdoor.private.json');
+    const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+    await writeFile(
+      manifestPath,
+      JSON.stringify({ ...manifest, connectors: ['connectors/linked'] }),
+    );
+    await expect(validatePrivateRoot(root, process.cwd())).rejects.toThrow(/linked/);
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    await symlink(outside, join(root, 'output'), process.platform === 'win32' ? 'junction' : 'dir');
+    await expect(composeSyntheticPrivateCatalog(root, process.cwd())).rejects.toThrow(/linked/);
+    await expect(readFile(join(outside, 'synthetic-private-catalog.json'))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
   it('rejects roots inside the public checkout', async () => {
     await expect(
       validatePrivateRoot(resolve('fixtures/private-root-template'), process.cwd()),

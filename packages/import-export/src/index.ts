@@ -59,6 +59,19 @@ function enforceInput(value: string, maximumBytes: number): void {
   }
 }
 
+function validatedLimits(limits: Partial<{ maximumBytes: number; maximumPoints: number }>) {
+  const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
+  const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
+  if (
+    !Number.isSafeInteger(maximumBytes) ||
+    maximumBytes <= 0 ||
+    !Number.isSafeInteger(maximumPoints) ||
+    maximumPoints <= 0
+  )
+    throw new RouteFileError('MALFORMED_INPUT', 'invalid import limits');
+  return { maximumBytes, maximumPoints };
+}
+
 function xmlDecode(value: string): string {
   return value
     .replaceAll('&lt;', '<')
@@ -72,8 +85,7 @@ export function importGpx(
   input: string,
   limits: Partial<{ maximumBytes: number; maximumPoints: number }> = {},
 ): ImportedRoute {
-  const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
-  const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
+  const { maximumBytes, maximumPoints } = validatedLimits(limits);
   enforceInput(input, maximumBytes);
   if (/<!DOCTYPE|<!ENTITY|<script\b|<\?xml-stylesheet/i.test(input)) {
     throw new RouteFileError('UNSAFE_XML', 'active or entity-bearing XML is not accepted');
@@ -134,8 +146,7 @@ export function importGeoJson(
   input: string,
   limits: Partial<{ maximumBytes: number; maximumPoints: number }> = {},
 ): ImportedRoute {
-  const maximumBytes = limits.maximumBytes ?? DEFAULT_IMPORT_LIMITS.maximumBytes;
-  const maximumPoints = limits.maximumPoints ?? DEFAULT_IMPORT_LIMITS.maximumPoints;
+  const { maximumBytes, maximumPoints } = validatedLimits(limits);
   enforceInput(input, maximumBytes);
   let parsed: unknown;
   try {
@@ -180,7 +191,30 @@ interface TrimmedRoute {
 }
 
 function interpolateCoordinate(left: Coordinate, right: Coordinate, fraction: number): Coordinate {
-  return [left[0] + (right[0] - left[0]) * fraction, left[1] + (right[1] - left[1]) * fraction];
+  // Follow the same great-circle arc used to measure the trim distance. Linear
+  // longitude interpolation takes the long way around when crossing the date line.
+  const radians = Math.PI / 180;
+  const vector = ([longitude, latitude]: Coordinate) =>
+    [
+      Math.cos(latitude * radians) * Math.cos(longitude * radians),
+      Math.cos(latitude * radians) * Math.sin(longitude * radians),
+      Math.sin(latitude * radians),
+    ] as const;
+  const a = vector(left);
+  const b = vector(right);
+  const angle = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
+  if (angle < 1e-12) return left;
+  if (Math.PI - angle < 1e-8)
+    throw new RouteFileError(
+      'NO_USABLE_GEOMETRY',
+      'privacy trim crosses an ambiguous antipodal segment',
+    );
+  const start = Math.sin((1 - fraction) * angle) / Math.sin(angle);
+  const end = Math.sin(fraction * angle) / Math.sin(angle);
+  const x = start * a[0] + end * b[0];
+  const y = start * a[1] + end * b[1];
+  const z = start * a[2] + end * b[2];
+  return [Math.atan2(y, x) / radians, Math.atan2(z, Math.hypot(x, y)) / radians];
 }
 
 function interpolateTimestamp(
@@ -333,25 +367,41 @@ function readUint32(bytes: Uint8Array, offset: number): number {
   );
 }
 
+function concatenatePhotoChunks(chunks: readonly Uint8Array[]): Uint8Array {
+  const output = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
+  let offset = 0;
+  for (const chunk of chunks) {
+    output.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return output;
+}
+
 function stripJpegMetadata(bytes: Uint8Array): Uint8Array {
   if (bytes[0] !== 0xff || bytes[1] !== 0xd8) {
     throw new RouteFileError('MALFORMED_INPUT', 'JPEG signature is invalid');
   }
-  const output: number[] = [0xff, 0xd8];
+  const output: Uint8Array[] = [bytes.subarray(0, 2)];
   let cursor = 2;
   while (cursor < bytes.length) {
     if (bytes[cursor] !== 0xff) {
       throw new RouteFileError('MALFORMED_INPUT', 'JPEG marker is invalid');
     }
+    const start = cursor;
+    while (bytes[cursor + 1] === 0xff) cursor++;
     const marker = bytes[cursor + 1];
     if (marker === undefined) throw new RouteFileError('MALFORMED_INPUT', 'JPEG is truncated');
-    if (marker === 0xda) {
-      output.push(...bytes.slice(cursor));
-      return new Uint8Array(output);
-    }
     if (marker === 0xd9) {
-      output.push(0xff, marker);
-      return new Uint8Array(output);
+      output.push(bytes.subarray(start, cursor + 2));
+      return concatenatePhotoChunks(output);
+    }
+    if (marker === 0x00 || marker === 0xd8 || (marker >= 0xd0 && marker <= 0xd7)) {
+      throw new RouteFileError('MALFORMED_INPUT', 'unexpected JPEG marker outside scan');
+    }
+    if (marker === 0x01) {
+      output.push(bytes.subarray(start, cursor + 2));
+      cursor += 2;
+      continue;
     }
     const length = ((bytes[cursor + 2] ?? 0) << 8) | (bytes[cursor + 3] ?? 0);
     if (length < 2 || cursor + 2 + length > bytes.length) {
@@ -359,8 +409,28 @@ function stripJpegMetadata(bytes: Uint8Array): Uint8Array {
     }
     const end = cursor + 2 + length;
     const metadata = marker === 0xe1 || marker === 0xed || marker === 0xfe;
-    if (!metadata) output.push(...bytes.slice(cursor, end));
+    if (!metadata) output.push(bytes.subarray(start, end));
     cursor = end;
+    if (marker === 0xda) {
+      // Scan bytes escape FF as FF00; restart markers stay inside the scan.
+      // Other markers end the scan, including metadata between progressive scans.
+      const scanStart = cursor;
+      while (cursor < bytes.length) {
+        if (bytes[cursor] !== 0xff) {
+          cursor++;
+          continue;
+        }
+        let next = cursor + 1;
+        while (bytes[next] === 0xff) next++;
+        const code = bytes[next];
+        if (code === 0x00 || (code !== undefined && code >= 0xd0 && code <= 0xd7)) {
+          cursor = next + 1;
+          continue;
+        }
+        break;
+      }
+      output.push(bytes.subarray(scanStart, cursor));
+    }
   }
   throw new RouteFileError('MALFORMED_INPUT', 'JPEG has no image data');
 }
@@ -370,7 +440,7 @@ function stripPngMetadata(bytes: Uint8Array): Uint8Array {
   if (!signature.every((value, index) => bytes[index] === value)) {
     throw new RouteFileError('MALFORMED_INPUT', 'PNG signature is invalid');
   }
-  const output: number[] = [...signature];
+  const output: Uint8Array[] = [bytes.subarray(0, 8)];
   const metadataChunks = new Set(['eXIf', 'tEXt', 'zTXt', 'iTXt', 'tIME']);
   let cursor = 8;
   let foundEnd = false;
@@ -379,7 +449,7 @@ function stripPngMetadata(bytes: Uint8Array): Uint8Array {
     const end = cursor + 12 + length;
     if (end > bytes.length) throw new RouteFileError('MALFORMED_INPUT', 'PNG chunk is truncated');
     const type = String.fromCharCode(...bytes.slice(cursor + 4, cursor + 8));
-    if (!metadataChunks.has(type)) output.push(...bytes.slice(cursor, end));
+    if (!metadataChunks.has(type)) output.push(bytes.subarray(cursor, end));
     cursor = end;
     if (type === 'IEND') {
       foundEnd = true;
@@ -387,7 +457,7 @@ function stripPngMetadata(bytes: Uint8Array): Uint8Array {
     }
   }
   if (!foundEnd) throw new RouteFileError('MALFORMED_INPUT', 'PNG has no IEND chunk');
-  return new Uint8Array(output);
+  return concatenatePhotoChunks(output);
 }
 
 export function removePhotoMetadata(

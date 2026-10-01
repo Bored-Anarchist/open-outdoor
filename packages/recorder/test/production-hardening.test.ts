@@ -28,6 +28,72 @@ function fixture() {
   };
 }
 describe('WP-503 recorder I/O hardening', () => {
+  it('pauses native sensors when the initial durable snapshot fails', async () => {
+    const { recorder, tracker, commit } = fixture();
+    const pause = vi.spyOn(tracker, 'pause');
+    commit.mockRejectedValueOnce(new Error('disk unavailable'));
+    await expect(recorder.start('balanced')).rejects.toThrow('disk unavailable');
+    expect(pause).toHaveBeenCalledOnce();
+    expect(recorder.stateMachine.state.kind).toBe('paused');
+    expect((await tracker.recover())?.state).toBe('paused');
+    await recorder.recover();
+    await expect(recorder.finish()).resolves.toMatchObject({ activity: { lifecycle: 'finished' } });
+  });
+  it('does not call native start while another recording is active', async () => {
+    const { recorder, tracker } = fixture();
+    await recorder.start('balanced');
+    const start = vi.spyOn(tracker, 'start');
+    await expect(recorder.start('balanced')).rejects.toThrow(/current recording/);
+    expect(start).not.toHaveBeenCalled();
+  });
+  it('pauses sensors again when saving a resumed recording fails', async () => {
+    const { recorder, tracker, commit } = fixture();
+    await recorder.start('balanced');
+    await recorder.pause();
+    commit.mockRejectedValueOnce(new Error('disk unavailable'));
+    await expect(recorder.resume()).rejects.toThrow('disk unavailable');
+    expect((await tracker.recover())?.state).toBe('paused');
+    expect(recorder.stateMachine.state.kind).toBe('paused');
+    await recorder.resume();
+    expect(recorder.stateMachine.state.kind).toBe('recording');
+  });
+  it('stops sensors before a failed drain and retries without a second native stop', async () => {
+    const { recorder, tracker, commit, repository } = fixture();
+    await recorder.start('balanced');
+    tracker.inject(batch);
+    const stop = vi.spyOn(tracker, 'finish');
+    commit.mockRejectedValueOnce(new Error('disk unavailable'));
+    await expect(recorder.finish()).rejects.toThrow('disk unavailable');
+    expect(stop).toHaveBeenCalledOnce();
+    expect(recorder.stateMachine.state.kind).toBe('paused');
+    await recorder.finish();
+    expect(stop).toHaveBeenCalledOnce();
+    expect(repository.exportSnapshot().activities[0]?.samples).toHaveLength(1);
+    expect(repository.exportSnapshot().activities[0]?.samples[0]?.paused).toBe(false);
+  });
+  it('retries a failed final snapshot without rebuilding a duplicate derived revision', async () => {
+    const { recorder, tracker, commit, repository } = fixture();
+    await recorder.start('balanced');
+    const stop = vi.spyOn(tracker, 'finish');
+    commit.mockRejectedValueOnce(new Error('final write unavailable'));
+    await expect(recorder.finish()).rejects.toThrow('final write unavailable');
+    await expect(recorder.start('balanced')).rejects.toThrow(/current recording/);
+    const result = await recorder.finish();
+    expect(result.activity.lifecycle).toBe('finished');
+    expect(stop).toHaveBeenCalledOnce();
+    expect(repository.exportSnapshot().revisions).toHaveLength(1);
+  });
+  it('retries failed native finalization while keeping the committed summary', async () => {
+    const { recorder, tracker, repository } = fixture();
+    await recorder.start('balanced');
+    const finalize = vi
+      .spyOn(tracker, 'finalize')
+      .mockRejectedValueOnce(new Error('bridge unavailable'));
+    await expect(recorder.finish()).rejects.toThrow('bridge unavailable');
+    await expect(recorder.finish()).resolves.toMatchObject({ activity: { lifecycle: 'finished' } });
+    expect(finalize).toHaveBeenCalledTimes(2);
+    expect(repository.exportSnapshot().revisions).toHaveLength(1);
+  });
   it('performs no snapshot writes for 720 empty refreshes', async () => {
     const { recorder, commit } = fixture();
     await recorder.start('balanced');

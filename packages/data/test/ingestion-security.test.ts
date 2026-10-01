@@ -1,7 +1,8 @@
-import { mkdtemp } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   IngestionSecurityError,
   RawArtifactStore,
@@ -78,7 +79,140 @@ function isolatedConnector(
   };
 }
 
+const temporaryRoots: string[] = [];
+async function rawFixture() {
+  const root = await mkdtemp(join(tmpdir(), 'open-outdoor-audit-raw-'));
+  temporaryRoots.push(root);
+  const payload = new TextEncoder().encode('synthetic audit payload');
+  const checksum = createHash('sha256').update(payload).digest('hex');
+  const directory = join(root, checksum.slice(0, 2));
+  const metadata = {
+    sourceId: 'synthetic',
+    externalId: 'one',
+    sourcePartition: 'fixture',
+    retrievedAt: '2026-09-30T00:00:00Z',
+    contentType: 'text/plain',
+    classification: 'PUBLIC_SYNTHETIC' as const,
+    retention: 'P30D',
+  };
+  return {
+    root,
+    payload,
+    checksum,
+    directory,
+    metadata,
+    store: new RawArtifactStore({ root, boundary: 'public' }),
+  };
+}
+afterEach(async () => {
+  await Promise.all(
+    temporaryRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })),
+  );
+});
+
 describe('WP-202 ingestion security and raw boundary', () => {
+  it.each([
+    'folder/NUL.txt',
+    'folder/file:stream',
+    'folder/file.',
+    'folder/file ',
+    './file',
+    'folder/a?b',
+    'folder/a\u0000b',
+  ])('rejects unsafe Windows archive path %s', (path) => {
+    expect(() =>
+      inspectArchiveEntries([{ path, kind: 'file', compressedBytes: 1, expandedBytes: 1 }], {
+        maxEntries: 5,
+        maxExpandedBytes: 100,
+        maxCompressionRatio: 10,
+      }),
+    ).toThrow(IngestionSecurityError);
+  });
+
+  it.each([
+    ['folder/a', 'folder/A'],
+    ['folder/a', 'folder\\a'],
+    ['folder', 'folder/a'],
+    ['folder/a', 'folder'],
+  ])('rejects colliding or conflicting archive paths %s and %s', (first, second) => {
+    expect(() =>
+      inspectArchiveEntries(
+        [first, second].map((path) => ({
+          path,
+          kind: 'file' as const,
+          compressedBytes: 1,
+          expandedBytes: 1,
+        })),
+        { maxEntries: 5, maxExpandedBytes: 100, maxCompressionRatio: 10 },
+      ),
+    ).toThrow(IngestionSecurityError);
+  });
+
+  it.each([NaN, Infinity, 0, -1])('rejects invalid archive budgets %s', (limit) => {
+    for (const key of ['maxEntries', 'maxExpandedBytes', 'maxCompressionRatio']) {
+      expect(() =>
+        inspectArchiveEntries([], {
+          maxEntries: 5,
+          maxExpandedBytes: 100,
+          maxCompressionRatio: 10,
+          [key]: limit,
+        }),
+      ).toThrow(IngestionSecurityError);
+    }
+  });
+
+  it('accepts a directory and its nested file', () => {
+    expect(() =>
+      inspectArchiveEntries(
+        [
+          { path: 'folder', kind: 'directory', compressedBytes: 0, expandedBytes: 0 },
+          { path: 'folder/file', kind: 'file', compressedBytes: 1, expandedBytes: 1 },
+        ],
+        { maxEntries: 5, maxExpandedBytes: 100, maxCompressionRatio: 10 },
+      ),
+    ).not.toThrow();
+  });
+
+  it('repairs missing provenance on retry instead of treating an orphaned payload as complete', async () => {
+    const f = await rawFixture();
+    await mkdir(f.directory);
+    await writeFile(join(f.directory, `${f.checksum}.raw`), f.payload);
+    await f.store.put(f.payload, f.metadata);
+    expect(JSON.parse(await readFile(join(f.directory, `${f.checksum}.json`), 'utf8'))).toEqual(
+      f.metadata,
+    );
+  });
+  it('rejects an unusable metadata destination even when the payload write succeeded', async () => {
+    const f = await rawFixture();
+    await mkdir(join(f.directory, `${f.checksum}.json`), { recursive: true });
+    await expect(f.store.put(f.payload, f.metadata)).rejects.toThrow();
+  });
+  it('rejects conflicting provenance for identical payloads', async () => {
+    const f = await rawFixture();
+    await f.store.put(f.payload, f.metadata);
+    await expect(f.store.put(f.payload, { ...f.metadata, retention: 'P1D' })).rejects.toThrow(
+      /provenance/,
+    );
+  });
+  it('permits unchanged content to be rechecked while preserving its original retrieval receipt', async () => {
+    const f = await rawFixture();
+    await f.store.put(f.payload, f.metadata);
+    await expect(
+      f.store.put(f.payload, { ...f.metadata, retrievedAt: '2026-10-01T00:00:00Z' }),
+    ).resolves.toMatchObject({ checksum: f.checksum });
+    const retained = JSON.parse(await readFile(join(f.directory, `${f.checksum}.json`), 'utf8'));
+    expect(retained.retrievedAt).toBe(f.metadata.retrievedAt);
+  });
+  it('rejects a linked shard directory before writing outside the selected raw root', async () => {
+    const f = await rawFixture();
+    const outside = await mkdtemp(join(tmpdir(), 'open-outdoor-audit-outside-'));
+    temporaryRoots.push(outside);
+    await symlink(outside, f.directory, process.platform === 'win32' ? 'junction' : 'dir');
+    await expect(f.store.put(f.payload, f.metadata)).rejects.toThrow(/raw root/);
+    await expect(readFile(join(outside, `${f.checksum}.raw`))).rejects.toMatchObject({
+      code: 'ENOENT',
+    });
+  });
   it.each([
     [
       'path traversal',

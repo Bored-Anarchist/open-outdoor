@@ -302,7 +302,10 @@ function polygonDistanceMeters(
   ) {
     return 0;
   }
-  return Math.min(...polygon.map((ring) => lineDistanceMeters(ring, coordinate)));
+  return polygon.reduce(
+    (minimum, ring) => Math.min(minimum, lineDistanceMeters(ring, coordinate)),
+    Number.POSITIVE_INFINITY,
+  );
 }
 
 function geometryDistanceMeters(geometry: OfflineGeometry, coordinate: OfflinePosition): number {
@@ -312,12 +315,16 @@ function geometryDistanceMeters(geometry: OfflineGeometry, coordinate: OfflinePo
     case 'LineString':
       return lineDistanceMeters(geometry.coordinates, coordinate);
     case 'MultiLineString':
-      return Math.min(...geometry.coordinates.map((line) => lineDistanceMeters(line, coordinate)));
+      return geometry.coordinates.reduce(
+        (minimum, line) => Math.min(minimum, lineDistanceMeters(line, coordinate)),
+        Number.POSITIVE_INFINITY,
+      );
     case 'Polygon':
       return polygonDistanceMeters(geometry.coordinates, coordinate);
     case 'MultiPolygon':
-      return Math.min(
-        ...geometry.coordinates.map((polygon) => polygonDistanceMeters(polygon, coordinate)),
+      return geometry.coordinates.reduce(
+        (minimum, polygon) => Math.min(minimum, polygonDistanceMeters(polygon, coordinate)),
+        Number.POSITIVE_INFINITY,
       );
   }
 }
@@ -327,10 +334,16 @@ function intersectsBounds(
   bounds: readonly [number, number, number, number],
 ): boolean {
   const points = positions(geometry);
-  const west = Math.min(...points.map(([longitude]) => longitude));
-  const east = Math.max(...points.map(([longitude]) => longitude));
-  const south = Math.min(...points.map(([, latitude]) => latitude));
-  const north = Math.max(...points.map(([, latitude]) => latitude));
+  let west = Number.POSITIVE_INFINITY;
+  let east = Number.NEGATIVE_INFINITY;
+  let south = Number.POSITIVE_INFINITY;
+  let north = Number.NEGATIVE_INFINITY;
+  for (const [longitude, latitude] of points) {
+    west = Math.min(west, longitude);
+    east = Math.max(east, longitude);
+    south = Math.min(south, latitude);
+    north = Math.max(north, latitude);
+  }
   return west <= bounds[2] && east >= bounds[0] && south <= bounds[3] && north >= bounds[1];
 }
 

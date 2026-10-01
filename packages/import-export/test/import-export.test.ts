@@ -17,6 +17,48 @@ const gpx =
   '</trkseg></trk></gpx>';
 
 describe('WP-106 route import/export privacy', () => {
+  it.each([NaN, Infinity, 0, -1, 1.5])('rejects invalid public parser limits %s', (limit) => {
+    for (const limits of [{ maximumBytes: limit }, { maximumPoints: limit }]) {
+      expect(() => importGpx(gpx, limits)).toThrow(RouteFileError);
+      expect(() => importGeoJson('{}', limits)).toThrow(RouteFileError);
+    }
+  });
+
+  it.each([
+    [
+      [179.99, 0],
+      [-179.99, 0],
+    ],
+    [
+      [-179.99, 0],
+      [179.99, 0],
+    ],
+    [
+      [30, 85],
+      [60, 85],
+    ],
+  ] as const)('trims both endpoints by geodesic distance across %j', (start, end) => {
+    const trimmed = trimSensitiveEndpoints([start, end], 200);
+    expect(geodesicDistanceM(start, trimmed[0]!)).toBeCloseTo(200, 2);
+    expect(geodesicDistanceM(end, trimmed.at(-1)!)).toBeCloseTo(200, 2);
+    expect(geodesicDistanceM(trimmed[0]!, trimmed.at(-1)!)).toBeCloseTo(
+      geodesicDistanceM(start, end) - 400,
+      2,
+    );
+  });
+
+  it('rejects an ambiguous antipodal route instead of claiming privacy trimming succeeded', () => {
+    expect(() =>
+      trimSensitiveEndpoints(
+        [
+          [0, 0],
+          [180, 0],
+        ],
+        200,
+      ),
+    ).toThrow(RouteFileError);
+  });
+
   it('imports GPX as private and rejects entity-bearing XML', () => {
     expect(importGpx(gpx)).toMatchObject({ name: 'Private hike', private: true });
     expect(() =>
@@ -69,5 +111,37 @@ describe('WP-106 route import/export privacy', () => {
     const sanitized = removePhotoMetadata(jpeg, 'image/jpeg');
     expect(new TextDecoder().decode(sanitized.bytes)).not.toContain('Exif');
     expect(sanitized.removedMetadata).toBe(true);
+  });
+  it('removes metadata between JPEG scans and discards data after EOI', () => {
+    const scan = [0xff, 0xda, 0, 2, 1, 0xff, 0, 2, 0xff, 0xd0, 3];
+    const exif = [0xff, 0xe1, 0, 8, 69, 120, 105, 102, 0, 0];
+    const jpeg = new Uint8Array([0xff, 0xd8, ...scan, ...exif, ...scan, 0xff, 0xd9, ...exif]);
+    expect(removePhotoMetadata(jpeg, 'image/jpeg').bytes).toEqual(
+      new Uint8Array([0xff, 0xd8, ...scan, ...scan, 0xff, 0xd9]),
+    );
+  });
+  it('handles a one-MiB JPEG scan without spreading pixels into function arguments', () => {
+    const jpeg = new Uint8Array(1024 * 1024);
+    jpeg.set([0xff, 0xd8, 0xff, 0xda, 0, 2]);
+    jpeg.set([0xff, 0xd9], jpeg.length - 2);
+    const sanitized = removePhotoMetadata(jpeg, 'image/jpeg').bytes;
+    expect(sanitized.length).toBe(jpeg.length);
+    expect(sanitized.every((value, index) => value === jpeg[index])).toBe(true);
+  });
+  it('handles a one-MiB PNG chunk without spreading pixels into function arguments', () => {
+    const dataLength = 1024 * 1024;
+    const png = new Uint8Array(8 + 12 + dataLength + 12);
+    png.set([137, 80, 78, 71, 13, 10, 26, 10]);
+    new DataView(png.buffer).setUint32(8, dataLength);
+    png.set(new TextEncoder().encode('IDAT'), 12);
+    png.set(new TextEncoder().encode('IEND'), png.length - 8);
+    const sanitized = removePhotoMetadata(png, 'image/png').bytes;
+    expect(sanitized.length).toBe(png.length);
+    expect(sanitized.every((value, index) => value === png[index])).toBe(true);
+  });
+  it('rejects truncated JPEG scans without certifying them as sanitized', () => {
+    expect(() =>
+      removePhotoMetadata(new Uint8Array([0xff, 0xd8, 0xff, 0xda, 0, 2, 1]), 'image/jpeg'),
+    ).toThrow(RouteFileError);
   });
 });

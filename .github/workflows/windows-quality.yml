@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   route:
-    name: windows-quality
+    name: Route quality checks
     runs-on: ubuntu-24.04
     timeout-minutes: 3
     outputs:
@@ -34,6 +34,7 @@ jobs:
             echo 'run_expensive=false' >> "$GITHUB_OUTPUT"
           fi
   windows-shared:
+    name: Windows shared checks
     needs: route
     if: needs.route.outputs.run_expensive == 'true'
     runs-on: windows-2025
@@ -57,3 +58,25 @@ jobs:
         run: pnpm quality
       - shell: pwsh
         run: uv run --frozen python -m unittest discover -s python/tests
+  quality:
+    name: windows-quality
+    needs: [route, windows-shared]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Require the routed quality checks to succeed
+        shell: bash
+        env:
+          ROUTE_RESULT: ${{ needs.route.result }}
+          RUN_EXPENSIVE: ${{ needs.route.outputs.run_expensive }}
+          QUALITY_RESULT: ${{ needs.windows-shared.result }}
+        run: |
+          set -euo pipefail
+          test "$ROUTE_RESULT" = success
+          if [ "$RUN_EXPENSIVE" = true ]; then
+            test "$QUALITY_RESULT" = success
+          else
+            test "$RUN_EXPENSIVE" = false
+            test "$QUALITY_RESULT" = skipped
+          fi
