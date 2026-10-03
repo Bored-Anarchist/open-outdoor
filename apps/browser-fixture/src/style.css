@@ -1427,3 +1427,322 @@ nav button:not([aria-pressed='true']):hover:not(:disabled) {
     outline-offset: -3px;
   }
 }
+
+/* Approved whole-app design. Earlier fixture component samples retain their selectors. */
+html,
+body {
+  height: 100%;
+}
+main {
+  max-width: none;
+  height: 100dvh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.app-content {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 22px 24px;
+}
+.product-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+}
+.product-header h1 {
+  font:
+    1.5rem/1.3 Georgia,
+    serif;
+  flex: 1;
+  margin: 0;
+  letter-spacing: 0;
+}
+.icon-button {
+  width: 52px;
+  height: 52px;
+  padding: 12px;
+  border-radius: 50%;
+}
+nav.controls {
+  position: static;
+  margin: 0;
+  padding: 8px 12px max(8px, env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  flex-shrink: 0;
+  background: var(--surface);
+  box-shadow: none;
+  gap: 4px;
+}
+nav button {
+  flex: 1 1 0;
+  border: 0;
+  min-height: 58px;
+  border-radius: 16px;
+  font-size: 12px;
+  padding: 8px 4px;
+  flex-direction: column;
+  text-decoration: none !important;
+}
+nav button[aria-pressed='true'],
+nav button[aria-pressed='true']:hover:not(:disabled),
+nav button[aria-pressed='true']:active:not(:disabled),
+nav button[aria-pressed='true']:focus-visible {
+  background: var(--selected);
+  color: var(--text);
+}
+#surface {
+  margin: 0;
+}
+.card,
+.notice {
+  border-width: 0;
+  border-radius: 22px;
+  padding: 16px;
+}
+[data-appearance='high-contrast'] .card,
+[data-appearance='high-contrast'] .notice,
+[data-appearance='high-contrast'] .inventory-row {
+  border: 1px solid var(--border);
+}
+.settings-list {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  margin: auto;
+}
+.settings-list h2 {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.inventory-row {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  justify-content: flex-start;
+  background: var(--surface);
+  border: 0;
+  border-radius: 14px;
+  gap: 16px;
+  min-height: 78px;
+  padding: 16px;
+  width: 100%;
+}
+.inventory-row > span:first-of-type {
+  flex: 1;
+}
+.inventory-row small,
+.inventory-row p {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 4px 0 0;
+}
+.design-tools {
+  margin: 0;
+  border: 0;
+}
+.recording-card,
+.saved-card {
+  max-width: 760px;
+  margin: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+.recording-card {
+  display: grid;
+  gap: 20px;
+}
+.recording-card .badge {
+  justify-self: start;
+}
+.path-placeholder {
+  height: 180px;
+  border-radius: 22px;
+  background: var(--selected);
+  display: grid;
+  place-items: center;
+}
+.path-placeholder svg {
+  width: 48px;
+  height: 48px;
+}
+.recording-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.recording-metrics > div {
+  flex: 1 1 80px;
+  background: transparent;
+  padding: 8px 0;
+}
+.recording-metrics strong {
+  font-size: 1.4rem;
+}
+.primary-action {
+  border: 0;
+  min-height: 52px;
+  background: var(--accent);
+  color: var(--onAccent);
+}
+.saved-card .journal-art {
+  margin: 48px auto 32px;
+}
+.search-card {
+  padding: 0;
+}
+.search-field {
+  margin: 0 0 16px;
+}
+.search-field input {
+  margin: 0;
+}
+.search-card select {
+  max-width: 320px;
+}
+.place-result {
+  border: 0;
+  background: var(--surface);
+}
+main[data-section='explore'] .app-content {
+  position: relative;
+  padding: 0;
+  display: flex;
+  overflow: hidden;
+}
+main[data-section='explore'] .product-header {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+main[data-section='explore'] #surface {
+  flex: 1;
+  min-height: 0;
+}
+.explore-workspace {
+  display: block;
+  height: 100%;
+  position: relative;
+}
+.map {
+  height: 100%;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  border-radius: 0;
+  background: var(--land);
+}
+.map figcaption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.map svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.map-toolbar {
+  position: absolute;
+  inset: 16px 16px auto;
+  display: flex;
+  gap: 10px;
+}
+.map-toolbar > button:first-child {
+  flex: 1;
+  justify-content: flex-start;
+  font-weight: 400;
+}
+.map-tools {
+  position: absolute;
+  left: 16px;
+  top: 80px;
+  padding: 0;
+  max-width: min(760px, calc(100% - 32px));
+}
+.map-tools > summary {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.map-tools > .card {
+  max-height: 45dvh;
+  overflow: auto;
+}
+.place-panel {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 36px;
+  border-radius: 26px;
+  background: var(--surface);
+  padding: 16px;
+  max-height: 55%;
+  overflow: auto;
+}
+.place-panel h2 {
+  font:
+    1.35rem/1.3 Georgia,
+    serif;
+  margin: 12px 0;
+}
+.access-preview {
+  color: var(--caution);
+  font-weight: 700;
+}
+.map-attribution {
+  position: absolute;
+  left: 16px;
+  bottom: 8px;
+  font-size: 12px;
+  background: var(--surface);
+  padding: 2px 6px;
+  color: var(--muted);
+}
+.place-detail .place-banner {
+  display: none;
+}
+.place-detail .access-note {
+  background: transparent;
+  padding: 0;
+}
+#action-status:empty {
+  display: none;
+}
+@media (min-width: 800px) {
+  .place-panel {
+    left: auto;
+    width: min(350px, 34%);
+    right: 24px;
+    bottom: 36px;
+  }
+  .map-toolbar {
+    right: calc(34% + 48px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    transition: none !important;
+  }
+}

@@ -7,6 +7,7 @@ import type { ImportedMapDatasetsService } from '../../../apps/mobile/useImporte
 
 vi.mock('../../../apps/mobile/node_modules/react-native', () => ({
   View: 'view',
+  Switch: 'switch',
   Alert: { alert: vi.fn() },
 }));
 vi.mock('../../../apps/mobile/accessibility', () => ({ ProductText: 'text' }));
@@ -14,6 +15,13 @@ vi.mock('../../../apps/mobile/LaptopPackages', () => ({ LaptopPackages: () => nu
 vi.mock('../../../apps/mobile/ProductComponents', () => ({
   ProductButton: (props: { label: string }) => createElement('button', props, props.label),
   ProductCard: (props: { title: string; children: unknown }) => createElement('card', props),
+  ProductRow: (props: { title: string; onPress: () => void }) =>
+    createElement('button', { ...props, label: props.title }),
+  ProductHeader: 'header',
+  ProductMetric: () => null,
+  ProductDisclosure: (props: { title: string; children: unknown }) =>
+    createElement('disclosure', props),
+  usePalette: () => ({ muted: '#50665b', surface: '#fff' }),
 }));
 vi.mock('@open-outdoor/mobile-map-data', () => ({
   mobileMapDataMetadata: {
@@ -53,11 +61,11 @@ it('distinguishes the bundled map from empty public installs and private imports
     root = create(createElement(MapSettings, { imports, statePackages, onShowCoverage: vi.fn() }));
   });
   const text = JSON.stringify(root.toJSON());
-  expect(text).toContain('Installed public packages');
-  expect(text).toContain('No public state packages installed.');
-  expect(text).toContain('Private imported datasets');
-  expect(text).toContain('No private datasets imported.');
-  expect(text).toContain('No private data bundled in this build.');
+  expect(text).toContain('Public packages');
+  expect(text).toContain('No public packages');
+  expect(text).toContain('Private data');
+  expect(text).toContain('No private datasets');
+  expect(text).not.toContain('Bundled private sources');
   expect(text).not.toContain('Permission is hereby granted');
 });
 
@@ -104,11 +112,52 @@ it('shows package visibility and routes public and private coverage to Explore',
   });
   const button = (label: string) =>
     root.root.findAllByType('button').find((node) => node.props.label === label)!;
-  await act(async () => button('Hide Synthetic New York').props.onPress());
+  await act(async () =>
+    root.root
+      .findAllByType('switch')
+      .find((node) => node.props.accessibilityLabel === 'Hide Synthetic New York')!
+      .props.onValueChange(false),
+  );
   expect(packages.change).toHaveBeenCalledWith('NY', 'visibility');
-  await act(async () => button('Show Synthetic New York coverage').props.onPress());
+  await act(async () => button('Synthetic New York').props.onPress());
+  await act(async () => button('Coverage').props.onPress());
   expect(show).toHaveBeenLastCalledWith(bounds);
-  await act(async () => button('Show coverage of Synthetic private dataset').props.onPress());
+  await act(async () => root.root.findByType('header').props.onBack());
+  await act(async () => button('Synthetic private dataset').props.onPress());
+  await act(async () => button('Coverage').props.onPress());
   expect(show).toHaveBeenLastCalledWith([point[0], point[1], point[0], point[1]]);
-  expect(JSON.stringify(root.toJSON())).toContain('private on-device');
+  expect(JSON.stringify(root.toJSON())).toContain('Private on this device');
+});
+
+it('reviews a checked import without persisting it until the user imports it', async () => {
+  const draft = parseMapDataset(
+    JSON.stringify({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [-73, 42] },
+      properties: { name: 'Synthetic' },
+    }),
+    'b'.repeat(64),
+    'Synthetic.geojson',
+  );
+  const commitDataset = vi.fn(async () => draft);
+  const prepareDataset = vi.fn(async () => draft);
+  await act(async () => {
+    root = create(
+      createElement(MapSettings, {
+        imports: { ...imports, prepareDataset, commitDataset },
+        statePackages,
+        onShowCoverage: vi.fn(),
+      }),
+    );
+  });
+  const button = (label: string) =>
+    root.root.findAllByType('button').find((node) => node.props.label === label)!;
+  await act(async () => button('Add a map').props.onPress());
+  await act(async () => button('Import GeoJSON').props.onPress());
+  expect(prepareDataset).toHaveBeenCalledTimes(1);
+  expect(commitDataset).not.toHaveBeenCalled();
+  expect(root.root.findByType('header').props.title).toBe('Review import');
+  await act(async () => button('Import dataset').props.onPress());
+  expect(commitDataset).toHaveBeenCalledWith(draft);
+  expect(root.root.findByType('header').props.title).toBe('Maps');
 });

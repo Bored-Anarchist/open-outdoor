@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 import { hikeSampleIndex, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
 import { ProductText as Text } from './accessibility';
-import { ProductButton, usePalette } from './ProductComponents';
+import { ProductButton, ProductDisclosure, usePalette } from './ProductComponents';
 
 export function HikeDetails({
   route,
@@ -49,11 +49,11 @@ export function HikeDetails({
   const select = (locationX: number) =>
     onSampleSelect(hikeSampleIndex(route, (locationX - 6) / Math.max(1, width - 12)));
   const stats = [
-    [recorded ? 'Recorded distance' : 'Mapped length', distance(route.distanceM)],
-    ['Elevation gain', route.ascentM === undefined ? 'Unavailable' : elevation(route.ascentM)],
-    ['Elevation loss', route.descentM === undefined ? 'Unavailable' : elevation(route.descentM)],
+    ['Distance', distance(route.distanceM)],
+    ['Ascent', route.ascentM === undefined ? '—' : elevation(route.ascentM)],
+    ['Descent', route.descentM === undefined ? '—' : elevation(route.descentM)],
     [
-      recorded ? 'Recorded time' : 'Est. walking time',
+      recorded ? 'Time' : 'Est. time',
       recorded ? `${Math.floor(recordedSeconds! / 60)} min ${recordedSeconds! % 60} s` : time,
     ],
   ];
@@ -71,7 +71,7 @@ export function HikeDetails({
               flex: 1,
               padding: 12,
               borderRadius: 12,
-              backgroundColor: palette.selected,
+              backgroundColor: palette.background,
             }}
           >
             <Text style={{ color: palette.muted, fontSize: 13 }}>{label}</Text>
@@ -244,16 +244,18 @@ export function HikeDetails({
         }
         onPress={onShowRoute}
       />
-      <Text style={{ color: palette.muted }}>
-        {recorded
-          ? 'This private view uses durable recorder samples. Recorded time excludes pause gaps and is based on captured observations.'
-          : 'This is the source’s mapped trail, which may be one section of a longer hike. A mapped endpoint is not a verified trailhead. Walking time assumes 4 km/h plus one hour per 600 m climbed; it excludes stops and conditions.'}
-        {relativeElevation
-          ? ' Elevations have a relative sensor baseline, not a verified height above sea level.'
-          : ''}
-      </Text>
+      <ProductDisclosure title="Profile details">
+        <Text style={{ color: palette.muted }}>
+          {recorded
+            ? 'This private view uses durable recorder samples. Recorded time excludes pause gaps and is based on captured observations.'
+            : 'This is the source’s mapped trail, which may be one section of a longer hike. A mapped endpoint is not a verified trailhead. Walking time assumes 4 km/h plus one hour per 600 m climbed; it excludes stops and conditions.'}
+          {relativeElevation
+            ? ' Elevations have a relative sensor baseline, not a verified height above sea level.'
+            : ''}
+        </Text>
+      </ProductDisclosure>
       <ProductButton
-        label={metric ? 'Use miles and feet' : 'Use kilometres and metres'}
+        label={metric ? 'Miles / feet' : 'Kilometres / metres'}
         hint="Change units for hike statistics and the elevation chart"
         onPress={() => setMetric(!metric)}
       />

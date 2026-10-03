@@ -1,6 +1,6 @@
 # Offline state package loader
 
-The app has a dedicated path for installing complete public state catalogs. Select one `state.sqlite` file in **Explore → Offline state packages → Install or update a state**. Each state is one package regardless of its GeoJSON import-part count. State catalog installation does not pass through the manual GeoJSON importer or consume its five slots or 50 MiB allowance.
+The app has a dedicated path for installing complete public state catalogs. Select one `state.sqlite` file in **Settings → Maps → Add a map → From Files**. Each state is one package regardless of its GeoJSON import-part count. State catalog installation does not pass through the manual GeoJSON importer or consume its five slots or 50 MiB allowance. Installed public packages and private imports appear separately in **Maps**, with explicit visibility switches and coverage actions.
 
 Files imports use a compiled checksum allowlist. Open Outdoor Local additionally supports [signed updates from an explicitly trusted laptop](LAPTOP_STATE_UPDATES.md), without rebuilding the app for compatible state snapshots. Production signed-provenance and release-keyring integration remain separate gates under ADR-031.
 

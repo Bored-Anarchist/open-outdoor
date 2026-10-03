@@ -1,5 +1,8 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Share, View } from 'react-native';
+import { palettes } from '@open-outdoor/shared';
+import { ProductText as Text } from './accessibility';
+import { ProductButton, ProductDisclosure } from './ProductComponents';
 
 interface StartupErrorBoundaryProps {
   readonly children?: ReactNode;
@@ -33,14 +36,21 @@ export class StartupErrorBoundary extends Component<
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <Text accessibilityRole="header" style={styles.heading}>
-          Open Outdoor startup diagnostic
+          App could not open
         </Text>
-        <Text style={styles.copy}>
-          The app encountered an unexpected render error. Share the message below.
-        </Text>
-        <Text accessibilityRole="alert" selectable style={styles.error}>
-          {this.state.message}
-        </Text>
+        <Text style={styles.copy}>Your saved data has not been deleted.</Text>
+        <ProductDisclosure title="Technical details">
+          <Text accessibilityRole="alert" selectable style={styles.error}>
+            {this.state.message}
+          </Text>
+        </ProductDisclosure>
+        <View style={{ marginTop: 24 }}>
+          <ProductButton
+            label="Share error details"
+            hint="Share the startup error message"
+            onPress={() => Share.share({ message: this.state.message! })}
+          />
+        </View>
       </ScrollView>
     );
   }
@@ -48,27 +58,29 @@ export class StartupErrorBoundary extends Component<
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff0ee',
+    backgroundColor: palettes.light.background,
     flexGrow: 1,
-    padding: 24,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    paddingBottom: 32,
   },
   copy: {
-    color: '#5f1711',
+    color: palettes.light.text,
     fontSize: 16,
     lineHeight: 24,
     marginBottom: 16,
   },
   error: {
     backgroundColor: '#ffffff',
-    borderColor: '#a5251b',
+    borderColor: palettes.light.border,
     borderRadius: 8,
     borderWidth: 2,
-    color: '#5f1711',
+    color: palettes.light.text,
     fontSize: 15,
     padding: 12,
   },
   heading: {
-    color: '#7b1d15',
+    color: palettes.light.text,
     fontSize: 26,
     fontWeight: '700',
     marginBottom: 12,

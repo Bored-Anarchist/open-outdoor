@@ -243,6 +243,8 @@ it('renders labelled inputs and installed state feedback with disabled duplicate
   await act(async () => {
     connect.props.onPress();
   });
+  expect(tree!.root.findAllByType('input')).toHaveLength(0);
+  await act(async () => button('Enter address and code').props.onPress());
   const inputs = tree!.root.findAllByType('input');
   expect(inputs.map((input) => input.props.accessibilityLabel)).toEqual([
     'Laptop address',
@@ -257,7 +259,7 @@ it('renders labelled inputs and installed state feedback with disabled duplicate
     .find((button) => button.props.label === 'Synthetic New York installed')!;
   expect(installedButton.props.disabled).toBe(true);
   expect(
-    tree!.root.findAllByType('button').some((button) => button.props.label === 'Disconnect laptop'),
+    tree!.root.findAllByType('button').some((button) => button.props.label === 'Disconnect'),
   ).toBe(true);
 });
 
@@ -295,7 +297,7 @@ it('scans once, preserves pairing during permission prompts, and connects withou
   await mount();
   await openPanel();
   native.cancelLaptopPairingQr.mockClear();
-  const press = button('Scan pairing QR code').props.onPress;
+  const press = button('Scan QR code').props.onPress;
   await act(async () => {
     press();
     press();
@@ -324,11 +326,11 @@ it('does not connect from an unsafe QR or a scan completing after background can
   );
   await mount();
   await openPanel();
-  await act(async () => button('Scan pairing QR code').props.onPress());
+  await act(async () => button('Scan QR code').props.onPress());
   expect(native.connectLaptopPackages).not.toHaveBeenCalled();
   const late = deferred<string | null>();
   native.scanLaptopPairingQr.mockReturnValueOnce(late.promise);
-  await act(async () => button('Scan pairing QR code').props.onPress());
+  await act(async () => button('Scan QR code').props.onPress());
   await act(async () => app.listeners.forEach((listener) => listener('background')));
   await act(async () =>
     late.resolve(
@@ -353,9 +355,9 @@ it('supports manual entry in older builds and camera denial/cancellation in newe
   );
   await mount();
   await openPanel();
-  await act(async () => button('Scan pairing QR code').props.onPress());
+  await act(async () => button('Scan QR code').props.onPress());
   expect(JSON.stringify(tree!.toJSON())).toContain('Allow Camera access');
-  await act(async () => button('Scan pairing QR code').props.onPress());
+  await act(async () => button('Scan QR code').props.onPress());
   expect(JSON.stringify(tree!.toJSON())).toContain('Scan cancelled');
   expect(native.connectLaptopPackages).not.toHaveBeenCalled();
 });
@@ -390,7 +392,7 @@ it('passes the independently scanned signing fingerprint and requires explicit t
   );
   await mount();
   await openPanel();
-  await act(async () => button('Scan pairing QR code').props.onPress());
+  await act(async () => button('Scan QR code').props.onPress());
   expect(native.connectLaptopUpdates).toHaveBeenCalledWith(address, code, fingerprint);
   expect(native.approveLaptopUpdates).not.toHaveBeenCalled();
   expect(button('Update Synthetic New York').props.disabled).toBe(true);
@@ -401,7 +403,7 @@ it('passes the independently scanned signing fingerprint and requires explicit t
       packages: [{ ...updated, requiresTrust: false }],
     }),
   );
-  await act(async () => button('Trust this laptop for updates').props.onPress());
+  await act(async () => button('Trust updates').props.onPress());
   expect(native.approveLaptopUpdates).toHaveBeenCalledTimes(1);
   expect(button('Update Synthetic New York').props.disabled).toBe(false);
   expect(
@@ -417,7 +419,7 @@ it('passes the independently scanned signing fingerprint and requires explicit t
   expect(service.packages[0]!.sha256).toBe(updated.sha256);
   expect(button('Synthetic New York installed').props.disabled).toBe(true);
   native.revokeLaptopUpdates.mockResolvedValueOnce(JSON.stringify(candidate));
-  await act(async () => button('Stop trusting laptop updates').props.onPress());
+  await act(async () => button('Revoke trust').props.onPress());
   expect(native.revokeLaptopUpdates).toHaveBeenCalledTimes(1);
   expect(service.packages[0]!.sha256).toBe(updated.sha256);
 });
@@ -439,13 +441,11 @@ it('manual pairing cannot enroll an API-provided key without a compared fingerpr
   });
   expect(native.connectLaptopUpdates).toHaveBeenCalledWith(address, code, '');
   expect(
-    tree!.root
-      .findAllByType('button')
-      .some((entry) => entry.props.label === 'Trust this laptop for updates'),
+    tree!.root.findAllByType('button').some((entry) => entry.props.label === 'Trust updates'),
   ).toBe(false);
   const refresh = deferred<string>();
   native.refreshLaptopPackages.mockReturnValueOnce(refresh.promise);
-  await act(async () => button('Check for state updates').props.onPress());
+  await act(async () => button('Check for updates').props.onPress());
   await act(async () => app.listeners.forEach((listener) => listener('background')));
   await act(async () => refresh.resolve(JSON.stringify(candidate)));
   expect(service.laptopCatalog).toBeNull();
@@ -468,7 +468,7 @@ it('a failed signing-key approval keeps installed packages and releases controls
   await act(async () => {
     await service.connectLaptop(address, code, 'c'.repeat(64));
   });
-  await act(async () => button('Trust this laptop for updates').props.onPress());
+  await act(async () => button('Trust updates').props.onPress());
   expect(service.laptopCatalog?.signerTrusted).toBe(false);
   expect(service.packages).toEqual(installed);
   expect(service.busy).toBe(false);
@@ -482,6 +482,7 @@ it('revokes a saved laptop key while offline without connecting or changing inst
     .mockResolvedValueOnce('[]');
   await mount();
   await openPanel();
+  await act(async () => button('Trusted laptops').props.onPress());
   await act(async () => button('Remove update trust cccccccccccc').props.onPress());
   expect(native.revokeStateUpdateSigner).toHaveBeenCalledWith('c'.repeat(64));
   expect(native.connectLaptopUpdates).not.toHaveBeenCalled();
