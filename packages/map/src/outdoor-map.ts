@@ -673,6 +673,7 @@ export interface TieredOfflineVectorBasemapInput {
   readonly worldMaximumZoom: number;
   readonly regionalMinimumZoom: number;
   readonly regionalMaximumZoom: number;
+  readonly useRegionalDetail?: boolean;
 }
 
 function checkedZoom(value: number, label: string): number {
@@ -684,10 +685,9 @@ function checkedZoom(value: number, label: string): number {
 
 /**
  * Composes a worldwide low-zoom archive with a higher-resolution regional
- * archive. Keeping the archives as separate sources is intentional: outside
- * the regional archive, MapLibre can continue overzooming the worldwide source
- * instead of requesting missing tiles from an archive that advertises a
- * global maximum zoom.
+ * archive. The caller checks exact tile coverage before enabling regional
+ * detail. World geometry stops at that tier's minimum zoom so coarse roads,
+ * shorelines and labels do not remain superimposed on detailed geometry.
  */
 export function createTieredOfflineVectorBasemapStyle(
   input: TieredOfflineVectorBasemapInput,
@@ -710,14 +710,24 @@ export function createTieredOfflineVectorBasemapStyle(
   );
   const layers = sanitized.layers.flatMap((layer) => {
     if (layer.type === 'background' || !Object.hasOwn(layer, 'source')) return [{ ...layer }];
-    const worldLayer = { ...layer, source: 'offline-world' };
+    const worldLayer = {
+      ...layer,
+      source: 'offline-world',
+      ...(input.useRegionalDetail !== false
+        ? { maxzoom: Math.min(Number(layer.maxzoom ?? 24), regionalMinimumZoom) }
+        : {}),
+    };
     const regionalLayer = {
       ...layer,
       id: `${layer.id}-regional`,
       source: 'offline-regional',
       minzoom: Math.max(Number(layer.minzoom ?? 0), regionalMinimumZoom),
     };
-    return [worldLayer, regionalLayer];
+    if (input.useRegionalDetail === false) return [worldLayer];
+    return [
+      ...(Number(layer.minzoom ?? 0) < regionalMinimumZoom ? [worldLayer] : []),
+      ...(Number(layer.maxzoom ?? 24) > regionalMinimumZoom ? [regionalLayer] : []),
+    ];
   });
 
   return {

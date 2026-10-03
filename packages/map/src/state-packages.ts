@@ -4,6 +4,7 @@ import {
   type OutdoorFeatureSummary,
   type OutdoorPlaceFilter,
   type OutdoorMarkerDensity,
+  type OutdoorBaseMapStyle,
 } from './outdoor-map';
 
 export interface InstalledStatePackage {
@@ -58,7 +59,7 @@ export function statePackageMapStyle(
 ) {
   const markerConfig = outdoorMarkerDensityConfig[density];
   const sources: Record<string, { type: 'vector'; url: string; attribution: string }> = {};
-  const layers: Record<string, unknown>[] = [];
+  const layers: OutdoorBaseMapStyle['layers'][number][] = [];
   const selectionLayers: string[] = [];
   for (const state of packages.filter((entry) => entry.visible && !entry.integrityError)) {
     if (!/^[A-Z]{2}$/.test(state.state) || !/^file:\/\/\/[^\r\n]+$/.test(state.tilesUri))
@@ -162,4 +163,29 @@ export function statePackageMapStyle(
     selectionLayers.push(`${id}-poi`, `${id}-area`, `${id}-road`, `${id}-trail`);
   }
   return { sources, layers, selectionLayers };
+}
+
+/** Place state geometry below map labels and its markers above them. */
+export function withStatePackageLayers(
+  base: OutdoorBaseMapStyle,
+  stateMap: ReturnType<typeof statePackageMapStyle>,
+): OutdoorBaseMapStyle {
+  const firstLabel = base.layers.findIndex((layer) => layer.type === 'symbol');
+  const insertionIndex = firstLabel < 0 ? base.layers.length : firstLabel;
+  const geometry = stateMap.layers.filter(
+    (layer) => layer.type !== 'circle' && layer.type !== 'symbol',
+  );
+  const places = stateMap.layers.filter(
+    (layer) => layer.type === 'circle' || layer.type === 'symbol',
+  );
+  return {
+    ...base,
+    sources: { ...base.sources, ...stateMap.sources },
+    layers: [
+      ...base.layers.slice(0, insertionIndex),
+      ...geometry,
+      ...base.layers.slice(insertionIndex),
+      ...places,
+    ],
+  };
 }

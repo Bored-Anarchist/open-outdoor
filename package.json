@@ -55,6 +55,7 @@
     "federal:acquire:ny": "node --use-system-ca tools/acquisition/acquire-federal-new-york.mjs",
     "map:private:stage": "node tools/packages/stage-private-mobile-map.mjs --input \"PrivateData/catalogs/US/New York/current\"",
     "test:map:browser": "node tools/quality/outdoor-map-qa.mjs",
+    "test:map:offline": "node tools/quality/offline-map-qa.mjs",
     "map:acquire:hikes": "node --use-system-ca tools/acquisition/acquire-hike-profiles.mjs",
     "map:public:agency": "node tools/acquisition/acquire-public-state-agency.mjs",
     "map:acquire:states": "pnpm exec tsc -b packages/shared && node --use-system-ca tools/acquisition/acquire-state-packages.mjs",

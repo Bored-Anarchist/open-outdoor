@@ -47,6 +47,7 @@ import {
   createOutdoorPlaceLayerStyles,
   createOutdoorMapStyle,
   createTieredOfflineVectorBasemapStyle,
+  regionalBasemapCoversViewport,
   nextOutdoorZoom,
   outdoorDirectionsCoordinateText,
   outdoorDirectionsDestination,
@@ -57,6 +58,7 @@ import {
   mergeStateSummaries,
   bundledFeaturesForStatePackages,
   statePackageMapStyle,
+  withStatePackageLayers,
   type OutdoorBaseMapStyle,
   type OutdoorFeatureIndex,
   type OutdoorFeatureSummary,
@@ -101,6 +103,7 @@ import type { PlaceJournalService } from './application';
 import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
 import type { StatePackagesService } from './useStatePackages';
 import { useStatePackagePlaces, type StatePlaceViewport } from './useStatePackagePlaces';
+import { useMapCameraSync } from './useMapCameraSync';
 
 const bundledFeatureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 
@@ -460,6 +463,15 @@ export function OutdoorMap({
   const [legendOpen, setLegendOpen] = useState(false);
   const [viewport, setViewport] = useState<StatePlaceViewport | null>(null);
   const statePlaces = useStatePackagePlaces(statePackages.packages, viewport);
+  const useRegionalDetail = regionalBasemapCoversViewport(
+    viewport?.bounds ?? [
+      state.camera.center[0] - 0.25,
+      state.camera.center[1] - 0.25,
+      state.camera.center[0] + 0.25,
+      state.camera.center[1] + 0.25,
+    ],
+    viewport?.zoom ?? state.camera.zoom,
+  );
   const precisePlaces = useMemo(
     () =>
       mergeStateSummaries(
@@ -602,15 +614,12 @@ export function OutdoorMap({
                 regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
 
                 regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
+                useRegionalDetail,
               }),
 
               { includePlaces: false, excludedFeatureIds: excludedBundledIds },
             );
-            return {
-              ...base,
-              sources: { ...base.sources, ...stateMap.sources },
-              layers: [...base.layers, ...stateMap.layers],
-            } as unknown as StyleSpecification;
+            return withStatePackageLayers(base, stateMap) as unknown as StyleSpecification;
           })()
         : null,
 
@@ -621,10 +630,12 @@ export function OutdoorMap({
       worldOverviewUri,
       stateMap,
       excludedBundledIds,
+      useRegionalDetail,
     ],
   );
 
   const [showSourceDetails, setShowSourceDetails] = useState(false);
+  const firstMapLabelId = mapStyle?.layers.find((layer) => layer.type === 'symbol')?.id;
 
   const [sourceLinkStatus, setSourceLinkStatus] = useState('');
 
@@ -939,11 +950,7 @@ export function OutdoorMap({
     [last],
   );
 
-  useEffect(() => {
-    if (!followUser) {
-      camera.current?.jumpTo({ center: [...state.camera.center], zoom: state.camera.zoom });
-    }
-  }, [followUser, state.camera]);
+  useMapCameraSync(camera, state.camera, followUser);
 
   useEffect(() => {
     setLoaded(false);
@@ -1429,6 +1436,7 @@ export function OutdoorMap({
               <GeoJSONSource id="imported-datasets" data={importedData}>
                 <Layer
                   id="imported-area"
+                  beforeId={firstMapLabelId}
 
                   type="fill"
 
@@ -1439,6 +1447,7 @@ export function OutdoorMap({
 
                 <Layer
                   id="imported-line"
+                  beforeId={firstMapLabelId}
 
                   type="line"
 

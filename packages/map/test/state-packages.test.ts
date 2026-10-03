@@ -4,6 +4,7 @@ import {
   mergeStateSummaries,
   bundledFeaturesForStatePackages,
   statePackageMapStyle,
+  withStatePackageLayers,
   type InstalledStatePackage,
   type OutdoorFeatureSummary,
 } from '../src';
@@ -27,6 +28,23 @@ const state: InstalledStatePackage = {
 };
 
 describe('state catalogs', () => {
+  it('keeps state terrain and trails below map labels, and place markers above them', () => {
+    const result = withStatePackageLayers(
+      {
+        version: 8,
+        sources: {},
+        layers: [
+          { id: 'background', type: 'background' },
+          { id: 'city-label', type: 'symbol' },
+        ],
+      },
+      statePackageMapStyle([state]),
+    );
+    const ids = result.layers.map((layer) => layer.id);
+    expect(ids.indexOf('state-CA-area')).toBeLessThan(ids.indexOf('city-label'));
+    expect(ids.indexOf('state-CA-trail')).toBeLessThan(ids.indexOf('city-label'));
+    expect(ids.indexOf('state-CA-poi')).toBeGreaterThan(ids.indexOf('city-label'));
+  });
   it('produces valid MapLibre sources, filters and style expressions', () => {
     const require = createRequire(import.meta.url);
     const styleSpec = createRequire(require.resolve('maplibre-gl/package.json'))(

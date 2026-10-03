@@ -74,6 +74,9 @@ importers:
       '@open-outdoor/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@protomaps/basemaps':
+        specifier: 5.7.2
+        version: 5.7.2
     devDependencies:
       typescript:
         specifier: 6.0.3

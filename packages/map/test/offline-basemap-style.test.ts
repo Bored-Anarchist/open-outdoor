@@ -43,7 +43,7 @@ describe('offline vector basemap style source', () => {
     );
   });
 
-  it('keeps the world source visible beneath the regional detail tier', () => {
+  it('switches world geometry off when regional detail begins', () => {
     const style = createTieredOfflineVectorBasemapStyle({
       worldArchiveUri: 'file:///bundle/world-z6.pmtiles',
       regionalArchiveUri: 'file:///bundle/us-canada-z7-z9.pmtiles',
@@ -73,11 +73,41 @@ describe('offline vector basemap style source', () => {
       'places-regional',
     ]);
     expect(style.layers.find((layer) => layer.id === 'roads')?.source).toBe('offline-world');
+    expect(style.layers.find((layer) => layer.id === 'roads')?.maxzoom).toBe(7);
     expect(style.layers.find((layer) => layer.id === 'roads-regional')?.minzoom).toBe(7);
     expect(style.layers.find((layer) => layer.id === 'places')?.layout).not.toHaveProperty(
       'icon-image',
     );
     expect(JSON.stringify(style)).not.toMatch(/https?:\/\//);
+  });
+
+  it('keeps worldwide overzoom without regional layers outside archive coverage', () => {
+    const input = {
+      worldArchiveUri: 'file:///bundle/world.pmtiles',
+      regionalArchiveUri: 'file:///bundle/regional.pmtiles',
+      fontUri: 'file:///bundle/font.ttf',
+      worldMaximumZoom: 6,
+      regionalMinimumZoom: 7,
+      regionalMaximumZoom: 9,
+      sourceLayers: [
+        { id: 'small-roads', type: 'line', source: 'offline-basemap', minzoom: 12 },
+        {
+          id: 'overview-label',
+          type: 'symbol',
+          source: 'offline-basemap',
+          maxzoom: 5,
+          layout: { 'text-field': ['get', 'name'] },
+        },
+      ],
+    };
+    const detailed = createTieredOfflineVectorBasemapStyle(input);
+    expect(detailed.layers.map((layer) => layer.id)).toEqual([
+      'small-roads-regional',
+      'overview-label',
+    ]);
+    const worldwide = createTieredOfflineVectorBasemapStyle({ ...input, useRegionalDetail: false });
+    expect(worldwide.layers.map((layer) => layer.id)).toEqual(['small-roads', 'overview-label']);
+    expect(worldwide.layers[0]).not.toHaveProperty('maxzoom');
   });
 
   it('rejects gaps and overlaps between the bundled tiers', () => {
