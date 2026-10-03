@@ -407,6 +407,55 @@ internal final class OpenOutdoorStatePackages {
     }
     return String(data: try JSONSerialization.data(withJSONObject: found), encoding: .utf8)!
   }
+  /// Read original point coordinates from the spatial index, bounded to the current viewport.
+  /// The vector archive remains responsible for large areas and lines.
+  func places(_ bounds: [Double]) throws -> String {
+    guard bounds.count == 4, bounds.allSatisfy({ $0.isFinite }),
+      bounds[1] >= -90, bounds[3] <= 90, bounds[1] <= bounds[3] else {
+      throw failure("Invalid map viewport.")
+    }
+    let span = bounds[2] - bounds[0]
+    let west = (bounds[0] + 180).truncatingRemainder(dividingBy: 360)
+    let start = (west < 0 ? west + 360 : west) - 180
+    let end = start + (span >= 0 ? span : span + 360)
+    let ranges: [(Double, Double)] = abs(span) >= 360 ? [(-180, 180)] :
+      end > 180 ? [(start, 180), (-180, end - 360)] : [(start, end)]
+    var features: [[String: Any]] = []
+    var ids = Set<String>()
+    var payloadBytes = 0
+    var limited = false
+    // Extract only rendering fields, never visitor descriptions or entire catalog geometry.
+    let sql = """
+      SELECT json_object('id',f.id,'bounds',json_extract(f.summary,'$.bounds'),
+        'properties',json_object('id',f.id,'kind','poi','name',substr(json_extract(f.summary,'$.properties.name'),1,200),
+          'unit',substr(json_extract(f.summary,'$.properties.unit'),1,200),'category',substr(json_extract(f.summary,'$.properties.category'),1,80),
+          'sourceId',substr(json_extract(f.summary,'$.properties.sourceId'),1,200),'origin','public-catalog'))
+      FROM spatial s JOIN features f ON f.ordinal=s.ordinal
+      WHERE s.east>=CAST(? AS REAL) AND s.west<=CAST(? AS REAL)
+        AND s.north>=CAST(? AS REAL) AND s.south<=CAST(? AS REAL)
+        AND json_extract(f.summary,'$.properties.kind')='poi'
+        AND json_extract(f.geometry,'$.type')='Point'
+      ORDER BY f.ordinal LIMIT 2001
+      """
+    outer: for entry in try entries().filter({ $0.visible && $0.quarantined != true }) {
+      let db = try open(file(entry.current, "sqlite"))
+      defer { sqlite3_close(db) }
+      for (west, east) in ranges {
+        for row in try rows(db, sql, [String(west), String(east), String(bounds[1]), String(bounds[3])]) {
+          guard let feature = try JSONSerialization.jsonObject(with: Data(row[0].utf8)) as? [String: Any],
+            let id = feature["id"] as? String, !ids.contains(id) else { continue }
+          if features.count >= 2000 || payloadBytes + row[0].utf8.count > 2 * 1024 * 1024 {
+            limited = true
+            break outer
+          }
+          ids.insert(id)
+          payloadBytes += row[0].utf8.count
+          features.append(feature)
+        }
+      }
+    }
+    return String(data: try JSONSerialization.data(withJSONObject: ["features": features, "limited": limited]), encoding: .utf8)!
+  }
   func detail(_ id: String) throws -> String? {
     guard id.utf8.count <= 512 else { throw failure("Feature identity is too long.") }
     for entry in try entries().filter({ $0.visible && $0.quarantined != true }) {

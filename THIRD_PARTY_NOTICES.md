@@ -47,6 +47,8 @@ Signed laptop updates add original, AI-assisted project code and synthetic tests
 
 ## WP-501 assets
 
+react-native-safe-area-context 5.7.0, MIT, copyright (c) 2019 Th3rd Wave, is pinned to Expo 56's supported version and ships in the mobile app for safe-area layout. Source: the unmodified [App & Flow package](https://github.com/AppAndFlow/react-native-safe-area-context); [complete license](docs/licenses/react-native-safe-area-context.txt), also available in Settings. Reviewed 2026-10-03; source and binary distribution are permitted with the retained license notice. The 2026-10-03 Settings and map fixes are project-authored, AI-assisted Apache-2.0 code; no new geographic data is included.
+
 The [product design system](docs/reference/PRODUCT_DESIGN_SYSTEM.md) inventories the original, AI-assisted Open Outdoor tokens, icon geometry and map styles under Apache-2.0. Playwright 1.62.1 (Apache-2.0) is a pinned development-only browser acceptance dependency; it is not shipped in the mobile application.
 
 WP-502/WP-503 add axe-core 4.13.0 (MPL-2.0) and React/React Test Renderer 19.2.3 (MIT) as pinned development-only audit/test dependencies. No third-party visuals or native runtime dependencies were added. New implementation and test fixtures are project-authored with AI assistance under Apache-2.0; physical evidence remains deferred under ADR-049.

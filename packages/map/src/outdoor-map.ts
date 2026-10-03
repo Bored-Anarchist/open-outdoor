@@ -747,6 +747,7 @@ export function createTieredOfflineVectorBasemapStyle(
 
 export interface OutdoorMapStyleOptions {
   readonly includePlaces?: boolean;
+  readonly excludedFeatureIds?: readonly string[];
 }
 
 export function createOutdoorMapStyle(
@@ -768,7 +769,17 @@ export function createOutdoorMapStyle(
       (layer) =>
         options.includePlaces !== false || (layer.id !== 'dec-poi' && layer.id !== 'dec-camping'),
     )
-    .map((layer) => ({ ...layer, source: 'outdoors' as const }));
+    .map((layer) => ({
+      ...layer,
+      source: 'outdoors' as const,
+      filter: options.excludedFeatureIds?.length
+        ? [
+            'all',
+            layer.filter,
+            ['!', ['in', ['get', 'id'], ['literal', options.excludedFeatureIds]]],
+          ]
+        : layer.filter,
+    }));
   return {
     ...(basemap ?? {}),
     version: 8 as const,

@@ -53,6 +53,9 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     AsyncFunction("statePackageDetail") { (id: String) -> String? in
       try self.statePackageStore.detail(id)
     }.runOnQueue(statePackageQueue)
+    AsyncFunction("statePackagePlaces") { (bounds: [Double]) -> String in
+      try self.statePackageStore.places(bounds)
+    }.runOnQueue(statePackageQueue)
     AsyncFunction("connectLaptopPackages") { (address: String, code: String, promise: Promise) in
       self.laptopPackages.connect(address, code: code, promise: promise)
     }.runOnQueue(statePackageQueue)

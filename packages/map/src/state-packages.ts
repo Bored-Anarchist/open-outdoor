@@ -31,8 +31,22 @@ export function mergeStateSummaries(
   states: readonly OutdoorFeatureSummary[],
 ): OutdoorFeatureSummary[] {
   const entries = new Map(baseline.map((feature) => [feature.id, feature]));
-  for (const feature of states) if (!entries.has(feature.id)) entries.set(feature.id, feature);
+  for (const feature of states) entries.set(feature.id, feature);
   return [...entries.values()];
+}
+
+/** A shown NY package replaces the public NY bundle; private overlays retain their identity. */
+export function bundledFeaturesForStatePackages(
+  bundled: readonly OutdoorFeatureSummary[],
+  packages: readonly InstalledStatePackage[],
+): OutdoorFeatureSummary[] {
+  if (!packages.some((entry) => entry.state === 'NY' && entry.visible && !entry.integrityError))
+    return [...bundled];
+  return bundled.filter(
+    (feature) =>
+      feature.properties.origin === 'private-catalog' ||
+      /^(?:private-|nys-dec(?:-|$)|nys-oprhp(?:-|$))/.test(feature.properties.sourceId),
+  );
 }
 
 export function statePackageMapStyle(
@@ -40,12 +54,13 @@ export function statePackageMapStyle(
   category: OutdoorPlaceFilter = 'all',
   selectedId: string | null = null,
   density: OutdoorMarkerDensity = 'automatic',
+  precisePlaceIds: readonly string[] = [],
 ) {
   const markerConfig = outdoorMarkerDensityConfig[density];
   const sources: Record<string, { type: 'vector'; url: string; attribution: string }> = {};
   const layers: Record<string, unknown>[] = [];
   const selectionLayers: string[] = [];
-  for (const state of packages.filter((entry) => entry.visible)) {
+  for (const state of packages.filter((entry) => entry.visible && !entry.integrityError)) {
     if (!/^[A-Z]{2}$/.test(state.state) || !/^file:\/\/\/[^\r\n]+$/.test(state.tilesUri))
       throw new Error('State map sources must be verified local files.');
     const id = `state-${state.state}`;
@@ -58,6 +73,8 @@ export function statePackageMapStyle(
     const poiFilter = [
       'all',
       ['==', ['get', 'kind'], 'poi'],
+      ['==', ['geometry-type'], 'Point'],
+      ['!', ['in', ['get', 'id'], ['literal', precisePlaceIds]]],
       ...(category === 'all' ? [] : [['==', ['get', 'category'], category]]),
     ];
     const color = [
@@ -70,7 +87,7 @@ export function statePackageMapStyle(
       {
         id: `${id}-area`,
         type: 'fill',
-        filter: ['in', ['get', 'kind'], ['literal', ['land', 'boundary']]],
+        filter: ['==', ['get', 'kind'], 'land'],
         paint: { 'fill-color': '#2e7d54', 'fill-opacity': 0.1 },
       },
       {
@@ -85,7 +102,7 @@ export function statePackageMapStyle(
         type: 'line',
         minzoom: 8,
         filter: ['==', ['get', 'kind'], 'trail'],
-        paint: { 'line-color': '#176b42', 'line-width': 2 },
+        paint: { 'line-color': '#205c86', 'line-width': 2 },
       },
       {
         id: `${id}-poi`,
@@ -129,6 +146,8 @@ export function statePackageMapStyle(
         filter: [
           'all',
           ['==', ['get', 'kind'], 'poi'],
+          ['==', ['geometry-type'], 'Point'],
+          ['!', ['in', ['get', 'id'], ['literal', precisePlaceIds]]],
           ['==', ['get', 'id'], selectedId ?? '__none__'],
         ],
         paint: {

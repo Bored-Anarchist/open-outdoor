@@ -119,6 +119,7 @@ interface OpenOutdoorNativeSpikesModule {
   readonly changeStatePackage: (state: string, action: string) => Promise<string>;
   readonly searchStatePackages: (query: string) => Promise<string>;
   readonly statePackageDetail: (id: string) => Promise<string | null>;
+  readonly statePackagePlaces: (bounds: readonly number[]) => Promise<string>;
   readonly pickMapDataset: () => Promise<{
     readonly id: string;
     readonly name: string;
@@ -178,6 +179,7 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 
 export const nativeSpikes = {
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
+  statePackagePlacesAvailable: typeof module?.statePackagePlaces === 'function',
   laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',
   laptopUpdatesAvailable:
     module?.laptopUpdatesEnabled === true && typeof module?.connectLaptopUpdates === 'function',
@@ -208,6 +210,7 @@ export const nativeSpikes = {
     requiredModule().changeStatePackage(state, action),
   searchStatePackages: (query: string) => requiredModule().searchStatePackages(query),
   statePackageDetail: (id: string) => requiredModule().statePackageDetail(id),
+  statePackagePlaces: (bounds: readonly number[]) => requiredModule().statePackagePlaces(bounds),
   mapImportAvailable: typeof module?.pickMapDataset === 'function',
   pickMapDataset: () => requiredModule().pickMapDataset(),
   loadMapDatasets: (): Promise<string | null> => requiredModule().loadMapDatasets(),

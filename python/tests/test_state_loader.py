@@ -2,6 +2,7 @@
 import importlib.util
 import json
 import pathlib
+import re
 import sqlite3
 import tempfile
 import unittest
@@ -81,6 +82,24 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(summary['properties']['name'], '123')
         self.assertEqual(summary['properties']['sourceName'], 123)
         self.assertEqual(summary['properties']['unit'], '')
+
+    def test_native_viewport_query_returns_original_point_coordinates_only(self):
+        # Execute the native query against a production-built synthetic SQLite catalog.
+        native = (builder.ROOT / 'packages/native-spikes/ios/OpenOutdoorStatePackages.swift').read_text(encoding='utf-8')
+        query = re.search(r'let sql = """\s*(SELECT json_object.*?)\s*"""', native, re.S).group(1)
+        with tempfile.TemporaryDirectory(prefix='state-places-', dir=builder.scratch_root()) as directory:
+            base = pathlib.Path(directory)
+            self.source(base)
+            builder.build_state({'state': 'NY', 'name': 'New York'}, base, max_zoom=5)
+            with closing(sqlite3.connect(base / 'state.sqlite')) as db:
+                rows = db.execute(query, [-74, -72, 41, 43]).fetchall()
+                feature = json.loads(rows[0][0])
+                self.assertEqual(feature['bounds'], [-73, 42, -73, 42])
+                self.assertEqual(feature['properties']['category'], 'water')
+                self.assertEqual(feature['properties']['origin'], 'public-catalog')
+                self.assertEqual(db.execute(query, [-72, -71, 41, 43]).fetchall(), [])
+                db.execute("UPDATE features SET geometry=?", [json.dumps({'type': 'LineString', 'coordinates': [[-73, 42], [-73.1, 42.1]]})])
+                self.assertEqual(db.execute(query, [-74, -72, 41, 43]).fetchall(), [])
 
     def test_polygon_touching_dateline_keeps_its_area_and_dimension(self):
         geometry = builder.display_geometry({'type': 'Polygon', 'coordinates': [

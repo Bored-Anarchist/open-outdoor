@@ -39,6 +39,7 @@ const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const mobileApplication = await text('apps/mobile/application.ts');
 const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
+const mapSettings = await text('apps/mobile/MapSettings.tsx');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -286,9 +287,9 @@ for (const token of [
   'NativeUserLocation',
   'trackUserLocation={followUser',
   'Center on my location',
-  'blue GPS dot',
+  'Blue GPS dot',
 ]) {
-  requireText(mobileMap, token, 'live offline GPS map position');
+  requireText(mobileMap.replace(/\s+/g, ' '), token, 'live offline GPS map position');
 }
 for (const token of [
   'iOverlander community information',
@@ -354,9 +355,8 @@ for (const token of [
 ]) {
   requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
 }
-const outdoorMap = await text('apps/mobile/OutdoorMap.tsx');
 requireText(
-  outdoorMap,
+  mapSettings,
   'No turn instructions, rerouting, or off-route alerts.',
   'native map safety notice',
 );

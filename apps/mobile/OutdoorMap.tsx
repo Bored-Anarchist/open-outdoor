@@ -3,13 +3,8 @@ import { HikeCaptureControls, type HikeCaptureActions } from './HikeCaptureContr
 import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
 
 import { HikeDetails } from './HikeDetails';
-import { LaptopPackages } from './LaptopPackages';
 
 import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
-
-import licenses from './map-licenses.json';
-
-import offlineMapLicenses from './offline-map-licenses.json';
 
 import {
   useEffect,
@@ -57,10 +52,10 @@ import {
   outdoorDirectionsDestination,
   outdoorDirectionsUrl,
   outdoorMarkerDensityConfig,
-  outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
   segmentedTrack,
   mergeStateSummaries,
+  bundledFeaturesForStatePackages,
   statePackageMapStyle,
   type OutdoorBaseMapStyle,
   type OutdoorFeatureIndex,
@@ -104,7 +99,8 @@ import {
 import type { PlaceJournalService } from './application';
 
 import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
-import { useStatePackages } from './useStatePackages';
+import type { StatePackagesService } from './useStatePackages';
+import { useStatePackagePlaces, type StatePlaceViewport } from './useStatePackagePlaces';
 
 const bundledFeatureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 
@@ -430,6 +426,11 @@ export function OutdoorMap({
   capture,
 
   section,
+  query,
+  onQueryChange,
+  statePackages,
+  coverage,
+  onCoverageShown,
 }: {
   adapter: OutdoorMapAdapter;
 
@@ -440,6 +441,11 @@ export function OutdoorMap({
   capture: HikeCaptureActions;
 
   section: 'explore' | 'search';
+  query: string;
+  onQueryChange: (value: string) => void;
+  statePackages: StatePackagesService;
+  coverage: [number, number, number, number] | null;
+  onCoverageShown: () => void;
 }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
 
@@ -452,8 +458,30 @@ export function OutdoorMap({
   const palette = usePalette();
 
   const [legendOpen, setLegendOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const statePackages = useStatePackages(query);
+  const [viewport, setViewport] = useState<StatePlaceViewport | null>(null);
+  const statePlaces = useStatePackagePlaces(statePackages.packages, viewport);
+  const precisePlaces = useMemo(
+    () =>
+      mergeStateSummaries(
+        statePlaces.features,
+        statePackages.detail?.geometry?.type === 'Point' ? [statePackages.detail.summary] : [],
+      ),
+    [statePlaces.features, statePackages.detail],
+  );
+  const bundledFeatures = useMemo(
+    () => bundledFeaturesForStatePackages(bundledFeatureIndex.features, statePackages.packages),
+    [statePackages.packages],
+  );
+  const excludedBundledIds = useMemo(() => {
+    const included = new Set(bundledFeatures.map((feature) => feature.id));
+    return bundledFeatureIndex.features
+      .filter((feature) => !included.has(feature.id))
+      .map((feature) => feature.id);
+  }, [bundledFeatures]);
+  const precisePlaceIds = useMemo(
+    () => precisePlaces.map((feature) => feature.id),
+    [precisePlaces],
+  );
   const selectedState = useRef<{
     feature: OutdoorFeatureSummary;
     packages: typeof statePackages.packages;
@@ -465,7 +493,7 @@ export function OutdoorMap({
 
       features: mergeStateSummaries(
         [
-          ...bundledFeatureIndex.features,
+          ...bundledFeatures,
 
           ...imports.datasets
 
@@ -473,11 +501,21 @@ export function OutdoorMap({
 
             .flatMap((dataset) => dataset.index.features),
         ],
-        [...statePackages.results, ...(statePackages.detail ? [statePackages.detail.summary] : [])],
+        [
+          ...statePlaces.features,
+          ...statePackages.results,
+          ...(statePackages.detail ? [statePackages.detail.summary] : []),
+        ],
       ),
     }),
 
-    [imports.datasets, statePackages.results, statePackages.detail],
+    [
+      bundledFeatures,
+      imports.datasets,
+      statePlaces.features,
+      statePackages.results,
+      statePackages.detail,
+    ],
   );
 
   const importedData = useMemo(
@@ -538,8 +576,9 @@ export function OutdoorMap({
         placeFilter,
         state.selectedFeatureId,
         markerDensity,
+        precisePlaceIds,
       ),
-    [statePackages.packages, placeFilter, state.selectedFeatureId, markerDensity],
+    [statePackages.packages, placeFilter, state.selectedFeatureId, markerDensity, precisePlaceIds],
   );
 
   const mapStyle = useMemo(
@@ -565,7 +604,7 @@ export function OutdoorMap({
                 regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
               }),
 
-              { includePlaces: false },
+              { includePlaces: false, excludedFeatureIds: excludedBundledIds },
             );
             return {
               ...base,
@@ -575,10 +614,15 @@ export function OutdoorMap({
           })()
         : null,
 
-    [offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri, stateMap],
+    [
+      offlineFontUri,
+      outdoorDataUri,
+      regionalOverviewUri,
+      worldOverviewUri,
+      stateMap,
+      excludedBundledIds,
+    ],
   );
-
-  const [showLicenses, setShowLicenses] = useState(false);
 
   const [showSourceDetails, setShowSourceDetails] = useState(false);
 
@@ -753,8 +797,26 @@ export function OutdoorMap({
   }, [selected?.id]);
 
   useEffect(() => {
-    if (state.selectedFeatureId !== null && selected === null) adapter.setSelectedFeature(null);
-  }, [adapter, selected, state.selectedFeatureId]);
+    if (state.selectedFeatureId === null || selected !== null || !statePackages.ready) return;
+    let cancelled = false;
+    void statePackages.select(state.selectedFeatureId).then((summary) => {
+      if (cancelled) return;
+      if (summary) {
+        selectedState.current = { feature: summary, packages: statePackages.packages };
+        adapter.setSelectedFeature(summary.id);
+      } else if (imports.ready) adapter.setSelectedFeature(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    adapter,
+    selected,
+    state.selectedFeatureId,
+    statePackages.ready,
+    statePackages.packages,
+    imports.ready,
+  ]);
 
   const setSelected = (feature: OutdoorFeatureSummary | null) => {
     if (!feature) {
@@ -774,6 +836,19 @@ export function OutdoorMap({
 
   const [zoom, setZoom] = useState(state.camera.zoom);
 
+  useEffect(() => {
+    if (!loaded || !coverage) return;
+    setFollowUser(false);
+    if (coverage[0] === coverage[2] && coverage[1] === coverage[3])
+      camera.current?.jumpTo({ center: [coverage[0], coverage[1]], zoom: 14 });
+    else
+      camera.current?.fitBounds(coverage, {
+        padding: { top: 25, right: 25, bottom: 25, left: 25 },
+        duration: 0,
+      });
+    onCoverageShown();
+  }, [loaded, coverage, onCoverageShown]);
+
   const [journalEntry, setJournalEntry] = useState<PlaceJournalEntry | null>(null);
 
   const [noteDraft, setNoteDraft] = useState('');
@@ -787,24 +862,25 @@ export function OutdoorMap({
       createOutdoorPlaceCollection(
         {
           schemaVersion: 1,
-          features: [
-            ...bundledFeatureIndex.features,
-            ...imports.datasets
-              .filter((entry) => entry.visible)
-              .flatMap((entry) => entry.index.features),
-          ],
+          features: mergeStateSummaries(
+            [
+              ...bundledFeatures,
+              ...imports.datasets
+                .filter((entry) => entry.visible)
+                .flatMap((entry) => entry.index.features),
+            ],
+            precisePlaces,
+          ),
         },
         placeFilter,
       ),
 
-    [imports.datasets, placeFilter],
+    [bundledFeatures, imports.datasets, placeFilter, precisePlaces],
   );
 
   const placeLayers = useMemo(() => createOutdoorPlaceLayerStyles(markerDensity), [markerDensity]);
 
   const densityConfig = outdoorMarkerDensityConfig[markerDensity];
-
-  const zoomPresentation = outdoorZoomPresentation(zoom, markerDensity);
 
   const legendCategories: readonly IoverlanderCategory[] =
     placeFilter === 'all'
@@ -888,7 +964,9 @@ export function OutdoorMap({
   }, [placeJournal, selected?.id]);
 
   function select(feature: OutdoorFeatureSummary) {
+    setFollowUser(false);
     if (
+      statePlaces.features.some((entry) => entry.id === feature.id) ||
       statePackages.results.some((entry) => entry.id === feature.id) ||
       statePackages.detail?.summary.id === feature.id
     )
@@ -1071,56 +1149,8 @@ export function OutdoorMap({
     );
   }
 
-  function showDatasetCoverage(dataset: ImportedMapDatasetsService['datasets'][number]) {
-    const bounds: [number, number, number, number] = [180, 90, -180, -90];
-
-    for (const feature of dataset.index.features) {
-      bounds[0] = Math.min(bounds[0], feature.bounds[0]);
-
-      bounds[1] = Math.min(bounds[1], feature.bounds[1]);
-
-      bounds[2] = Math.max(bounds[2], feature.bounds[2]);
-
-      bounds[3] = Math.max(bounds[3], feature.bounds[3]);
-    }
-
-    setFollowUser(false);
-
-    if (bounds[0] === bounds[2] && bounds[1] === bounds[3])
-      camera.current?.jumpTo({ center: [bounds[0], bounds[1]], zoom: 14 });
-    else
-      camera.current?.fitBounds(bounds, {
-        padding: { top: 25, right: 25, bottom: 25, left: 25 },
-
-        duration: 0,
-      });
-  }
-
   return (
     <View>
-      <Text
-        accessibilityRole="header"
-
-        style={{ fontSize: 24, fontWeight: '700', color: palette.text }}
-      >
-        {section === 'search' ? 'Search the offline map' : 'Explore the map'}
-      </Text>
-
-      <Text
-        style={{
-          color: palette.muted,
-          fontSize: 14,
-          lineHeight: 22,
-          marginTop: 4,
-          marginBottom: 12,
-        }}
-      >
-        Offline map ·{' '}
-        {statePackages.packages.some((entry) => entry.visible)
-          ? `${statePackages.packages.filter((entry) => entry.visible).length} state packages shown`
-          : `${featureIndex.features.length.toLocaleString()} geographic features`}
-      </Text>
-
       {section === 'search' ? (
         <>
           <TextInput
@@ -1132,7 +1162,7 @@ export function OutdoorMap({
 
             value={query}
 
-            onChangeText={setQuery}
+            onChangeText={onQueryChange}
 
             style={{
               color: palette.text,
@@ -1229,10 +1259,6 @@ export function OutdoorMap({
         />
       </View>
 
-      <Text accessibilityLiveRegion="polite" style={{ color: palette.muted }}>
-        {placeData.features.length.toLocaleString()} matching places · {zoomPresentation.label}
-      </Text>
-
       <View
         style={{
           height: selectedHike || captured ? 300 : 430,
@@ -1319,6 +1345,10 @@ export function OutdoorMap({
                 );
 
                 setZoom(event.nativeEvent.zoom);
+                setViewport({
+                  bounds: [...event.nativeEvent.bounds],
+                  zoom: event.nativeEvent.zoom,
+                });
 
                 adapter.moveCamera({ center: [x, y], zoom: event.nativeEvent.zoom });
               }}
@@ -1366,7 +1396,10 @@ export function OutdoorMap({
                         setFollowUser(false);
 
                         camera.current?.jumpTo({
-                          center: [...event.nativeEvent.lngLat],
+                          center:
+                            rendered?.geometry.type === 'Point'
+                              ? ([...rendered.geometry.coordinates] as [number, number])
+                              : [...event.nativeEvent.lngLat],
 
                           zoom: Math.min(18, expansionZoom),
                         });
@@ -1429,7 +1462,11 @@ export function OutdoorMap({
 
                   type="circle"
 
-                  filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                  filter={[
+                    'all',
+                    ['==', ['geometry-type'], 'Point'],
+                    ['==', ['get', 'id'], selected?.id ?? '__none__'],
+                  ]}
 
                   paint={{
                     'circle-color': '#a43913',
@@ -1450,7 +1487,12 @@ export function OutdoorMap({
 
                 source="outdoors"
 
-                filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                filter={[
+                  'all',
+                  ['!=', ['geometry-type'], 'Point'],
+                  ['!', ['in', ['get', 'id'], ['literal', excludedBundledIds]]],
+                  ['==', ['get', 'id'], selected?.id ?? '__none__'],
+                ]}
 
                 paint={{ 'line-color': '#a43913', 'line-width': 5 }}
               />
@@ -1504,7 +1546,12 @@ export function OutdoorMap({
 
                 source="outdoors"
 
-                filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                filter={[
+                  'all',
+                  ['==', ['geometry-type'], 'Point'],
+                  ['!', ['in', ['get', 'id'], ['literal', excludedBundledIds]]],
+                  ['==', ['get', 'id'], selected?.id ?? '__none__'],
+                ]}
 
                 paint={{
                   'circle-color': '#a43913',
@@ -1516,6 +1563,25 @@ export function OutdoorMap({
                   'circle-stroke-width': 3,
                 }}
               />
+
+              <GeoJSONSource
+                id="precise-place-selection"
+                data={{
+                  type: 'FeatureCollection',
+                  features: placeData.features.filter((feature) => feature.id === selected?.id),
+                }}
+              >
+                <Layer
+                  id="precise-place-highlight"
+                  type="circle"
+                  paint={{
+                    'circle-color': '#a43913',
+                    'circle-radius': 13,
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 3,
+                  }}
+                />
+              </GeoJSONSource>
 
               <GeoJSONSource id="recorded-track" data={track}>
                 <Layer
@@ -1628,28 +1694,6 @@ export function OutdoorMap({
           </View>
         )}
       </View>
-
-      <Text style={{ color: palette.muted, fontSize: 13, lineHeight: 20, marginBottom: 20 }}>
-        Map display only · No turn instructions, rerouting, or off-route alerts. Mapped places do
-        not establish access or camping permission.
-      </Text>
-
-      <ProductButton
-        label="Land and camping legend"
-        hint="Expand or collapse status explanations"
-        expanded={legendOpen}
-        onPress={() => setLegendOpen(!legendOpen)}
-      />
-
-      {legendOpen ? (
-        <ProductCard title="Land and camping status">
-          {campingLegend.map((entry) => (
-            <Text key={entry.id} style={{ color: palette.text, fontSize: 16, lineHeight: 24 }}>
-              {entry.mark} {entry.label}: {entry.explanation}
-            </Text>
-          ))}
-        </ProductCard>
-      ) : null}
 
       {selected && (
         <ProductCard title={selected.properties.name}>
@@ -1943,148 +1987,117 @@ export function OutdoorMap({
         </ProductCard>
       )}
 
-      <ProductCard title="Hike capture">
-        <HikeCaptureControls
-          capture={capture}
+      {selectedHike || captured || capture.state !== 'idle' ? (
+        <ProductCard title="Hike capture">
+          <HikeCaptureControls
+            capture={capture}
 
-          plan={
-            selectedHike && selected
-              ? { id: selected.id, name: selected.properties.name }
-              : undefined
-          }
-        />
+            plan={
+              selectedHike && selected
+                ? { id: selected.id, name: selected.properties.name }
+                : undefined
+            }
+          />
 
-        {captured ? (
-          <>
-            <Text style={{ fontWeight: '700' }}>
-              {captured.name} · {captured.state} · private on-device
-            </Text>
-
-            <Text>
-              Captured path: pink. Expected path: orange when selected. GPS:{' '}
-              {captured.display.gpsQuality}.
-            </Text>
-
-            <Text>
-              Elevation source:{' '}
-              {captured.display.elevationConfidence === 'barometer-fused'
-                ? 'Filtered barometer, with GPS calibration where available'
-                : captured.display.elevationConfidence === 'gps'
-                  ? 'Filtered GPS (lower confidence)'
-                  : 'Waiting for usable elevations'}
-              .
-            </Text>
-
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <ProductButton
-                label="Captured hike graphic"
-
-                hint="Show your captured path statistics and sensor elevation chart"
-
-                selected={graphic === 'recorded'}
-
-                onPress={() => setGraphic('recorded')}
-              />
-
-              <ProductButton
-                label="Expected hike graphic"
-
-                hint="Restore the associated expected path and its terrain profile"
-
-                selected={graphic === 'planned'}
-
-                disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
-
-                onPress={() => {
-                  if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
-
-                  setGraphic('planned');
-                }}
-              />
-            </View>
-
-            {captured.plannedFeatureId && !capturePlan ? (
-              <Text>
-                The associated expected path is unavailable here. Show or reimport its dataset to
-                compare it with this captured hike.
+          {captured ? (
+            <>
+              <Text style={{ fontWeight: '700' }}>
+                {captured.name} · {captured.state} · private on-device
               </Text>
-            ) : null}
 
-            {graphic === 'recorded' ? (
-              captured.display.route ? (
-                <HikeDetails
-                  key={captured.id}
+              <Text>
+                Captured path: pink. Expected path: orange when selected. GPS:{' '}
+                {captured.display.gpsQuality}.
+              </Text>
 
-                  route={captured.display.route}
+              <Text>
+                Elevation source:{' '}
+                {captured.display.elevationConfidence === 'barometer-fused'
+                  ? 'Filtered barometer, with GPS calibration where available'
+                  : captured.display.elevationConfidence === 'gps'
+                    ? 'Filtered GPS (lower confidence)'
+                    : 'Waiting for usable elevations'}
+                .
+              </Text>
 
-                  selectedSample={capturedSample}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                <ProductButton
+                  label="Captured hike graphic"
 
-                  onSampleSelect={setCapturedSample}
+                  hint="Show your captured path statistics and sensor elevation chart"
 
-                  onShowRoute={showCapturedPath}
+                  selected={graphic === 'recorded'}
 
-                  recordedSeconds={captured.display.recordedSeconds}
-
-                  relativeElevation={captured.display.relativeElevation}
+                  onPress={() => setGraphic('recorded')}
                 />
-              ) : (
+
+                <ProductButton
+                  label="Expected hike graphic"
+
+                  hint="Restore the associated expected path and its terrain profile"
+
+                  selected={graphic === 'planned'}
+
+                  disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
+
+                  onPress={() => {
+                    if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
+
+                    setGraphic('planned');
+                  }}
+                />
+              </View>
+
+              {captured.plannedFeatureId && !capturePlan ? (
                 <Text>
-                  Waiting for the first usable captured position. Keep recording; the path and
-                  profile will appear here.
+                  The associated expected path is unavailable here. Show or reimport its dataset to
+                  compare it with this captured hike.
                 </Text>
-              )
-            ) : null}
-          </>
-        ) : null}
-      </ProductCard>
+              ) : null}
 
-      <View
-        accessibilityLabel="iOverlander category icon key"
+              {graphic === 'recorded' ? (
+                captured.display.route ? (
+                  <HikeDetails
+                    key={captured.id}
 
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
-      >
-        {legendCategories.map((category) => {
-          const definition = ioverlanderCategoryDefinition(category);
+                    route={captured.display.route}
 
-          return (
-            <PlaceKey
-              key={category}
+                    selectedSample={capturedSample}
 
-              symbol={definition.icon}
+                    onSampleSelect={setCapturedSample}
 
-              label={definition.label}
+                    onShowRoute={showCapturedPath}
 
-              color={definition.color}
-            />
-          );
-        })}
-      </View>
+                    recordedSeconds={captured.display.recordedSeconds}
 
-      <Text accessibilityLiveRegion="polite">
-        {failed || assetError
-          ? 'Map could not render. Search and geographic details remain available.'
-          : loaded
-            ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
-            : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
+                    relativeElevation={captured.display.relativeElevation}
+                  />
+                ) : (
+                  <Text>
+                    Waiting for the first usable captured position. Keep recording; the path and
+                    profile will appear here.
+                  </Text>
+                )
+              ) : null}
+            </>
+          ) : null}
+        </ProductCard>
+      ) : null}
 
-        {outside
-          ? ' Outside bundled and shown state-package coverage; imported datasets may cover this area.'
-          : ''}
-      </Text>
-
-      <ProductButton
-        label="Show all New York coverage"
-
-        hint="Fit the statewide geographic layers"
-
-        onPress={() =>
-          camera.current?.fitBounds([-79.7624, 40.4774, -71.7517, 45.0159], {
-            padding: { top: 15, right: 15, bottom: 15, left: 15 },
-
-            duration: 0,
-          })
-        }
-      />
+      {failed || assetError || !loaded || outside ? (
+        <Text accessibilityLiveRegion="polite">
+          {failed || assetError
+            ? 'Map could not render. Search remains available.'
+            : !loaded
+              ? 'Loading map…'
+              : 'Outside downloaded map coverage.'}
+        </Text>
+      ) : null}
+      {statePlaces.error || statePlaces.limited ? (
+        <Text accessibilityLiveRegion="polite">
+          {statePlaces.error || 'Zoom in to load precise positions for more places.'}
+        </Text>
+      ) : null}
 
       <ProductButton
         label={followUser ? 'Stop following my location' : 'Center on my location'}
@@ -2098,12 +2111,6 @@ export function OutdoorMap({
         onPress={() => setFollowUser(!followUser)}
       />
 
-      <Text accessibilityLiveRegion="polite">
-        {followUser
-          ? 'Following your live GPS position. Drag the map to stop following.'
-          : 'Your live position appears as a blue GPS dot when location access is allowed.'}
-      </Text>
-
       <ProductButton
         label="Show last recorded position"
 
@@ -2116,260 +2123,47 @@ export function OutdoorMap({
         }}
       />
 
-      <Text>
-        Map key: green areas — NPS, USFS and BLM land references when present; blue lines — trails;
-        brown lines — roads; numbered orange circles — grouped places; colored symbols — iOverlander
-        categories; pink — recorded route; blue GPS dot — current position. Zooming in expands
-        groups into category-specific icons, then reveals names. Tap a group, feature, or search
-        result for details.
-      </Text>
-
-      <Text>
-        Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
-        Hike elevations: {bundledHikes.attribution}. Geometry simplified for display. MapLibre
-        Native renderer. Public-use GIS data is provided without warranty; boundaries are not legal
-        surveys.
-      </Text>
-
       <ProductButton
-        label="Map renderer licenses"
-
-        hint="Show the complete license notices"
-
-        onPress={() => setShowLicenses(!showLicenses)}
+        label="Map legend"
+        hint="Show map symbols and camping status explanations"
+        expanded={legendOpen}
+        onPress={() => setLegendOpen(!legendOpen)}
       />
+      {legendOpen ? (
+        <ProductCard title="Map legend">
+          <View
+            accessibilityLabel="iOverlander category icon key"
 
-      {showLicenses && (
-        <Text>
-          {licenses.reactNative +
-            '\n\n' +
-            licenses.native +
-            '\n\n' +
-            offlineMapLicenses.basemap +
-            '\n\n' +
-            offlineMapLicenses.font}
-        </Text>
-      )}
+            style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
+          >
+            {legendCategories.map((category) => {
+              const definition = ioverlanderCategoryDefinition(category);
 
-      <ProductCard title="Offline state packages">
-        <LaptopPackages service={statePackages} />
-        <Text>
-          Install a state.sqlite package from Files. Each state works offline as one package, with
-          searchable places, trails and land records. Manual import limits do not apply.
-        </Text>
-        <ProductButton
-          label="Install or update a state"
-          hint="Choose a supported state package from Files"
-          disabled={!statePackages.ready || statePackages.busy}
-          busy={statePackages.busy}
-          onPress={() => {
-            void statePackages.install();
-          }}
-        />
-        <Text accessibilityLiveRegion="polite">{statePackages.status}</Text>
-        {statePackages.packages.map((entry) => (
-          <View key={entry.state} style={{ gap: 6, marginTop: 12 }}>
-            <Text style={{ fontWeight: '700' }}>
-              {entry.name} · {entry.featureCount.toLocaleString()} features
-            </Text>
-            <Text>
-              {(entry.installedBytes / 1048576).toFixed(1)} MiB installed · Packaged{' '}
-              {entry.generatedAt.slice(0, 10)}
-            </Text>
-            {entry.integrityError && (
-              <Text>Integrity check failed. Reinstall or remove this state package.</Text>
-            )}
-            <ProductButton
-              label={entry.visible ? `Hide ${entry.name}` : `Show ${entry.name}`}
-              hint="Save this state package’s map visibility"
-              disabled={statePackages.busy || entry.integrityError}
-              onPress={() => {
-                void statePackages.change(entry.state, 'visibility');
-              }}
-            />
-            <ProductButton
-              label={`Show ${entry.name} coverage`}
-              disabled={statePackages.busy || entry.integrityError}
-              hint="Fit the state package’s geographic coverage in the map"
-              onPress={() => {
-                setFollowUser(false);
-                camera.current?.fitBounds(entry.bounds, {
-                  padding: { top: 25, right: 25, bottom: 25, left: 25 },
-                  duration: 0,
-                });
-              }}
-            />
-            {entry.canRollback && (
-              <ProductButton
-                label={`Restore previous ${entry.name} version`}
-                hint="Switch to the previously verified state package"
-                disabled={statePackages.busy}
-                onPress={() => {
-                  void statePackages.change(entry.state, 'rollback');
-                }}
-              />
-            )}
-            <ProductButton
-              label={`Remove ${entry.name}`}
-              hint="Remove this reference package while keeping your notes"
-              disabled={statePackages.busy}
-              onPress={() =>
-                Alert.alert(
-                  `Remove ${entry.name}?`,
-                  'Your place notes and recordings will be kept.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Remove',
-                      style: 'destructive',
-                      onPress: () => {
-                        void statePackages.change(entry.state, 'remove');
-                      },
-                    },
-                  ],
-                )
-              }
-            />
-            <Text>{entry.attribution}</Text>
-            <ProductButton
-              label={`Source notices for ${entry.name}`}
-              hint="Read this package’s source licenses and historical limitations"
-              onPress={() => Alert.alert(`${entry.name} source notices`, entry.notices)}
-            />
+              return (
+                <PlaceKey
+                  key={category}
+
+                  symbol={definition.icon}
+
+                  label={definition.label}
+
+                  color={definition.color}
+                />
+              );
+            })}
           </View>
-        ))}
-      </ProductCard>
-      <ProductCard title="Your imported datasets">
-        <Text>
-          Add a GeoJSON file from Files. Points, lines and areas stay on this phone and work
-          offline. Up to five datasets, 20 MiB and 20,000 features per file.
-        </Text>
 
-        <ProductButton
-          label="Import dataset"
-
-          hint="Choose a GeoJSON dataset from Files and add its features to the map"
-
-          disabled={!imports.ready}
-
-          busy={imports.busy}
-
-          onPress={async () => {
-            const dataset = await imports.importDataset();
-
-            if (!dataset) return;
-
-            setPlaceFilter('all');
-
-            showDatasetCoverage(dataset);
-          }}
-        />
-
-        {imports.status ? <Text accessibilityLiveRegion="polite">{imports.status}</Text> : null}
-
-        {!imports.ready && imports.status && !imports.status.startsWith('Install the IPA') ? (
-          <ProductButton
-            label="Clear unreadable imported datasets"
-
-            hint="Remove only imported reference datasets so you can import your files again"
-
-            destructive
-
-            busy={imports.busy}
-
-            onPress={() =>
-              Alert.alert(
-                'Clear imported datasets?',
-
-                'Your place notes and recordings will be kept. You will need to import your dataset files again.',
-
-                [
-                  { text: 'Cancel', style: 'cancel' },
-
-                  {
-                    text: 'Clear datasets',
-
-                    style: 'destructive',
-
-                    onPress: () => {
-                      void imports.resetDatasets();
-                    },
-                  },
-                ],
-              )
-            }
-          />
-        ) : null}
-
-        {imports.datasets.map((dataset) => (
-          <View key={dataset.id} style={{ gap: 4, marginTop: 12 }}>
-            <Text>
-              {dataset.name} · {dataset.collection.features.length.toLocaleString()} features ·{' '}
-              {dataset.visible ? 'Shown' : 'Hidden'} · private on-device
-            </Text>
-
-            <ProductButton
-              label={dataset.visible ? `Hide ${dataset.name}` : `Show ${dataset.name}`}
-
-              hint="Save whether this dataset appears on the map and in search"
-
-              busy={imports.busy}
-
-              onPress={() => imports.toggleDataset(dataset.id)}
-            />
-
-            <ProductButton
-              label={`Show coverage of ${dataset.name}`}
-
-              hint="Fit all geographic features from this imported dataset"
-
-              disabled={!dataset.visible || imports.busy}
-
-              onPress={() => showDatasetCoverage(dataset)}
-            />
-
-            <ProductButton
-              label={`Remove ${dataset.name}`}
-
-              hint="Remove this reference dataset while keeping your place notes and recordings"
-
-              destructive
-
-              busy={imports.busy}
-
-              onPress={() =>
-                Alert.alert(
-                  'Remove dataset?',
-
-                  `Remove ${dataset.name} from this app? Your place notes and recordings will be kept.`,
-
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-
-                    {
-                      text: 'Remove',
-
-                      style: 'destructive',
-
-                      onPress: () => {
-                        void imports.removeDataset(dataset.id);
-                      },
-                    },
-                  ],
-                )
-              }
-            />
-          </View>
-        ))}
-      </ProductCard>
-
-      <ProductCard title="Data on this map">
-        {mobileMapDataMetadata.sources.map((source) => (
-          <Text key={source.id}>
-            {source.label}: {source.featureCount.toLocaleString()} features · {source.status}
+          <Text>
+            Green areas: land. Blue lines: trails. Brown lines: roads. Pink: recorded route. Blue
+            GPS dot: current position.
           </Text>
-        ))}
-      </ProductCard>
+          {campingLegend.map((entry) => (
+            <Text key={entry.id}>
+              {entry.label}: {entry.explanation}
+            </Text>
+          ))}
+        </ProductCard>
+      ) : null}
     </View>
   );
 }

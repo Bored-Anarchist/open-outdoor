@@ -440,7 +440,7 @@ export function ProductNavigation({
   section,
   onChange,
 }: {
-  section: AppSection;
+  section: AppSection | null;
   onChange: (section: AppSection) => void;
 }) {
   const p = usePalette();
@@ -455,7 +455,7 @@ export function ProductNavigation({
         borderTopColor: p.border,
         paddingHorizontal: 8,
         paddingTop: 8,
-        paddingBottom: 16,
+        paddingBottom: 8,
         gap: 4,
       }}
     >

@@ -364,3 +364,5 @@ export function useStatePackages(query: string) {
       operation(() => nativeSpikes.changeStatePackage(state, action)),
   };
 }
+
+export type StatePackagesService = ReturnType<typeof useStatePackages>;
