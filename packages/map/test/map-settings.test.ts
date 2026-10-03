@@ -161,3 +161,26 @@ it('reviews a checked import without persisting it until the user imports it', a
   expect(commitDataset).toHaveBeenCalledWith(draft);
   expect(root.root.findByType('header').props.title).toBe('Maps');
 });
+
+it('shows the active import error even when the public package service has a readiness message', async () => {
+  await act(async () => {
+    root = create(
+      createElement(MapSettings, {
+        imports: {
+          ...imports,
+          status: 'Invalid GeoJSON',
+          prepareDataset: vi.fn(async () => undefined),
+        },
+        statePackages: { ...statePackages, status: 'State packages ready.' },
+        onShowCoverage: vi.fn(),
+      }),
+    );
+  });
+  const button = (label: string) =>
+    root.root.findAllByType('button').find((node) => node.props.label === label)!;
+  await act(async () => button('Add a map').props.onPress());
+  await act(async () => button('Import GeoJSON').props.onPress());
+  const text = JSON.stringify(root.toJSON());
+  expect(text).toContain('Invalid GeoJSON');
+  expect(text).not.toContain('State packages ready.');
+});

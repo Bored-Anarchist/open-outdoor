@@ -469,6 +469,7 @@ export function OutdoorMap({
   const palette = usePalette();
 
   const [legendOpen, setLegendOpen] = useState(false);
+  const [toolbarHeight, setToolbarHeight] = useState(112);
   const offlineCartography = useMemo(
     () =>
       protomapsLayers(
@@ -1292,7 +1293,7 @@ export function OutdoorMap({
               mapStyle={mapStyle}
 
               attribution
-              attributionPosition={{ top: fontScale > 1.4 ? 164 : 120, left: 16 }}
+              attributionPosition={{ top: toolbarHeight + 16, left: 16 }}
 
               logo={false}
 
@@ -1642,7 +1643,7 @@ export function OutdoorMap({
             <View
               pointerEvents="box-none"
 
-              style={{ position: 'absolute', right: 16, top: fontScale > 1.4 ? 200 : 148, gap: 8 }}
+              style={{ position: 'absolute', right: 16, top: toolbarHeight + 16, gap: 8 }}
             >
               <ProductIconButton
                 label={followUser ? 'Stop following my location' : 'Center on my location'}
@@ -1685,6 +1686,7 @@ export function OutdoorMap({
           <View
             pointerEvents="box-none"
             style={{ position: 'absolute', left: 16, right: 16, top: 8, gap: 8 }}
+            onLayout={(event) => setToolbarHeight(event.nativeEvent.layout.height)}
           >
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
@@ -1697,7 +1699,7 @@ export function OutdoorMap({
               </View>
               <ProductIconButton label="Settings" icon="settings" onPress={onOpenSettings} />
             </View>
-            {fontScale > 1.4 ? (
+            {fontScale > 1.4 || width < 360 ? (
               <ProductButton
                 label="Map tools"
                 hint="Categories, layers and marker detail"
@@ -2258,6 +2260,29 @@ export function OutdoorMap({
         visible={visible && toolsOpen}
         onClose={() => setToolsOpen(false)}
       >
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <ProductButton
+            label="Zoom in"
+            hint="Increase map detail"
+            disabled={zoom >= 18}
+            onPress={() => changeZoom('in')}
+          />
+          <ProductButton
+            label="Zoom out"
+            hint="See a wider area"
+            disabled={zoom <= 3}
+            onPress={() => changeZoom('out')}
+          />
+          <ProductButton
+            label="My location"
+            hint="Center the map on your live GPS position"
+            selected={followUser}
+            onPress={() => {
+              setFollowUser(!followUser);
+              setToolsOpen(false);
+            }}
+          />
+        </View>
         <View
           style={{
             flexDirection: 'row',

@@ -90,6 +90,7 @@ export function MapSettings({
   >('index');
   const [selectedId, setSelectedId] = useState('');
   const [draft, setDraft] = useState<ImportedMapDataset | null>(null);
+  const [addAction, setAddAction] = useState<'files' | 'geojson' | null>(null);
   const entry = statePackages.packages.find((item) => item.state === selectedId);
   const dataset = imports.datasets.find((item) => item.id === selectedId);
   const title =
@@ -373,7 +374,10 @@ export function MapSettings({
             title="From Files"
             subtitle="Install a public state package"
             disabled={!statePackages.ready || statePackages.busy}
-            onPress={() => statePackages.install()}
+            onPress={() => {
+              setAddAction('files');
+              return statePackages.install();
+            }}
           />
           <ProductRow
             title="From laptop"
@@ -386,6 +390,7 @@ export function MapSettings({
             icon="private"
             disabled={!imports.ready || imports.busy}
             onPress={async () => {
+              setAddAction('geojson');
               const value = await imports.prepareDataset();
               if (value) {
                 setDraft(value);
@@ -393,7 +398,13 @@ export function MapSettings({
               }
             }}
           />
-          <Text accessibilityLiveRegion="polite">{statePackages.status || imports.status}</Text>
+          <Text accessibilityLiveRegion="polite">
+            {addAction === 'geojson'
+              ? imports.status
+              : addAction === 'files'
+                ? statePackages.status
+                : ''}
+          </Text>
           <ProductDisclosure title="Import limits">
             <Text>
               Up to 5 private datasets, 20 MiB and 20,000 features per file. Public state packages
