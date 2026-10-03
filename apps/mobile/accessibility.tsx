@@ -1,5 +1,11 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Platform, Text as NativeText, type TextProps } from 'react-native';
+import {
+  AccessibilityInfo,
+  Platform,
+  StyleSheet,
+  Text as NativeText,
+  type TextProps,
+} from 'react-native';
 import {
   AnnouncementGate,
   defaultAccessibilityPreferences,
@@ -69,12 +75,13 @@ export function useAnnouncement(message: string): void {
 export function ProductText({ style, ...props }: TextProps) {
   const { boldText } = useContext(AccessibilityContext);
   const palette = usePalette();
+  const fontSize = StyleSheet.flatten(style)?.fontSize ?? 17;
   return (
     <NativeText
       {...props}
       allowFontScaling
       style={[
-        { color: palette.text, fontSize: 17, lineHeight: 26 },
+        { color: palette.text, fontSize: 17, lineHeight: Math.ceil(fontSize * 1.5) },
         style,
         boldText && { fontWeight: '700' },
       ]}
