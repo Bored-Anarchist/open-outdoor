@@ -18,7 +18,10 @@ export const laptopHttpRanges = [
 export function validateLaptopTransportPolicy(info) {
   assert.equal(typeof info.NSLocalNetworkUsageDescription, 'string');
   assert.ok(info.NSLocalNetworkUsageDescription.length > 0, 'Explain Local Network access.');
-  assert.ok(info.NSBonjourServices?.includes('_openoutdoor._tcp'), 'Declare laptop discovery.');
+  assert.ok(
+    Array.isArray(info.NSBonjourServices) && info.NSBonjourServices.includes('_openoutdoor._tcp'),
+    'Declare laptop discovery in a Bonjour service array.',
+  );
   const ats = info.NSAppTransportSecurity;
   assert.equal(ats?.NSAllowsLocalNetworking, true, 'Allow foreground local networking.');
   for (const key of [

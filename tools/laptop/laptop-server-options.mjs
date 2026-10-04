@@ -1,9 +1,14 @@
 import { isLaptopHost, laptopAddresses, literalHost } from './laptop-network.mjs';
+import { networkInterfaces } from 'node:os';
 
 export class LaptopServerConfigurationError extends Error {}
 
 /** Never guess which adapter can reach the phone on a multi-interface laptop. */
-export function laptopServerOptions(args, addresses = laptopAddresses()) {
+export function laptopServerOptions(args, interfaces = networkInterfaces()) {
+  const adapters = Object.values(interfaces)
+    .map((entries) => laptopAddresses({ adapter: entries }))
+    .filter((addresses) => addresses.length > 0);
+  const addresses = adapters.flat();
   let host;
   let port = 8765;
   const seen = new Set();
@@ -24,9 +29,9 @@ export function laptopServerOptions(args, addresses = laptopAddresses()) {
   if (!Number.isInteger(port) || port < 1024 || port > 65535)
     throw new LaptopServerConfigurationError('Choose a port between 1024 and 65535.');
   if (host === undefined) {
-    if (addresses.length > 1)
+    if (adapters.length > 1)
       throw new LaptopServerConfigurationError(
-        `Several laptop addresses are available. Select the Wi-Fi address with pnpm map:laptop --host LOCAL_IP. Available addresses: ${addresses.join(', ')}.`,
+        `Several laptop adapters are available. Select the Wi-Fi address with pnpm map:laptop --host LOCAL_IP. Available addresses: ${addresses.join(', ')}.`,
       );
     host = addresses[0];
   }

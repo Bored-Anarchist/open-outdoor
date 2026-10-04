@@ -21,6 +21,7 @@ internal final class OpenOutdoorLaptopException: Exception, @unchecked Sendable 
   static func responseMessage(_ status: Int) -> String? {
     switch status {
     case 200: return nil
+    case 301, 302, 303, 307, 308: return "The laptop redirected the connection. Use the address shown in its terminal."
     case 401: return "Pairing code rejected. Reconnect using the code currently shown on the laptop."
     case 403: return "The laptop refused this connection. Use its current Wi-Fi address and check proxy or VPN settings."
     case 409: return "The laptop's state file changed. Restore the package on the laptop, restart its server and reconnect."

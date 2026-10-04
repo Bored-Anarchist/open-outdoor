@@ -10,6 +10,14 @@ test('the application permits HTTP on shared Wi-Fi and private IPv4/IPv6 network
   validateLaptopTransportPolicy(policy());
 });
 
+test('malformed Bonjour declarations cannot pass the built-app policy gate', () => {
+  for (const value of ['_openoutdoor._tcp', ['prefix_openoutdoor._tcp'], null, {}]) {
+    const info = policy();
+    info.NSBonjourServices = value;
+    assert.throws(() => validateLaptopTransportPolicy(info), /Bonjour service array/);
+  }
+});
+
 test('the old local-network-only configuration and missing shared Wi-Fi exception fail the gate', () => {
   const old = policy();
   delete old.NSAppTransportSecurity.NSExceptionDomains;

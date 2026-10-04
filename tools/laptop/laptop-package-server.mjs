@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { once } from 'node:events';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { open, readFile, realpath } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
@@ -202,43 +203,37 @@ async function main() {
   console.log('Verifying local public state packages…');
   const signer = await loadLaptopUpdateSigner();
   let result;
+  let pairingServer;
   try {
     result = await createLaptopPackageServer({ signer, pairingEndpoint: { host, port } });
+    const { server, availableStates } = result;
+    if (!availableStates.length) {
+      throw new LaptopServerConfigurationError(
+        'No verified state.sqlite files found. Restore public packages with pnpm map:public:restore STATE, then retry.',
+      );
+    }
+    server.listen(port, host);
+    await once(server, 'listening');
+    // A loopback page works even when browsers cannot navigate scoped link-local IPv6 URLs.
+    pairingServer = createServer((request, response) => {
+      if (request.url !== '/pair') {
+        response.writeHead(404);
+        response.end();
+        return;
+      }
+      server.emit('request', request, response);
+    });
+    pairingServer.listen(0, '127.0.0.1');
+    await once(pairingServer, 'listening');
   } catch (error) {
+    result?.server.close();
+    result?.server.closeAllConnections();
+    pairingServer?.close();
+    pairingServer?.closeAllConnections();
     await signer.close();
     throw error;
   }
   const { server, token, availableStates, missingStates } = result;
-  if (!availableStates.length) {
-    await signer.close();
-    throw new LaptopServerConfigurationError(
-      'No verified state.sqlite files found. Restore public packages with pnpm map:public:restore STATE, then retry.',
-    );
-  }
-  await new Promise((accept, reject) => {
-    server.once('error', reject);
-    server.listen(port, host, accept);
-  }).catch(async (error) => {
-    await signer.close();
-    throw error;
-  });
-  // A loopback page works even when browsers cannot navigate scoped link-local IPv6 URLs.
-  const pairingServer = createServer((request, response) => {
-    if (request.url !== '/pair') {
-      response.writeHead(404);
-      response.end();
-      return;
-    }
-    server.emit('request', request, response);
-  });
-  await new Promise((accept, reject) => {
-    pairingServer.once('error', reject);
-    pairingServer.listen(0, '127.0.0.1', accept);
-  }).catch(async (error) => {
-    server.close();
-    await signer.close();
-    throw error;
-  });
   let stopDiscovery = () => {};
   try {
     stopDiscovery = advertiseLaptop(host, port, {

@@ -8,30 +8,60 @@ import {
   isLaptopHost,
   laptopAddress,
   laptopAddresses,
+  literalHost,
   matchesRequestHost,
 } from '../laptop/laptop-network.mjs';
 
+const adapter = (...hosts) =>
+  hosts.map((host) => {
+    const { host: address, family, scope } = literalHost(host);
+    return {
+      address,
+      family: family === 4 ? 'IPv4' : 'IPv6',
+      scopeid: Number(scope),
+      internal: false,
+    };
+  });
+
 test('server selects an assigned address and refuses to guess between Wi-Fi and VPN adapters', () => {
   const addresses = ['100.96.1.20', '10.8.0.2', 'fe80::20%12'];
-  assert.deepEqual(laptopServerOptions([], addresses.slice(0, 1)), {
+  const interfaces = { wifi: adapter(addresses[0], addresses[2]), vpn: adapter(addresses[1]) };
+  assert.deepEqual(laptopServerOptions([], { wifi: interfaces.wifi }), {
     host: addresses[0],
     port: 8765,
   });
-  assert.throws(() => laptopServerOptions([], addresses), /Select the Wi-Fi address/);
-  assert.deepEqual(laptopServerOptions(['--host', addresses[0], '--port', '9000'], addresses), {
+  assert.throws(() => laptopServerOptions([], interfaces), /Select the Wi-Fi address/);
+  assert.deepEqual(laptopServerOptions(['--host', addresses[0], '--port', '9000'], interfaces), {
     host: addresses[0],
     port: 9000,
   });
-  assert.deepEqual(laptopServerOptions(['--host', 'fe80::20'], addresses), {
+  assert.deepEqual(laptopServerOptions(['--host', 'fe80::20'], interfaces), {
     host: 'fe80::20%12',
     port: 8765,
   });
   assert.throws(
-    () => laptopServerOptions(['--host', 'fe80::20'], ['fe80::20%12', 'fe80::20%13']),
+    () =>
+      laptopServerOptions(['--host', 'fe80::20'], {
+        wifi: adapter('fe80::20%12'),
+        ethernet: adapter('fe80::20%13'),
+      }),
     /multiple interfaces/,
   );
-  assert.throws(() => laptopServerOptions([], []), /Connect this laptop to Wi-Fi/);
-  assert.throws(() => laptopServerOptions(['--host', '192.168.1.20'], addresses), /assigned/);
+  assert.throws(() => laptopServerOptions([], {}), /Connect this laptop to Wi-Fi/);
+  assert.throws(() => laptopServerOptions(['--host', '192.168.1.20'], interfaces), /assigned/);
+});
+
+test('single dual-stack Wi-Fi starts automatically and prefers its usable IPv4 address', () => {
+  const wifi = adapter('fe80::20%12', '2001:db8::20', '100.96.1.20');
+  const loopback = [{ address: '127.0.0.1', family: 'IPv4', internal: true }];
+  assert.deepEqual(laptopServerOptions([], { wifi, loopback }), {
+    host: '100.96.1.20',
+    port: 8765,
+  });
+  assert.deepEqual(laptopServerOptions([], { wifi: wifi.slice(0, 2), loopback }), {
+    host: '2001:db8::20',
+    port: 8765,
+  });
 });
 
 test('invalid command options fail before acquiring the signer or opening a listener', () => {
@@ -46,7 +76,11 @@ test('invalid command options fail before acquiring the signer or opening a list
     ['--port', '8765', '--port', '9000'],
     ['--host', '100.96.1.20', '--host', '10.8.0.2'],
   ])
-    assert.throws(() => laptopServerOptions(args, ['100.96.1.20']), undefined, args.join(' '));
+    assert.throws(
+      () => laptopServerOptions(args, { wifi: adapter('100.96.1.20') }),
+      undefined,
+      args.join(' '),
+    );
 });
 
 test('startup explains occupied ports and stale addresses without exposing raw system errors', () => {

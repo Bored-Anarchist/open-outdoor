@@ -145,7 +145,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
   }
   func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
                   newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-    if self.session === session { failureReason = "The laptop redirected the connection. Use the address shown in its terminal." }
+    if self.session === session { failureReason = OpenOutdoorLaptopException.responseMessage(response.statusCode) }
     completionHandler(nil) // Never forward the pairing header to another destination.
   }
   func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,

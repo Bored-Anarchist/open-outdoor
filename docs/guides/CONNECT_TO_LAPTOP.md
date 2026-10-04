@@ -26,7 +26,7 @@ Missing or changed catalogs are omitted. Restore the desired states using [packa
 pnpm map:public:restore NY
 ```
 
-When more than one usable address is available, startup requires `--host` rather than silently selecting a VPN, Ethernet or other adapter. Startup reports an occupied port, stale interface address, missing packages or another active signing-identity writer with specific guidance. The terminal also prints a Safari reachability check. Restarting changes the pairing code; rescan the current page.
+When more than one usable adapter is available, startup requires `--host` rather than silently selecting a VPN, Ethernet or other adapter. A single adapter with IPv4 and IPv6 addresses starts automatically, preferring non-link-local IPv4, then non-link-local IPv6. Startup reports an occupied port, stale interface address, missing packages or another active signing-identity writer with specific guidance. The terminal also prints a Safari reachability check. Restarting changes the pairing code; rescan the current page.
 
 ## Connect and install
 

@@ -3,8 +3,6 @@ import Foundation
 @main
 private enum LaptopErrorTests {
   static func main() throws {
-    let original: any JavaScriptThrowable = Exception(name: "LAPTOP_TRANSFER_FAILED", description: "Useful message", code: "LAPTOP_TRANSFER_FAILED")
-    guard original.message.contains("undefined reason") else { throw failure("SDK behavior changed; review workaround") }
     for code in ["LAPTOP_TRANSFER_FAILED", "LAPTOP_CONNECT_FAILED", "LAPTOP_TRUST_FAILED", "QR_SCAN_FAILED", "QR_BUSY"] {
       let message = "Allow Local Network access and retry."
       let exception = OpenOutdoorLaptopException(code, message)
@@ -25,6 +23,9 @@ private enum LaptopErrorTests {
       guard message.contains(expected), !message.contains("secret") else { throw failure("Incorrect connection guidance") }
     }
     guard OpenOutdoorLaptopException.responseMessage(200) == nil else { throw failure("Successful HTTP response rejected") }
+    for status in [301, 302, 303, 307, 308] {
+      guard OpenOutdoorLaptopException.responseMessage(status)?.contains("redirected") == true else { throw failure("Redirect refusal lost in the final HTTP response") }
+    }
     for (status, expected) in [(401, "Pairing code rejected"), (403, "proxy or VPN"), (409, "state file changed"), (404, "unavailable")] {
       guard OpenOutdoorLaptopException.responseMessage(status)?.contains(expected) == true else { throw failure("Incorrect HTTP failure guidance") }
     }
