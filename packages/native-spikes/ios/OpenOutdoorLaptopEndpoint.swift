@@ -46,6 +46,7 @@ internal enum OpenOutdoorLaptopEndpoint {
   }
 
   private static func ipv6Bytes(_ input: String) -> [UInt8]? {
+    guard input.range(of: "^[0-9a-fA-F:.]+$", options: .regularExpression) != nil else { return nil }
     var bytes = [UInt8](repeating: 0, count: 16)
     let result = bytes.withUnsafeMutableBytes { inet_pton(AF_INET6, input, $0.baseAddress!) }
     return result == 1 ? bytes : nil
