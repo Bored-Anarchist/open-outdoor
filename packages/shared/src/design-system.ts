@@ -263,26 +263,6 @@ export const iconPaths: Readonly<
 
       [21, 21],
     ],
-
-    [
-      [16, 9],
-
-      [14, 4],
-
-      [8, 3],
-
-      [3, 7],
-
-      [3, 12],
-
-      [7, 16],
-
-      [12, 16],
-
-      [16, 12],
-
-      [16, 9],
-    ],
   ],
 
   track: [
@@ -476,6 +456,13 @@ export const iconPaths: Readonly<
       [16, 14],
     ],
   ],
+};
+
+/** True circular outlines, shared by the native and browser renderers. */
+export const iconCircles: Partial<
+  Record<IconName, readonly { cx: number; cy: number; r: number }[]>
+> = {
+  search: [{ cx: 9.5, cy: 9.5, r: 6.5 }],
 };
 
 export type Tone = 'info' | 'caution' | 'danger' | 'success';

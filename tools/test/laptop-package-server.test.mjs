@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { once } from 'node:events';
 import { test } from 'node:test';
 import { request } from 'node:http';
-import { createLaptopPackageServer, isPrivateIPv4 } from '../laptop/laptop-package-server.mjs';
+import { createLaptopPackageServer } from '../laptop/laptop-package-server.mjs';
+import { isLaptopHost } from '../laptop/laptop-network.mjs';
 
 const token = 'a'.repeat(32); // Synthetic; never a real connection credential.
 const bytes = Buffer.from('Synthetic public package; not a real SQLite catalog.');
@@ -63,22 +64,41 @@ async function serve(t, root) {
   return { ...result, get, requestWithHost };
 }
 
-test('only canonical RFC1918 IPv4 laptop addresses are allowed', () => {
-  for (const host of ['10.0.0.1', '172.16.0.1', '172.31.255.254', '192.168.1.20'])
-    assert.equal(isPrivateIPv4(host), true);
+test('canonical unicast IPv4 laptop addresses work across network ranges', () => {
+  for (const host of [
+    '10.0.0.1',
+    '172.16.0.1',
+    '172.31.255.254',
+    '192.168.1.20',
+    '100.64.0.0',
+    '100.96.1.20',
+    '100.127.255.255',
+    '169.254.1.20',
+    '198.51.100.20',
+    '203.0.113.20',
+    '100.63.255.255',
+    '100.128.0.1',
+    '172.15.0.1',
+    '172.32.0.1',
+  ])
+    assert.equal(isLaptopHost(host), true);
   for (const host of [
     '127.0.0.1',
     '0.0.0.0',
-    '8.8.8.8',
-    '169.254.1.1',
-    '172.15.0.1',
-    '172.32.0.1',
+    '0.1.2.3',
+    '127.1.2.3',
+    '224.0.0.1',
+    '239.255.255.255',
+    '240.0.0.1',
+    '255.255.255.255',
+    '100.96.256.1',
+    '100.096.1.20',
     '192.168.999.1',
     '010.0.0.1',
     '192.168.1.1.example.com',
     '::1',
   ])
-    assert.equal(isPrivateIPv4(host), false, host);
+    assert.equal(isLaptopHost(host), false, host);
 });
 
 test('QR pairing page is laptop-only, uncached, unframeable, and rejects cross-site requests', async (t) => {
@@ -132,6 +152,42 @@ test('paired clients list verified public states and download identical bytes', 
     '/v1/packages/%2e%2e%2fprivate.sqlite',
   ])
     assert.equal((await get(path)).status, 404);
+});
+
+test('the package server serves authenticated IPv6 requests and rejects IPv6 rebinding', async (t) => {
+  const root = await fixture(t);
+  await stateFile(root, 'NY');
+  const { server } = await createLaptopPackageServer({ root, token });
+  server.listen(0, '::1');
+  await once(server, 'listening');
+  t.after(() => {
+    server.close();
+    server.closeAllConnections();
+  });
+  const base = `http://[::1]:${server.address().port}`;
+  const headers = { Authorization: `Bearer ${token}` };
+  assert.equal((await fetch(base + '/v1/catalog', { headers })).status, 200);
+  assert.deepEqual(
+    Buffer.from(await (await fetch(base + '/v1/packages/NY', { headers })).arrayBuffer()),
+    bytes,
+  );
+  assert.equal((await fetch(base + '/v1/catalog')).status, 401);
+  const reboundStatus = await new Promise((resolve, reject) => {
+    const outgoing = request(
+      base + '/v1/catalog',
+      {
+        headers: { ...headers, Host: `[2001:db8::20]:${server.address().port}` },
+      },
+      (response) => {
+        response.resume();
+        resolve(response.statusCode);
+      },
+    );
+    outgoing.on('error', reject);
+    outgoing.end();
+  });
+  assert.equal(reboundStatus, 403);
+  assert.equal((await fetch(base + '/pair')).status, 200);
 });
 
 test('server rejects wrong codes, browser origins, rebinding hosts and writes', async (t) => {

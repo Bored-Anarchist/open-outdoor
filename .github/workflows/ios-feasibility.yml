@@ -40,6 +40,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .scratch/laptop-native
+          swiftc packages/native-spikes/ios/OpenOutdoorLaptopEndpoint.swift tools/laptop/laptop-endpoint-native-tests.swift -o .scratch/laptop-native/endpoint-tests
+          .scratch/laptop-native/endpoint-tests
           node tools/laptop/laptop-update-test-vectors.mjs > .scratch/laptop-native/vectors.json
           swiftc packages/native-spikes/ios/OpenOutdoorStateUpdateTrust.swift tools/laptop/laptop-update-native-tests.swift -o .scratch/laptop-native/trust-tests
           .scratch/laptop-native/trust-tests .scratch/laptop-native/vectors.json

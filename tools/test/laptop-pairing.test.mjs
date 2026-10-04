@@ -29,7 +29,7 @@ test('pairing QR decodes independently to the expected app credentials', async (
   assert.equal(jsQR(pixels, size, size)?.data, payload);
   const page = await pairingPage(address, code);
   assert.match(page, /<svg/);
-  assert.match(page, /Scan pairing QR code/);
+  assert.match(page, /Scan QR code/);
   assert.doesNotMatch(page, /<script|<iframe|src=/);
 });
 
@@ -98,4 +98,71 @@ test('Bonjour publishes only the chosen IPv4 interface and never advertises a cr
   stop();
   assert.equal(stopped, 1);
   assert.equal(destroyed, 1);
+});
+
+test('IPv6 discovery scopes multicast to one interface and publishes only its selected AAAA address', () => {
+  let options, config, service;
+  class FakeBonjour {
+    constructor(value) {
+      options = value;
+    }
+    publish(value) {
+      config = value;
+      service = {
+        records: () => [
+          { type: 'A', data: '192.168.1.20' },
+          { type: 'AAAA', data: '2001:db8::20' },
+          { type: 'AAAA', data: 'fd12::30' },
+          { type: 'TXT', data: value.txt },
+        ],
+        stop: (done) => done(),
+      };
+      return service;
+    }
+    destroy() {}
+  }
+  const stop = advertiseLaptop('2001:db8::20', 8765, {
+    BonjourClass: FakeBonjour,
+    interfaces: {
+      wifi: [
+        { address: '2001:db8::20', scopeid: 0 },
+        { address: 'fe80::20', scopeid: 12 },
+      ],
+    },
+  });
+  assert.deepEqual(options, { type: 'udp6', ip: 'ff02::fb%12', interface: '::%12', bind: '::' });
+  assert.equal(config.disableIPv6, false);
+  assert.deepEqual(config.txt, { v: '1', address: 'http://[2001:db8::20]:8765' });
+  assert.deepEqual(service.records(), [
+    { type: 'AAAA', data: '2001:db8::20' },
+    { type: 'TXT', data: config.txt },
+  ]);
+  stop();
+});
+
+test('link-local IPv6 discovery strips interface scopes from DNS address records', () => {
+  let service, config;
+  class FakeBonjour {
+    publish(value) {
+      config = value;
+      service = {
+        records: () => [
+          { type: 'AAAA', data: 'fe80::20%12' },
+          { type: 'AAAA', data: 'fe80::21%12' },
+          { type: 'A', data: '192.168.1.20' },
+          { type: 'TXT', data: value.txt },
+        ],
+        stop: (done) => done(),
+      };
+      return service;
+    }
+    destroy() {}
+  }
+  const stop = advertiseLaptop('fe80::20%12', 8765, { BonjourClass: FakeBonjour });
+  assert.equal(config.txt.address, 'http://[fe80::20]:8765');
+  assert.deepEqual(service.records(), [
+    { type: 'AAAA', data: 'fe80::20' },
+    { type: 'TXT', data: config.txt },
+  ]);
+  stop();
 });
