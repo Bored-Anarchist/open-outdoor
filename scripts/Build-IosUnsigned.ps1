@@ -72,6 +72,8 @@ try {
         Write-Host "Verified offline archive '$($matchingArchives[0].FullName)' ($($matchingArchives[0].Length) bytes)."
     }
     $builtInfoPlist = Join-Path $appBundles[0].FullName 'Info.plist'
+    node ../../../tools/laptop/laptop-transport-policy.mjs $builtInfoPlist
+    if ($LASTEXITCODE -ne 0) { throw 'Built app must retain the scoped laptop HTTP transport policy.' }
     if ($env:OPEN_OUTDOOR_PRIVATE_MAP_DATA -ne '1') {
         $baseCatalog = Get-Item -LiteralPath '../../../packages/map/src/assets/base-outdoors.geojson'
         $baseHash = (Get-FileHash -LiteralPath $baseCatalog.FullName -Algorithm SHA256).Hash

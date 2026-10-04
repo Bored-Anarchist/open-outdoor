@@ -137,8 +137,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
   }
   private func responseError(_ response: URLResponse?) -> String? {
     guard let response = response as? HTTPURLResponse else { return "The laptop returned an invalid response." }
-    if response.statusCode == 401 { return "Pairing code rejected. Reconnect using the code currently shown on the laptop." }
-    if response.statusCode != 200 { return "The state package is unavailable. Check the laptop server and reconnect." }
+    if let message = OpenOutdoorLaptopException.responseMessage(response.statusCode) { return message }
     if let pin = incoming, response.expectedContentLength != pin.bytes {
       return "State download size does not match this app's supported package."
     }

@@ -16,7 +16,18 @@
         "NSLocalNetworkUsageDescription": "Open Outdoor finds nearby laptops when you open Connect to laptop and downloads the public state packages you choose for offline use.",
         "NSBonjourServices": ["_openoutdoor._tcp"],
         "NSCameraUsageDescription": "Open Outdoor uses the camera only when you choose to scan a laptop pairing QR code. Images are not saved or uploaded.",
-        "NSAppTransportSecurity": { "NSAllowsLocalNetworking": true },
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSExceptionDomains": {
+            "10.0.0.0/8": { "NSExceptionAllowsInsecureHTTPLoads": true },
+            "172.16.0.0/12": { "NSExceptionAllowsInsecureHTTPLoads": true },
+            "192.168.0.0/16": { "NSExceptionAllowsInsecureHTTPLoads": true },
+            "100.64.0.0/10": { "NSExceptionAllowsInsecureHTTPLoads": true },
+            "169.254.0.0/16": { "NSExceptionAllowsInsecureHTTPLoads": true },
+            "fc00::/7": { "NSExceptionAllowsInsecureHTTPLoads": true },
+            "fe80::/10": { "NSExceptionAllowsInsecureHTTPLoads": true }
+          }
+        },
         "NSLocationWhenInUseUsageDescription": "Open Outdoor uses your location while the map is open to show your position as a GPS dot, and while you explicitly record an outdoor activity.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Open Outdoor uses Always Location only to continue an outdoor activity you explicitly started while the screen is locked.",
         "NSMotionUsageDescription": "Open Outdoor uses barometer data during an active recording to improve elevation estimates.",

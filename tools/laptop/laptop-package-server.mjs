@@ -6,13 +6,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { pipeline } from 'node:stream/promises';
 import { advertiseLaptop, canViewPairingPage, pairingPage } from './laptop-pairing.mjs';
 import { loadLaptopUpdateSigner } from './laptop-update-signing.mjs';
+import { isLaptopHost, laptopAddress, matchesRequestHost } from './laptop-network.mjs';
 import {
-  isLaptopHost,
-  laptopAddress,
-  laptopAddresses,
-  literalHost,
-  matchesRequestHost,
-} from './laptop-network.mjs';
+  LaptopServerConfigurationError,
+  laptopServerOptions,
+  laptopServerFailureMessage,
+} from './laptop-server-options.mjs';
 
 const defaultRoot = fileURLToPath(
   new URL('../../packages/map/src/assets/state-packages/US', import.meta.url),
@@ -199,29 +198,7 @@ export async function createLaptopPackageServer({
 }
 
 async function main() {
-  const args = process.argv.slice(2);
-  let host = laptopAddresses()[0];
-  let port = 8765;
-  for (let i = 0; i < args.length; i += 2) {
-    if (args[i] === '--host') host = args[i + 1];
-    else if (args[i] === '--port') port = Number(args[i + 1]);
-    else throw new Error('Usage: pnpm map:laptop [--host LOCAL_IP] [--port PORT]');
-  }
-  const selected = literalHost(host);
-  host = laptopAddresses().find((candidate) => {
-    const value = literalHost(candidate);
-    return (
-      selected &&
-      value?.host === selected.host &&
-      (selected.scope === undefined || value.scope === selected.scope)
-    );
-  });
-  if (!host || !isLaptopHost(host))
-    throw new Error(
-      'Connect this laptop to Wi-Fi, then select its local IPv4 or IPv6 address with --host.',
-    );
-  if (!Number.isInteger(port) || port < 1024 || port > 65535)
-    throw new Error('Choose a port between 1024 and 65535.');
+  const { host, port } = laptopServerOptions(process.argv.slice(2));
   console.log('Verifying local public state packages…');
   const signer = await loadLaptopUpdateSigner();
   let result;
@@ -234,7 +211,7 @@ async function main() {
   const { server, token, availableStates, missingStates } = result;
   if (!availableStates.length) {
     await signer.close();
-    throw new Error(
+    throw new LaptopServerConfigurationError(
       'No verified state.sqlite files found. Restore public packages with pnpm map:public:restore STATE, then retry.',
     );
   }
@@ -281,6 +258,9 @@ async function main() {
   console.log(
     'Keep this terminal open. Use a trusted local network; transfers use HTTP. Ctrl+C stops sharing and expires this pairing code.',
   );
+  console.log(
+    `Phone reachability check: open ${address}/v1/catalog in Safari. "Pairing code required" means the server is reachable. If it cannot load, check device isolation, VPN routing and the firewall's allowed phone addresses, even when both devices show the same Wi-Fi name.`,
+  );
   const stop = () => {
     stopDiscovery();
     server.close();
@@ -294,10 +274,8 @@ async function main() {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href)
-  main().catch(() => {
+  main().catch((error) => {
     // Never print raw request errors, local filesystem paths or pairing headers.
-    console.error(
-      'Laptop server could not start. Check the host/port, public inventory and restored packages. See docs/guides/CONNECT_TO_LAPTOP.md.',
-    );
+    console.error(laptopServerFailureMessage(error));
     process.exitCode = 1;
   });

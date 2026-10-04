@@ -1,11 +1,66 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  laptopServerOptions,
+  laptopServerFailureMessage,
+} from '../laptop/laptop-server-options.mjs';
+import {
   isLaptopHost,
   laptopAddress,
   laptopAddresses,
   matchesRequestHost,
 } from '../laptop/laptop-network.mjs';
+
+test('server selects an assigned address and refuses to guess between Wi-Fi and VPN adapters', () => {
+  const addresses = ['100.96.1.20', '10.8.0.2', 'fe80::20%12'];
+  assert.deepEqual(laptopServerOptions([], addresses.slice(0, 1)), {
+    host: addresses[0],
+    port: 8765,
+  });
+  assert.throws(() => laptopServerOptions([], addresses), /Select the Wi-Fi address/);
+  assert.deepEqual(laptopServerOptions(['--host', addresses[0], '--port', '9000'], addresses), {
+    host: addresses[0],
+    port: 9000,
+  });
+  assert.deepEqual(laptopServerOptions(['--host', 'fe80::20'], addresses), {
+    host: 'fe80::20%12',
+    port: 8765,
+  });
+  assert.throws(
+    () => laptopServerOptions(['--host', 'fe80::20'], ['fe80::20%12', 'fe80::20%13']),
+    /multiple interfaces/,
+  );
+  assert.throws(() => laptopServerOptions([], []), /Connect this laptop to Wi-Fi/);
+  assert.throws(() => laptopServerOptions(['--host', '192.168.1.20'], addresses), /assigned/);
+});
+
+test('invalid command options fail before acquiring the signer or opening a listener', () => {
+  for (const args of [
+    ['--host'],
+    ['--port'],
+    ['--unknown', '8765'],
+    ['--port', '80'],
+    ['--port', '65536'],
+    ['--port', '0x223d'],
+    ['--port', '8.765e3'],
+    ['--port', '8765', '--port', '9000'],
+    ['--host', '100.96.1.20', '--host', '10.8.0.2'],
+  ])
+    assert.throws(() => laptopServerOptions(args, ['100.96.1.20']), undefined, args.join(' '));
+});
+
+test('startup explains occupied ports and stale addresses without exposing raw system errors', () => {
+  assert.match(laptopServerFailureMessage({ code: 'EADDRINUSE' }), /port is already in use/);
+  assert.match(laptopServerFailureMessage({ code: 'EADDRNOTAVAIL' }), /current --host/);
+  assert.match(
+    laptopServerFailureMessage(new Error('Laptop signing identity is already in use.')),
+    /Another laptop server/,
+  );
+  assert.equal(
+    laptopServerFailureMessage(new Error('secret path or credential')).includes('secret'),
+    false,
+  );
+});
 
 test('IPv6 unicast, scopes and formatting exclude local aliases and multicast', () => {
   for (const host of [

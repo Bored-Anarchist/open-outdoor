@@ -18,14 +18,24 @@ internal final class OpenOutdoorLaptopException: Exception, @unchecked Sendable 
   override var debugDescription: String { failureMessage }
   var message: String { failureMessage }
 
+  static func responseMessage(_ status: Int) -> String? {
+    switch status {
+    case 200: return nil
+    case 401: return "Pairing code rejected. Reconnect using the code currently shown on the laptop."
+    case 403: return "The laptop refused this connection. Use its current Wi-Fi address and check proxy or VPN settings."
+    case 409: return "The laptop's state file changed. Restore the package on the laptop, restart its server and reconnect."
+    default: return "The state package is unavailable. Check the laptop server and reconnect."
+    }
+  }
+
   static func connectionMessage(_ error: Error) -> String {
     let failure = error as NSError
     if failure.domain == NSURLErrorDomain {
       switch failure.code {
       case NSURLErrorTimedOut:
-        return "Laptop connection timed out. Check its firewall and Wi-Fi, then try again."
+        return "Laptop connection timed out. Open its address with /v1/catalog in iPhone Safari. If Safari cannot load it, check the laptop server, firewall, VPN and Wi-Fi device isolation."
       case NSURLErrorCannotConnectToHost, NSURLErrorCannotFindHost:
-        return "Could not reach the laptop. Check its address, server and firewall."
+        return "Could not reach the laptop. Check its current Wi-Fi address, running server and firewall. Open its address with /v1/catalog in iPhone Safari to check reachability."
       case NSURLErrorNotConnectedToInternet, NSURLErrorNetworkConnectionLost:
         return "Check Wi-Fi and allow Open Outdoor in iPhone Settings → Privacy & Security → Local Network."
       case NSURLErrorAppTransportSecurityRequiresSecureConnection:

@@ -24,6 +24,12 @@ private enum LaptopErrorTests {
       let message = OpenOutdoorLaptopException.connectionMessage(error)
       guard message.contains(expected), !message.contains("secret") else { throw failure("Incorrect connection guidance") }
     }
+    guard OpenOutdoorLaptopException.responseMessage(200) == nil else { throw failure("Successful HTTP response rejected") }
+    for (status, expected) in [(401, "Pairing code rejected"), (403, "proxy or VPN"), (409, "state file changed"), (404, "unavailable")] {
+      guard OpenOutdoorLaptopException.responseMessage(status)?.contains(expected) == true else { throw failure("Incorrect HTTP failure guidance") }
+    }
+    let timeout = NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)
+    guard OpenOutdoorLaptopException.connectionMessage(timeout).contains("iPhone Safari") else { throw failure("Missing independent reachability check") }
     print("Native laptop error bridge passed.")
   }
 
