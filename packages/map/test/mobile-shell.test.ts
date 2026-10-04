@@ -20,6 +20,7 @@ vi.mock('../../../apps/mobile/node_modules/react-native', () => ({
 vi.mock('../../../apps/mobile/node_modules/react-native-safe-area-context', () => ({
   SafeAreaProvider: 'safe-provider',
   SafeAreaView: 'safe-area',
+  useSafeAreaInsets: () => ({ top: 47, bottom: 34, left: 0, right: 0 }),
 }));
 vi.mock('../../../apps/mobile/node_modules/expo-status-bar', () => ({ StatusBar: () => null }));
 vi.mock('../../../apps/mobile/accessibility', async () => {
@@ -105,12 +106,14 @@ it('keeps navigation flush to its bottom safe area and preserves the map while v
   const nav = () => root.root.findByType('navigation');
   expect(nav().parent?.type).toBe('safe-area');
   expect(nav().parent?.props.edges).toEqual(['bottom', 'left', 'right']);
-  expect(root.root.findByType('map').parent?.parent?.props.edges).toEqual(['top', 'left', 'right']);
+  expect(root.root.findByType('map').parent?.parent?.props.edges).toEqual(['left', 'right']);
+  expect(root.root.findByType('map').props.topInset).toBe(47);
   expect(root.root.findAllByType('settings')).toHaveLength(0);
   expect(root.root.findAllByType('map')).toHaveLength(1);
   await act(async () => root.root.findByType('map').props.onOpenSettings());
   expect(root.root.findAllByType('settings')).toHaveLength(0);
   expect(root.root.findByType('map').props.visible).toBe(false);
+  expect(root.root.findByType('map').parent?.parent?.props.edges).toEqual(['top', 'left', 'right']);
   await act(async () =>
     root.root
       .findAllByType('button')
@@ -122,6 +125,7 @@ it('keeps navigation flush to its bottom safe area and preserves the map while v
   await act(async () => nav().props.onChange('explore'));
   expect(root.root.findAllByType('settings')).toHaveLength(0);
   expect(root.root.findAllByType('map')).toHaveLength(1);
+  expect(root.root.findByType('map').parent?.parent?.props.edges).toEqual(['left', 'right']);
 });
 
 it('opens package coverage on Explore without losing the shared package service', async () => {
@@ -233,6 +237,12 @@ it('reviews before saving, keeps recording on return, and retains a failed save 
   await act(async () => {
     await root.root.findByType('recording').props.capture.onStart();
   });
+  expect(root.root.findByType('recording').props.capture.state).toBe('recording');
+  await act(async () => root.root.findByType('navigation').props.onChange('explore'));
+  const recordingMap = root.root.findByType('map');
+  expect(recordingMap.parent?.parent?.props.edges).toEqual(['left', 'right']);
+  expect(recordingMap.props.recordingBanner.props.title).toBe('Recording');
+  await act(async () => recordingMap.props.recordingBanner.props.onPress());
   expect(root.root.findByType('recording').props.capture.state).toBe('recording');
   await act(async () => {
     await root.root.findByType('recording').props.capture.onFinish();

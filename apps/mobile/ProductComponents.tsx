@@ -652,8 +652,8 @@ export function ProductNavigation({
         borderTopWidth: 1,
         borderTopColor: p.border,
         paddingHorizontal: 8,
-        paddingTop: 8,
-        paddingBottom: 8,
+        paddingTop: 4,
+        paddingBottom: 0,
         gap: 4,
       }}
     >
@@ -666,12 +666,12 @@ export function ProductNavigation({
           onPress={() => onChange(item)}
           style={({ pressed }) => ({
             flex: 1,
-            minHeight: 58,
-            borderRadius: 16,
-            paddingVertical: 8,
+            minHeight: 52,
+            borderRadius: 14,
+            paddingVertical: 4,
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 4,
+            gap: 2,
             backgroundColor: section === item || pressed ? p.selected : p.surface,
           })}
         >
@@ -683,6 +683,7 @@ export function ProductNavigation({
               fontWeight: '700',
               fontSize: 12,
               textAlign: 'center',
+              alignSelf: 'stretch',
             }}
           >
             {item[0].toUpperCase() + item.slice(1)}

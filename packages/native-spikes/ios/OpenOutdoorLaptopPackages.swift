@@ -59,7 +59,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
     task?.resume()
   }
   func connect(_ input: String, code: String, fingerprint: String = "", promise: Promise) {
-    guard pending == nil else { promise.reject("LAPTOP_BUSY", "Wait for the current transfer or cancel it."); return }
+    guard pending == nil else { promise.reject(OpenOutdoorLaptopException("LAPTOP_BUSY", "Wait for the current transfer or cancel it.")); return }
     disconnect()
     do {
       baseURL = try OpenOutdoorLaptopEndpoint.url(input)
@@ -70,10 +70,10 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
       guard fingerprint.isEmpty || fingerprint.range(of: "^[a-f0-9]{64}$", options: .regularExpression) != nil && fingerprint.utf8.count == 64 else { throw failure("Use the signing fingerprint shown on the laptop pairing page.") }
       expectedFingerprint = fingerprint
       try start(path: "v1/catalog", promise: promise, download: false)
-    } catch { disconnect(); promise.reject("LAPTOP_CONNECT_FAILED", error.localizedDescription) }
+    } catch { disconnect(); promise.reject(OpenOutdoorLaptopException("LAPTOP_CONNECT_FAILED", error.localizedDescription)) }
   }
   func download(_ state: String, promise: Promise) {
-    guard pending == nil else { promise.reject("LAPTOP_BUSY", "Wait for the current transfer or cancel it."); return }
+    guard pending == nil else { promise.reject(OpenOutdoorLaptopException("LAPTOP_BUSY", "Wait for the current transfer or cancel it.")); return }
     do {
       guard let pin = offered.first(where: { $0.state == state }) else {
         throw failure("Reconnect to the laptop and choose an available state.")
@@ -81,7 +81,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
       try store.preflight(pin, download: true)
       incoming = pin
       try start(path: "v1/packages/\(pin.state)", promise: promise, download: true)
-    } catch { incoming = nil; promise.reject("LAPTOP_DOWNLOAD_FAILED", error.localizedDescription) }
+    } catch { incoming = nil; promise.reject(OpenOutdoorLaptopException("LAPTOP_DOWNLOAD_FAILED", error.localizedDescription)) }
   }
   func progress() throws -> String {
     let value: [String: Any] = ["phase": phase, "receivedBytes": received, "totalBytes": incoming?.bytes ?? 0]
@@ -105,23 +105,23 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
   }
   func refresh(_ promise: Promise) {
     do { try start(path: "v1/catalog", promise: promise, download: false) }
-    catch { promise.reject("LAPTOP_REFRESH_FAILED", error.localizedDescription) }
+    catch { promise.reject(OpenOutdoorLaptopException("LAPTOP_REFRESH_FAILED", error.localizedDescription)) }
   }
   func approveSigner(_ promise: Promise) {
-    guard pending == nil, let cache = catalogCache, !expectedFingerprint.isEmpty, !signingPublicKey.isEmpty else { promise.reject("LAPTOP_TRUST_FAILED", "Scan the current laptop QR code or enter its signing fingerprint before approving updates."); return }
+    guard pending == nil, let cache = catalogCache, !expectedFingerprint.isEmpty, !signingPublicKey.isEmpty else { promise.reject(OpenOutdoorLaptopException("LAPTOP_TRUST_FAILED", "Scan the current laptop QR code or enter its signing fingerprint before approving updates.")); return }
     do {
       // The independent QR/manual fingerprint must match before an API key can be enrolled.
       _ = try catalogResult(cache)
       try store.approveUpdateSigner(signingPublicKey, fingerprint: expectedFingerprint)
       promise.resolve(try catalogResult(cache))
-    } catch { promise.reject("LAPTOP_TRUST_FAILED", error.localizedDescription) }
+    } catch { promise.reject(OpenOutdoorLaptopException("LAPTOP_TRUST_FAILED", error.localizedDescription)) }
   }
   func revokeSigner(_ promise: Promise) {
-    guard pending == nil, let cache = catalogCache, !signingPublicKey.isEmpty else { promise.reject("LAPTOP_TRUST_FAILED", "Connect to the laptop before changing update trust."); return }
+    guard pending == nil, let cache = catalogCache, !signingPublicKey.isEmpty else { promise.reject(OpenOutdoorLaptopException("LAPTOP_TRUST_FAILED", "Connect to the laptop before changing update trust.")); return }
     do {
       try store.trust().revoke(OpenOutdoorStateUpdateTrust.fingerprint(signingPublicKey))
       promise.resolve(try catalogResult(cache))
-    } catch { promise.reject("LAPTOP_TRUST_FAILED", error.localizedDescription) }
+    } catch { promise.reject(OpenOutdoorLaptopException("LAPTOP_TRUST_FAILED", error.localizedDescription)) }
   }
   private func finish(value: String? = nil, error: String? = nil) {
     let promise = pending
@@ -132,13 +132,12 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
     phase = "idle"
     session?.invalidateAndCancel()
     session = nil
-    if let error { promise?.reject("LAPTOP_TRANSFER_FAILED", error) }
+    if let error { promise?.reject(OpenOutdoorLaptopException("LAPTOP_TRANSFER_FAILED", error)) }
     else { promise?.resolve(value) }
   }
   private func responseError(_ response: URLResponse?) -> String? {
     guard let response = response as? HTTPURLResponse else { return "The laptop returned an invalid response." }
-    if response.statusCode == 401 { return "Pairing code rejected. Reconnect using the code currently shown on the laptop." }
-    if response.statusCode != 200 { return "The state package is unavailable. Check the laptop server and reconnect." }
+    if let message = OpenOutdoorLaptopException.responseMessage(response.statusCode) { return message }
     if let pin = incoming, response.expectedContentLength != pin.bytes {
       return "State download size does not match this app's supported package."
     }
@@ -146,7 +145,7 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
   }
   func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse,
                   newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-    if self.session === session { failureReason = "The laptop redirected the connection. Use the address shown in its terminal." }
+    if self.session === session { failureReason = OpenOutdoorLaptopException.responseMessage(response.statusCode) }
     completionHandler(nil) // Never forward the pairing header to another destination.
   }
   func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse,
@@ -188,9 +187,9 @@ internal final class OpenOutdoorLaptopPackages: NSObject, URLSessionDataDelegate
   func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
     guard self.session === session else { return }
     if let message = failureReason { finish(error: message); return }
-    if error != nil {
+    if let error {
       if incoming == nil { baseURL = nil; pairingCode = ""; offered = [] }
-      finish(error: "Could not reach the laptop. Keep both devices on the same Wi-Fi, keep its server running, and allow Local Network access in iPhone Settings.")
+      finish(error: OpenOutdoorLaptopException.connectionMessage(error))
       return
     }
     guard incoming == nil else { finish(error: "The state download was incomplete. Reconnect and retry."); return }

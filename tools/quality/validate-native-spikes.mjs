@@ -1,5 +1,6 @@
 import { designTokens } from '../../packages/shared/src/design-system.ts';
 import { readFile } from 'node:fs/promises';
+import { validateLaptopTransportPolicy } from '../laptop/laptop-transport-policy.mjs';
 
 const root = new URL('../../', import.meta.url);
 
@@ -426,6 +427,7 @@ requireText(policy, '.protectionKey', 'file policy');
 requireText(lockfile, 'link:../../packages/native-spikes', 'lockfile');
 
 const info = app.expo.ios.infoPlist;
+validateLaptopTransportPolicy(info);
 if (info.OpenOutdoorPhase0DiagnosticsEnabled !== true) {
   throw new Error('local Phase 0 app must explicitly opt in to native storage diagnostics');
 }

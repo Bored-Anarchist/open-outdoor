@@ -70,7 +70,7 @@
     "test:state-loader": "uv run --frozen --group loader python -m unittest discover -s python/tests -p test_state_loader.py && node --test tools/test/state-loader-contract.test.mjs",
     "map:packages:backup": "node tools/packages/backup-package-artifacts.mjs",
     "map:laptop": "node tools/laptop/laptop-package-server.mjs",
-    "test:laptop": "node --test tools/test/laptop-package-server.test.mjs tools/test/laptop-network.test.mjs tools/test/laptop-pairing.test.mjs tools/test/laptop-update-signing.test.mjs && vitest run packages/map/test/laptop-connection.test.ts packages/map/test/laptop-pairing.test.ts packages/map/test/laptop-packages-hook.test.ts",
+    "test:laptop": "node --test tools/test/laptop-package-server.test.mjs tools/test/laptop-network.test.mjs tools/test/laptop-pairing.test.mjs tools/test/laptop-update-signing.test.mjs tools/test/laptop-transport-policy.test.mjs && vitest run packages/map/test/laptop-connection.test.ts packages/map/test/laptop-pairing.test.ts packages/map/test/laptop-packages-hook.test.ts",
     "map:sources:check": "node tools/packages/check-package-source-updates.mjs",
     "docs:generate": "node tools/reporting/report-public-state-packages.mjs",
     "docs:check": "node tools/reporting/report-public-state-packages.mjs --check"

@@ -59,7 +59,7 @@ import {
   type MobileApplication,
 } from './application';
 
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { OutdoorMap } from './OutdoorMap';
 import { MapSettings, MapNotices } from './MapSettings';
 import { ProductSheet } from './ProductSheet';
@@ -125,6 +125,7 @@ function AppContent({
   onAppearance: (value: Appearance | null) => void;
 }) {
   const palette = usePalette();
+  const insets = useSafeAreaInsets();
   const locationAccess = useLocationAccess();
 
   const styles = useMemo(() => createStyles(palette), [palette]);
@@ -741,24 +742,27 @@ function AppContent({
       .sort((a, b) => b.revision - a.revision)[0];
     return recordedHikeDisplay(storedHikeObservations(activity), revision);
   }, [application, library, section, settingsOpen, libraryPage]);
+  const exploring = !settingsOpen && section === 'explore';
+  const recordingBanner =
+    active && (settingsOpen || section !== 'track') ? (
+      <ProductRow
+        title={recorderState === 'paused' ? 'Paused hike' : 'Recording'}
+        subtitle="Return to Track"
+        icon="track"
+        onPress={() => {
+          setSettingsOpen(false);
+          setSection('track');
+        }}
+      />
+    ) : null;
   return (
     <View style={{ flex: 1, backgroundColor: palette.surface }}>
       <SafeAreaView
-        edges={['top', 'left', 'right']}
+        edges={exploring ? ['left', 'right'] : ['top', 'left', 'right']}
         style={{ flex: 1, backgroundColor: palette.background }}
       >
-        {active && (settingsOpen || section !== 'track') ? (
-          <View style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
-            <ProductRow
-              title={recorderState === 'paused' ? 'Paused hike' : 'Recording'}
-              subtitle="Return to Track"
-              icon="track"
-              onPress={() => {
-                setSettingsOpen(false);
-                setSection('track');
-              }}
-            />
-          </View>
+        {recordingBanner && !exploring ? (
+          <View style={{ paddingHorizontal: 16, paddingVertical: 4 }}>{recordingBanner}</View>
         ) : null}
         {/* Retaining this component retains query, selection, filters and map camera. */}
         <View
@@ -775,6 +779,8 @@ function AppContent({
           ) : null}
           <OutdoorMap
             adapter={map}
+            topInset={exploring ? insets.top : 0}
+            recordingBanner={exploring ? recordingBanner : null}
             section={section === 'search' ? 'search' : 'explore'}
             query={query}
             onQueryChange={setQuery}
