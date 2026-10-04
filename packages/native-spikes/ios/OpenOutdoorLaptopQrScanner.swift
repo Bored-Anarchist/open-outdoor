@@ -11,7 +11,7 @@ internal final class OpenOutdoorLaptopQrScanner {
   private var backgroundObserver: NSObjectProtocol?
 
   func scan(_ promise: Promise) {
-    guard pending == nil else { promise.reject("QR_BUSY", "A pairing scan is already open."); return }
+    guard pending == nil else { promise.reject(OpenOutdoorLaptopException("QR_BUSY", "A pairing scan is already open.")); return }
     generation += 1
     let request = generation
     pending = promise
@@ -61,7 +61,7 @@ internal final class OpenOutdoorLaptopQrScanner {
     controller?.stop()
     controller?.dismiss(animated: true)
     controller = nil
-    if let error { promise.reject("QR_SCAN_FAILED", error) } else { promise.resolve(value) }
+    if let error { promise.reject(OpenOutdoorLaptopException("QR_SCAN_FAILED", error)) } else { promise.resolve(value) }
   }
 }
 
