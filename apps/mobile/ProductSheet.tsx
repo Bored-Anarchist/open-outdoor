@@ -1,6 +1,6 @@
 import { KeyboardAvoidingView, Modal, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { ProductHeader, usePalette } from './ProductComponents';
 
 /** System sheet supports Back, screen-reader escape, keyboard avoidance and text reflow. */
@@ -18,6 +18,10 @@ export function ProductSheet({
   children: ReactNode;
 }) {
   const p = usePalette();
+  const scroll = useRef<ScrollView>(null);
+  useEffect(() => {
+    if (visible) scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [visible, title]);
   return (
     <Modal
       visible={visible}
@@ -36,6 +40,7 @@ export function ProductSheet({
               <ProductHeader title={title} onBack={onClose} />
             </View>
             <ScrollView
+              ref={scroll}
               keyboardShouldPersistTaps="handled"
               contentContainerStyle={{
                 paddingHorizontal: 22,

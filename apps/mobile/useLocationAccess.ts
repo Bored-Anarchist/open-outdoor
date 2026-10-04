@@ -55,6 +55,7 @@ export function useLocationAccess() {
   const refresh = useCallback(async () => {
     if (!nativeSpikes.locationPermissionAvailable) return;
     const request = ++revision.current;
+    if (mounted.current) setChecking(true);
     try {
       const next = await nativeSpikes.locationPermission();
       if (mounted.current && request === revision.current) {
@@ -65,13 +66,14 @@ export function useLocationAccess() {
       if (mounted.current && request === revision.current)
         setError('Could not check location access. Try again.');
     } finally {
-      if (mounted.current) setChecking(false);
+      if (mounted.current && request === revision.current) setChecking(false);
     }
   }, []);
   useEffect(() => {
     mounted.current = true;
+    let active = true;
     const listener = nativeSpikes.onLocationPermissionChange?.((next) => {
-      if (!mounted.current) return;
+      if (!active) return;
       revision.current++;
       setPermission(next);
       setChecking(false);
@@ -82,6 +84,7 @@ export function useLocationAccess() {
       if (state === 'active') void refresh();
     });
     return () => {
+      active = false;
       mounted.current = false;
       revision.current++;
       listener?.remove();

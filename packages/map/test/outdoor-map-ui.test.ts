@@ -187,6 +187,8 @@ async function mount() {
       },
     });
   });
+  const map = root.root.findAllByType('native-map')[0];
+  if (map) await act(async () => map.props.onDidFinishRenderingMapFully());
 }
 const places = () =>
   root.root.findAllByType('source').find((node) => node.props.id === 'outdoor-places')!;
@@ -389,4 +391,115 @@ it('reloads a failed map at its retained camera and clears the error after a ful
   expect(root.root.findAllByType('button').some((node) => node.props.label === 'Reload map')).toBe(
     false,
   );
+});
+it('focuses a Search selection once the recreated Explore map is ready', async () => {
+  props.section = 'search';
+  props.query = 'Synthetic';
+  props.onOpenExplore = vi.fn(() => {
+    props = { ...props, section: 'explore' };
+    root.update(createElement(OutdoorMap, props));
+  });
+  await mount();
+  expect(root.root.findAllByType('native-map')).toHaveLength(0);
+  await act(async () =>
+    root.root
+      .findAllByType('row')
+      .find((node) => node.props.title === point.properties.name)!
+      .props.onPress(),
+  );
+  expect(adapter.getSnapshot().selectedFeatureId).toBe(point.id);
+  mocks.jump.mockClear();
+  await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
+  expect(mocks.jump).toHaveBeenLastCalledWith({ center: [-74, 42], zoom: 15 });
+});
+
+it('keeps a coverage request until Explore has an available camera', async () => {
+  await mount();
+  await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
+  props = { ...props, visible: false, coverage: [-75, 41, -73, 43] };
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  expect(props.onCoverageShown).not.toHaveBeenCalled();
+  props = { ...props, visible: true };
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
+  expect(mocks.fit).toHaveBeenLastCalledWith(props.coverage, {
+    padding: { top: 25, right: 25, bottom: 25, left: 25 },
+    duration: 0,
+  });
+  expect(props.onCoverageShown).toHaveBeenCalledOnce();
+});
+
+it('ignores a pending map hit after switching to Search', async () => {
+  let release!: (features: unknown[]) => void;
+  mocks.query.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+  );
+  await mount();
+  await act(async () =>
+    root.root.findByType('native-map').props.onPress({ nativeEvent: { point: [1, 1] } }),
+  );
+  props = { ...props, section: 'search' };
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  await act(async () => release([{ properties: { id: point.id, kind: 'poi' } }]));
+  expect(adapter.getSnapshot().selectedFeatureId).toBeNull();
+});
+
+it('retains consecutive zoom controls used while Search has no native camera', async () => {
+  props.section = 'search';
+  await mount();
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.hint === 'Choose categories for results and map')!
+      .props.onPress(),
+  );
+  const zoomIn = () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'Zoom in')!
+      .props.onPress();
+  await act(async () => zoomIn());
+  await act(async () => zoomIn());
+  expect(mocks.jump).not.toHaveBeenCalled();
+  props = { ...props, section: 'explore' };
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
+  expect(mocks.jump).toHaveBeenLastCalledWith({
+    center: [...adapter.getSnapshot().camera.center],
+    zoom: adapter.getSnapshot().camera.zoom + 2,
+  });
+});
+
+it('ignores a cluster expansion that finishes after leaving Explore', async () => {
+  let release!: (zoom: number) => void;
+  mocks.expansion.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      }),
+  );
+  await mount();
+  await act(async () =>
+    places().props.onPress({
+      nativeEvent: {
+        features: [
+          {
+            properties: { point_count: 2, cluster_id: 1 },
+            geometry: { type: 'Point', coordinates: [-75, 43] },
+          },
+        ],
+      },
+    }),
+  );
+  props = { ...props, section: 'search' };
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  mocks.jump.mockClear();
+  await act(async () => release(12));
+  props = { ...props, section: 'explore' };
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
+  expect(mocks.jump).not.toHaveBeenCalled();
 });

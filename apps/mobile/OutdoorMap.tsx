@@ -113,6 +113,7 @@ import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
 import type { StatePackagesService } from './useStatePackages';
 import { useStatePackagePlaces, type StatePlaceViewport } from './useStatePackagePlaces';
 import { useMapCameraSync } from './useMapCameraSync';
+import { useMapCameraFit } from './useMapCameraFit';
 
 const bundledFeatureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
 
@@ -462,8 +463,13 @@ export function OutdoorMap({
   visible: boolean;
 }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
+  const mapActive = visible && section === 'explore';
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [mapGeneration, setMapGeneration] = useState(0);
 
   const camera = useRef<CameraRef>(null);
+  const fitCamera = useMapCameraFit(camera, mapActive && loaded && !failed);
 
   const mapView = useRef<MapRef>(null);
 
@@ -512,17 +518,12 @@ export function OutdoorMap({
     [palette],
   );
   useEffect(() => {
-    if (!visible) {
-      setSheet(null);
-      selectionRequest.current++;
-    }
+    setSheet(null);
+    selectionRequest.current++;
   }, [visible, section]);
   const { width, height, fontScale } = useWindowDimensions();
   const [viewport, setViewport] = useState<StatePlaceViewport | null>(null);
-  const statePlaces = useStatePackagePlaces(
-    statePackages.packages,
-    visible && section === 'explore' ? viewport : null,
-  );
+  const statePlaces = useStatePackagePlaces(statePackages.packages, mapActive ? viewport : null);
   const useRegionalDetail = regionalBasemapCoversViewport(
     viewport?.bounds ?? [
       state.camera.center[0] - 0.25,
@@ -757,16 +758,7 @@ export function OutdoorMap({
 
     if (!bounds) return;
 
-    setFollowUser(false);
-
-    if (bounds[0] === bounds[2] && bounds[1] === bounds[3])
-      camera.current?.jumpTo({ center: [bounds[0], bounds[1]], zoom: 14 });
-    else
-      camera.current?.fitBounds([...bounds], {
-        padding: { top: 35, right: 35, bottom: 35, left: 35 },
-
-        duration: 0,
-      });
+    moveCameraTo([...bounds]);
   }
 
   const capturePlan = captured?.plannedFeatureId
@@ -871,27 +863,16 @@ export function OutdoorMap({
     adapter.setSelectedFeature(feature?.id ?? null);
   };
 
-  const [loaded, setLoaded] = useState(false);
-
-  const [failed, setFailed] = useState(false);
-  const [mapGeneration, setMapGeneration] = useState(0);
-
   const [followUser, setFollowUser] = useState(false);
 
   const [zoom, setZoom] = useState(state.camera.zoom);
 
   useEffect(() => {
-    if (!loaded || !coverage) return;
+    if (!mapActive || !loaded || failed || !coverage || !camera.current) return;
     setFollowUser(false);
-    if (coverage[0] === coverage[2] && coverage[1] === coverage[3])
-      camera.current?.jumpTo({ center: [coverage[0], coverage[1]], zoom: 14 });
-    else
-      camera.current?.fitBounds(coverage, {
-        padding: { top: 25, right: 25, bottom: 25, left: 25 },
-        duration: 0,
-      });
+    fitCamera(coverage, 14, 25);
     onCoverageShown();
-  }, [loaded, coverage, onCoverageShown]);
+  }, [mapActive, loaded, failed, coverage, fitCamera, onCoverageShown]);
 
   const [directionsStatus, setDirectionsStatus] = useState('');
 
@@ -990,7 +971,6 @@ export function OutdoorMap({
   }, [selected?.id]);
 
   function select(feature: OutdoorFeatureSummary) {
-    setFollowUser(false);
     if (
       statePlaces.features.some((entry) => entry.id === feature.id) ||
       statePackages.results.some((entry) => entry.id === feature.id) ||
@@ -1000,23 +980,27 @@ export function OutdoorMap({
     if (statePackages.ready) void statePackages.select(feature.id);
     setSelected(feature);
 
-    const [west, south, east, north] = feature.bounds;
+    moveCameraTo(feature.bounds, 15);
+  }
 
-    if (west === east && south === north) {
-      camera.current?.jumpTo({ center: [west, south], zoom: 15 });
-    } else {
-      camera.current?.fitBounds(feature.bounds, {
-        padding: { top: 35, right: 35, bottom: 35, left: 35 },
-
-        duration: 0,
-      });
-    }
+  function moveCameraTo(bounds: [number, number, number, number], pointZoom = 14) {
+    setFollowUser(false);
+    // A newer user action replaces an outstanding package-coverage request.
+    if (coverage) onCoverageShown();
+    fitCamera(bounds, pointZoom);
   }
 
   function changeZoom(direction: 'in' | 'out') {
     setFollowUser(false);
-
-    camera.current?.zoomTo(nextOutdoorZoom(zoom, direction), { duration: 160 });
+    if (coverage) onCoverageShown();
+    const nextZoom = nextOutdoorZoom(zoom, direction);
+    setZoom(nextZoom);
+    if (mapActive && loaded && !failed && camera.current)
+      camera.current.zoomTo(nextZoom, { duration: 160 });
+    else {
+      const [x, y] = state.camera.center;
+      fitCamera([x, y, x, y], nextZoom);
+    }
   }
 
   async function shareDirectionsDestination(): Promise<void> {
@@ -1209,7 +1193,7 @@ export function OutdoorMap({
       <View
         style={{ flex: 1, display: section === 'explore' ? 'flex' : 'none', overflow: 'hidden' }}
       >
-        {mapStyle && visible && section === 'explore' ? (
+        {mapStyle && mapActive ? (
           <>
             <NativeMap
               key={`${regionalOverviewUri}-${mapGeneration}`}
@@ -1335,16 +1319,11 @@ export function OutdoorMap({
 
                       .then((expansionZoom) => {
                         if (request !== selectionRequest.current) return;
-                        setFollowUser(false);
-
-                        camera.current?.jumpTo({
-                          center:
-                            rendered?.geometry.type === 'Point'
-                              ? ([...rendered.geometry.coordinates] as [number, number])
-                              : [...event.nativeEvent.lngLat],
-
-                          zoom: Math.min(18, expansionZoom),
-                        });
+                        const [x, y] =
+                          rendered?.geometry.type === 'Point'
+                            ? rendered.geometry.coordinates
+                            : event.nativeEvent.lngLat;
+                        moveCameraTo([x!, y!, x!, y!], Math.min(18, expansionZoom));
                       })
 
                       .catch(() => {
@@ -1823,13 +1802,7 @@ export function OutdoorMap({
                 onSampleSelect={setSelectedHikeSample}
 
                 onShowRoute={() => {
-                  setFollowUser(false);
-
-                  camera.current?.fitBounds(selected.bounds, {
-                    padding: { top: 35, right: 35, bottom: 35, left: 35 },
-
-                    duration: 0,
-                  });
+                  moveCameraTo(selected.bounds);
                 }}
               />
             ) : null}
@@ -2243,8 +2216,7 @@ export function OutdoorMap({
               disabled={!last}
               onPress={() => {
                 if (last) {
-                  setFollowUser(false);
-                  camera.current?.jumpTo({ center: [...last], zoom: 14 });
+                  moveCameraTo([last[0], last[1], last[0], last[1]]);
                   setSheet(null);
                 }
               }}

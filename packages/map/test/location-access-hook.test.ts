@@ -121,3 +121,26 @@ it('unlocks a failed action for retry and removes permission listeners on unmoun
   expect(mocks.remove).toHaveBeenCalledOnce();
   expect(mocks.removeAppState).toHaveBeenCalledOnce();
 });
+it('keeps controls busy until the newest overlapping permission query finishes', async () => {
+  let first!: (value: string) => void, second!: (value: string) => void;
+  mocks.read
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          first = resolve;
+        }),
+    )
+    .mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          second = resolve;
+        }),
+    );
+  await mount();
+  await act(async () => mocks.foreground!('active'));
+  await act(async () => first('not-determined'));
+  expect(access.busy).toBe(true);
+  await act(async () => second('always'));
+  expect(access.busy).toBe(false);
+  expect(access.permission).toBe('always');
+});

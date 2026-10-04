@@ -14,6 +14,7 @@ export function useMapCameraSync(
     if (syncedView.current === view) return;
     syncedView.current = view;
     const rendered = nativeView.current;
+    nativeView.current = null;
     const fromNative =
       rendered &&
       Math.abs(rendered.center[0] - view.center[0]) < 1e-7 &&

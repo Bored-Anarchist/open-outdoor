@@ -29,7 +29,7 @@ test('pairing QR decodes independently to the expected app credentials', async (
   assert.equal(jsQR(pixels, size, size)?.data, payload);
   const page = await pairingPage(address, code);
   assert.match(page, /<svg/);
-  assert.match(page, /Scan pairing QR code/);
+  assert.match(page, /Scan QR code/);
   assert.doesNotMatch(page, /<script|<iframe|src=/);
 });
 
@@ -135,6 +135,33 @@ test('IPv6 discovery scopes multicast to one interface and publishes only its se
   assert.deepEqual(config.txt, { v: '1', address: 'http://[2001:db8::20]:8765' });
   assert.deepEqual(service.records(), [
     { type: 'AAAA', data: '2001:db8::20' },
+    { type: 'TXT', data: config.txt },
+  ]);
+  stop();
+});
+
+test('link-local IPv6 discovery strips interface scopes from DNS address records', () => {
+  let service, config;
+  class FakeBonjour {
+    publish(value) {
+      config = value;
+      service = {
+        records: () => [
+          { type: 'AAAA', data: 'fe80::20%12' },
+          { type: 'AAAA', data: 'fe80::21%12' },
+          { type: 'A', data: '192.168.1.20' },
+          { type: 'TXT', data: value.txt },
+        ],
+        stop: (done) => done(),
+      };
+      return service;
+    }
+    destroy() {}
+  }
+  const stop = advertiseLaptop('fe80::20%12', 8765, { BonjourClass: FakeBonjour });
+  assert.equal(config.txt.address, 'http://[fe80::20]:8765');
+  assert.deepEqual(service.records(), [
+    { type: 'AAAA', data: 'fe80::20' },
     { type: 'TXT', data: config.txt },
   ]);
   stop();

@@ -45,3 +45,32 @@ it('does not overwrite a feature or coverage fit when GPS following stops', asyn
     await act(async () => root.unmount());
   }
 });
+it('does not reuse an old native echo marker for a later external camera command', async () => {
+  const jumpTo = vi.fn();
+  const camera = { current: { jumpTo } };
+  const a: MapCamera = { center: [-74, 42], zoom: 10 };
+  const b: MapCamera = { center: [-73, 43], zoom: 11 };
+  let report!: (view: MapCamera) => void;
+  function Harness({ view }: { view: MapCamera }) {
+    report = useMapCameraSync(camera, view, false);
+    return null;
+  }
+  let root!: ReturnType<typeof create>;
+  try {
+    await act(async () => {
+      root = create(createElement(Harness, { view: b }));
+    });
+    jumpTo.mockClear();
+    await act(async () => {
+      report(a);
+      root.update(createElement(Harness, { view: a }));
+    });
+    expect(jumpTo).not.toHaveBeenCalled();
+    await act(async () => root.update(createElement(Harness, { view: b })));
+    await act(async () => root.update(createElement(Harness, { view: { ...a } })));
+    expect(jumpTo).toHaveBeenCalledTimes(2);
+    expect(jumpTo).toHaveBeenLastCalledWith({ center: [-74, 42], zoom: 10 });
+  } finally {
+    await act(async () => root.unmount());
+  }
+});

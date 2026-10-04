@@ -21,7 +21,7 @@ export async function pairingPage(address, pairingCode, signerFingerprint) {
     margin: 4,
   });
   // Both values originate in the validated server configuration, never request input.
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect Open Outdoor</title><style>body{font:20px system-ui;max-width:560px;margin:40px auto;padding:20px;background:#fff;color:#152820}svg{width:100%;max-width:440px}code{overflow-wrap:anywhere}h1{font-size:30px}</style><main><h1>Connect your phone</h1><p>Keep both devices on the same trusted Wi-Fi. In Open Outdoor, choose Connect to laptop, then Scan pairing QR code.</p>${svg.replace('<svg ', '<svg role="img" aria-label="Laptop pairing QR code" ')}<p>Laptop address: <code>${address}</code></p><p>Manual pairing code: <code>${pairingCode}</code></p>${signerFingerprint ? `<p>Signing fingerprint: <code>${signerFingerprint}</code></p><p>Approve this laptop for state updates only after comparing this fingerprint or scanning this page.</p>` : ''}<p>Keep the laptop server running. Closing the server expires this code. Downloads use local HTTP.</p></main></html>`;
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect Open Outdoor</title><style>body{font:20px system-ui;max-width:560px;margin:40px auto;padding:20px;background:#fff;color:#152820}svg{width:100%;max-width:440px}code{overflow-wrap:anywhere}h1{font-size:30px}</style><main><h1>Connect your phone</h1><p>Keep both devices on the same trusted Wi-Fi. In Open Outdoor, choose Settings → Maps → Add a map → From laptop, then Scan QR code.</p>${svg.replace('<svg ', '<svg role="img" aria-label="Laptop pairing QR code" ')}<p>Laptop address: <code>${address}</code></p><p>Manual pairing code: <code>${pairingCode}</code></p>${signerFingerprint ? `<p>Signing fingerprint: <code>${signerFingerprint}</code></p><p>Approve this laptop for state updates only after comparing this fingerprint or scanning this page.</p>` : ''}<p>Keep the laptop server running. Closing the server expires this code. Downloads use local HTTP.</p></main></html>`;
 }
 
 export function canViewPairingPage(remoteAddress, localAddress, fetchSite) {
@@ -63,14 +63,15 @@ export function advertiseLaptop(
       txt: { v: '1', address: laptopAddress(host, port) },
     });
     const records = service.records.bind(service);
+    const addressType = selected.family === 4 ? 'A' : 'AAAA';
     service.records = () =>
-      records().filter((record) =>
-        record.type === 'A'
-          ? selected.family === 4 && literalHost(record.data)?.host === selected.host
-          : record.type === 'AAAA'
-            ? selected.family === 6 && literalHost(record.data)?.host === selected.host
-            : true,
-      );
+      records().flatMap((record) => {
+        if (record.type !== 'A' && record.type !== 'AAAA') return [record];
+        if (record.type !== addressType || literalHost(record.data)?.host !== selected.host)
+          return [];
+        // DNS address records contain the address bytes, never a local interface scope.
+        return [{ ...record, data: selected.host }];
+      });
   } catch (error) {
     bonjour.destroy();
     throw error;
