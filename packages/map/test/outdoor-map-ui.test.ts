@@ -110,7 +110,10 @@ vi.mock('../../../apps/mobile/ProductComponents', () => ({
   OriginBadge: 'badge',
   usePalette: () => ({ ...palettes.light, route: mocks.routeColor }),
 }));
-vi.mock('../../../apps/mobile/ProductSheet', () => ({ ProductSheet: () => null }));
+vi.mock('../../../apps/mobile/ProductSheet', () => ({
+  ProductSheet: (props: { visible: boolean; children: React.ReactNode }) =>
+    createElement('sheet', props, props.visible ? props.children : null),
+}));
 vi.mock('../../../apps/mobile/HikeDetails', () => ({ HikeDetails: () => null }));
 vi.mock('../../../apps/mobile/PlaceNote', () => ({ PlaceNote: () => null }));
 vi.mock('../../../apps/mobile/useStatePackagePlaces', () => ({
@@ -146,7 +149,22 @@ beforeEach(() => {
       select: vi.fn(async () => null),
       clearSelection: vi.fn(),
     },
-    capture: { state: 'idle', available: false, busy: false, view: null, status: '' },
+    capture: {
+      state: 'idle',
+      available: false,
+      busy: false,
+      view: null,
+      status: '',
+      locationAccess: {
+        permission: 'always',
+        label: 'Location Settings',
+        message: 'Location enabled for recording.',
+        hint: 'Review location access',
+        busy: false,
+        request: vi.fn(),
+      },
+      onFinish: vi.fn(async () => null),
+    },
     coverage: null,
     onCoverageShown: vi.fn(),
     onOpenMaps: vi.fn(),
@@ -245,4 +263,130 @@ it('updates trail end-marker color when appearance changes', async () => {
   mocks.routeColor = '#ffa64d';
   await act(async () => root.update(createElement(OutdoorMap, props)));
   expect(markers().features[1].properties.color).toBe('#ffa64d');
+});
+it('does not send native pan and zoom events back as camera commands', async () => {
+  await mount();
+  mocks.jump.mockClear();
+  for (let i = 0; i < 15; i++) {
+    await act(async () =>
+      root.root.findByType('native-map').props.onRegionDidChange({
+        nativeEvent: { center: [-74 + i / 100, 42], zoom: 12 + i / 10, bounds: [-75, 41, -73, 43] },
+      }),
+    );
+  }
+  expect(mocks.jump).not.toHaveBeenCalled();
+  expect(adapter.getSnapshot().camera.center).toEqual([-73.86, 42]);
+  await act(async () => adapter.moveCamera({ center: [-72, 40], zoom: 9 }));
+  expect(mocks.jump).toHaveBeenCalledExactlyOnceWith({ center: [-72, 40], zoom: 9 });
+});
+
+it('recreates the native surface after tab changes while retaining camera and selection', async () => {
+  await mount();
+  await selectPoint();
+  await act(async () =>
+    root.root.findByType('native-map').props.onRegionDidChange({
+      nativeEvent: { center: [-74, 42], zoom: 15, bounds: [-75, 41, -73, 43] },
+    }),
+  );
+  await act(async () => root.update(createElement(OutdoorMap, { ...props, visible: false })));
+  expect(root.root.findAllByType('native-map')).toHaveLength(0);
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  expect(root.root.findAllByType('native-map')).toHaveLength(1);
+  expect(root.root.findByType('camera').props.initialViewState).toEqual({
+    center: [-74, 42],
+    zoom: 15,
+  });
+  expect(adapter.getSnapshot().selectedFeatureId).toBe(point.id);
+});
+
+it('uses one sheet for tools, legend, details and notes, and clears it when leaving Explore', async () => {
+  await mount();
+  const sheet = () => root.root.findByType('sheet');
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'All places')!
+      .props.onPress(),
+  );
+  expect(sheet().props.title).toBe('Map tools');
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'Legend')!
+      .props.onPress(),
+  );
+  expect(sheet().props.title).toBe('Legend');
+  expect(sheet().props.visible).toBe(true);
+  expect(root.root.findAllByType('sheet')).toHaveLength(1);
+  await act(async () => sheet().props.onClose());
+  await selectPoint();
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'Details')!
+      .props.onPress(),
+  );
+  expect(sheet().props.title).toBe(point.properties.name);
+  await act(async () =>
+    root.root
+      .findAllByType('row')
+      .find((node) => node.props.title === 'My note')!
+      .props.onPress(),
+  );
+  expect(sheet().props.title).toBe('Place note');
+  expect(sheet().props.visible).toBe(true);
+  expect(root.root.findAllByType('sheet')).toHaveLength(1);
+  await act(async () => root.update(createElement(OutdoorMap, { ...props, visible: false })));
+  await act(async () => root.update(createElement(OutdoorMap, props)));
+  expect(sheet().props.visible).toBe(false);
+});
+
+it('waits for the iOS sheet to dismiss before opening the finish review', async () => {
+  props.capture = { ...props.capture, state: 'recording', available: true };
+  await mount();
+  await selectPoint();
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'Details')!
+      .props.onPress(),
+  );
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'Finish hike')!
+      .props.onPress(),
+  );
+  const sheet = root.root.findByType('sheet');
+  expect(sheet.props.visible).toBe(false);
+  expect(props.capture.onFinish).not.toHaveBeenCalled();
+  await act(async () => sheet.props.onDismiss());
+  expect(props.capture.onFinish).toHaveBeenCalledOnce();
+  await act(async () => sheet.props.onDismiss());
+  expect(props.capture.onFinish).toHaveBeenCalledOnce();
+});
+it('reloads a failed map at its retained camera and clears the error after a full render', async () => {
+  await mount();
+  await act(async () =>
+    root.root.findByType('native-map').props.onRegionDidChange({
+      nativeEvent: { center: [-74, 42], zoom: 14, bounds: [-75, 41, -73, 43] },
+    }),
+  );
+  const oldSurface = root.root.findByType('native-map');
+  await act(async () => oldSurface.props.onDidFailLoadingMap());
+  await act(async () =>
+    root.root
+      .findAllByType('button')
+      .find((node) => node.props.label === 'Reload map')!
+      .props.onPress(),
+  );
+  expect(root.root.findByType('native-map')).not.toBe(oldSurface);
+  expect(root.root.findByType('camera').props.initialViewState).toEqual({
+    center: [-74, 42],
+    zoom: 14,
+  });
+  await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
+  expect(root.root.findAllByType('button').some((node) => node.props.label === 'Reload map')).toBe(
+    false,
+  );
 });

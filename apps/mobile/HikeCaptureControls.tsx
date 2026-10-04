@@ -2,6 +2,8 @@ import { View } from 'react-native';
 import type { RecordedHikeDisplay } from '@open-outdoor/recorder';
 import { ProductText as Text } from './accessibility';
 import { ProductButton } from './ProductComponents';
+import { LocationAccessControls } from './LocationAccessControls';
+import type { LocationAccessService } from './useLocationAccess';
 export type HikeCaptureState = 'idle' | 'recording' | 'paused' | 'recoverable';
 export interface HikeCaptureView {
   readonly id: string;
@@ -16,13 +18,13 @@ export interface HikeCaptureActions {
   readonly busy: boolean;
   readonly view: HikeCaptureView | null;
   readonly status: string;
+  readonly locationAccess: LocationAccessService;
   readonly onStart: (name?: string, plannedFeatureId?: string) => Promise<boolean>;
   readonly onPause: () => Promise<boolean>;
   readonly onResume: () => Promise<boolean>;
   readonly onFinish: () => Promise<number | null>;
   readonly onRecover: () => Promise<void>;
   readonly onDiscard: () => void;
-  readonly onRequestPermission: () => Promise<void>;
 }
 export function HikeCaptureControls({
   capture,
@@ -45,11 +47,9 @@ export function HikeCaptureControls({
                 : 'Ready'}
       </Text>
       {capture.state === 'idle' ? (
-        <ProductButton
-          label="Allow location"
-          hint="Open the system location permission request"
+        <LocationAccessControls
+          access={capture.locationAccess}
           disabled={!capture.available || capture.busy}
-          onPress={capture.onRequestPermission}
         />
       ) : null}
       {capture.state === 'idle' ? (

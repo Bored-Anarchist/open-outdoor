@@ -8,6 +8,7 @@ import {
   designTokens as t,
   fieldStates,
   iconPaths,
+  iconCircles,
   originLabel,
   toneColor,
   type FieldState,
@@ -43,6 +44,21 @@ export function ProductIcon({
 
       style={{ width: size, height: size }}
     >
+      {iconCircles[name]?.map(({ cx, cy, r }, index) => (
+        <View
+          key={`circle-${index}`}
+          style={{
+            position: 'absolute',
+            left: (cx - r) * scale - 1,
+            top: (cy - r) * scale - 1,
+            width: 2 * r * scale + 2,
+            height: 2 * r * scale + 2,
+            borderRadius: r * scale + 1,
+            borderWidth: 2,
+            borderColor: color,
+          }}
+        />
+      ))}
       {iconPaths[name].flatMap((path, pathIndex) =>
         path.slice(1).map((point, index) => {
           const previous = path[index]!;

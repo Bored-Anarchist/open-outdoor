@@ -345,11 +345,8 @@ requireText(
   'durable journal publication',
 );
 rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
-requireText(
-  mobileMap,
-  'onDidFinishRenderingMapFully={() => setLoaded(true)}',
-  'atomic offline map readiness',
-);
+if (!/onDidFinishRenderingMapFully=\{\(\) => \{[^}]*setLoaded\(true\);[^}]*\}\}/.test(mobileMap))
+  throw new Error('atomic offline map readiness must be set by the full-render callback');
 rejectText(mobileMap, '<GeoJSONSource\n            id="outdoors"', 'atomic offline map style');
 rejectText(mobileMap, "new-york-outdoors.json'", 'native-file outdoor overlay');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');

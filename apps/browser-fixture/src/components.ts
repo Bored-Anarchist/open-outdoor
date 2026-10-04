@@ -2,6 +2,7 @@ import type { DetailPresentation } from '@open-outdoor/shared';
 import {
   fieldStates,
   iconPaths,
+  iconCircles,
   originLabel,
   type FieldState,
   type IconName,
@@ -15,7 +16,7 @@ export function escapeHtml(value: string): string {
   );
 }
 export function icon(name: IconName): string {
-  return `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${iconPaths[name].map((path) => `<polyline points="${path.map((point) => point.join(',')).join(' ')}"/>`).join('')}</svg>`;
+  return `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${(iconCircles[name] ?? []).map(({ cx, cy, r }) => `<circle cx="${cx}" cy="${cy}" r="${r}"/>`).join('')}${iconPaths[name].map((path) => `<polyline points="${path.map((point) => point.join(',')).join(' ')}"/>`).join('')}</svg>`;
 }
 export function notice(state: FieldState, detail?: string): string {
   const item = fieldStates[state];

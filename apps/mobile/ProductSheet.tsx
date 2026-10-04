@@ -8,11 +8,13 @@ export function ProductSheet({
   title,
   visible,
   onClose,
+  onDismiss,
   children,
 }: {
   title: string;
   visible: boolean;
   onClose: () => void;
+  onDismiss?: () => void;
   children: ReactNode;
 }) {
   const p = usePalette();
@@ -22,6 +24,7 @@ export function ProductSheet({
       animationType="none"
       presentationStyle="pageSheet"
       onRequestClose={onClose}
+      onDismiss={onDismiss}
     >
       <SafeAreaView style={{ flex: 1, backgroundColor: p.background }}>
         <KeyboardAvoidingView

@@ -471,7 +471,9 @@ export function OutdoorMap({
 
   const palette = usePalette();
 
-  const [legendOpen, setLegendOpen] = useState(false);
+  const [sheet, setSheet] = useState<'detail' | 'note' | 'tools' | 'legend' | null>(null);
+  const pendingFinish = useRef(false);
+  const legendOpen = sheet === 'legend';
   const [toolbarHeight, setToolbarHeight] = useState(112);
   const offlineCartography = useMemo(
     () =>
@@ -509,12 +511,18 @@ export function OutdoorMap({
       ) as unknown as OutdoorBaseMapStyle['layers'],
     [palette],
   );
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [noteOpen, setNoteOpen] = useState(false);
+  useEffect(() => {
+    if (!visible) {
+      setSheet(null);
+      selectionRequest.current++;
+    }
+  }, [visible, section]);
   const { width, height, fontScale } = useWindowDimensions();
   const [viewport, setViewport] = useState<StatePlaceViewport | null>(null);
-  const statePlaces = useStatePackagePlaces(statePackages.packages, viewport);
+  const statePlaces = useStatePackagePlaces(
+    statePackages.packages,
+    visible && section === 'explore' ? viewport : null,
+  );
   const useRegionalDetail = regionalBasemapCoversViewport(
     viewport?.bounds ?? [
       state.camera.center[0] - 0.25,
@@ -859,14 +867,14 @@ export function OutdoorMap({
       selectedState.current = null;
       statePackages.clearSelection();
     }
-    setDetailOpen(false);
-    setNoteOpen(false);
+    setSheet(null);
     adapter.setSelectedFeature(feature?.id ?? null);
   };
 
   const [loaded, setLoaded] = useState(false);
 
   const [failed, setFailed] = useState(false);
+  const [mapGeneration, setMapGeneration] = useState(0);
 
   const [followUser, setFollowUser] = useState(false);
 
@@ -969,13 +977,13 @@ export function OutdoorMap({
     [last],
   );
 
-  useMapCameraSync(camera, state.camera, followUser);
+  const reportNativeCamera = useMapCameraSync(camera, state.camera, followUser);
 
   useEffect(() => {
     setLoaded(false);
 
     setFailed(false);
-  }, [regionalOverviewUri]);
+  }, [regionalOverviewUri, visible, section]);
 
   useEffect(() => {
     setDirectionsStatus('');
@@ -1151,7 +1159,7 @@ export function OutdoorMap({
               placeFilterOptions.find((item) => item.value === placeFilter)?.label ?? 'All places'
             }
             hint="Choose categories for results and map"
-            onPress={() => setToolsOpen(true)}
+            onPress={() => setSheet('tools')}
           />
           {noCatalogs ? (
             <View style={{ paddingVertical: 24, gap: 16 }}>
@@ -1201,10 +1209,10 @@ export function OutdoorMap({
       <View
         style={{ flex: 1, display: section === 'explore' ? 'flex' : 'none', overflow: 'hidden' }}
       >
-        {mapStyle ? (
+        {mapStyle && visible && section === 'explore' ? (
           <>
             <NativeMap
-              key={regionalOverviewUri}
+              key={`${regionalOverviewUri}-${mapGeneration}`}
 
               ref={mapView}
 
@@ -1217,7 +1225,10 @@ export function OutdoorMap({
 
               logo={false}
 
-              onDidFinishRenderingMapFully={() => setLoaded(true)}
+              onDidFinishRenderingMapFully={() => {
+                setFailed(false);
+                setLoaded(true);
+              }}
 
               onDidFailLoadingMap={() => setFailed(true)}
 
@@ -1263,12 +1274,23 @@ export function OutdoorMap({
                 const [x, y] = event.nativeEvent.center;
 
                 setZoom(event.nativeEvent.zoom);
-                setViewport({
-                  bounds: [...event.nativeEvent.bounds],
+                const nextViewport = {
+                  bounds: [...event.nativeEvent.bounds] as StatePlaceViewport['bounds'],
                   zoom: event.nativeEvent.zoom,
-                });
+                };
+                setViewport((previous) =>
+                  previous?.zoom === nextViewport.zoom &&
+                  previous.bounds.every((value, index) => value === nextViewport.bounds[index])
+                    ? previous
+                    : nextViewport,
+                );
 
-                adapter.moveCamera({ center: [x, y], zoom: event.nativeEvent.zoom });
+                const rendered = {
+                  center: [x, y] as [number, number],
+                  zoom: event.nativeEvent.zoom,
+                };
+                reportNativeCamera(rendered);
+                adapter.moveCamera(rendered);
               }}
             >
               <Camera
@@ -1617,7 +1639,7 @@ export function OutdoorMap({
               <ProductButton
                 label="Map tools"
                 hint="Categories, layers and marker detail"
-                onPress={() => setToolsOpen(true)}
+                onPress={() => setSheet('tools')}
               />
             ) : (
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -1626,7 +1648,7 @@ export function OutdoorMap({
                   hint="Choose which places appear on the map"
                   onPress={() => {
                     setOpenMenu('places');
-                    setToolsOpen(true);
+                    setSheet('tools');
                   }}
                 />
                 <ProductButton
@@ -1639,7 +1661,7 @@ export function OutdoorMap({
                   hint="Change marker density"
                   onPress={() => {
                     setOpenMenu('density');
-                    setToolsOpen(true);
+                    setSheet('tools');
                   }}
                 />
               </View>
@@ -1671,6 +1693,17 @@ export function OutdoorMap({
                     ? 'Map could not render. Search remains available.'
                     : 'Loading map…'}
                 </Text>
+              ) : null}
+              {failed && !assetError ? (
+                <ProductButton
+                  label="Reload map"
+                  hint="Reopen the map at the current position"
+                  onPress={() => {
+                    setFailed(false);
+                    setLoaded(false);
+                    setMapGeneration((value) => value + 1);
+                  }}
+                />
               ) : null}
               {statePlaces.error || statePlaces.limited ? (
                 <Text accessibilityLiveRegion="polite" style={{ fontSize: 14 }}>
@@ -1705,7 +1738,7 @@ export function OutdoorMap({
                       label="Details"
                       hint="Read place information and source evidence"
                       primary
-                      onPress={() => setDetailOpen(true)}
+                      onPress={() => setSheet('detail')}
                     />
                     <ProductButton
                       label="Directions"
@@ -1720,7 +1753,7 @@ export function OutdoorMap({
                   title={captured.name}
                   subtitle={`${captured.state} · Private`}
                   icon="track"
-                  onPress={() => setDetailOpen(true)}
+                  onPress={() => setSheet('detail')}
                 />
               ) : (
                 <>
@@ -1744,7 +1777,7 @@ export function OutdoorMap({
                   <ProductButton
                     label="Legend"
                     hint="Read map symbols and source-independent access warnings"
-                    onPress={() => setLegendOpen(true)}
+                    onPress={() => setSheet('legend')}
                   />
                 </>
               )}
@@ -1753,11 +1786,25 @@ export function OutdoorMap({
         </>
       ) : null}
       <ProductSheet
-        title={selected?.properties.name ?? captured?.name ?? 'Hike'}
-        visible={visible && detailOpen}
-        onClose={() => setDetailOpen(false)}
+        title={
+          sheet === 'note'
+            ? 'Place note'
+            : sheet === 'tools'
+              ? 'Map tools'
+              : sheet === 'legend'
+                ? 'Legend'
+                : (selected?.properties.name ?? captured?.name ?? 'Hike')
+        }
+        visible={visible && sheet !== null}
+        onClose={() => setSheet(null)}
+        onDismiss={() => {
+          if (pendingFinish.current) {
+            pendingFinish.current = false;
+            void capture.onFinish();
+          }
+        }}
       >
-        {selected && (
+        {sheet === 'detail' && selected && (
           <View style={{ gap: 16 }}>
             <OriginBadge origin={selected.properties.origin ?? 'unknown'} />
             <Text>
@@ -1973,8 +2020,7 @@ export function OutdoorMap({
               subtitle="Private on this device"
               icon="saved"
               onPress={() => {
-                setDetailOpen(false);
-                setNoteOpen(true);
+                setSheet('note');
               }}
             />
             <ProductButton
@@ -1987,13 +2033,18 @@ export function OutdoorMap({
           </View>
         )}
 
-        {selectedHike || captured || capture.state !== 'idle' ? (
+        {sheet === 'detail' && (selectedHike || captured || capture.state !== 'idle') ? (
           <ProductCard title="Hike">
             <HikeCaptureControls
               capture={{
                 ...capture,
                 onFinish: async () => {
-                  setDetailOpen(false);
+                  if (Platform.OS === 'ios') {
+                    pendingFinish.current = true;
+                    setSheet(null);
+                    return null;
+                  }
+                  setSheet(null);
                   return capture.onFinish();
                 },
               }}
@@ -2086,141 +2137,126 @@ export function OutdoorMap({
             ) : null}
           </ProductCard>
         ) : null}
-      </ProductSheet>
-      <ProductSheet
-        title="Place note"
-        visible={visible && noteOpen && selected !== null}
-        onClose={() => setNoteOpen(false)}
-      >
-        {selected ? (
+        {sheet === 'note' && selected ? (
           <PlaceNote
             place={{ id: selected.id, name: selected.properties.name }}
             service={placeJournal}
           />
         ) : null}
-      </ProductSheet>
-      <ProductSheet
-        title="Map tools"
-        visible={visible && toolsOpen}
-        onClose={() => setToolsOpen(false)}
-      >
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-          <ProductButton
-            label="Zoom in"
-            hint="Increase map detail"
-            disabled={zoom >= 18}
-            onPress={() => changeZoom('in')}
-          />
-          <ProductButton
-            label="Zoom out"
-            hint="See a wider area"
-            disabled={zoom <= 3}
-            onPress={() => changeZoom('out')}
-          />
-          <ProductButton
-            label="My location"
-            hint="Center the map on your live GPS position"
-            selected={followUser}
-            onPress={() => {
-              setFollowUser(!followUser);
-              setToolsOpen(false);
-            }}
-          />
-        </View>
-        <View
-          style={{
-            flexDirection: 'row',
+        {sheet === 'tools' ? (
+          <>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              <ProductButton
+                label="Zoom in"
+                hint="Increase map detail"
+                disabled={zoom >= 18}
+                onPress={() => changeZoom('in')}
+              />
+              <ProductButton
+                label="Zoom out"
+                hint="See a wider area"
+                disabled={zoom <= 3}
+                onPress={() => changeZoom('out')}
+              />
+              <ProductButton
+                label="My location"
+                hint="Center the map on your live GPS position"
+                selected={followUser}
+                onPress={() => {
+                  setFollowUser(!followUser);
+                  setSheet(null);
+                }}
+              />
+            </View>
+            <View
+              style={{
+                flexDirection: 'row',
 
-            flexWrap: 'wrap',
+                flexWrap: 'wrap',
 
-            gap: 10,
+                gap: 10,
 
-            marginTop: 0,
+                marginTop: 0,
 
-            marginBottom: 4,
+                marginBottom: 4,
 
-            zIndex: 30,
-          }}
-        >
-          <MapSelect
-            label="Show on map"
+                zIndex: 30,
+              }}
+            >
+              <MapSelect
+                label="Show on map"
 
-            value={placeFilter}
+                value={placeFilter}
 
-            options={placeFilterOptions}
+                options={placeFilterOptions}
 
-            expanded={openMenu === 'places'}
+                expanded={openMenu === 'places'}
 
-            onToggle={() => setOpenMenu(openMenu === 'places' ? null : 'places')}
+                onToggle={() => setOpenMenu(openMenu === 'places' ? null : 'places')}
 
-            onChange={(value) => {
-              setPlaceFilter(value);
+                onChange={(value) => {
+                  setPlaceFilter(value);
 
-              setSelected(null);
+                  setSelected(null);
 
-              setOpenMenu(null);
-            }}
-          />
+                  setOpenMenu(null);
+                }}
+              />
 
-          <MapSelect
-            label="Marker detail"
+              <MapSelect
+                label="Marker detail"
 
-            value={markerDensity}
+                value={markerDensity}
 
-            options={markerDensityOptions}
+                options={markerDensityOptions}
 
-            expanded={openMenu === 'density'}
+                expanded={openMenu === 'density'}
 
-            onToggle={() => setOpenMenu(openMenu === 'density' ? null : 'density')}
+                onToggle={() => setOpenMenu(openMenu === 'density' ? null : 'density')}
 
-            onChange={(value) => {
-              setMarkerDensity(value);
+                onChange={(value) => {
+                  setMarkerDensity(value);
 
-              setOpenMenu(null);
-            }}
-          />
-        </View>
+                  setOpenMenu(null);
+                }}
+              />
+            </View>
 
-        <ProductButton
-          label="Layers"
-          hint="Manage installed maps"
-          onPress={() => {
-            setToolsOpen(false);
-            onOpenMaps();
-          }}
-        />
-        <ProductButton
-          label="Legend"
-          hint="Read map symbols and camping status"
-          onPress={() => {
-            setToolsOpen(false);
-            setLegendOpen(true);
-          }}
-        />
-        <ProductButton
-          label="Last recorded position"
-          hint="Show the latest durable point without starting sensors"
-          disabled={!last}
-          onPress={() => {
-            if (last) {
-              setFollowUser(false);
-              camera.current?.jumpTo({ center: [...last], zoom: 14 });
-              setToolsOpen(false);
-            }
-          }}
-        />
-        <ProductButton
-          label="Done"
-          hint="Return to the map with these settings"
-          primary
-          onPress={() => setToolsOpen(false)}
-        />
-      </ProductSheet>
-      <ProductSheet
-        title="Legend"
-        visible={visible && legendOpen}
-        onClose={() => setLegendOpen(false)}
-      >
+            <ProductButton
+              label="Layers"
+              hint="Manage installed maps"
+              onPress={() => {
+                setSheet(null);
+                onOpenMaps();
+              }}
+            />
+            <ProductButton
+              label="Legend"
+              hint="Read map symbols and camping status"
+              onPress={() => {
+                setSheet('legend');
+              }}
+            />
+            <ProductButton
+              label="Last recorded position"
+              hint="Show the latest durable point without starting sensors"
+              disabled={!last}
+              onPress={() => {
+                if (last) {
+                  setFollowUser(false);
+                  camera.current?.jumpTo({ center: [...last], zoom: 14 });
+                  setSheet(null);
+                }
+              }}
+            />
+            <ProductButton
+              label="Done"
+              hint="Return to the map with these settings"
+              primary
+              onPress={() => setSheet(null)}
+            />
+          </>
+        ) : null}
         {legendOpen ? (
           <ProductCard title="Map legend">
             <View

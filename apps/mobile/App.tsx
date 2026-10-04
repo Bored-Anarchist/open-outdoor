@@ -63,6 +63,8 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { OutdoorMap } from './OutdoorMap';
 import { MapSettings, MapNotices } from './MapSettings';
 import { ProductSheet } from './ProductSheet';
+import { LocationAccessControls } from './LocationAccessControls';
+import { useLocationAccess } from './useLocationAccess';
 import { PlaceNote } from './PlaceNote';
 import {
   RecordingScreen,
@@ -123,6 +125,7 @@ function AppContent({
   onAppearance: (value: Appearance | null) => void;
 }) {
   const palette = usePalette();
+  const locationAccess = useLocationAccess();
 
   const styles = useMemo(() => createStyles(palette), [palette]);
 
@@ -355,18 +358,6 @@ function AppContent({
       subscription.remove();
     };
   }, [application, recorderState]);
-
-  async function requestPermission(): Promise<void> {
-    try {
-      if (application === null) throw new Error('Private recorder is still loading');
-
-      await application.recorder.tracker.requestPermission();
-
-      setStatus('Location permission requested. Allow Always to support screen-lock recording.');
-    } catch (error) {
-      setStatus('Permission request failed: ' + errorMessage(error));
-    }
-  }
 
   async function start(name = 'Recorded hike', plannedFeatureId?: string): Promise<boolean> {
     if (captureOperation.current) return false;
@@ -709,6 +700,7 @@ function AppContent({
     busy: captureBusy,
     view: captureView,
     status,
+    locationAccess,
     onStart: start,
     onPause: pause,
     onResume: resume,
@@ -718,7 +710,6 @@ function AppContent({
     },
     onRecover: () => recover(),
     onDiscard: confirmDiscard,
-    onRequestPermission: requestPermission,
   };
   const openSettings = () => {
     setSettingsPage('index');
@@ -984,12 +975,9 @@ function AppContent({
                   />
                 ))}
                 <ProductDisclosure title="Location access">
-                  <Text>Always access supports screen-lock recording.</Text>
-                  <AccessibleButton
-                    label="Allow location"
-                    hint="Open the device location permission request"
+                  <LocationAccessControls
+                    access={locationAccess}
                     disabled={!nativeSpikes.available || captureBusy}
-                    onPress={requestPermission}
                   />
                 </ProductDisclosure>
               </View>

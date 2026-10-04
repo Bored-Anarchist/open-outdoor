@@ -2,6 +2,14 @@ import { requireOptionalNativeModule } from 'expo';
 import type { OutdoorPlaceFilter } from '@open-outdoor/map';
 
 export type NativeTrackingMode = 'balanced' | 'endurance' | 'high-accuracy';
+export type NativeLocationPermission =
+  | 'not-determined'
+  | 'when-in-use'
+  | 'always'
+  | 'denied'
+  | 'restricted'
+  | 'services-disabled'
+  | 'unavailable';
 
 export interface NativeTrackingBatch {
   readonly sessionId: string;
@@ -95,6 +103,11 @@ export interface Phase0PhysicalDiagnosticReport {
 }
 
 interface OpenOutdoorNativeSpikesModule {
+  readonly locationPermission: () => Promise<NativeLocationPermission>;
+  readonly addListener: (
+    name: 'onLocationPermissionChange',
+    listener: (event: { status: NativeLocationPermission }) => void,
+  ) => { remove: () => void };
   readonly laptopUpdatesEnabled: boolean;
   readonly loadStatePackages: (registry: string) => Promise<string>;
   readonly pickStatePackage: () => Promise<string | null>;
@@ -179,6 +192,10 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 }
 
 export const nativeSpikes = {
+  locationPermissionAvailable: typeof module?.locationPermission === 'function',
+  locationPermission: () => requiredModule().locationPermission(),
+  onLocationPermissionChange: (listener: (status: NativeLocationPermission) => void) =>
+    module?.addListener?.('onLocationPermissionChange', (event) => listener(event.status)),
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
   statePackagePlacesAvailable: typeof module?.statePackagePlaces === 'function',
   laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',

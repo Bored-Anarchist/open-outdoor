@@ -11,6 +11,7 @@ import {
   usePalette,
 } from './ProductComponents';
 import type { HikeCaptureActions } from './HikeCaptureControls';
+import { LocationAccessControls } from './LocationAccessControls';
 import type { RecordedHikeDisplay } from '@open-outdoor/recorder';
 
 export const recordingModes: Readonly<Record<NativeTrackingMode, string>> = {
@@ -192,12 +193,9 @@ export function RecordingScreen({
             onPress={() => capture.onStart()}
           />
           <ProductDisclosure title="Location access" icon="location">
-            <Text>Always access supports recording with the screen locked.</Text>
-            <ProductButton
-              label="Allow location"
-              hint="Open the device location permission request"
+            <LocationAccessControls
+              access={capture.locationAccess}
               disabled={!capture.available || capture.busy}
-              onPress={capture.onRequestPermission}
             />
           </ProductDisclosure>
         </>

@@ -434,6 +434,18 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   private(set) var isPaused = false
   private(set) var lastError: String?
   private(set) var observedWeakGPS = false
+  var onLocationPermissionChange: ((String) -> Void)?
+
+  var locationPermission: String {
+    switch locationManager.authorizationStatus {
+    case .notDetermined: return "not-determined"
+    case .authorizedWhenInUse: return "when-in-use"
+    case .authorizedAlways: return "always"
+    case .denied: return "denied"
+    case .restricted: return "restricted"
+    @unknown default: return "unavailable"
+    }
+  }
 
   var isTracking: Bool {
     spool != nil
@@ -669,6 +681,7 @@ internal final class OpenOutdoorTrackerSpike: NSObject, CLLocationManagerDelegat
   }
 
   func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    onLocationPermissionChange?(locationPermission)
     guard isTracking else { return }
     guard manager.authorizationStatus == .authorizedAlways else {
       lastError = "Always location authorization was lost during recording"

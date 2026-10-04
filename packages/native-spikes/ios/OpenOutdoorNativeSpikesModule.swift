@@ -1,8 +1,15 @@
 import ExpoModulesCore
 import Foundation
+import CoreLocation
 
 public final class OpenOutdoorNativeSpikesModule: Module {
-  private lazy var tracker = OpenOutdoorTrackerSpike()
+  private lazy var tracker: OpenOutdoorTrackerSpike = {
+    let tracker = OpenOutdoorTrackerSpike()
+    tracker.onLocationPermissionChange = { [weak self] status in
+      self?.sendEvent("onLocationPermissionChange", ["status": status])
+    }
+    return tracker
+  }()
   private lazy var privateStore = try? OpenOutdoorStorageCoordinatorSpike()
   private lazy var mapDatasetPicker = OpenOutdoorMapDatasetPicker()
   private let mapDatasetQueue = DispatchQueue(label: "org.openoutdoor.map-datasets")
@@ -36,6 +43,7 @@ public final class OpenOutdoorNativeSpikesModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("OpenOutdoorNativeSpikes")
+    Events("onLocationPermissionChange")
     Constant("laptopUpdatesEnabled") { self.statePackageStore.laptopUpdatesEnabled }
 
     AsyncFunction("loadStatePackages") { (registry: String) -> String in
@@ -122,6 +130,14 @@ public final class OpenOutdoorNativeSpikesModule: Module {
       false
     }
 #endif
+
+    AsyncFunction("locationPermission") { (promise: Promise) in
+      let status = self.tracker.locationPermission
+      // Checking the global service switch may contact locationd; keep it off the UI queue.
+      DispatchQueue.global(qos: .userInitiated).async {
+        promise.resolve(CLLocationManager.locationServicesEnabled() ? status : "services-disabled")
+      }
+    }.runOnQueue(.main)
 
     AsyncFunction("requestAlwaysAuthorization") {
       self.tracker.requestAlwaysAuthorization()
