@@ -1,63 +1,37 @@
 # Open Outdoor visual direction
 
-Open Outdoor uses deep forest green, warm linen, pale sage, and restrained ochre. Nature apps such as AllTrails informed familiar discovery patterns for maps, route details, search, and saved outings. The palette, map styles, icons, copy, and mountain illustration remain project-authored.
+The approved [Visual Design Guide](Open%20Outdoor%20Visual%20Design%20Guide.docx) covers the whole app: 34 phone states, a wide layout, and all 24 field states. Its concept views use synthetic examples. The implementation keeps forest green, warm linen, sage, ochre, and the existing route, location, and warning colors.
 
-## Experience structure
+## Navigation and discovery
 
-- Explore opens with a short invitation and a map-led discovery surface. The map and legend come before place evidence and recording actions; catalog administration stays later in the flow.
-- Search keeps the map context while people enter a query, filter results, and inspect a selected place.
-- Track centers recording status, glanceable metrics, and clear start, pause, resume, finish, and recovery actions.
-- Saved presents a private library of places and recorded outings with clear origin labels.
-- Persistent labeled navigation keeps Explore, Search, Track, and Saved reachable. Appearance controls remain secondary.
+- Explore fills the screen above the bottom navigation. Search and Settings float over the map; categories, layers, and marker detail remain nearby. Place selection opens a compact preview. Place evidence, notes, tools, and the legend use separate scrolling system sheets.
+- Search uses flat place rows and retained query/category state. Categories filter local and installed-package results before the result limit. Going through Settings or another tab preserves the mounted map, selection, filters, and camera.
+- Track centers readiness, durable recorded time, a path preview, distance, ascent, and GPS quality. Recording mode and location explanations stay secondary. Pause, resume, recovery, and discard retain their existing recorder behavior. Finish opens a review; Save hike performs the durable finish operation. Failed saves remain available for retry.
+- Saved separates hikes from places. Finished hikes show their actual names and dates, with the first hike's durable path preview. Notes and check-ins open directly and remain available after their map package is removed. Empty states lead directly to recording or exploration.
+- Explore, Search, Track, and Saved remain labeled and reachable. Navigation occupies its own bottom safe-area row; content scrolls above it.
+
+## Settings and map inventory
+
+Settings contains Maps, Appearance, Recording, About and sources, and Advanced. Licenses, full attribution, diagnostic actions, and detailed methodology stay here or behind the relevant disclosure.
+
+Maps distinguishes bundled coverage, installed public packages, and private datasets. Each installed entry has an explicit visibility switch and a detail page with coverage, metadata, and removal. Integrity errors disable unsafe actions. Removal and unreadable-storage reset require confirmation; notes and hikes remain intact.
+
+Stock builds bundle only the world/regional basemaps. New York and every other state catalog are added explicitly. Explore opens on a broad basemap overview, and an empty install offers Add a map in Explore and Search. Bundled coverage reflects the basemap instead of a New York starter region. Custom private builds retain their explicit overlay configuration.
+
+Add a map supports Files, laptop packages, and GeoJSON. GeoJSON is validated before review, without being installed. Import persists the reviewed draft; cancellation leaves storage untouched, and failed writes can be retried. Laptop pairing offers discovery and QR scanning with expandable manual entry. Full signing fingerprints and trust consequences remain available before approval, and saved keys can be revoked offline. Transfer cancellation and verification protections remain intact.
 
 ## Components and accessibility
 
-Use shared colors in light, dark, and high-contrast modes. Controls use 52-point minimum targets, visible state, accessible names, and native text scaling. Cards use 22-point corners; controls use 14-point corners. Selection uses forest green. Warnings, route lines, recording paths, and user location retain distinct colors and labels.
+Serif headings, quiet surfaces, 14-point control corners, 22-point cards, and 26-point place previews establish the hierarchy. Controls retain 52-point targets, native text scaling, focus outlines, accessible names, and explicit selection. Light, dark, and high-contrast appearances share semantic colors; default native text follows the active palette.
 
-## Art and provenance
+Unknown metrics display an em dash with an accessible “Unknown” label. Place access warnings and navigation restrictions remain at the decision point. Recorded paths are solid and planned paths dashed. Preview downsampling preserves pause gaps and uses durable coordinates. The live GPS position and last recorded position remain distinct. Native attribution is positioned outside the preview card.
 
-The browser reference includes original vector mountain artwork. The app has no stock-photo dependency, downloaded font, or network asset request. Future place photography should be factual, locally bundled or explicitly cached, and supplied with useful alternative text. Do not fabricate trail ratings, conditions, or access claims for appearance.
+System sheets support Back, screen-reader escape, scrolling, and keyboard avoidance. Native device checks remain necessary for VoiceOver, Dynamic Type, locked-screen recording, physical map rendering, outdoor visibility, and performance.
 
-## Implementation boundary
+## Validation and provenance
 
-The mobile app receives the shared palette, compact persistent navigation, section introductions, and map-led content order. The browser fixture is a synthetic visual reference, not the native map experience. Existing import, recording, recovery, and source disclosures remain available. Hardware-specific behavior requires a native device build.
+`pnpm test:design:browser` checks all four tabs, Settings, component states, 200% text, bottom navigation, retained queries, and accessibility at 320, 390, and 1024 pixels in all three appearances. It generates screenshots and a report under ignored `dist/design-qa/`. The browser fixture uses synthetic geography and cannot record hikes or install native packages.
 
-## Reference
+Native workflow regressions cover map retention, package visibility and coverage, import review/persistence/failure, and recording review/return/save retry. Separate connected and offline map checks exercise real bundled archives and exact installed place coordinates. Release contracts retain recorder, source, privacy, and diagnostic requirements despite shorter visible labels.
 
-[AllTrails app guide](https://support.alltrails.com/hc/en-us/articles/44409942124052-Understanding-the-AllTrails-App) informed the broad Explore and Saved workflow patterns. Open Outdoor uses its own visual expression and project-authored assets.
-
-
-## Whole-app surface refinement
-
-The browser reference now gives each section a distinct purpose: Explore uses a map and adjacent detail panel on desktop; Search uses scannable icon-led place rows; Track uses a calm readiness illustration and separate metric tiles; Saved uses an illustrated journal empty state and an Explore action. Supporting source information expands below the core place information. Unknown values remain explicit and the browser does not simulate a recorded activity. Native recording metrics use the same label/value hierarchy and softly inset surfaces.
-
-
-## Navigation and small-screen layout
-
-The phone browser shell reserves a dedicated row for bottom navigation. Main content scrolls independently above it, so primary actions and final content are reachable without sliding behind navigation. Safe-area padding protects controls near device edges. Track and Saved use more compact introductions and illustration spacing to prioritize their primary actions.
-
-
-## Final handoff
-
-The visual implementation is complete for this iteration. The native shell respects device safe areas; selected actions keep concise visible labels and retain their accessible selected state. The browser reference supports light, dark and high contrast palettes, keyboard focus, long place names, readable action feedback and a dedicated mobile navigation row. Build, screenshots and final document validation belong to the coordinating workflow; the implementation agent did not run tests or review passes.
-
-## Current screen captures
-
-These 390 × 844 phone views and the 1024 × 960 desktop view are synthetic browser references for the final layout. They show the four primary app areas and the desktop map/details arrangement; none represents live map data or a native-device screen.
-
-| View | Screenshot |
-| --- | --- |
-| Desktop Explore | [app-desktop-current.png](app-desktop-current.png) |
-| Phone Explore | [app-explore-mobile-current.png](app-explore-mobile-current.png) |
-| Phone Search | [app-search-mobile-current.png](app-search-mobile-current.png) |
-| Phone Track | [app-track-mobile-current.png](app-track-mobile-current.png) |
-| Phone Saved | [app-saved-mobile-current.png](app-saved-mobile-current.png) |
-
-
-## Final field-guide refinement
-
-Page titles name the task directly: Explore outdoors, Find a place, Record a hike and Your hikes. A moderate serif heading adds warmth; sentence-case labels, brief descriptions, and readable metadata keep each screen practical. Cards use quieter outlines and surfaces, allowing the map and place information to carry more of the visual interest. Native titles and metric labels follow the same hierarchy.
-
-Selected navigation has one clear, high-contrast treatment in browser and native layouts. Explore foregrounds the map and legend, Search foregrounds the query and scannable place rows, Track foregrounds readiness and the recording action, and Saved foregrounds a private journal. The browser desktop view pairs the map with place details; phone content scrolls above its persistent navigation row. Each area retains its own content rhythm while sharing typography, palette, and interaction cues.
-
-The interface favors specific, useful language over promotional taglines. Source and uncertainty details remain visible where they help explain a place; the visual reference uses original vector artwork and synthetic map examples. The screenshots are illustrative browser layouts rather than live map data or native-device captures.
+The earlier PNGs in this directory document the previous browser iteration; the approved guide preserves those references alongside the new concepts. Map styling, icons, path previews, and vector illustrations are project-authored. Geographic sources, bundled fonts, and native map libraries retain their existing attribution and license notices. No geographic data, source rights, or private schema changes are introduced by this visual iteration.

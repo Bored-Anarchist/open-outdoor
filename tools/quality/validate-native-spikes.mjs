@@ -39,6 +39,25 @@ const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const mobileApplication = await text('apps/mobile/application.ts');
 const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
+const stockMapData = await text('apps/mobile/mapData.public.ts');
+requireText(stockMapData, 'base-outdoors.geojson', 'stock basemap-only build');
+for (const token of ['new-york-outdoors', 'new-york-hikes', '.private-map-data']) {
+  rejectText(stockMapData, token, 'stock basemap-only build');
+}
+const stockCatalog = JSON.parse(await text('packages/map/src/assets/base-outdoors.geojson'));
+if (
+  stockCatalog.type !== 'FeatureCollection' ||
+  !Array.isArray(stockCatalog.features) ||
+  stockCatalog.features.length !== 0
+) {
+  throw new Error('Stock builds must not preinstall a state catalog.');
+}
+const recordingScreen = await text('apps/mobile/RecordingScreen.tsx');
+const captureControls = await text('apps/mobile/HikeCaptureControls.tsx');
+const mapSettings = await text('apps/mobile/MapSettings.tsx');
+const placeNote = await text('apps/mobile/PlaceNote.tsx');
+const placeJournal = await text('apps/mobile/usePlaceJournal.ts');
+const privatePersistence = await text('apps/mobile/privatePersistence.ts');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -240,11 +259,16 @@ for (const token of [
   requireText(tracker, token, 'active tracking file-policy diagnostics');
 }
 for (const token of [
-  'Measure 20 Start/Stop acknowledgements',
-  'Begin 30-minute memory profile',
-  'Finish 30-minute memory profile',
-  'Inspect active tracking protection',
-  'Share physical diagnostic JSON',
+  'Start and stop timing',
+  'Start memory sample',
+  'Finish memory sample',
+  'Tracking protection',
+  'Share diagnostics',
+  'benchmarkAcknowledgements()',
+  'beginMemoryProfile()',
+  'finishMemoryProfile()',
+  'inspectProtection()',
+  'sharePhysicalReport()',
   'for (let index = 0; index < 20; index += 1)',
 ]) {
   requireText(mobileApp, token, 'mobile physical diagnostics UI');
@@ -286,21 +310,18 @@ for (const token of [
   'NativeUserLocation',
   'trackUserLocation={followUser',
   'Center on my location',
-  'blue GPS dot',
+  'Blue GPS dot',
 ]) {
-  requireText(mobileMap, token, 'live offline GPS map position');
+  requireText(mobileMap.replace(/\s+/g, ' '), token, 'live offline GPS map position');
 }
+requireText(mobileMap, 'iOverlander community information', 'community details');
+requireText(mobileMap, '<PlaceNote', 'Explore private notes');
+requireText(mobileApp, '<PlaceNote', 'Saved private notes');
+for (const token of ['Check in', 'Save note'])
+  requireText(placeNote, token, 'private journal actions');
+requireText(placeJournal, 'service.save(place.id', 'serialized journal updates');
 for (const token of [
-  'iOverlander community information',
-  'Your private check-ins and notes',
-  'Check in now and save note',
-  'Save note without checking in',
-  'placeJournal.save(entry)',
-]) {
-  requireText(mobileMap, token, 'private place journal and community details');
-}
-for (const token of [
-  'Get directions',
+  'Directions',
   'ActionSheetIOS.showActionSheetWithOptions',
   'Linking.canOpenURL',
   'Linking.openURL',
@@ -314,9 +335,14 @@ for (const scheme of ['comgooglemaps', 'waze']) {
   }
 }
 requireText(
-  mobileApplication,
-  'repository.savePlaceJournal(entry)',
+  privatePersistence,
+  'await store.commitPrivateSnapshot',
   'protected place journal persistence',
+);
+requireText(
+  privatePersistence,
+  'repository.savePlaceJournal(saved)',
+  'durable journal publication',
 );
 rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
 requireText(
@@ -328,7 +354,7 @@ rejectText(mobileMap, '<GeoJSONSource\n            id="outdoors"', 'atomic offli
 rejectText(mobileMap, "new-york-outdoors.json'", 'native-file outdoor overlay');
 requireText(mobileIndex, 'StartupErrorBoundary', 'mobile root component');
 requireText(startupBoundary, 'getDerivedStateFromError', 'mobile root error boundary');
-requireText(startupBoundary, 'Open Outdoor startup diagnostic', 'mobile root error boundary');
+requireText(startupBoundary, 'App could not open', 'mobile root error boundary');
 for (const token of [
   'BEGIN IMMEDIATE',
   'private_snapshot',
@@ -343,20 +369,20 @@ for (const token of [
 requireText(tracker, 'observations.count >= 256', 'bounded native tracking batch');
 for (const token of [
   'Start recording',
-  'Pause recording',
-  'Resume recording',
-  'Finish and save recording',
-  'Recover interrupted recording',
-  'Discard interrupted recording',
+  'Save hike',
+  'setFinishReview(true)',
   'Alert.alert',
   'ProductButton as AccessibleButton',
   'AppearanceContext.Provider',
 ]) {
-  requireText(mobileApp, token, 'Phase 1 recorder/accessibility UI');
+  requireText(
+    mobileApp + recordingScreen + captureControls,
+    token,
+    'Phase 1 recorder/accessibility UI',
+  );
 }
-const outdoorMap = await text('apps/mobile/OutdoorMap.tsx');
 requireText(
-  outdoorMap,
+  mapSettings,
   'No turn instructions, rerouting, or off-route alerts.',
   'native map safety notice',
 );

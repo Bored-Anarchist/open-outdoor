@@ -8,7 +8,6 @@ import {
 import { StatusBar } from 'expo-status-bar';
 
 import {
-  appearances,
   accessibleAppearance,
   ForegroundTask,
   designTokens as t,
@@ -20,18 +19,19 @@ import {
 import {
   AppearanceContext,
   ProductButton as AccessibleButton,
-  FieldNotice,
-  ProductCard,
   OriginBadge,
   ProductMetric,
+  ProductHeader,
+  ProductRow,
+  ProductDisclosure,
   ProductNavigation,
-  ProductIcon,
   usePalette,
 } from './ProductComponents';
 
 import { recordedHikeDisplay, storedHikeObservations } from '@open-outdoor/recorder';
 
 import type { RecordedActivity } from '@open-outdoor/storage';
+import type { OutdoorPlaceFilter } from '@open-outdoor/map';
 
 import type { HikeCaptureView } from './HikeCaptureControls';
 
@@ -41,7 +41,6 @@ import {
   Alert,
   AppState,
   Platform,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   useColorScheme,
@@ -60,21 +59,24 @@ import {
   type MobileApplication,
 } from './application';
 
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { OutdoorMap } from './OutdoorMap';
+import { MapSettings, MapNotices } from './MapSettings';
+import { ProductSheet } from './ProductSheet';
+import { PlaceNote } from './PlaceNote';
+import {
+  RecordingScreen,
+  RecordedPathPreview,
+  recordingModes,
+  recordingTime,
+} from './RecordingScreen';
+import { useStatePackages } from './useStatePackages';
 
 import { useImportedMapDatasets } from './useImportedMapDatasets';
 
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
 type RecoveryReason = 'process-termination' | 'permission-loss' | 'native-error';
-
-const modeLabels: Readonly<Record<NativeTrackingMode, string>> = {
-  balanced: 'Balanced',
-
-  endurance: 'Endurance',
-
-  'high-accuracy': 'High Accuracy',
-};
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -96,20 +98,27 @@ export default function App() {
   );
 
   return (
-    <AccessibilityContext.Provider value={accessibility}>
-      <AppearanceContext.Provider value={appearance}>
-        <AppContent appearance={appearance} onAppearance={setOverride} />
-      </AppearanceContext.Provider>
-    </AccessibilityContext.Provider>
+    <SafeAreaProvider>
+      <AccessibilityContext.Provider value={accessibility}>
+        <AppearanceContext.Provider value={appearance}>
+          <AppContent
+            appearance={appearance}
+            appearanceOverride={override}
+            onAppearance={setOverride}
+          />
+        </AppearanceContext.Provider>
+      </AccessibilityContext.Provider>
+    </SafeAreaProvider>
   );
 }
 
 function AppContent({
   appearance,
-
+  appearanceOverride,
   onAppearance,
 }: {
   appearance: Appearance;
+  appearanceOverride: Appearance | null;
 
   onAppearance: (value: Appearance | null) => void;
 }) {
@@ -123,11 +132,31 @@ function AppContent({
 
   const lastRenderedCheckpoint = useRef('');
 
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPage, setSettingsPage] = useState<
+    'index' | 'maps' | 'appearance' | 'recording' | 'about' | 'advanced'
+  >('index');
+  const [libraryPage, setLibraryPage] = useState<'hikes' | 'places'>('hikes');
+  const [savedPlace, setSavedPlace] = useState<{ id: string; name: string } | null>(null);
+  const [finishReview, setFinishReview] = useState(false);
+  const [query, setQuery] = useState('');
+  const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
+  const statePackages = useStatePackages(query, placeFilter);
+  const [coverage, setCoverage] = useState<[number, number, number, number] | null>(null);
+  const scroll = useRef<ScrollView>(null);
+
+  function showCoverage(bounds: [number, number, number, number]) {
+    setCoverage([...bounds]);
+    setSettingsOpen(false);
+    setSection('explore');
+  }
 
   const [mode, setMode] = useState<NativeTrackingMode>('balanced');
 
   const [section, setSection] = useState<AppSection>('explore');
+  useEffect(() => {
+    scroll.current?.scrollTo({ y: 0, animated: false });
+  }, [settingsOpen, section]);
 
   const [recorderState, setRecorderState] = useState<RecorderUiState>('idle');
 
@@ -148,16 +177,6 @@ function AppContent({
   >([]);
 
   const [application, setApplication] = useState<MobileApplication | null>(null);
-
-  const [liveStats, setLiveStats] = useState({
-    sequence: 0,
-
-    distanceM: 0,
-
-    ascentM: 0,
-
-    gpsQuality: 'Waiting',
-  });
 
   const [benchmarking, setBenchmarking] = useState(false);
 
@@ -222,16 +241,6 @@ function AppContent({
     application.map.setActiveTrack(display.coordinates, display.breaks);
 
     setCaptureView({ ...captureMetadata.current, state, display });
-
-    setLiveStats({
-      sequence: display.sequence,
-
-      distanceM: display.route?.distanceM ?? 0,
-
-      ascentM: display.route?.ascentM ?? 0,
-
-      gpsQuality: display.gpsQuality,
-    });
   }
 
   async function showSavedCapture(id: string): Promise<void> {
@@ -381,11 +390,9 @@ function AppContent({
 
       showStoredCapture(application, activity, 'recording');
 
-      setLiveStats({ sequence: 0, distanceM: 0, ascentM: 0, gpsQuality: 'Waiting' });
-
       setRecorderState('recording');
 
-      setStatus('Recording ' + modeLabels[mode] + ' activity ' + activity.id + ' offline.');
+      setStatus('Recording ' + recordingModes[mode] + '.');
 
       return true;
     } catch (error) {
@@ -420,13 +427,7 @@ function AppContent({
 
       refreshCapturedDisplay('paused');
 
-      const state = application.recorder.stateMachine.state;
-
-      const sequence = state.kind === 'paused' ? state.highestCommittedSequence : 0;
-
-      setRecorderState('paused');
-
-      setStatus('Paused after durable sequence ' + sequence + '. Sensors are stopped.');
+      setStatus('Paused. Sensors stopped.');
 
       return true;
     } catch (error) {
@@ -454,13 +455,9 @@ function AppContent({
 
       refreshCapturedDisplay('recording');
 
-      const state = application.recorder.stateMachine.state;
-
-      const sequence = state.kind === 'recording' ? state.highestCommittedSequence : 0;
-
       setRecorderState('recording');
 
-      setStatus('Resumed from durable sequence ' + sequence + ' in a new segment.');
+      setStatus('Resumed in a new segment.');
 
       return true;
     } catch (error) {
@@ -497,7 +494,7 @@ function AppContent({
       );
 
       setRecorderState('idle');
-
+      setFinishReview(false);
       setRecovery(null);
 
       setStatus(
@@ -706,260 +703,316 @@ function AppContent({
 
   const savedPlaces = application?.repository.listPlaceJournal() ?? [];
 
+  const capture = {
+    state: recorderState,
+    available: application !== null,
+    busy: captureBusy,
+    view: captureView,
+    status,
+    onStart: start,
+    onPause: pause,
+    onResume: resume,
+    onFinish: async () => {
+      setFinishReview(true);
+      return null;
+    },
+    onRecover: () => recover(),
+    onDiscard: confirmDiscard,
+    onRequestPermission: requestPermission,
+  };
+  const openSettings = () => {
+    setSettingsPage('index');
+    setSettingsOpen(true);
+  };
+  const settingsTitles = {
+    index: 'Settings',
+    maps: 'Maps',
+    appearance: 'Appearance',
+    recording: 'Recording',
+    about: 'About and sources',
+    advanced: 'Advanced',
+  };
+  const library = useMemo(() => {
+    const ids = new Set(savedActivities.map((saved) => saved.id));
+    return (
+      application?.library
+        .list()
+        .filter((activity) => ids.has(activity.id) && activity.lifecycle === 'finished') ?? []
+    );
+  }, [application, savedActivities]);
+  const savedPreview = useMemo(() => {
+    if (section !== 'saved' || settingsOpen || libraryPage !== 'hikes') return null;
+    const activity = library[0];
+    if (!activity || !application) return null;
+    const revision = application.repository
+      .exportSnapshot()
+      .revisions.filter((entry) => entry.activityId === activity.id)
+      .sort((a, b) => b.revision - a.revision)[0];
+    return recordedHikeDisplay(storedHikeObservations(activity), revision);
+  }, [application, library, section, settingsOpen, libraryPage]);
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: palette.background }}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-          <View style={{ backgroundColor: palette.accent, borderRadius: 13, padding: 9 }}>
-            <ProductIcon name="explore" color={palette.onAccent} size={25} />
-          </View>
-
-          <Text style={styles.brand}>Open Outdoor</Text>
-        </View>
-
-        <Text accessibilityRole="header" style={styles.heading}>
-          {
-            {
-              explore: 'Explore outdoors',
-              search: 'Find a place',
-              track: 'Record a hike',
-              saved: 'Your hikes',
-            }[section]
-          }
-        </Text>
-
-        <Text style={styles.intro}>
-          {
-            {
-              explore: 'Trails, open spaces and places to pause.',
-              search: 'Search the places on your offline map.',
-              track: 'Keep a record of where the day takes you.',
-              saved: 'The routes and memories you bring home.',
-            }[section]
-          }
-        </Text>
-
-        {section === 'explore' || section === 'search' ? (
-          <>
-            <OutdoorMap
-              adapter={map}
-
-              section={section}
-
-              placeJournal={application?.placeJournal ?? null}
-
-              imports={importedDatasets}
-
-              capture={{
-                state: recorderState,
-
-                available: application !== null,
-
-                busy: captureBusy,
-
-                view: captureView,
-
-                status,
-
-                onStart: start,
-
-                onPause: pause,
-
-                onResume: resume,
-
-                onFinish: finish,
-
-                onRecover: () => recover(),
-
-                onDiscard: confirmDiscard,
-
-                onRequestPermission: requestPermission,
+    <View style={{ flex: 1, backgroundColor: palette.surface }}>
+      <SafeAreaView
+        edges={['top', 'left', 'right']}
+        style={{ flex: 1, backgroundColor: palette.background }}
+      >
+        {active && (settingsOpen || section !== 'track') ? (
+          <View style={{ paddingHorizontal: 16, paddingVertical: 4 }}>
+            <ProductRow
+              title={recorderState === 'paused' ? 'Paused hike' : 'Recording'}
+              subtitle="Return to Track"
+              icon="track"
+              onPress={() => {
+                setSettingsOpen(false);
+                setSection('track');
               }}
             />
-          </>
-        ) : null}
-
-        {section === 'track' || active || recorderState === 'recoverable' ? (
-          <Text accessibilityLiveRegion="polite" style={styles.status}>
-            {status}
-          </Text>
-        ) : null}
-
-        {recorderState !== 'idle' ? <FieldNotice state={recorderState} /> : null}
-
-        {section === 'track' && !nativeSpikes.available ? (
-          <View accessibilityRole="alert" style={styles.alert}>
-            <Text style={styles.alertHeading}>Native capability unavailable</Text>
-
-            <Text selectable style={styles.alertCopy}>
-              {nativeSpikes.loadError}
-            </Text>
           </View>
         ) : null}
-
-        {section !== 'track' && active ? (
-          <AccessibleButton
-            label="Return to recording controls"
-
-            hint="Open Track to pause or finish your activity"
-
-            icon="track"
-
-            onPress={() => setSection('track')}
+        {/* Retaining this component retains query, selection, filters and map camera. */}
+        <View
+          style={{
+            flex: 1,
+            display:
+              !settingsOpen && (section === 'explore' || section === 'search') ? 'flex' : 'none',
+          }}
+        >
+          {section === 'search' && !settingsOpen ? (
+            <View style={{ paddingHorizontal: 22 }}>
+              <ProductHeader title="Search" onSettings={openSettings} />
+            </View>
+          ) : null}
+          <OutdoorMap
+            adapter={map}
+            section={section === 'search' ? 'search' : 'explore'}
+            query={query}
+            onQueryChange={setQuery}
+            placeFilter={placeFilter}
+            onPlaceFilterChange={setPlaceFilter}
+            statePackages={statePackages}
+            coverage={coverage}
+            onCoverageShown={() => setCoverage(null)}
+            placeJournal={application?.placeJournal ?? null}
+            imports={importedDatasets}
+            capture={capture}
+            onOpenSettings={openSettings}
+            onOpenMaps={() => {
+              setSettingsPage('maps');
+              setSettingsOpen(true);
+            }}
+            onOpenSearch={() => setSection('search')}
+            onOpenExplore={() => setSection('explore')}
+            visible={!settingsOpen && (section === 'explore' || section === 'search')}
           />
-        ) : null}
-
-        {section === 'track' ? (
-          <>
-            <ProductCard
-              title={
-                recorderState === 'recording'
-                  ? 'Recording now'
-                  : recorderState === 'paused'
-                    ? 'Recording paused'
-                    : recorderState === 'recoverable'
-                      ? 'Continue your hike'
-                      : 'Ready to record'
-              }
-            >
-              {active ? (
-                <Text style={styles.activityHeading}>
-                  Committed checkpoint {liveStats.sequence}
-                </Text>
-              ) : null}
-
-              <View style={styles.metricGrid}>
-                <ProductMetric
-                  label="Distance"
-                  value={active ? `${liveStats.distanceM.toFixed(0)} m` : null}
-                />
-
-                <ProductMetric
-                  label="Ascent"
-                  value={active ? `${liveStats.ascentM.toFixed(0)} m` : null}
-                />
-
-                <ProductMetric
-                  label="GPS"
-                  value={active ? liveStats.gpsQuality : null}
-                  degraded={
-                    active &&
-                    (liveStats.gpsQuality === 'Degraded' || liveStats.gpsQuality === 'Poor')
-                  }
-                />
-
-                <ProductMetric label="Recording mode" value={modeLabels[mode]} />
+        </View>
+        {settingsOpen || section === 'track' || section === 'saved' ? (
+          <ScrollView
+            ref={scroll}
+            keyboardShouldPersistTaps="handled"
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.container}
+          >
+            {settingsOpen && settingsPage === 'maps' ? (
+              <MapSettings
+                imports={importedDatasets}
+                statePackages={statePackages}
+                onShowCoverage={showCoverage}
+                onBack={() => setSettingsPage('index')}
+              />
+            ) : (
+              <ProductHeader
+                title={
+                  settingsOpen
+                    ? settingsTitles[settingsPage]
+                    : section === 'track'
+                      ? 'Track'
+                      : 'Saved'
+                }
+                {...(settingsOpen
+                  ? {
+                      onBack: () =>
+                        settingsPage === 'index'
+                          ? setSettingsOpen(false)
+                          : setSettingsPage('index'),
+                    }
+                  : { onSettings: openSettings })}
+              />
+            )}
+            {!settingsOpen && section === 'track' ? (
+              <RecordingScreen capture={capture} mode={mode} onMode={setMode} />
+            ) : null}
+            {!settingsOpen && section === 'saved' ? (
+              <View style={{ gap: 16 }}>
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <AccessibleButton
+                    label="Hikes"
+                    hint="Show saved recordings"
+                    selected={libraryPage === 'hikes'}
+                    onPress={() => setLibraryPage('hikes')}
+                  />
+                  <AccessibleButton
+                    label="Places"
+                    hint="Show private notes and check-ins"
+                    selected={libraryPage === 'places'}
+                    onPress={() => setLibraryPage('places')}
+                  />
+                </View>
+                {libraryPage === 'hikes' && savedPreview ? (
+                  <View style={{ gap: 12 }}>
+                    <RecordedPathPreview display={savedPreview} />
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                      <ProductMetric
+                        label="Distance"
+                        value={
+                          savedPreview.route
+                            ? `${(savedPreview.route.distanceM / 1000).toFixed(1)} km`
+                            : null
+                        }
+                      />
+                      <ProductMetric
+                        label="Time"
+                        value={recordingTime(savedPreview.recordedSeconds)}
+                      />
+                    </View>
+                  </View>
+                ) : null}
+                {libraryPage === 'hikes'
+                  ? library.map((activity) => (
+                      <ProductRow
+                        key={activity.id}
+                        title={activity.name}
+                        subtitle={new Date(activity.startedAt).toLocaleDateString()}
+                        icon="explore"
+                        disabled={active || recorderState === 'recoverable' || captureBusy}
+                        onPress={() => showSavedCapture(activity.id)}
+                      />
+                    ))
+                  : savedPlaces.map((place) => (
+                      <ProductRow
+                        key={place.featureId}
+                        title={place.featureName}
+                        subtitle={`${place.note ? '1 note · ' : ''}${place.checkIns.length} check-ins`}
+                        icon="saved"
+                        onPress={() => {
+                          setSavedPlace({ id: place.featureId, name: place.featureName });
+                        }}
+                      />
+                    ))}
+                {(libraryPage === 'hikes' ? library.length === 0 : savedPlaces.length === 0) ? (
+                  <View style={{ paddingVertical: 40, gap: 20 }}>
+                    <Text style={styles.heading}>
+                      {libraryPage === 'hikes' ? 'No hikes yet' : 'No places yet'}
+                    </Text>
+                    <AccessibleButton
+                      label={libraryPage === 'hikes' ? 'Record a hike' : 'Explore places'}
+                      hint="Create a private hike or place note"
+                      primary
+                      onPress={() => setSection(libraryPage === 'hikes' ? 'track' : 'explore')}
+                    />
+                  </View>
+                ) : null}
+                <Text style={{ color: palette.muted, fontSize: 14 }}>Saved on this device</Text>
               </View>
-
-              {recorderState === 'idle' ? (
-                <AccessibleButton
-                  label="Start recording"
-                  hint="Starts offline location and elevation recording"
-                  primary
-                  disabled={application === null || captureBusy}
-                  onPress={start}
+            ) : null}
+            {settingsOpen && settingsPage === 'index' ? (
+              <View style={{ gap: 16 }}>
+                <ProductRow
+                  title="Maps"
+                  subtitle="Public packages and private data"
+                  onPress={() => setSettingsPage('maps')}
                 />
-              ) : recorderState === 'recording' ? (
-                <AccessibleButton
-                  label="Pause recording"
-                  hint="Stops sensors and excludes paused distance and elevation"
-                  primary
-                  disabled={captureBusy}
-                  onPress={pause}
+                <ProductRow
+                  title="Appearance"
+                  subtitle="Device · Light · Dark · High contrast"
+                  icon="settings"
+                  onPress={() => setSettingsPage('appearance')}
                 />
-              ) : recorderState === 'paused' ? (
-                <AccessibleButton
-                  label="Resume recording"
-                  hint="Restarts sensors in a new activity segment"
-                  primary
-                  disabled={captureBusy}
-                  onPress={resume}
+                <ProductRow
+                  title="Recording"
+                  subtitle={recordingModes[mode]}
+                  icon="track"
+                  onPress={() => setSettingsPage('recording')}
                 />
-              ) : (
-                <AccessibleButton
-                  label="Recover interrupted recording"
-                  hint="Continues from the last durable checkpoint"
-                  primary
-                  disabled={recovery === null || captureBusy}
-                  onPress={() => recover()}
+                <ProductRow
+                  title="About and sources"
+                  subtitle="Attribution and licenses"
+                  onPress={() => setSettingsPage('about')}
                 />
-              )}
-            </ProductCard>
-
-            <Text accessibilityRole="header" style={styles.sectionHeading}>
-              Tracking mode
-            </Text>
-
-            <Text style={styles.copy}>
-              Balanced is the default. High Accuracy is always an explicit choice.
-            </Text>
-
-            <View style={styles.controls}>
-              {(Object.keys(modeLabels) as NativeTrackingMode[]).map((candidate) => (
-                <AccessibleButton
-                  key={candidate}
-
-                  label={modeLabels[candidate]}
-
-                  hint={'Select ' + modeLabels[candidate] + ' tracking mode'}
-
-                  selected={candidate === mode}
-
-                  disabled={!nativeSpikes.available || active || recorderState === 'recoverable'}
-
-                  onPress={() => setMode(candidate)}
+                <ProductRow
+                  title="Advanced"
+                  subtitle="Diagnostics"
+                  icon="settings"
+                  onPress={() => setSettingsPage('advanced')}
                 />
-              ))}
-            </View>
-
-            <Text accessibilityRole="header" style={styles.sectionHeading}>
-              Other recording actions
-            </Text>
-
-            <View style={styles.controls}>
-              {recorderState === 'idle' ? (
-                <AccessibleButton
-                  label="Request Always Location"
-                  hint="Opens the iOS location permission prompt"
-                  disabled={!nativeSpikes.available}
-                  onPress={requestPermission}
-                />
-              ) : null}
-
-              {active ? (
-                <AccessibleButton
-                  label="Finish and save recording"
-                  hint="Stops sensors and saves the private activity"
-                  disabled={captureBusy}
-                  onPress={finish}
-                />
-              ) : null}
-
-              {recorderState === 'recoverable' ? (
-                <AccessibleButton
-                  label="Discard interrupted recording"
-                  hint="Requires confirmation before permanently discarding recovery"
-                  destructive
-                  disabled={recovery === null || captureBusy}
-                  onPress={confirmDiscard}
-                />
-              ) : null}
-            </View>
-
-            {nativeSpikes.phase0DiagnosticsEnabled ? (
+                <Text style={{ color: palette.muted, fontSize: 14, marginTop: 20 }}>
+                  Notes and hikes stay on this device.
+                </Text>
+              </View>
+            ) : null}
+            {settingsOpen && settingsPage === 'appearance' ? (
+              <View style={{ gap: 12 }}>
+                {([null, 'light', 'dark', 'high-contrast'] as const).map((value) => (
+                  <ProductRow
+                    key={value ?? 'device'}
+                    title={
+                      value === null
+                        ? 'Device appearance'
+                        : value === 'high-contrast'
+                          ? 'High contrast'
+                          : value === 'light'
+                            ? 'Light'
+                            : 'Dark'
+                    }
+                    subtitle={appearanceOverride === value ? 'Selected' : undefined}
+                    icon={appearanceOverride === value ? 'check' : 'settings'}
+                    onPress={() => onAppearance(value)}
+                  />
+                ))}
+                <Text style={{ marginTop: 16 }}>Text size follows your device.</Text>
+              </View>
+            ) : null}
+            {settingsOpen && settingsPage === 'recording' ? (
+              <View style={{ gap: 12 }}>
+                {(Object.keys(recordingModes) as NativeTrackingMode[]).map((value) => (
+                  <AccessibleButton
+                    key={value}
+                    label={recordingModes[value]}
+                    hint={`Choose ${recordingModes[value]} recording`}
+                    selected={mode === value}
+                    disabled={active || recorderState === 'recoverable'}
+                    onPress={() => setMode(value)}
+                  />
+                ))}
+                <ProductDisclosure title="Location access">
+                  <Text>Always access supports screen-lock recording.</Text>
+                  <AccessibleButton
+                    label="Allow location"
+                    hint="Open the device location permission request"
+                    disabled={!nativeSpikes.available || captureBusy}
+                    onPress={requestPermission}
+                  />
+                </ProductDisclosure>
+              </View>
+            ) : null}
+            {settingsOpen && settingsPage === 'about' ? <MapNotices /> : null}
+            {settingsOpen &&
+            settingsPage === 'advanced' &&
+            !nativeSpikes.phase0DiagnosticsEnabled ? (
+              <Text>Diagnostics are unavailable in this build.</Text>
+            ) : null}
+            {settingsOpen &&
+            settingsPage === 'advanced' &&
+            nativeSpikes.phase0DiagnosticsEnabled ? (
               <>
                 <Text accessibilityRole="header" style={styles.sectionHeading}>
-                  Advanced diagnostics
+                  Diagnostics
                 </Text>
 
-                <Text style={styles.copy}>
-                  Diagnostic JSON contains timings, memory sizes, and file policy only—never
-                  coordinates.
-                </Text>
+                <Text style={styles.copy}>Timings and storage only. No coordinates.</Text>
 
                 <View style={styles.controls}>
                   <AccessibleButton
-                    label="Measure 20 Start/Stop acknowledgements"
+                    label="Start and stop timing"
 
                     hint="Runs the physical recording acknowledgement benchmark"
 
@@ -974,7 +1027,7 @@ function AppContent({
                   />
 
                   <AccessibleButton
-                    label="Inspect active tracking protection"
+                    label="Tracking protection"
 
                     hint="Checks protection and system backup exclusion without reading coordinates"
 
@@ -984,7 +1037,7 @@ function AppContent({
                   />
 
                   <AccessibleButton
-                    label="Begin 30-minute memory profile"
+                    label="Start memory sample"
 
                     hint="Begins screen-lock memory sampling for the active recorder"
 
@@ -994,7 +1047,7 @@ function AppContent({
                   />
 
                   <AccessibleButton
-                    label="Finish 30-minute memory profile"
+                    label="Finish memory sample"
 
                     hint="Stops memory sampling and computes the binding p95 result"
 
@@ -1004,7 +1057,7 @@ function AppContent({
                   />
 
                   <AccessibleButton
-                    label="Share physical diagnostic JSON"
+                    label="Share diagnostics"
 
                     hint="Shares the redacted physical acceptance report"
 
@@ -1015,278 +1068,103 @@ function AppContent({
                 </View>
               </>
             ) : null}
-          </>
+          </ScrollView>
         ) : null}
-
-        {section === 'saved' ? (
-          <>
-            <Text accessibilityRole="header" style={styles.sectionHeading}>
-              Saved places
-            </Text>
-
-            {savedPlaces.length === 0 ? (
-              <Text style={styles.copy}>Your private place notes will appear here.</Text>
-            ) : (
-              savedPlaces.map((place) => (
-                <ProductCard key={place.featureId} title={place.featureName}>
-                  <OriginBadge origin="user" />
-
-                  {place.note ? <Text style={styles.copy}>{place.note}</Text> : null}
-
-                  <Text style={styles.copy}>
-                    {place.checkIns.length} private check-ins saved on this device
-                  </Text>
-
-                  <AccessibleButton
-                    label="Find on current map"
-                    hint="Opens Explore and selects this place if its dataset is loaded"
-                    onPress={() => {
-                      map.setSelectedFeature(place.featureId);
-                      setSection('explore');
-                    }}
-                  />
-                </ProductCard>
-              ))
-            )}
-
-            <Text accessibilityRole="header" style={styles.sectionHeading}>
-              Recorded hikes
-            </Text>
-
-            {savedActivities.length === 0 ? (
-              <FieldNotice
-                state="empty"
-
-                detail="No recorded hikes yet. Start a recording from Track to create a private activity."
-              />
-            ) : (
-              savedActivities.map((activity) => (
-                <ProductCard key={activity.id} title="Private recorded activity">
-                  <OriginBadge origin="user" />
-
-                  <Text style={styles.copy}>
-                    {activity.id} · {activity.finalSequence} durable observations
-                  </Text>
-
-                  <AccessibleButton
-                    label="View hike on map"
-
-                    hint="Open this saved private hike and its recorded elevation profile"
-
-                    disabled={active || recorderState === 'recoverable' || captureBusy}
-
-                    onPress={() => showSavedCapture(activity.id)}
-                  />
-                </ProductCard>
-              ))
-            )}
-            {savedPlaces.length === 0 && savedActivities.length === 0 ? (
-              <AccessibleButton
-                label="Explore places"
-                hint="Open the offline map to find a place"
-                primary
-                onPress={() => setSection('explore')}
-              />
-            ) : null}
-          </>
-        ) : null}
-
-        <AccessibleButton
-          label="Appearance settings"
-          hint="Show light, dark and high contrast appearance options"
-          expanded={appearanceOpen}
-          onPress={() => setAppearanceOpen(!appearanceOpen)}
-        />
-
-        {appearanceOpen ? (
-          <ProductCard title="Appearance">
-            <View style={styles.controls}>
-              <AccessibleButton
-                label="Use device appearance"
-
-                hint="Follow the device light or dark setting"
-
-                onPress={() => onAppearance(null)}
-              />
-
-              {appearances.map((value) => (
-                <AccessibleButton
-                  key={value}
-
-                  label={value}
-
-                  hint={`Use ${value} appearance`}
-
-                  selected={appearance === value}
-
-                  onPress={() => onAppearance(value)}
-                />
-              ))}
-            </View>
-          </ProductCard>
-        ) : null}
-
         <StatusBar style={appearance === 'light' ? 'dark' : 'light'} />
-      </ScrollView>
-
-      <ProductNavigation section={section} onChange={setSection} />
-    </SafeAreaView>
+      </SafeAreaView>
+      <SafeAreaView
+        edges={['bottom', 'left', 'right']}
+        style={{ backgroundColor: palette.surface }}
+      >
+        <ProductNavigation
+          section={settingsOpen ? null : section}
+          onChange={(next) => {
+            setSettingsOpen(false);
+            setSection(next);
+          }}
+        />
+      </SafeAreaView>
+      <ProductSheet
+        title="Place note"
+        visible={savedPlace !== null}
+        onClose={() => setSavedPlace(null)}
+      >
+        {savedPlace ? (
+          <PlaceNote place={savedPlace} service={application?.placeJournal ?? null} />
+        ) : null}
+      </ProductSheet>
+      <ProductSheet
+        title="Save hike"
+        visible={finishReview && active}
+        onClose={() => setFinishReview(false)}
+      >
+        <OriginBadge origin="user" />
+        <RecordedPathPreview display={captureView?.display ?? null} />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+          <ProductMetric
+            label="Distance"
+            value={
+              captureView?.display.route
+                ? `${(captureView.display.route.distanceM / 1000).toFixed(1)} km`
+                : null
+            }
+          />
+          <ProductMetric
+            label="Time"
+            value={recordingTime(captureView?.display.recordedSeconds ?? 0)}
+          />
+        </View>
+        <Text>Save this hike on your device.</Text>
+        <AccessibleButton
+          label="Save hike"
+          hint="Stop sensors and save this private activity"
+          primary
+          disabled={captureBusy}
+          onPress={finish}
+        />
+        <AccessibleButton
+          label={recorderState === 'paused' ? 'Keep paused' : 'Keep recording'}
+          hint="Return without stopping or saving"
+          disabled={captureBusy}
+          onPress={() => setFinishReview(false)}
+        />
+        <Text accessibilityLiveRegion="polite">{status.includes('failed') ? status : ''}</Text>
+      </ProductSheet>
+    </View>
   );
 }
 
 function createStyles(p: Palette) {
   return StyleSheet.create({
-    searchInput: {
-      color: p.text,
-
-      backgroundColor: p.surface,
-
-      borderColor: p.border,
-
-      borderWidth: 2,
-
-      borderRadius: t.radius.control,
-
-      minHeight: t.target.minimum,
-
-      padding: t.space.md,
-
-      fontSize: t.type.body,
-    },
-
-    activityHeading: { color: p.text, fontSize: t.type.body, fontWeight: '700' },
-
-    alert: {
-      backgroundColor: p.surface,
-
-      borderColor: p.danger,
-
-      borderRadius: t.radius.card,
-
-      borderWidth: 2,
-
-      marginBottom: t.space.lg,
-
-      padding: t.space.lg,
-    },
-
-    alertCopy: { color: p.text, fontSize: t.type.body, lineHeight: t.type.lineHeight },
-
-    alertHeading: {
-      color: p.danger,
-
-      fontSize: t.type.title,
-
-      fontWeight: '700',
-
-      marginBottom: t.space.sm,
-    },
-
     container: {
       backgroundColor: p.background,
       flexGrow: 1,
       paddingHorizontal: t.space.xl,
-      paddingTop: 16,
+      paddingTop: 4,
       paddingBottom: 32,
     },
-
-    brand: { color: p.text, fontSize: 21, fontWeight: '800', letterSpacing: -0.6 },
-
-    intro: { color: p.muted, fontSize: 16, lineHeight: 24, marginBottom: 24 },
-
     controls: { gap: t.space.md },
-
-    metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: t.space.md },
-
     copy: {
       color: p.text,
-
       fontSize: t.type.body,
-
       lineHeight: t.type.lineHeight,
-
       marginBottom: t.space.lg,
     },
-
-    eyebrow: {
-      color: p.accent,
-      fontSize: 11,
-      fontWeight: '800',
-      letterSpacing: 2,
-      marginBottom: 8,
-    },
-
     heading: {
       color: p.text,
-
       fontSize: 30,
       fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-
       letterSpacing: -0.5,
-
       lineHeight: 36,
-
       fontWeight: '500',
-
       marginBottom: t.space.md,
     },
-
-    mapAlternative: {
-      backgroundColor: p.land,
-
-      borderColor: p.border,
-
-      borderRadius: t.radius.card,
-
-      borderWidth: 2,
-
-      marginBottom: t.space.lg,
-
-      minHeight: 176,
-
-      padding: t.space.lg,
-    },
-
-    mapCopy: { color: p.text, fontSize: t.type.body, lineHeight: t.type.lineHeight },
-
-    mapHeading: { color: p.text, fontSize: t.type.title, fontWeight: '800' },
-
-    routeLine: {
-      backgroundColor: p.route,
-
-      borderRadius: t.radius.badge,
-
-      height: 8,
-
-      marginVertical: t.space.xxl,
-    },
-
     sectionHeading: {
       color: p.text,
-
       fontSize: t.type.title,
-
       fontWeight: '800',
-
       marginBottom: t.space.md,
-
       marginTop: t.space.xl,
-    },
-
-    status: {
-      backgroundColor: p.selected,
-
-      borderRadius: t.radius.card,
-
-      color: p.text,
-
-      fontSize: t.type.body,
-
-      lineHeight: t.type.lineHeight,
-
-      marginBottom: t.space.lg,
-
-      padding: t.space.lg,
     },
   });
 }

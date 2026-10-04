@@ -1,10 +1,17 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Platform, Text as NativeText, type TextProps } from 'react-native';
+import {
+  AccessibilityInfo,
+  Platform,
+  StyleSheet,
+  Text as NativeText,
+  type TextProps,
+} from 'react-native';
 import {
   AnnouncementGate,
   defaultAccessibilityPreferences,
   type AccessibilityPreferences,
 } from '@open-outdoor/shared';
+import { usePalette } from './theme';
 
 export const AccessibilityContext = createContext(defaultAccessibilityPreferences);
 export function useDeviceAccessibility(): AccessibilityPreferences {
@@ -67,7 +74,17 @@ export function useAnnouncement(message: string): void {
 /** Preserves Dynamic Type and Bold Text without clipping at a fixed number of lines. */
 export function ProductText({ style, ...props }: TextProps) {
   const { boldText } = useContext(AccessibilityContext);
+  const palette = usePalette();
+  const fontSize = StyleSheet.flatten(style)?.fontSize ?? 17;
   return (
-    <NativeText {...props} allowFontScaling style={[style, boldText && { fontWeight: '700' }]} />
+    <NativeText
+      {...props}
+      allowFontScaling
+      style={[
+        { color: palette.text, fontSize: 17, lineHeight: Math.ceil(fontSize * 1.5) },
+        style,
+        boldText && { fontWeight: '700' },
+      ]}
+    />
   );
 }

@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { createRequire } from 'node:module';
 import {
   mergeStateSummaries,
+  bundledFeaturesForStatePackages,
   statePackageMapStyle,
+  withStatePackageLayers,
   type InstalledStatePackage,
   type OutdoorFeatureSummary,
 } from '../src';
@@ -26,6 +28,23 @@ const state: InstalledStatePackage = {
 };
 
 describe('state catalogs', () => {
+  it('keeps state terrain and trails below map labels, and place markers above them', () => {
+    const result = withStatePackageLayers(
+      {
+        version: 8,
+        sources: {},
+        layers: [
+          { id: 'background', type: 'background' },
+          { id: 'city-label', type: 'symbol' },
+        ],
+      },
+      statePackageMapStyle([state]),
+    );
+    const ids = result.layers.map((layer) => layer.id);
+    expect(ids.indexOf('state-CA-area')).toBeLessThan(ids.indexOf('city-label'));
+    expect(ids.indexOf('state-CA-trail')).toBeLessThan(ids.indexOf('city-label'));
+    expect(ids.indexOf('state-CA-poi')).toBeGreaterThan(ids.indexOf('city-label'));
+  });
   it('produces valid MapLibre sources, filters and style expressions', () => {
     const require = createRequire(import.meta.url);
     const styleSpec = createRequire(require.resolve('maplibre-gl/package.json'))(
@@ -66,6 +85,56 @@ describe('state catalogs', () => {
     expect(
       JSON.stringify(result.layers.find((layer) => layer.id === 'state-CA-selection-point')),
     ).toContain('water-1');
+  });
+  it('replaces rounded vector markers when their original coordinates are loaded', () => {
+    const result = statePackageMapStyle([state], 'water', 'water-1', 'automatic', ['water-1']);
+    for (const id of ['state-CA-poi', 'state-CA-label', 'state-CA-selection-point']) {
+      expect(JSON.stringify(result.layers.find((layer) => layer.id === id)?.filter)).toContain(
+        '["!",["in",["get","id"],["literal",["water-1"]]]]',
+      );
+    }
+    expect(statePackageMapStyle([{ ...state, integrityError: true }]).sources).toEqual({});
+  });
+  it('replaces public bundled NY data while keeping private overlays and restores it when hidden', () => {
+    const publicFeature = {
+      id: 'public',
+      properties: { origin: 'public-catalog' },
+    } as OutdoorFeatureSummary;
+    const privateFeature = {
+      id: 'private',
+      properties: { origin: 'private-catalog' },
+    } as OutdoorFeatureSummary;
+    const ny = { ...state, state: 'NY' };
+    expect(bundledFeaturesForStatePackages([publicFeature, privateFeature], [ny])).toEqual([
+      privateFeature,
+    ]);
+    expect(
+      bundledFeaturesForStatePackages([publicFeature, privateFeature], [{ ...ny, visible: false }]),
+    ).toEqual([publicFeature, privateFeature]);
+    expect(bundledFeaturesForStatePackages([publicFeature, privateFeature], [state])).toEqual([
+      publicFeature,
+      privateFeature,
+    ]);
+  });
+  it('uses updated installed coordinates and details when a bundled record has the same identity', () => {
+    const old = {
+      id: 'site',
+      bounds: [-73, 42, -73, 42],
+      properties: { name: 'Old site' },
+    } as OutdoorFeatureSummary;
+    const updated = {
+      ...old,
+      bounds: [-72, 43, -72, 43],
+      properties: { name: 'Updated site' },
+    } as OutdoorFeatureSummary;
+    expect(mergeStateSummaries([old], [updated])).toEqual([updated]);
+  });
+  it('keeps rights-held private agency features even when older bundles omit their origin', () => {
+    const dec = {
+      id: 'private-dec',
+      properties: { sourceId: 'nys-dec-trails' },
+    } as OutdoorFeatureSummary;
+    expect(bundledFeaturesForStatePackages([dec], [{ ...state, state: 'NY' }])).toEqual([dec]);
   });
   it('deduplicates overlapping state and bundled records while preserving public/private identity', () => {
     const publicFeature = {

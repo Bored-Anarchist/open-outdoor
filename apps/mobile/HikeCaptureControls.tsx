@@ -35,18 +35,18 @@ export function HikeCaptureControls({
     <View style={{ gap: 8 }}>
       <Text accessibilityLiveRegion="polite">
         {capture.state === 'recording'
-          ? 'Capturing your hike offline.'
+          ? 'Recording'
           : capture.state === 'paused'
-            ? 'Hike capture paused. Recording sensors are stopped.'
+            ? 'Paused'
             : capture.state === 'recoverable'
-              ? 'An interrupted hike is ready to recover.'
+              ? 'Hike interrupted'
               : capture.view?.state === 'saved'
-                ? 'Saved hike shown on the map.'
-                : 'Ready to capture a hike.'}
+                ? 'Saved on this device'
+                : 'Ready'}
       </Text>
       {capture.state === 'idle' ? (
         <ProductButton
-          label="Allow location for hike capture"
+          label="Allow location"
           hint="Open the system location permission request"
           disabled={!capture.available || capture.busy}
           onPress={capture.onRequestPermission}
@@ -54,7 +54,8 @@ export function HikeCaptureControls({
       ) : null}
       {capture.state === 'idle' ? (
         <ProductButton
-          label={plan ? 'Capture this hike' : 'Start hike capture'}
+          label={plan ? 'Record this hike' : 'Start recording'}
+          primary
           hint="Record location and elevation privately while keeping this map open"
           disabled={!capture.available || capture.busy}
           onPress={() => capture.onStart(plan?.name, plan?.id)}
@@ -62,7 +63,8 @@ export function HikeCaptureControls({
       ) : null}
       {capture.state === 'recording' ? (
         <ProductButton
-          label="Pause hike capture"
+          label="Pause"
+          primary
           hint="Stop sensors without saving or discarding the hike"
           disabled={capture.busy}
           onPress={capture.onPause}
@@ -70,7 +72,8 @@ export function HikeCaptureControls({
       ) : null}
       {capture.state === 'paused' ? (
         <ProductButton
-          label="Resume hike capture"
+          label="Resume"
+          primary
           hint="Continue recording in a new segment, preserving the pause gap"
           disabled={capture.busy}
           onPress={capture.onResume}
@@ -78,8 +81,8 @@ export function HikeCaptureControls({
       ) : null}
       {capture.state === 'recording' || capture.state === 'paused' ? (
         <ProductButton
-          label="Finish and save hike"
-          hint="Stop sensors and save this private hike and its profile"
+          label="Finish hike"
+          hint="Review this private hike before saving"
           disabled={capture.busy}
           onPress={capture.onFinish}
         />
@@ -87,13 +90,13 @@ export function HikeCaptureControls({
       {capture.state === 'recoverable' ? (
         <>
           <ProductButton
-            label="Recover interrupted hike"
+            label="Resume hike"
             hint="Continue from durable samples and restore the capture on this map"
             disabled={!capture.available || capture.busy}
             onPress={capture.onRecover}
           />
           <ProductButton
-            label="Discard interrupted hike"
+            label="Discard hike…"
             hint="Ask for confirmation before discarding the interrupted recording"
             disabled={capture.busy}
             destructive
@@ -101,7 +104,9 @@ export function HikeCaptureControls({
           />
         </>
       ) : null}
-      <Text accessibilityLiveRegion="polite">{capture.status}</Text>
+      {/failed|unavailable|permission|checkpoint/i.test(capture.status) ? (
+        <Text accessibilityLiveRegion="polite">{capture.status}</Text>
+      ) : null}
     </View>
   );
 }

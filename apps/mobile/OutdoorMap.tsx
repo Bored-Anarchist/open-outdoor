@@ -1,15 +1,10 @@
 import { HikeCaptureControls, type HikeCaptureActions } from './HikeCaptureControls';
 
-import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
+import { mapHikeRoute } from './mapHikeRoute';
 
 import { HikeDetails } from './HikeDetails';
-import { LaptopPackages } from './LaptopPackages';
 
 import { outdoorSourceUrl } from '@open-outdoor/shared/outdoor-details';
-
-import licenses from './map-licenses.json';
-
-import offlineMapLicenses from './offline-map-licenses.json';
 
 import {
   useEffect,
@@ -30,6 +25,7 @@ import {
   Share,
   TextInput,
   View,
+  useWindowDimensions,
 } from 'react-native';
 
 import { useAssets } from 'expo-asset';
@@ -52,16 +48,18 @@ import {
   createOutdoorPlaceLayerStyles,
   createOutdoorMapStyle,
   createTieredOfflineVectorBasemapStyle,
+  regionalBasemapCoversViewport,
   nextOutdoorZoom,
   outdoorDirectionsCoordinateText,
   outdoorDirectionsDestination,
   outdoorDirectionsUrl,
   outdoorMarkerDensityConfig,
-  outdoorZoomPresentation,
   searchOutdoorFeatureIndex,
   segmentedTrack,
   mergeStateSummaries,
+  bundledFeaturesForStatePackages,
   statePackageMapStyle,
+  withStatePackageLayers,
   type OutdoorBaseMapStyle,
   type OutdoorFeatureIndex,
   type OutdoorFeatureSummary,
@@ -76,13 +74,21 @@ import {
   type IoverlanderCategory,
 } from '@open-outdoor/shared';
 
-import type { PlaceJournalEntry } from '@open-outdoor/storage';
-
 import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 
 import { ProductText as Text } from './accessibility';
 
-import { ProductButton, ProductCard, usePalette } from './ProductComponents';
+import {
+  ProductButton,
+  ProductCard,
+  ProductDisclosure,
+  ProductIconButton,
+  ProductRow,
+  OriginBadge,
+  usePalette,
+} from './ProductComponents';
+import { ProductSheet } from './ProductSheet';
+import { PlaceNote } from './PlaceNote';
 
 import worldOverviewAsset from '../../packages/map/src/assets/world-overview-z6.pmtiles';
 
@@ -104,13 +110,11 @@ import {
 import type { PlaceJournalService } from './application';
 
 import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
-import { useStatePackages } from './useStatePackages';
+import type { StatePackagesService } from './useStatePackages';
+import { useStatePackagePlaces, type StatePlaceViewport } from './useStatePackagePlaces';
+import { useMapCameraSync } from './useMapCameraSync';
 
 const bundledFeatureIndex = bundledIndex as unknown as OutdoorFeatureIndex;
-
-const offlineCartography = protomapsLayers('offline-basemap', namedFlavor('light'), {
-  lang: 'en',
-}) as unknown as OutdoorBaseMapStyle['layers'];
 
 const placeFilterOptions: readonly {
   readonly value: OutdoorPlaceFilter;
@@ -184,7 +188,7 @@ function MapSelect<Value extends string>({
   const selected = options.find((option) => option.value === value)!;
 
   return (
-    <View style={{ flex: 1, minWidth: 180 }}>
+    <View style={{ flex: 1, minWidth: 130 }}>
       <Pressable
         accessibilityLabel={label}
 
@@ -199,7 +203,7 @@ function MapSelect<Value extends string>({
         style={({ pressed }) => ({
           minHeight: 56,
 
-          borderWidth: 2,
+          borderWidth: 1,
 
           borderColor: expanded ? palette.accent : palette.border,
 
@@ -227,15 +231,7 @@ function MapSelect<Value extends string>({
           accessibilityLabel={`${label} choices`}
 
           style={{
-            position: 'absolute',
-
-            zIndex: 20,
-
-            top: 60,
-
-            left: 0,
-
-            right: 0,
+            marginTop: 8,
 
             borderWidth: 2,
 
@@ -412,7 +408,7 @@ function PlaceKey({
           justifyContent: 'center',
         }}
       >
-        <Text style={{ color: '#ffffff', fontSize: 12, fontWeight: '800' }}>{symbol}</Text>
+        <Text style={{ color: palette.surface, fontSize: 12, fontWeight: '800' }}>{symbol}</Text>
       </View>
 
       <Text style={{ color: palette.text, fontSize: 14 }}>{label}</Text>
@@ -430,6 +426,18 @@ export function OutdoorMap({
   capture,
 
   section,
+  query,
+  onQueryChange,
+  placeFilter,
+  onPlaceFilterChange: setPlaceFilter,
+  statePackages,
+  coverage,
+  onCoverageShown,
+  onOpenSettings,
+  onOpenMaps,
+  onOpenSearch,
+  onOpenExplore,
+  visible,
 }: {
   adapter: OutdoorMapAdapter;
 
@@ -440,6 +448,18 @@ export function OutdoorMap({
   capture: HikeCaptureActions;
 
   section: 'explore' | 'search';
+  query: string;
+  onQueryChange: (value: string) => void;
+  placeFilter: OutdoorPlaceFilter;
+  onPlaceFilterChange: (value: OutdoorPlaceFilter) => void;
+  statePackages: StatePackagesService;
+  coverage: [number, number, number, number] | null;
+  onCoverageShown: () => void;
+  onOpenMaps: () => void;
+  onOpenSettings: () => void;
+  onOpenSearch: () => void;
+  onOpenExplore: () => void;
+  visible: boolean;
 }) {
   const state = useSyncExternalStore(adapter.subscribe, adapter.getSnapshot, adapter.getSnapshot);
 
@@ -452,12 +472,94 @@ export function OutdoorMap({
   const palette = usePalette();
 
   const [legendOpen, setLegendOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const statePackages = useStatePackages(query);
+  const [toolbarHeight, setToolbarHeight] = useState(112);
+  const offlineCartography = useMemo(
+    () =>
+      protomapsLayers(
+        'offline-basemap',
+        {
+          ...namedFlavor(
+            palette.background === '#f5f4ec'
+              ? 'light'
+              : palette.background === '#000000'
+                ? 'black'
+                : 'dark',
+          ),
+          background: palette.land,
+          earth: palette.land,
+          water: palette.water,
+          park_a: palette.land,
+          park_b: palette.selected,
+          wood_a: palette.land,
+          wood_b: palette.selected,
+          roads_label_minor: palette.text,
+          roads_label_minor_halo: palette.land,
+          roads_label_major: palette.text,
+          roads_label_major_halo: palette.land,
+          ocean_label: palette.muted,
+          city_label: palette.text,
+          city_label_halo: palette.land,
+          subplace_label: palette.text,
+          subplace_label_halo: palette.land,
+          state_label: palette.text,
+          state_label_halo: palette.land,
+          country_label: palette.text,
+        },
+        { lang: 'en' },
+      ) as unknown as OutdoorBaseMapStyle['layers'],
+    [palette],
+  );
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const { width, height, fontScale } = useWindowDimensions();
+  const [viewport, setViewport] = useState<StatePlaceViewport | null>(null);
+  const statePlaces = useStatePackagePlaces(statePackages.packages, viewport);
+  const useRegionalDetail = regionalBasemapCoversViewport(
+    viewport?.bounds ?? [
+      state.camera.center[0] - 0.25,
+      state.camera.center[1] - 0.25,
+      state.camera.center[0] + 0.25,
+      state.camera.center[1] + 0.25,
+    ],
+    viewport?.zoom ?? state.camera.zoom,
+  );
+  const precisePlaces = useMemo(
+    () =>
+      mergeStateSummaries(
+        statePlaces.features,
+        statePackages.detail?.geometry?.type === 'Point' ? [statePackages.detail.summary] : [],
+      ),
+    [statePlaces.features, statePackages.detail],
+  );
+  const bundledFeatures = useMemo(
+    () => bundledFeaturesForStatePackages(bundledFeatureIndex.features, statePackages.packages),
+    [statePackages.packages],
+  );
+  const noCatalogs =
+    statePackages.ready &&
+    imports.ready &&
+    bundledFeatureIndex.features.length === 0 &&
+    statePackages.packages.length === 0 &&
+    imports.datasets.length === 0;
+  const excludedBundledIds = useMemo(() => {
+    const included = new Set(bundledFeatures.map((feature) => feature.id));
+    return bundledFeatureIndex.features
+      .filter((feature) => !included.has(feature.id))
+      .map((feature) => feature.id);
+  }, [bundledFeatures]);
+  const precisePlaceIds = useMemo(
+    () => precisePlaces.map((feature) => feature.id),
+    [precisePlaces],
+  );
   const selectedState = useRef<{
     feature: OutdoorFeatureSummary;
     packages: typeof statePackages.packages;
   } | null>(null);
+  const selectionRequest = useRef(0);
+  useEffect(() => {
+    selectionRequest.current++;
+  }, [state.selectedFeatureId, statePackages.packages]);
 
   const featureIndex = useMemo<OutdoorFeatureIndex>(
     () => ({
@@ -465,7 +567,7 @@ export function OutdoorMap({
 
       features: mergeStateSummaries(
         [
-          ...bundledFeatureIndex.features,
+          ...bundledFeatures,
 
           ...imports.datasets
 
@@ -473,11 +575,21 @@ export function OutdoorMap({
 
             .flatMap((dataset) => dataset.index.features),
         ],
-        [...statePackages.results, ...(statePackages.detail ? [statePackages.detail.summary] : [])],
+        [
+          ...statePlaces.features,
+          ...statePackages.results,
+          ...(statePackages.detail ? [statePackages.detail.summary] : []),
+        ],
       ),
     }),
 
-    [imports.datasets, statePackages.results, statePackages.detail],
+    [
+      bundledFeatures,
+      imports.datasets,
+      statePlaces.features,
+      statePackages.results,
+      statePackages.detail,
+    ],
   );
 
   const importedData = useMemo(
@@ -508,8 +620,6 @@ export function OutdoorMap({
     [imports.datasets],
   );
 
-  const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
-
   const [markerDensity, setMarkerDensity] = useState<OutdoorMarkerDensity>('automatic');
 
   const [openMenu, setOpenMenu] = useState<'places' | 'density' | null>(null);
@@ -538,49 +648,42 @@ export function OutdoorMap({
         placeFilter,
         state.selectedFeatureId,
         markerDensity,
+        precisePlaceIds,
       ),
-    [statePackages.packages, placeFilter, state.selectedFeatureId, markerDensity],
+    [statePackages.packages, placeFilter, state.selectedFeatureId, markerDensity, precisePlaceIds],
   );
 
-  const mapStyle = useMemo(
-    () =>
-      outdoorDataUri && worldOverviewUri && regionalOverviewUri && offlineFontUri
-        ? (() => {
-            const base = createOutdoorMapStyle(
-              outdoorDataUri,
-
-              createTieredOfflineVectorBasemapStyle({
-                worldArchiveUri: worldOverviewUri,
-
-                regionalArchiveUri: regionalOverviewUri,
-
-                fontUri: offlineFontUri,
-
-                sourceLayers: offlineCartography,
-
-                worldMaximumZoom: worldBasemapManifest.maximumZoom,
-
-                regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
-
-                regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
-              }),
-
-              { includePlaces: false },
-            );
-            return {
-              ...base,
-              sources: { ...base.sources, ...stateMap.sources },
-              layers: [...base.layers, ...stateMap.layers],
-            } as unknown as StyleSpecification;
-          })()
-        : null,
-
-    [offlineFontUri, outdoorDataUri, regionalOverviewUri, worldOverviewUri, stateMap],
-  );
-
-  const [showLicenses, setShowLicenses] = useState(false);
+  const mapStyle = useMemo(() => {
+    if (!outdoorDataUri || !worldOverviewUri || !regionalOverviewUri || !offlineFontUri)
+      return null;
+    const base = createOutdoorMapStyle(
+      outdoorDataUri,
+      createTieredOfflineVectorBasemapStyle({
+        worldArchiveUri: worldOverviewUri,
+        regionalArchiveUri: regionalOverviewUri,
+        fontUri: offlineFontUri,
+        sourceLayers: offlineCartography,
+        worldMaximumZoom: worldBasemapManifest.maximumZoom,
+        regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
+        regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
+        useRegionalDetail,
+      }),
+      { includePlaces: false, excludedFeatureIds: excludedBundledIds },
+    );
+    return withStatePackageLayers(base, stateMap) as unknown as StyleSpecification;
+  }, [
+    offlineFontUri,
+    outdoorDataUri,
+    regionalOverviewUri,
+    worldOverviewUri,
+    stateMap,
+    excludedBundledIds,
+    useRegionalDetail,
+    offlineCartography,
+  ]);
 
   const [showSourceDetails, setShowSourceDetails] = useState(false);
+  const firstMapLabelId = mapStyle?.layers.find((layer) => layer.type === 'symbol')?.id;
 
   const [sourceLinkStatus, setSourceLinkStatus] = useState('');
 
@@ -591,41 +694,17 @@ export function OutdoorMap({
       ? selectedState.current.feature
       : null);
 
-  const selectedHike = useMemo<HikeRouteDetails | null>(() => {
-    if (!selected || selected.properties.kind !== 'trail') return null;
-    if (
-      statePackages.detail?.summary.id === selected.id &&
-      statePackages.detail.geometry &&
-      (statePackages.detail.geometry.type === 'LineString' ||
-        statePackages.detail.geometry.type === 'MultiLineString')
-    )
-      return hikeRouteDetails(statePackages.detail.geometry);
-
-    if (selected.properties.origin === 'private-catalog') {
-      const feature = imports.datasets
-
-        .filter((dataset) => dataset.visible)
-
-        .flatMap((dataset) => dataset.collection.features)
-
-        .find((feature) => feature.id === selected.id);
-
-      if (
-        feature &&
-        (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')
-      )
-        return hikeRouteDetails(feature.geometry);
-
-      return null;
-    }
-
-    if (bundledHikes.sourceSha256 !== mobileMapDataMetadata.sha256) return null;
-
-    return (
-      (bundledHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
-      null
-    );
-  }, [selected, imports.datasets, statePackages.detail]);
+  const selectedHike = useMemo(
+    () =>
+      mapHikeRoute(
+        selected,
+        imports.datasets,
+        statePackages.detail,
+        bundledHikes,
+        mobileMapDataMetadata.sha256,
+      ),
+    [selected, imports.datasets, statePackages.detail],
+  );
 
   const [selectedHikeSample, setSelectedHikeSample] = useState<number | null>(null);
 
@@ -705,7 +784,7 @@ export function OutdoorMap({
                   {
                     type: 'Feature' as const,
 
-                    properties: { label: 'Mapped end', color: '#a43913' },
+                    properties: { label: 'Mapped end', color: palette.route },
 
                     geometry: { type: 'Point' as const, coordinates: [...selectedHike.end] },
                   },
@@ -737,7 +816,7 @@ export function OutdoorMap({
         : [],
     }),
 
-    [selectedHike, selectedHikeSample, captured?.id, graphic],
+    [selectedHike, selectedHikeSample, captured?.id, graphic, palette.route],
   );
 
   const selectedProperties = selected?.properties;
@@ -753,14 +832,35 @@ export function OutdoorMap({
   }, [selected?.id]);
 
   useEffect(() => {
-    if (state.selectedFeatureId !== null && selected === null) adapter.setSelectedFeature(null);
-  }, [adapter, selected, state.selectedFeatureId]);
+    if (state.selectedFeatureId === null || selected !== null || !statePackages.ready) return;
+    let cancelled = false;
+    void statePackages.select(state.selectedFeatureId).then((summary) => {
+      if (cancelled) return;
+      if (summary) {
+        selectedState.current = { feature: summary, packages: statePackages.packages };
+        adapter.setSelectedFeature(summary.id);
+      } else if (imports.ready) adapter.setSelectedFeature(null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    adapter,
+    selected,
+    state.selectedFeatureId,
+    statePackages.ready,
+    statePackages.packages,
+    imports.ready,
+  ]);
 
   const setSelected = (feature: OutdoorFeatureSummary | null) => {
+    selectionRequest.current++;
     if (!feature) {
       selectedState.current = null;
       statePackages.clearSelection();
     }
+    setDetailOpen(false);
+    setNoteOpen(false);
     adapter.setSelectedFeature(feature?.id ?? null);
   };
 
@@ -768,17 +868,22 @@ export function OutdoorMap({
 
   const [failed, setFailed] = useState(false);
 
-  const [outside, setOutside] = useState(false);
-
   const [followUser, setFollowUser] = useState(false);
 
   const [zoom, setZoom] = useState(state.camera.zoom);
 
-  const [journalEntry, setJournalEntry] = useState<PlaceJournalEntry | null>(null);
-
-  const [noteDraft, setNoteDraft] = useState('');
-
-  const [journalStatus, setJournalStatus] = useState('');
+  useEffect(() => {
+    if (!loaded || !coverage) return;
+    setFollowUser(false);
+    if (coverage[0] === coverage[2] && coverage[1] === coverage[3])
+      camera.current?.jumpTo({ center: [coverage[0], coverage[1]], zoom: 14 });
+    else
+      camera.current?.fitBounds(coverage, {
+        padding: { top: 25, right: 25, bottom: 25, left: 25 },
+        duration: 0,
+      });
+    onCoverageShown();
+  }, [loaded, coverage, onCoverageShown]);
 
   const [directionsStatus, setDirectionsStatus] = useState('');
 
@@ -787,24 +892,25 @@ export function OutdoorMap({
       createOutdoorPlaceCollection(
         {
           schemaVersion: 1,
-          features: [
-            ...bundledFeatureIndex.features,
-            ...imports.datasets
-              .filter((entry) => entry.visible)
-              .flatMap((entry) => entry.index.features),
-          ],
+          features: mergeStateSummaries(
+            [
+              ...bundledFeatures,
+              ...imports.datasets
+                .filter((entry) => entry.visible)
+                .flatMap((entry) => entry.index.features),
+            ],
+            precisePlaces,
+          ),
         },
         placeFilter,
       ),
 
-    [imports.datasets, placeFilter],
+    [bundledFeatures, imports.datasets, placeFilter, precisePlaces],
   );
 
   const placeLayers = useMemo(() => createOutdoorPlaceLayerStyles(markerDensity), [markerDensity]);
 
   const densityConfig = outdoorMarkerDensityConfig[markerDensity];
-
-  const zoomPresentation = outdoorZoomPresentation(zoom, markerDensity);
 
   const legendCategories: readonly IoverlanderCategory[] =
     placeFilter === 'all'
@@ -828,11 +934,11 @@ export function OutdoorMap({
   const results = useMemo(
     () =>
       mergeStateSummaries(
-        searchOutdoorFeatureIndex(featureIndex, query),
+        searchOutdoorFeatureIndex(featureIndex, query, 30, placeFilter),
         statePackages.results,
       ).slice(0, 30),
 
-    [featureIndex, query, statePackages.results],
+    [featureIndex, query, placeFilter, statePackages.results],
   );
 
   const track = useMemo(
@@ -863,11 +969,7 @@ export function OutdoorMap({
     [last],
   );
 
-  useEffect(() => {
-    if (!followUser) {
-      camera.current?.jumpTo({ center: [...state.camera.center], zoom: state.camera.zoom });
-    }
-  }, [followUser, state.camera]);
+  useMapCameraSync(camera, state.camera, followUser);
 
   useEffect(() => {
     setLoaded(false);
@@ -876,19 +978,13 @@ export function OutdoorMap({
   }, [regionalOverviewUri]);
 
   useEffect(() => {
-    const entry = selected && placeJournal ? placeJournal.get(selected.id) : null;
-
-    setJournalEntry(entry);
-
-    setNoteDraft(entry?.note ?? '');
-
-    setJournalStatus('');
-
     setDirectionsStatus('');
-  }, [placeJournal, selected?.id]);
+  }, [selected?.id]);
 
   function select(feature: OutdoorFeatureSummary) {
+    setFollowUser(false);
     if (
+      statePlaces.features.some((entry) => entry.id === feature.id) ||
       statePackages.results.some((entry) => entry.id === feature.id) ||
       statePackages.detail?.summary.id === feature.id
     )
@@ -913,56 +1009,6 @@ export function OutdoorMap({
     setFollowUser(false);
 
     camera.current?.zoomTo(nextOutdoorZoom(zoom, direction), { duration: 160 });
-  }
-
-  async function saveJournal(checkIn: boolean): Promise<void> {
-    if (!selected || !placeJournal) return;
-
-    const occurredAt = new Date().toISOString();
-
-    const prior = placeJournal.get(selected.id);
-
-    const entry: PlaceJournalEntry = {
-      featureId: selected.id,
-
-      featureName: selected.properties.name,
-
-      note: noteDraft,
-
-      checkIns: checkIn
-        ? [
-            ...(prior?.checkIns ?? []),
-
-            {
-              id: `checkin-${Date.now()}-${(prior?.checkIns.length ?? 0) + 1}`,
-
-              occurredAt,
-            },
-          ]
-        : (prior?.checkIns ?? []),
-
-      updatedAt: occurredAt,
-    };
-
-    setJournalStatus(checkIn ? 'Saving private check-in…' : 'Saving private note…');
-
-    try {
-      const saved = await placeJournal.save(entry);
-
-      setJournalEntry(saved);
-
-      setNoteDraft(saved.note);
-
-      setJournalStatus(
-        checkIn ? 'Checked in. Your note is saved privately.' : 'Your private note is saved.',
-      );
-    } catch (error) {
-      setJournalStatus(
-        `Could not save privately: ${error instanceof Error ? error.message : String(error)}`,
-      );
-
-      throw error;
-    }
   }
 
   async function shareDirectionsDestination(): Promise<void> {
@@ -1071,182 +1117,89 @@ export function OutdoorMap({
     );
   }
 
-  function showDatasetCoverage(dataset: ImportedMapDatasetsService['datasets'][number]) {
-    const bounds: [number, number, number, number] = [180, 90, -180, -90];
-
-    for (const feature of dataset.index.features) {
-      bounds[0] = Math.min(bounds[0], feature.bounds[0]);
-
-      bounds[1] = Math.min(bounds[1], feature.bounds[1]);
-
-      bounds[2] = Math.max(bounds[2], feature.bounds[2]);
-
-      bounds[3] = Math.max(bounds[3], feature.bounds[3]);
-    }
-
-    setFollowUser(false);
-
-    if (bounds[0] === bounds[2] && bounds[1] === bounds[3])
-      camera.current?.jumpTo({ center: [bounds[0], bounds[1]], zoom: 14 });
-    else
-      camera.current?.fitBounds(bounds, {
-        padding: { top: 25, right: 25, bottom: 25, left: 25 },
-
-        duration: 0,
-      });
-  }
-
   return (
-    <View>
-      <Text
-        accessibilityRole="header"
-
-        style={{ fontSize: 24, fontWeight: '700', color: palette.text }}
-      >
-        {section === 'search' ? 'Search the offline map' : 'Explore the map'}
-      </Text>
-
-      <Text
-        style={{
-          color: palette.muted,
-          fontSize: 14,
-          lineHeight: 22,
-          marginTop: 4,
-          marginBottom: 12,
-        }}
-      >
-        Offline map ·{' '}
-        {statePackages.packages.some((entry) => entry.visible)
-          ? `${statePackages.packages.filter((entry) => entry.visible).length} state packages shown`
-          : `${featureIndex.features.length.toLocaleString()} geographic features`}
-      </Text>
-
+    <View style={{ flex: 1 }}>
       {section === 'search' ? (
-        <>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{
+            paddingHorizontal: 22,
+            paddingTop: 8,
+            paddingBottom: 32,
+            gap: 16,
+          }}
+        >
           <TextInput
             accessibilityLabel="Search lands, trails, campsites and imported features"
-
-            placeholder="Search a trail, forest or campsite"
-
+            placeholder="Find a place"
             placeholderTextColor={palette.muted}
-
             value={query}
-
-            onChangeText={setQuery}
-
+            onChangeText={onQueryChange}
             style={{
               color: palette.text,
-
-              borderColor: palette.border,
-
-              borderWidth: 1,
-
-              borderRadius: 16,
-
               backgroundColor: palette.surface,
-
-              minHeight: 56,
-
-              padding: 12,
-
-              marginVertical: 8,
+              minHeight: 52,
+              padding: 14,
+              borderWidth: 1,
+              borderColor: palette.border,
+              borderRadius: 14,
+              fontSize: 17,
             }}
           />
-
-          {query.trim() && (
-            <Text accessibilityLiveRegion="polite">
+          <ProductButton
+            label={
+              placeFilterOptions.find((item) => item.value === placeFilter)?.label ?? 'All places'
+            }
+            hint="Choose categories for results and map"
+            onPress={() => setToolsOpen(true)}
+          />
+          {noCatalogs ? (
+            <View style={{ paddingVertical: 24, gap: 16 }}>
+              <Text>Add a map to search places.</Text>
+              <ProductButton
+                label="Add a map"
+                hint="Open Maps to install a state package or import private data"
+                primary
+                onPress={onOpenMaps}
+              />
+            </View>
+          ) : null}
+          {query.trim() ? (
+            <Text accessibilityLiveRegion="polite" style={{ color: palette.muted, fontSize: 14 }}>
               {results.length}
-              {results.length === 30 ? ' or more' : ''} results. Select a result to show it on the
-              map.
+              {results.length === 30 ? '+' : ''} results
             </Text>
-          )}
-
-          {results.slice(0, 10).map((feature) => (
-            <ProductButton
+          ) : null}
+          {results.slice(0, 30).map((feature) => (
+            <ProductRow
               key={feature.id}
-
-              label={`${feature.properties.name} · ${feature.properties.kind}`}
-
-              hint="Fit this real geographic feature in the offline map"
-
-              onPress={() => select(feature)}
+              title={feature.properties.name}
+              subtitle={`${feature.properties.kind} · ${feature.properties.origin === 'private-catalog' ? 'Private' : 'Public'}`}
+              icon={feature.properties.kind === 'trail' ? 'explore' : 'saved'}
+              onPress={() => {
+                select(feature);
+                onOpenExplore();
+              }}
             />
           ))}
-        </>
+          {!noCatalogs && query.trim() && results.length === 0 ? (
+            <View style={{ paddingVertical: 32, gap: 16 }}>
+              <Text style={{ fontSize: 23 }}>No matches</Text>
+              <Text>Try another name or category.</Text>
+              <ProductButton
+                label="Clear filters"
+                hint="Show all categories"
+                onPress={() => {
+                  setPlaceFilter('all');
+                  onQueryChange('');
+                }}
+              />
+            </View>
+          ) : null}
+        </ScrollView>
       ) : null}
-
       <View
-        style={{
-          flexDirection: 'row',
-
-          flexWrap: 'wrap',
-
-          gap: 10,
-
-          marginTop: 10,
-
-          marginBottom: 4,
-
-          zIndex: 30,
-        }}
-      >
-        <MapSelect
-          label="Show on map"
-
-          value={placeFilter}
-
-          options={placeFilterOptions}
-
-          expanded={openMenu === 'places'}
-
-          onToggle={() => setOpenMenu(openMenu === 'places' ? null : 'places')}
-
-          onChange={(value) => {
-            setPlaceFilter(value);
-
-            setSelected(null);
-
-            setOpenMenu(null);
-          }}
-        />
-
-        <MapSelect
-          label="Marker detail"
-
-          value={markerDensity}
-
-          options={markerDensityOptions}
-
-          expanded={openMenu === 'density'}
-
-          onToggle={() => setOpenMenu(openMenu === 'density' ? null : 'density')}
-
-          onChange={(value) => {
-            setMarkerDensity(value);
-
-            setOpenMenu(null);
-          }}
-        />
-      </View>
-
-      <Text accessibilityLiveRegion="polite" style={{ color: palette.muted }}>
-        {placeData.features.length.toLocaleString()} matching places · {zoomPresentation.label}
-      </Text>
-
-      <View
-        style={{
-          height: selectedHike || captured ? 300 : 430,
-
-          marginVertical: 12,
-
-          borderWidth: 2,
-
-          borderRadius: 24,
-
-          overflow: 'hidden',
-
-          borderColor: palette.border,
-        }}
+        style={{ flex: 1, display: section === 'explore' ? 'flex' : 'none', overflow: 'hidden' }}
       >
         {mapStyle ? (
           <>
@@ -1260,6 +1213,7 @@ export function OutdoorMap({
               mapStyle={mapStyle}
 
               attribution
+              attributionPosition={{ top: toolbarHeight + 16, left: 16 }}
 
               logo={false}
 
@@ -1268,6 +1222,7 @@ export function OutdoorMap({
               onDidFailLoadingMap={() => setFailed(true)}
 
               onPress={(event) => {
+                const request = ++selectionRequest.current;
                 void mapView.current
 
                   ?.queryRenderedFeatures(event.nativeEvent.point, {
@@ -1282,6 +1237,7 @@ export function OutdoorMap({
                   })
 
                   .then((features) => {
+                    if (request !== selectionRequest.current) return;
                     const id = features.find((feature) => feature.properties?.kind !== 'boundary')
                       ?.properties?.id;
 
@@ -1290,7 +1246,7 @@ export function OutdoorMap({
                     if (feature) select(feature);
                     else if (typeof id === 'string' && statePackages.ready)
                       void statePackages.select(id).then((summary) => {
-                        if (summary) {
+                        if (summary && request === selectionRequest.current) {
                           selectedState.current = {
                             feature: summary,
                             packages: statePackages.packages,
@@ -1306,19 +1262,11 @@ export function OutdoorMap({
               onRegionDidChange={(event) => {
                 const [x, y] = event.nativeEvent.center;
 
-                setOutside(
-                  (x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02) &&
-                    !statePackages.packages.some(
-                      (entry) =>
-                        entry.visible &&
-                        x >= entry.bounds[0] &&
-                        x <= entry.bounds[2] &&
-                        y >= entry.bounds[1] &&
-                        y <= entry.bounds[3],
-                    ),
-                );
-
                 setZoom(event.nativeEvent.zoom);
+                setViewport({
+                  bounds: [...event.nativeEvent.bounds],
+                  zoom: event.nativeEvent.zoom,
+                });
 
                 adapter.moveCamera({ center: [x, y], zoom: event.nativeEvent.zoom });
               }}
@@ -1328,14 +1276,14 @@ export function OutdoorMap({
 
                 initialViewState={{ center: [...state.camera.center], zoom: state.camera.zoom }}
 
-                trackUserLocation={followUser ? 'default' : undefined}
+                trackUserLocation={followUser && visible ? 'default' : undefined}
 
                 onTrackUserLocationChange={(event) =>
                   setFollowUser(event.nativeEvent.trackUserLocation !== null)
                 }
               />
 
-              <NativeUserLocation mode="default" />
+              {visible && section === 'explore' ? <NativeUserLocation mode="default" /> : null}
 
               <GeoJSONSource
                 key={`${placeFilter}-${markerDensity}`}
@@ -1358,21 +1306,28 @@ export function OutdoorMap({
                   const properties = rendered?.properties;
 
                   if (properties?.point_count && properties.cluster_id !== undefined) {
+                    const request = ++selectionRequest.current;
                     void placeSource.current
 
                       ?.getClusterExpansionZoom(Number(properties.cluster_id))
 
                       .then((expansionZoom) => {
+                        if (request !== selectionRequest.current) return;
                         setFollowUser(false);
 
                         camera.current?.jumpTo({
-                          center: [...event.nativeEvent.lngLat],
+                          center:
+                            rendered?.geometry.type === 'Point'
+                              ? ([...rendered.geometry.coordinates] as [number, number])
+                              : [...event.nativeEvent.lngLat],
 
                           zoom: Math.min(18, expansionZoom),
                         });
                       })
 
-                      .catch(() => changeZoom('in'));
+                      .catch(() => {
+                        if (request === selectionRequest.current) changeZoom('in');
+                      });
 
                     return;
                   }
@@ -1396,6 +1351,7 @@ export function OutdoorMap({
               <GeoJSONSource id="imported-datasets" data={importedData}>
                 <Layer
                   id="imported-area"
+                  beforeId={firstMapLabelId}
 
                   type="fill"
 
@@ -1406,6 +1362,7 @@ export function OutdoorMap({
 
                 <Layer
                   id="imported-line"
+                  beforeId={firstMapLabelId}
 
                   type="line"
 
@@ -1421,7 +1378,7 @@ export function OutdoorMap({
 
                   filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
 
-                  paint={{ 'line-color': '#a43913', 'line-width': 5 }}
+                  paint={{ 'line-color': palette.route, 'line-width': 5, 'line-dasharray': [2, 1] }}
                 />
 
                 <Layer
@@ -1429,14 +1386,18 @@ export function OutdoorMap({
 
                   type="circle"
 
-                  filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                  filter={[
+                    'all',
+                    ['==', ['geometry-type'], 'Point'],
+                    ['==', ['get', 'id'], selected?.id ?? '__none__'],
+                  ]}
 
                   paint={{
-                    'circle-color': '#a43913',
+                    'circle-color': palette.route,
 
                     'circle-radius': 13,
 
-                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-color': palette.surface,
 
                     'circle-stroke-width': 3,
                   }}
@@ -1450,9 +1411,14 @@ export function OutdoorMap({
 
                 source="outdoors"
 
-                filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                filter={[
+                  'all',
+                  ['!=', ['geometry-type'], 'Point'],
+                  ['!', ['in', ['get', 'id'], ['literal', excludedBundledIds]]],
+                  ['==', ['get', 'id'], selected?.id ?? '__none__'],
+                ]}
 
-                paint={{ 'line-color': '#a43913', 'line-width': 5 }}
+                paint={{ 'line-color': palette.route, 'line-width': 5, 'line-dasharray': [2, 1] }}
               />
 
               <GeoJSONSource id="hike-markers" data={hikeMarkers}>
@@ -1466,7 +1432,7 @@ export function OutdoorMap({
 
                     'circle-radius': 7,
 
-                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-color': palette.surface,
 
                     'circle-stroke-width': 2,
                   }}
@@ -1488,9 +1454,9 @@ export function OutdoorMap({
                   }}
 
                   paint={{
-                    'text-color': '#173d2b',
+                    'text-color': palette.text,
 
-                    'text-halo-color': '#ffffff',
+                    'text-halo-color': palette.surface,
 
                     'text-halo-width': 2,
                   }}
@@ -1504,18 +1470,42 @@ export function OutdoorMap({
 
                 source="outdoors"
 
-                filter={['==', ['get', 'id'], selected?.id ?? '__none__']}
+                filter={[
+                  'all',
+                  ['==', ['geometry-type'], 'Point'],
+                  ['!', ['in', ['get', 'id'], ['literal', excludedBundledIds]]],
+                  ['==', ['get', 'id'], selected?.id ?? '__none__'],
+                ]}
 
                 paint={{
-                  'circle-color': '#a43913',
+                  'circle-color': palette.route,
 
                   'circle-radius': 13,
 
-                  'circle-stroke-color': '#ffffff',
+                  'circle-stroke-color': palette.surface,
 
                   'circle-stroke-width': 3,
                 }}
               />
+
+              <GeoJSONSource
+                id="precise-place-selection"
+                data={{
+                  type: 'FeatureCollection',
+                  features: placeData.features.filter((feature) => feature.id === selected?.id),
+                }}
+              >
+                <Layer
+                  id="precise-place-highlight"
+                  type="circle"
+                  paint={{
+                    'circle-color': palette.route,
+                    'circle-radius': 13,
+                    'circle-stroke-color': palette.surface,
+                    'circle-stroke-width': 3,
+                  }}
+                />
+              </GeoJSONSource>
 
               <GeoJSONSource id="recorded-track" data={track}>
                 <Layer
@@ -1523,7 +1513,7 @@ export function OutdoorMap({
 
                   type="line"
 
-                  paint={{ 'line-color': '#b80d44', 'line-width': 4 }}
+                  paint={{ 'line-color': palette.accent, 'line-width': 4 }}
                 />
               </GeoJSONSource>
 
@@ -1534,13 +1524,13 @@ export function OutdoorMap({
                   type="circle"
 
                   paint={{
-                    'circle-color': '#b80d44',
+                    'circle-color': palette.accent,
 
                     'circle-radius': 10,
 
                     'circle-stroke-width': 3,
 
-                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-color': palette.surface,
                   }}
                 />
               </GeoJSONSource>
@@ -1552,13 +1542,13 @@ export function OutdoorMap({
                   type="circle"
 
                   paint={{
-                    'circle-color': '#b80d44',
+                    'circle-color': palette.accent,
 
                     'circle-radius': 6,
 
                     'circle-stroke-width': 2,
 
-                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-color': palette.surface,
                   }}
                 />
               </GeoJSONSource>
@@ -1567,8 +1557,14 @@ export function OutdoorMap({
             <View
               pointerEvents="box-none"
 
-              style={{ position: 'absolute', right: 12, top: 12, gap: 8 }}
+              style={{ position: 'absolute', right: 16, top: toolbarHeight + 16, gap: 8 }}
             >
+              <ProductIconButton
+                label={followUser ? 'Stop following my location' : 'Center on my location'}
+                icon="location"
+                selected={followUser}
+                onPress={() => setFollowUser(!followUser)}
+              />
               <MapZoomButton
                 label="Zoom in"
 
@@ -1589,36 +1585,6 @@ export function OutdoorMap({
                 onPress={() => changeZoom('out')}
               />
             </View>
-
-            <View
-              pointerEvents="none"
-
-              style={{
-                position: 'absolute',
-
-                left: 12,
-
-                bottom: 12,
-
-                backgroundColor: palette.surface,
-
-                borderColor: palette.border,
-
-                borderWidth: 1,
-
-                borderRadius: 9,
-
-                paddingHorizontal: 10,
-
-                paddingVertical: 6,
-
-                opacity: 0.94,
-              }}
-            >
-              <Text style={{ color: palette.text, fontSize: 13, fontWeight: '700' }}>
-                Zoom {zoom.toFixed(1)}
-              </Text>
-            </View>
           </>
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -1629,747 +1595,668 @@ export function OutdoorMap({
         )}
       </View>
 
-      <Text style={{ color: palette.muted, fontSize: 13, lineHeight: 20, marginBottom: 20 }}>
-        Map display only · No turn instructions, rerouting, or off-route alerts. Mapped places do
-        not establish access or camping permission.
-      </Text>
-
-      <ProductButton
-        label="Land and camping legend"
-        hint="Expand or collapse status explanations"
-        expanded={legendOpen}
-        onPress={() => setLegendOpen(!legendOpen)}
-      />
-
-      {legendOpen ? (
-        <ProductCard title="Land and camping status">
-          {campingLegend.map((entry) => (
-            <Text key={entry.id} style={{ color: palette.text, fontSize: 16, lineHeight: 24 }}>
-              {entry.mark} {entry.label}: {entry.explanation}
-            </Text>
-          ))}
-        </ProductCard>
-      ) : null}
-
-      {selected && (
-        <ProductCard title={selected.properties.name}>
-          <Text>
-            {selected.properties.kind} · {selected.properties.unit || selected.properties.category}
-          </Text>
-
-          {selectedHike && (!captured || graphic === 'planned') ? (
-            <HikeDetails
-              key={selected.id}
-
-              route={selectedHike}
-
-              selectedSample={selectedHikeSample}
-
-              onSampleSelect={setSelectedHikeSample}
-
-              onShowRoute={() => {
-                setFollowUser(false);
-
-                camera.current?.fitBounds(selected.bounds, {
-                  padding: { top: 35, right: 35, bottom: 35, left: 35 },
-
-                  duration: 0,
-                });
-              }}
-            />
-          ) : null}
-
-          <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-            {selectedProperties?.communityDescription ? 'Community description' : 'Description'}
-          </Text>
-
-          <Text>
-            {selectedProperties?.communityDescription ||
-              selectedProperties?.description ||
-              'No description supplied by this dataset.'}
-          </Text>
-
-          {(
-            [
-              ['amenities', 'Amenities and activities'],
-
-              ['openingHours', 'Opening hours'],
-
-              ['fees', 'Fees'],
-            ] as const
-          ).map(([field, label]) =>
-            selectedProperties?.[field]?.length ? (
-              <View key={field} style={{ gap: 4 }}>
-                <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-                  {label}
-                </Text>
-
-                {selectedProperties[field]!.map((entry, index) => (
-                  <Text key={`${field}-${index}`}>{entry}</Text>
-                ))}
+      {section === 'explore' ? (
+        <>
+          <View
+            pointerEvents="box-none"
+            style={{ position: 'absolute', left: 16, right: 16, top: 8, gap: 8 }}
+            onLayout={(event) => setToolbarHeight(event.nativeEvent.layout.height)}
+          >
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <ProductButton
+                  label="Find a place"
+                  hint="Search installed maps"
+                  icon="search"
+                  onPress={onOpenSearch}
+                />
               </View>
-            ) : null,
-          )}
-
-          {selectedProperties?.directionsInfo ? (
-            <View style={{ gap: 4 }}>
-              <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-                Getting there
-              </Text>
-
-              <Text>{selectedProperties.directionsInfo}</Text>
+              <ProductIconButton label="Settings" icon="settings" onPress={onOpenSettings} />
             </View>
-          ) : null}
-
-          <Text>
-            Access note:{' '}
-            {selectedProperties?.publicUse ||
-              'Current access and camping status are unverified; check the managing agency.'}
-          </Text>
-
-          {selectedProperties?.dataAttribution ? (
-            <Text>Data credit: {selectedProperties.dataAttribution}</Text>
-          ) : null}
-
-          {selectedProperties?.distributionConditions ? (
-            <Text>{selectedProperties.distributionConditions}</Text>
-          ) : null}
-
-          {selectedSourceUrl ? (
-            <ProductButton
-              label={
-                selectedProperties?.origin === 'private-catalog'
-                  ? 'Open dataset source'
-                  : 'Open official source'
-              }
-
-              hint="Open the source website for current visitor information"
-
-              onPress={() => {
-                setSourceLinkStatus('');
-
-                void Linking.openURL(selectedSourceUrl).catch(() =>
-                  setSourceLinkStatus(
-                    'Could not open the source website. Check your connection or browser.',
-                  ),
-                );
-              }}
-            />
-          ) : null}
-
-          {sourceLinkStatus ? (
-            <Text accessibilityLiveRegion="polite">{sourceLinkStatus}</Text>
-          ) : null}
-
-          <Text style={{ color: palette.muted }}>
-            Source update: {selected.properties.sourceUpdated}. Hours, fees and access may change.
-          </Text>
-
-          <ProductButton
-            label={
-              showSourceDetails ? 'Hide source and map details' : 'Show source and map details'
-            }
-
-            hint="Show the dataset source, classification and geographic bounds"
-
-            onPress={() => setShowSourceDetails(!showSourceDetails)}
-          />
-
-          {showSourceDetails ? (
-            <View style={{ gap: 4 }}>
-              <Text>Source: {selected.properties.sourceId}.</Text>
-
-              <Text>
-                Catalog:{' '}
-                {selectedProperties?.origin === 'private-catalog' ? 'private on-device' : 'public'}.
-              </Text>
-
-              {selectedSourceUrl ? <Text>Source website: {selectedSourceUrl}</Text> : null}
-
-              <Text>
-                Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}.
-              </Text>
-            </View>
-          ) : null}
-
-          <ProductButton
-            label={selectedHike ? 'Get directions to mapped start' : 'Get directions'}
-
-            hint="Choose an installed maps app to route to the selected destination"
-
-            disabled={selected.properties.navigationAllowed === false}
-
-            onPress={chooseDirectionsApp}
-          />
-
-          <Text style={{ color: palette.muted }}>
-            Destination:{' '}
-            {outdoorDirectionsCoordinateText(
-              selectedHike
-                ? { name: selected.properties.name, coordinate: selectedHike.start }
-                : outdoorDirectionsDestination(selected),
+            {fontScale > 1.4 || width < 360 ? (
+              <ProductButton
+                label="Map tools"
+                hint="Categories, layers and marker detail"
+                onPress={() => setToolsOpen(true)}
+              />
+            ) : (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                <ProductButton
+                  label={placeFilter === 'all' ? 'All places' : 'Categories'}
+                  hint="Choose which places appear on the map"
+                  onPress={() => {
+                    setOpenMenu('places');
+                    setToolsOpen(true);
+                  }}
+                />
+                <ProductButton
+                  label="Layers"
+                  hint="Show or hide installed public packages and private data"
+                  onPress={onOpenMaps}
+                />
+                <ProductButton
+                  label="Detail"
+                  hint="Change marker density"
+                  onPress={() => {
+                    setOpenMenu('density');
+                    setToolsOpen(true);
+                  }}
+                />
+              </View>
             )}
-            .
-            {selectedHike
-              ? 'Directions use the first mapped endpoint, which may not be a trailhead or accessible by road.'
-              : 'Points use their exact coordinates; areas use the center of their mapped bounds.'}
-          </Text>
-
-          {directionsStatus ? (
-            <Text accessibilityLiveRegion="polite">{directionsStatus}</Text>
-          ) : null}
-
-          {selected.properties.sourceId === 'private-ioverlander' ||
-          (selectedProperties?.communityCheckIns?.length ?? 0) > 0 ? (
-            <View style={{ gap: 8 }}>
-              <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-                {selected.properties.sourceId === 'private-ioverlander'
-                  ? 'iOverlander community information'
-                  : 'Imported community check-ins'}
-              </Text>
-
-              <Text>
-                {selectedProperties?.communityCheckInCount ?? 0} community check-ins available
-                {(selectedProperties?.communityCheckIns?.length ?? 0) <
-                (selectedProperties?.communityCheckInCount ?? 0)
-                  ? ` · showing the newest ${selectedProperties?.communityCheckIns?.length ?? 0}`
-                  : ''}
-              </Text>
-
-              {(selectedProperties?.communityCheckIns ?? []).slice(0, 10).map((checkIn, index) => (
-                <Text key={`${checkIn.occurredAt}-${index}`}>
-                  {new Date(checkIn.occurredAt).toLocaleDateString()} ·{' '}
-                  {checkIn.comment || 'No community note provided.'}
-                </Text>
-              ))}
-
-              {(selectedProperties?.communityCheckIns?.length ?? 0) > 10 ? (
-                <Text>Showing the 10 newest community check-ins.</Text>
-              ) : null}
-
-              <Text style={{ color: palette.muted }}>
-                Contributor identities are not stored. Community information may be outdated; verify
-                current conditions and access.
-              </Text>
-            </View>
-          ) : null}
-
-          <View style={{ gap: 8 }}>
-            <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-              Your private check-ins and notes
-            </Text>
-
-            <TextInput
-              accessibilityLabel={`Private note for ${selected.properties.name}`}
-
-              accessibilityHint="Stored only in this app's protected user data"
-
-              placeholder="Add a note for your next visit"
-
-              placeholderTextColor={palette.muted}
-
-              value={noteDraft}
-
-              onChangeText={setNoteDraft}
-
-              multiline
-
-              maxLength={5_000}
-
-              style={{
-                color: palette.text,
-
-                borderColor: palette.border,
-
-                borderWidth: 1,
-
-                borderRadius: 10,
-
-                minHeight: 96,
-
-                padding: 12,
-
-                textAlignVertical: 'top',
-              }}
-            />
-
-            <ProductButton
-              label="Check in now and save note"
-
-              hint="Save the current time and this note privately for the selected place"
-
-              disabled={placeJournal === null}
-
-              onPress={() => saveJournal(true)}
-            />
-
-            <ProductButton
-              label="Save note without checking in"
-
-              hint="Update your private place note without creating a check-in"
-
-              disabled={
-                placeJournal === null || noteDraft.trim() === (journalEntry?.note.trim() ?? '')
-              }
-
-              onPress={() => saveJournal(false)}
-            />
-
-            <Text accessibilityLiveRegion="polite">
-              {placeJournal === null
-                ? 'Private storage is not ready; map details remain available.'
-                : journalStatus ||
-                  `${journalEntry?.checkIns.length ?? 0} private check-ins saved on this device.`}
-            </Text>
-
-            {(journalEntry?.checkIns ?? []).slice(0, 5).map((checkIn) => (
-              <Text key={checkIn.id}>
-                Checked in {new Date(checkIn.occurredAt).toLocaleString()}
-              </Text>
-            ))}
-
-            {(journalEntry?.checkIns.length ?? 0) > 5 ? (
-              <Text>Showing your 5 newest check-ins.</Text>
-            ) : null}
           </View>
-
-          <ProductButton
-            label="Clear map selection"
-
-            hint="Remove the selected feature highlight"
-
-            onPress={() => setSelected(null)}
-          />
-        </ProductCard>
-      )}
-
-      <ProductCard title="Hike capture">
-        <HikeCaptureControls
-          capture={capture}
-
-          plan={
-            selectedHike && selected
-              ? { id: selected.id, name: selected.properties.name }
-              : undefined
-          }
-        />
-
-        {captured ? (
-          <>
-            <Text style={{ fontWeight: '700' }}>
-              {captured.name} · {captured.state} · private on-device
-            </Text>
-
-            <Text>
-              Captured path: pink. Expected path: orange when selected. GPS:{' '}
-              {captured.display.gpsQuality}.
-            </Text>
-
-            <Text>
-              Elevation source:{' '}
-              {captured.display.elevationConfidence === 'barometer-fused'
-                ? 'Filtered barometer, with GPS calibration where available'
-                : captured.display.elevationConfidence === 'gps'
-                  ? 'Filtered GPS (lower confidence)'
-                  : 'Waiting for usable elevations'}
-              .
-            </Text>
-
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              <ProductButton
-                label="Captured hike graphic"
-
-                hint="Show your captured path statistics and sensor elevation chart"
-
-                selected={graphic === 'recorded'}
-
-                onPress={() => setGraphic('recorded')}
-              />
-
-              <ProductButton
-                label="Expected hike graphic"
-
-                hint="Restore the associated expected path and its terrain profile"
-
-                selected={graphic === 'planned'}
-
-                disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
-
-                onPress={() => {
-                  if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
-
-                  setGraphic('planned');
-                }}
-              />
-            </View>
-
-            {captured.plannedFeatureId && !capturePlan ? (
-              <Text>
-                The associated expected path is unavailable here. Show or reimport its dataset to
-                compare it with this captured hike.
-              </Text>
-            ) : null}
-
-            {graphic === 'recorded' ? (
-              captured.display.route ? (
-                <HikeDetails
-                  key={captured.id}
-
-                  route={captured.display.route}
-
-                  selectedSample={capturedSample}
-
-                  onSampleSelect={setCapturedSample}
-
-                  onShowRoute={showCapturedPath}
-
-                  recordedSeconds={captured.display.recordedSeconds}
-
-                  relativeElevation={captured.display.relativeElevation}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: 12,
+              left: 16,
+              right: width >= 800 ? width * 0.56 : 16,
+              maxHeight: height * 0.5,
+              borderRadius: 26,
+              backgroundColor: palette.surface,
+              borderWidth: palette.background === '#000000' ? 1 : 0,
+              borderColor: palette.border,
+            }}
+          >
+            <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
+              {failed || assetError || !loaded ? (
+                <Text
+                  accessibilityLiveRegion="polite"
+                  style={{
+                    color: failed || assetError ? palette.danger : palette.muted,
+                    fontSize: 14,
+                  }}
+                >
+                  {failed || assetError
+                    ? 'Map could not render. Search remains available.'
+                    : 'Loading map…'}
+                </Text>
+              ) : null}
+              {statePlaces.error || statePlaces.limited ? (
+                <Text accessibilityLiveRegion="polite" style={{ fontSize: 14 }}>
+                  {statePlaces.error || 'Zoom in for more places.'}
+                </Text>
+              ) : null}
+              {selected ? (
+                <>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <OriginBadge origin={selected.properties.origin ?? 'unknown'} />
+                    <View style={{ flex: 1 }} />
+                    <ProductIconButton
+                      label="Close place"
+                      icon="close"
+                      onPress={() => setSelected(null)}
+                    />
+                  </View>
+                  <Text
+                    accessibilityRole="header"
+                    style={{
+                      fontSize: 23,
+                      fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+                    }}
+                  >
+                    {selected.properties.name}
+                  </Text>
+                  <Text style={{ color: palette.caution, fontSize: 14 }}>
+                    {selected.properties.publicUse || 'Access unknown'}
+                  </Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    <ProductButton
+                      label="Details"
+                      hint="Read place information and source evidence"
+                      primary
+                      onPress={() => setDetailOpen(true)}
+                    />
+                    <ProductButton
+                      label="Directions"
+                      hint="Choose an installed maps app"
+                      disabled={selected.properties.navigationAllowed === false}
+                      onPress={chooseDirectionsApp}
+                    />
+                  </View>
+                </>
+              ) : captured ? (
+                <ProductRow
+                  title={captured.name}
+                  subtitle={`${captured.state} · Private`}
+                  icon="track"
+                  onPress={() => setDetailOpen(true)}
                 />
               ) : (
-                <Text>
-                  Waiting for the first usable captured position. Keep recording; the path and
-                  profile will appear here.
-                </Text>
-              )
-            ) : null}
-          </>
-        ) : null}
-      </ProductCard>
-
-      <View
-        accessibilityLabel="iOverlander category icon key"
-
-        style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
+                <>
+                  <Text
+                    accessibilityRole="header"
+                    style={{
+                      fontSize: 23,
+                      fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+                    }}
+                  >
+                    {noCatalogs ? 'No maps added' : 'Explore this area'}
+                  </Text>
+                  {noCatalogs ? (
+                    <ProductButton
+                      label="Add a map"
+                      hint="Open Maps to install a state package or import private data"
+                      primary
+                      onPress={onOpenMaps}
+                    />
+                  ) : null}
+                  <ProductButton
+                    label="Legend"
+                    hint="Read map symbols and source-independent access warnings"
+                    onPress={() => setLegendOpen(true)}
+                  />
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </>
+      ) : null}
+      <ProductSheet
+        title={selected?.properties.name ?? captured?.name ?? 'Hike'}
+        visible={visible && detailOpen}
+        onClose={() => setDetailOpen(false)}
       >
-        {legendCategories.map((category) => {
-          const definition = ioverlanderCategoryDefinition(category);
-
-          return (
-            <PlaceKey
-              key={category}
-
-              symbol={definition.icon}
-
-              label={definition.label}
-
-              color={definition.color}
-            />
-          );
-        })}
-      </View>
-
-      <Text accessibilityLiveRegion="polite">
-        {failed || assetError
-          ? 'Map could not render. Search and geographic details remain available.'
-          : loaded
-            ? 'Worldwide offline overview ready, with US and Canada detail through zoom 9. Pinch or use the map buttons to zoom. Tap a numbered cluster to expand it.'
-            : `Loading the stored basemap and ${mobileMapDataMetadata.label} overlays…`}
-
-        {outside
-          ? ' Outside bundled and shown state-package coverage; imported datasets may cover this area.'
-          : ''}
-      </Text>
-
-      <ProductButton
-        label="Show all New York coverage"
-
-        hint="Fit the statewide geographic layers"
-
-        onPress={() =>
-          camera.current?.fitBounds([-79.7624, 40.4774, -71.7517, 45.0159], {
-            padding: { top: 15, right: 15, bottom: 15, left: 15 },
-
-            duration: 0,
-          })
-        }
-      />
-
-      <ProductButton
-        label={followUser ? 'Stop following my location' : 'Center on my location'}
-
-        hint={
-          followUser
-            ? 'Keep the live GPS dot visible without moving the map automatically'
-            : 'Center the map on the live GPS dot and follow your movement'
-        }
-
-        onPress={() => setFollowUser(!followUser)}
-      />
-
-      <Text accessibilityLiveRegion="polite">
-        {followUser
-          ? 'Following your live GPS position. Drag the map to stop following.'
-          : 'Your live position appears as a blue GPS dot when location access is allowed.'}
-      </Text>
-
-      <ProductButton
-        label="Show last recorded position"
-
-        hint="Uses only the most recent recording point; does not start location access"
-
-        disabled={!last}
-
-        onPress={() => {
-          if (last) camera.current?.jumpTo({ center: [...last], zoom: 14 });
-        }}
-      />
-
-      <Text>
-        Map key: green areas — NPS, USFS and BLM land references when present; blue lines — trails;
-        brown lines — roads; numbered orange circles — grouped places; colored symbols — iOverlander
-        categories; pink — recorded route; blue GPS dot — current position. Zooming in expands
-        groups into category-specific icons, then reveals names. Tap a group, feature, or search
-        result for details.
-      </Text>
-
-      <Text>
-        Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
-        Hike elevations: {bundledHikes.attribution}. Geometry simplified for display. MapLibre
-        Native renderer. Public-use GIS data is provided without warranty; boundaries are not legal
-        surveys.
-      </Text>
-
-      <ProductButton
-        label="Map renderer licenses"
-
-        hint="Show the complete license notices"
-
-        onPress={() => setShowLicenses(!showLicenses)}
-      />
-
-      {showLicenses && (
-        <Text>
-          {licenses.reactNative +
-            '\n\n' +
-            licenses.native +
-            '\n\n' +
-            offlineMapLicenses.basemap +
-            '\n\n' +
-            offlineMapLicenses.font}
-        </Text>
-      )}
-
-      <ProductCard title="Offline state packages">
-        <LaptopPackages service={statePackages} />
-        <Text>
-          Install a state.sqlite package from Files. Each state works offline as one package, with
-          searchable places, trails and land records. Manual import limits do not apply.
-        </Text>
-        <ProductButton
-          label="Install or update a state"
-          hint="Choose a supported state package from Files"
-          disabled={!statePackages.ready || statePackages.busy}
-          busy={statePackages.busy}
-          onPress={() => {
-            void statePackages.install();
-          }}
-        />
-        <Text accessibilityLiveRegion="polite">{statePackages.status}</Text>
-        {statePackages.packages.map((entry) => (
-          <View key={entry.state} style={{ gap: 6, marginTop: 12 }}>
-            <Text style={{ fontWeight: '700' }}>
-              {entry.name} · {entry.featureCount.toLocaleString()} features
-            </Text>
+        {selected && (
+          <View style={{ gap: 16 }}>
+            <OriginBadge origin={selected.properties.origin ?? 'unknown'} />
             <Text>
-              {(entry.installedBytes / 1048576).toFixed(1)} MiB installed · Packaged{' '}
-              {entry.generatedAt.slice(0, 10)}
+              {selected.properties.kind} ·{' '}
+              {selected.properties.unit || selected.properties.category}
             </Text>
-            {entry.integrityError && (
-              <Text>Integrity check failed. Reinstall or remove this state package.</Text>
-            )}
-            <ProductButton
-              label={entry.visible ? `Hide ${entry.name}` : `Show ${entry.name}`}
-              hint="Save this state package’s map visibility"
-              disabled={statePackages.busy || entry.integrityError}
-              onPress={() => {
-                void statePackages.change(entry.state, 'visibility');
-              }}
-            />
-            <ProductButton
-              label={`Show ${entry.name} coverage`}
-              disabled={statePackages.busy || entry.integrityError}
-              hint="Fit the state package’s geographic coverage in the map"
-              onPress={() => {
-                setFollowUser(false);
-                camera.current?.fitBounds(entry.bounds, {
-                  padding: { top: 25, right: 25, bottom: 25, left: 25 },
-                  duration: 0,
-                });
-              }}
-            />
-            {entry.canRollback && (
-              <ProductButton
-                label={`Restore previous ${entry.name} version`}
-                hint="Switch to the previously verified state package"
-                disabled={statePackages.busy}
-                onPress={() => {
-                  void statePackages.change(entry.state, 'rollback');
+
+            {selectedHike && (!captured || graphic === 'planned') ? (
+              <HikeDetails
+                key={selected.id}
+
+                route={selectedHike}
+
+                selectedSample={selectedHikeSample}
+
+                onSampleSelect={setSelectedHikeSample}
+
+                onShowRoute={() => {
+                  setFollowUser(false);
+
+                  camera.current?.fitBounds(selected.bounds, {
+                    padding: { top: 35, right: 35, bottom: 35, left: 35 },
+
+                    duration: 0,
+                  });
                 }}
               />
-            )}
-            <ProductButton
-              label={`Remove ${entry.name}`}
-              hint="Remove this reference package while keeping your notes"
-              disabled={statePackages.busy}
-              onPress={() =>
-                Alert.alert(
-                  `Remove ${entry.name}?`,
-                  'Your place notes and recordings will be kept.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    {
-                      text: 'Remove',
-                      style: 'destructive',
-                      onPress: () => {
-                        void statePackages.change(entry.state, 'remove');
-                      },
-                    },
-                  ],
-                )
-              }
-            />
-            <Text>{entry.attribution}</Text>
-            <ProductButton
-              label={`Source notices for ${entry.name}`}
-              hint="Read this package’s source licenses and historical limitations"
-              onPress={() => Alert.alert(`${entry.name} source notices`, entry.notices)}
-            />
-          </View>
-        ))}
-      </ProductCard>
-      <ProductCard title="Your imported datasets">
-        <Text>
-          Add a GeoJSON file from Files. Points, lines and areas stay on this phone and work
-          offline. Up to five datasets, 20 MiB and 20,000 features per file.
-        </Text>
+            ) : null}
 
-        <ProductButton
-          label="Import dataset"
+            <ProductDisclosure title="Place information">
+              <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                {selectedProperties?.communityDescription ? 'Community description' : 'Description'}
+              </Text>
 
-          hint="Choose a GeoJSON dataset from Files and add its features to the map"
+              <Text>
+                {selectedProperties?.communityDescription ||
+                  selectedProperties?.description ||
+                  'No description supplied by this dataset.'}
+              </Text>
 
-          disabled={!imports.ready}
-
-          busy={imports.busy}
-
-          onPress={async () => {
-            const dataset = await imports.importDataset();
-
-            if (!dataset) return;
-
-            setPlaceFilter('all');
-
-            showDatasetCoverage(dataset);
-          }}
-        />
-
-        {imports.status ? <Text accessibilityLiveRegion="polite">{imports.status}</Text> : null}
-
-        {!imports.ready && imports.status && !imports.status.startsWith('Install the IPA') ? (
-          <ProductButton
-            label="Clear unreadable imported datasets"
-
-            hint="Remove only imported reference datasets so you can import your files again"
-
-            destructive
-
-            busy={imports.busy}
-
-            onPress={() =>
-              Alert.alert(
-                'Clear imported datasets?',
-
-                'Your place notes and recordings will be kept. You will need to import your dataset files again.',
-
+              {(
                 [
-                  { text: 'Cancel', style: 'cancel' },
+                  ['amenities', 'Amenities and activities'],
 
-                  {
-                    text: 'Clear datasets',
+                  ['openingHours', 'Opening hours'],
 
-                    style: 'destructive',
+                  ['fees', 'Fees'],
+                ] as const
+              ).map(([field, label]) =>
+                selectedProperties?.[field]?.length ? (
+                  <View key={field} style={{ gap: 4 }}>
+                    <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                      {label}
+                    </Text>
 
-                    onPress: () => {
-                      void imports.resetDatasets();
-                    },
-                  },
-                ],
-              )
-            }
-          />
-        ) : null}
+                    {selectedProperties[field]!.map((entry, index) => (
+                      <Text key={`${field}-${index}`}>{entry}</Text>
+                    ))}
+                  </View>
+                ) : null,
+              )}
 
-        {imports.datasets.map((dataset) => (
-          <View key={dataset.id} style={{ gap: 4, marginTop: 12 }}>
+              {selectedProperties?.directionsInfo ? (
+                <View style={{ gap: 4 }}>
+                  <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                    Getting there
+                  </Text>
+
+                  <Text>{selectedProperties.directionsInfo}</Text>
+                </View>
+              ) : null}
+            </ProductDisclosure>
             <Text>
-              {dataset.name} · {dataset.collection.features.length.toLocaleString()} features ·{' '}
-              {dataset.visible ? 'Shown' : 'Hidden'} · private on-device
+              Access note:{' '}
+              {selectedProperties?.publicUse ||
+                'Current access and camping status are unverified; check the managing agency.'}
+            </Text>
+
+            {selectedProperties?.dataAttribution ? (
+              <Text>Data credit: {selectedProperties.dataAttribution}</Text>
+            ) : null}
+
+            {selectedProperties?.distributionConditions ? (
+              <Text>{selectedProperties.distributionConditions}</Text>
+            ) : null}
+
+            {selectedSourceUrl ? (
+              <ProductButton
+                label={
+                  selectedProperties?.origin === 'private-catalog'
+                    ? 'Open dataset source'
+                    : 'Open official source'
+                }
+
+                hint="Open the source website for current visitor information"
+
+                onPress={() => {
+                  setSourceLinkStatus('');
+
+                  void Linking.openURL(selectedSourceUrl).catch(() =>
+                    setSourceLinkStatus(
+                      'Could not open the source website. Check your connection or browser.',
+                    ),
+                  );
+                }}
+              />
+            ) : null}
+
+            {sourceLinkStatus ? (
+              <Text accessibilityLiveRegion="polite">{sourceLinkStatus}</Text>
+            ) : null}
+
+            <Text style={{ color: palette.muted }}>
+              Source update: {selected.properties.sourceUpdated}. Hours, fees and access may change.
             </Text>
 
             <ProductButton
-              label={dataset.visible ? `Hide ${dataset.name}` : `Show ${dataset.name}`}
+              label={showSourceDetails ? 'Hide sources' : 'Source details'}
 
-              hint="Save whether this dataset appears on the map and in search"
+              hint="Show the dataset source, classification and geographic bounds"
 
-              busy={imports.busy}
-
-              onPress={() => imports.toggleDataset(dataset.id)}
+              onPress={() => setShowSourceDetails(!showSourceDetails)}
             />
 
+            {showSourceDetails ? (
+              <View style={{ gap: 4 }}>
+                <Text>Source: {selected.properties.sourceId}.</Text>
+
+                <Text>
+                  Catalog:{' '}
+                  {selectedProperties?.origin === 'private-catalog'
+                    ? 'private on-device'
+                    : 'public'}
+                  .
+                </Text>
+
+                {selectedSourceUrl ? <Text>Source website: {selectedSourceUrl}</Text> : null}
+
+                <Text>
+                  Geographic bounds: {selected.bounds.map((number) => number.toFixed(4)).join(', ')}
+                  .
+                </Text>
+              </View>
+            ) : null}
+
             <ProductButton
-              label={`Show coverage of ${dataset.name}`}
+              label={'Directions'}
 
-              hint="Fit all geographic features from this imported dataset"
+              hint="Choose an installed maps app to route to the selected destination"
 
-              disabled={!dataset.visible || imports.busy}
+              disabled={selected.properties.navigationAllowed === false}
 
-              onPress={() => showDatasetCoverage(dataset)}
+              onPress={chooseDirectionsApp}
             />
 
+            <Text style={{ color: palette.muted }}>
+              Destination:{' '}
+              {outdoorDirectionsCoordinateText(
+                selectedHike
+                  ? { name: selected.properties.name, coordinate: selectedHike.start }
+                  : outdoorDirectionsDestination(selected),
+              )}
+              .
+              {selectedHike
+                ? 'Directions use the first mapped endpoint, which may not be a trailhead or accessible by road.'
+                : 'Points use their exact coordinates; areas use the center of their mapped bounds.'}
+            </Text>
+
+            {directionsStatus ? (
+              <Text accessibilityLiveRegion="polite">{directionsStatus}</Text>
+            ) : null}
+
+            <ProductDisclosure title="Community check-ins">
+              {selected.properties.sourceId === 'private-ioverlander' ||
+              (selectedProperties?.communityCheckIns?.length ?? 0) > 0 ? (
+                <View style={{ gap: 8 }}>
+                  <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
+                    {selected.properties.sourceId === 'private-ioverlander'
+                      ? 'iOverlander community information'
+                      : 'Imported community check-ins'}
+                  </Text>
+
+                  <Text>
+                    {selectedProperties?.communityCheckInCount ?? 0} community check-ins available
+                    {(selectedProperties?.communityCheckIns?.length ?? 0) <
+                    (selectedProperties?.communityCheckInCount ?? 0)
+                      ? ` · showing the newest ${selectedProperties?.communityCheckIns?.length ?? 0}`
+                      : ''}
+                  </Text>
+
+                  {(selectedProperties?.communityCheckIns ?? [])
+                    .slice(0, 10)
+                    .map((checkIn, index) => (
+                      <Text key={`${checkIn.occurredAt}-${index}`}>
+                        {new Date(checkIn.occurredAt).toLocaleDateString()} ·{' '}
+                        {checkIn.comment || 'No community note provided.'}
+                      </Text>
+                    ))}
+
+                  {(selectedProperties?.communityCheckIns?.length ?? 0) > 10 ? (
+                    <Text>Showing the 10 newest community check-ins.</Text>
+                  ) : null}
+
+                  <Text style={{ color: palette.muted }}>
+                    Contributor identities are not stored. Community information may be outdated;
+                    verify current conditions and access.
+                  </Text>
+                </View>
+              ) : null}
+            </ProductDisclosure>
+            <ProductRow
+              title="My note"
+              subtitle="Private on this device"
+              icon="saved"
+              onPress={() => {
+                setDetailOpen(false);
+                setNoteOpen(true);
+              }}
+            />
             <ProductButton
-              label={`Remove ${dataset.name}`}
+              label="Close place"
 
-              hint="Remove this reference dataset while keeping your place notes and recordings"
+              hint="Remove the selected feature highlight"
 
-              destructive
-
-              busy={imports.busy}
-
-              onPress={() =>
-                Alert.alert(
-                  'Remove dataset?',
-
-                  `Remove ${dataset.name} from this app? Your place notes and recordings will be kept.`,
-
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-
-                    {
-                      text: 'Remove',
-
-                      style: 'destructive',
-
-                      onPress: () => {
-                        void imports.removeDataset(dataset.id);
-                      },
-                    },
-                  ],
-                )
-              }
+              onPress={() => setSelected(null)}
             />
           </View>
-        ))}
-      </ProductCard>
+        )}
 
-      <ProductCard title="Data on this map">
-        {mobileMapDataMetadata.sources.map((source) => (
-          <Text key={source.id}>
-            {source.label}: {source.featureCount.toLocaleString()} features · {source.status}
-          </Text>
-        ))}
-      </ProductCard>
+        {selectedHike || captured || capture.state !== 'idle' ? (
+          <ProductCard title="Hike">
+            <HikeCaptureControls
+              capture={{
+                ...capture,
+                onFinish: async () => {
+                  setDetailOpen(false);
+                  return capture.onFinish();
+                },
+              }}
+
+              plan={
+                selectedHike && selected
+                  ? { id: selected.id, name: selected.properties.name }
+                  : undefined
+              }
+            />
+
+            {captured ? (
+              <>
+                <Text style={{ fontWeight: '700' }}>
+                  {captured.name} · {captured.state} · private on-device
+                </Text>
+
+                <Text>Solid: recorded. Dashed: planned. GPS: {captured.display.gpsQuality}.</Text>
+
+                <Text>
+                  Elevation source:{' '}
+                  {captured.display.elevationConfidence === 'barometer-fused'
+                    ? 'Filtered barometer, with GPS calibration where available'
+                    : captured.display.elevationConfidence === 'gps'
+                      ? 'Filtered GPS (lower confidence)'
+                      : 'Waiting for usable elevations'}
+                  .
+                </Text>
+
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  <ProductButton
+                    label="Recorded"
+
+                    hint="Show your captured path statistics and sensor elevation chart"
+
+                    selected={graphic === 'recorded'}
+
+                    onPress={() => setGraphic('recorded')}
+                  />
+
+                  <ProductButton
+                    label="Planned"
+
+                    hint="Restore the associated expected path and its terrain profile"
+
+                    selected={graphic === 'planned'}
+
+                    disabled={captured.plannedFeatureId ? !capturePlan : !selectedHike}
+
+                    onPress={() => {
+                      if (capturePlan) adapter.setSelectedFeature(capturePlan.id);
+
+                      setGraphic('planned');
+                    }}
+                  />
+                </View>
+
+                {captured.plannedFeatureId && !capturePlan ? (
+                  <Text>
+                    The associated expected path is unavailable here. Show or reimport its dataset
+                    to compare it with this captured hike.
+                  </Text>
+                ) : null}
+
+                {graphic === 'recorded' ? (
+                  captured.display.route ? (
+                    <HikeDetails
+                      key={captured.id}
+
+                      route={captured.display.route}
+
+                      selectedSample={capturedSample}
+
+                      onSampleSelect={setCapturedSample}
+
+                      onShowRoute={showCapturedPath}
+
+                      recordedSeconds={captured.display.recordedSeconds}
+
+                      relativeElevation={captured.display.relativeElevation}
+                    />
+                  ) : (
+                    <Text>
+                      Waiting for the first usable captured position. Keep recording; the path and
+                      profile will appear here.
+                    </Text>
+                  )
+                ) : null}
+              </>
+            ) : null}
+          </ProductCard>
+        ) : null}
+      </ProductSheet>
+      <ProductSheet
+        title="Place note"
+        visible={visible && noteOpen && selected !== null}
+        onClose={() => setNoteOpen(false)}
+      >
+        {selected ? (
+          <PlaceNote
+            place={{ id: selected.id, name: selected.properties.name }}
+            service={placeJournal}
+          />
+        ) : null}
+      </ProductSheet>
+      <ProductSheet
+        title="Map tools"
+        visible={visible && toolsOpen}
+        onClose={() => setToolsOpen(false)}
+      >
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          <ProductButton
+            label="Zoom in"
+            hint="Increase map detail"
+            disabled={zoom >= 18}
+            onPress={() => changeZoom('in')}
+          />
+          <ProductButton
+            label="Zoom out"
+            hint="See a wider area"
+            disabled={zoom <= 3}
+            onPress={() => changeZoom('out')}
+          />
+          <ProductButton
+            label="My location"
+            hint="Center the map on your live GPS position"
+            selected={followUser}
+            onPress={() => {
+              setFollowUser(!followUser);
+              setToolsOpen(false);
+            }}
+          />
+        </View>
+        <View
+          style={{
+            flexDirection: 'row',
+
+            flexWrap: 'wrap',
+
+            gap: 10,
+
+            marginTop: 0,
+
+            marginBottom: 4,
+
+            zIndex: 30,
+          }}
+        >
+          <MapSelect
+            label="Show on map"
+
+            value={placeFilter}
+
+            options={placeFilterOptions}
+
+            expanded={openMenu === 'places'}
+
+            onToggle={() => setOpenMenu(openMenu === 'places' ? null : 'places')}
+
+            onChange={(value) => {
+              setPlaceFilter(value);
+
+              setSelected(null);
+
+              setOpenMenu(null);
+            }}
+          />
+
+          <MapSelect
+            label="Marker detail"
+
+            value={markerDensity}
+
+            options={markerDensityOptions}
+
+            expanded={openMenu === 'density'}
+
+            onToggle={() => setOpenMenu(openMenu === 'density' ? null : 'density')}
+
+            onChange={(value) => {
+              setMarkerDensity(value);
+
+              setOpenMenu(null);
+            }}
+          />
+        </View>
+
+        <ProductButton
+          label="Layers"
+          hint="Manage installed maps"
+          onPress={() => {
+            setToolsOpen(false);
+            onOpenMaps();
+          }}
+        />
+        <ProductButton
+          label="Legend"
+          hint="Read map symbols and camping status"
+          onPress={() => {
+            setToolsOpen(false);
+            setLegendOpen(true);
+          }}
+        />
+        <ProductButton
+          label="Last recorded position"
+          hint="Show the latest durable point without starting sensors"
+          disabled={!last}
+          onPress={() => {
+            if (last) {
+              setFollowUser(false);
+              camera.current?.jumpTo({ center: [...last], zoom: 14 });
+              setToolsOpen(false);
+            }
+          }}
+        />
+        <ProductButton
+          label="Done"
+          hint="Return to the map with these settings"
+          primary
+          onPress={() => setToolsOpen(false)}
+        />
+      </ProductSheet>
+      <ProductSheet
+        title="Legend"
+        visible={visible && legendOpen}
+        onClose={() => setLegendOpen(false)}
+      >
+        {legendOpen ? (
+          <ProductCard title="Map legend">
+            <View
+              accessibilityLabel="iOverlander category icon key"
+
+              style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 }}
+            >
+              {legendCategories.map((category) => {
+                const definition = ioverlanderCategoryDefinition(category);
+
+                return (
+                  <PlaceKey
+                    key={category}
+
+                    symbol={definition.icon}
+
+                    label={definition.label}
+
+                    color={definition.color}
+                  />
+                );
+              })}
+            </View>
+
+            <Text>
+              Dashed: planned route. Solid: recorded route. Blue GPS dot: your location. Ring: last
+              recorded position.
+            </Text>
+            {campingLegend.map((entry) => (
+              <Text key={entry.id}>
+                {entry.label}: {entry.explanation}
+              </Text>
+            ))}
+          </ProductCard>
+        ) : null}
+      </ProductSheet>
     </View>
   );
 }

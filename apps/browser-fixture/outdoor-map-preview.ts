@@ -37,9 +37,14 @@ const connected = new URLSearchParams(location.search).get('offline') !== '1';
 let placeFilter: OutdoorPlaceFilter = 'all';
 let markerDensity: OutdoorMarkerDensity = 'automatic';
 let placeRevision = 0;
+const campingAnchor = featureIndex.features.find(
+  (feature) =>
+    createOutdoorPlaceCollection({ schemaVersion: 1, features: [feature] }, 'campsite').features
+      .length > 0,
+);
 const map = new maplibregl.Map({
   container: 'map',
-  center: [-74.25, 42.08],
+  center: campingAnchor ? [campingAnchor.bounds[0], campingAnchor.bounds[1]] : [-74.25, 42.08],
   zoom: 10,
   preserveDrawingBuffer: true,
   attributionControl: false,
@@ -116,7 +121,12 @@ map.on('click', 'place-clusters', async (event) => {
   if (!Number.isFinite(clusterId)) return;
   const source = map.getSource('outdoor-places') as maplibregl.GeoJSONSource;
   const expansionZoom = await source.getClusterExpansionZoom(clusterId);
-  map.easeTo({ center: event.lngLat, zoom: Math.min(18, expansionZoom), duration: 160 });
+  if (feature?.geometry.type !== 'Point') return;
+  map.easeTo({
+    center: feature.geometry.coordinates as [number, number],
+    zoom: Math.min(18, expansionZoom),
+    duration: 160,
+  });
 });
 map.on('click', 'place-marker', (event) => {
   const feature = event.features?.[0];

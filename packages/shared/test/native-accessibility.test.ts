@@ -12,6 +12,10 @@ vi.mock('../../../apps/mobile/node_modules/react-native', () => ({
   Text: 'text',
   View: 'view',
   Platform: { OS: 'ios' },
+  StyleSheet: {
+    flatten: (style: unknown) =>
+      Array.isArray(style) ? Object.assign({}, ...style.flat(Infinity).filter(Boolean)) : style,
+  },
   AccessibilityInfo: {
     addEventListener: (event: string, listener: (value: boolean) => void) => {
       native.listeners.set(event, listener);
@@ -44,6 +48,28 @@ afterEach(async () => {
   vi.clearAllMocks();
 });
 describe('WP-502 native component behavior (mock host)', () => {
+  it('gives display text proportional line height without overriding explicit chart typography', async () => {
+    await act(async () => {
+      tree = create(
+        React.createElement(
+          ProductText,
+          { style: [{ fontSize: 34 }, { fontWeight: '700' }] },
+          '01:23:45',
+        ),
+      );
+    });
+    let text = tree!.root.findByType('text');
+    expect(text.props.style[0].lineHeight).toBeGreaterThan(34);
+    expect(text.props.allowFontScaling).toBe(true);
+    expect(text.props.numberOfLines).toBeUndefined();
+    await act(async () => {
+      tree!.update(
+        React.createElement(ProductText, { style: { fontSize: 23, lineHeight: 32 } }, 'Trail'),
+      );
+    });
+    text = tree!.root.findByType('text');
+    expect(text.props.style[1].lineHeight).toBe(32);
+  });
   it('does not let a stale initial preference overwrite a later native event', async () => {
     let resolveInitial!: (value: boolean) => void;
     native.bold.mockImplementationOnce(

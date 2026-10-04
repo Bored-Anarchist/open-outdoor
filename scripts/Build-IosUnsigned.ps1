@@ -72,6 +72,28 @@ try {
         Write-Host "Verified offline archive '$($matchingArchives[0].FullName)' ($($matchingArchives[0].Length) bytes)."
     }
     $builtInfoPlist = Join-Path $appBundles[0].FullName 'Info.plist'
+    if ($env:OPEN_OUTDOOR_PRIVATE_MAP_DATA -ne '1') {
+        $baseCatalog = Get-Item -LiteralPath '../../../packages/map/src/assets/base-outdoors.geojson'
+        $baseHash = (Get-FileHash -LiteralPath $baseCatalog.FullName -Algorithm SHA256).Hash
+        $builtFiles = @(Get-ChildItem -Path $appBundles[0].FullName -File -Recurse)
+        $baseMatches = @(
+            $builtFiles | Where-Object { $_.Length -eq $baseCatalog.Length } |
+                Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $baseHash }
+        )
+        if ($baseMatches.Count -ne 1) {
+            throw 'Stock app must contain exactly one empty base catalog.'
+        }
+        $legacyCatalog = Get-Item -LiteralPath '../../../packages/map/src/assets/new-york-outdoors.geojson'
+        $legacyHash = (Get-FileHash -LiteralPath $legacyCatalog.FullName -Algorithm SHA256).Hash
+        $legacyMatches = @(
+            $builtFiles | Where-Object { $_.Length -eq $legacyCatalog.Length } |
+                Where-Object { (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash -eq $legacyHash }
+        )
+        if ($legacyMatches.Count -ne 0 -or @($builtFiles | Where-Object { $_.Extension -eq '.sqlite' }).Count -ne 0) {
+            throw 'Stock app must not bundle the New York starter catalog or optional state databases.'
+        }
+        Write-Host 'Verified stock basemap-only build: empty catalog, no New York starter asset or state databases.'
+    }
     $diagnosticsOptIn = & /usr/libexec/PlistBuddy -c 'Print :OpenOutdoorPhase0DiagnosticsEnabled' $builtInfoPlist
     if ($LASTEXITCODE -ne 0 -or $diagnosticsOptIn -ne 'true') {
         throw 'Built app must explicitly enable Phase 0 diagnostics in Info.plist.'

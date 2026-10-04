@@ -7,6 +7,7 @@ import type {
   OutdoorFeatureSummary,
   LaptopCatalog,
   LaptopTransferProgress,
+  OutdoorPlaceFilter,
 } from '@open-outdoor/map';
 import registry from '../../packages/map/src/assets/state-packages/US/loader-inventory.json';
 import { nativeSpikes } from './nativeSpikes';
@@ -16,10 +17,22 @@ interface StateDetail {
   readonly geometry: OutdoorFeature['geometry'] | null;
   readonly geometryLimited: boolean;
 }
+const emptyResults: OutdoorFeatureSummary[] = [];
 
-export function useStatePackages(query: string) {
+export function useStatePackages(query: string, filter: OutdoorPlaceFilter = 'all') {
   const [packages, setPackages] = useState<InstalledStatePackage[]>([]);
-  const [results, setResults] = useState<OutdoorFeatureSummary[]>([]);
+  const [searchResult, setSearchResult] = useState<{
+    query: string;
+    filter: OutdoorPlaceFilter;
+    packages: readonly InstalledStatePackage[];
+    features: OutdoorFeatureSummary[];
+  } | null>(null);
+  const results =
+    searchResult?.query === query &&
+    searchResult.filter === filter &&
+    searchResult.packages === packages
+      ? searchResult.features
+      : emptyResults;
   const [detail, setDetail] = useState<StateDetail | null>(null);
   const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -124,16 +137,13 @@ export function useStatePackages(query: string) {
 
   useEffect(() => {
     let cancelled = false;
-    if (!ready || !query.trim()) {
-      setResults([]);
-      return;
-    }
-    setResults([]);
+    if (!ready || !query.trim()) return;
     const timer = setTimeout(() => {
       void nativeSpikes
-        .searchStatePackages(query)
+        .searchStatePackages(query, filter)
         .then((payload) => {
-          if (!cancelled) setResults(JSON.parse(payload));
+          if (!cancelled)
+            setSearchResult({ query, filter, packages, features: JSON.parse(payload) });
         })
         .catch((error: unknown) => {
           if (!cancelled) setStatus(`State search failed: ${String(error)}`);
@@ -143,7 +153,7 @@ export function useStatePackages(query: string) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [query, ready, packages]);
+  }, [query, filter, ready, packages]);
 
   async function select(id: string): Promise<OutdoorFeatureSummary | null> {
     const request = ++detailRequest.current;
@@ -364,3 +374,5 @@ export function useStatePackages(query: string) {
       operation(() => nativeSpikes.changeStatePackage(state, action)),
   };
 }
+
+export type StatePackagesService = ReturnType<typeof useStatePackages>;

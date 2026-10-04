@@ -68,7 +68,7 @@ export function useImportedMapDatasets() {
     }
   }
 
-  const importDataset = () =>
+  const prepareDataset = () =>
     operation(async () => {
       setStatus('Choose a GeoJSON dataset from Files.');
       const selected = await nativeSpikes.pickMapDataset();
@@ -78,8 +78,17 @@ export function useImportedMapDatasets() {
       }
       if (current.current.some((dataset) => dataset.id === selected.id))
         throw new Error('This exact dataset is already imported.');
-      if (mounted.current) setStatus('Validating and saving the dataset…');
+      if (mounted.current) setStatus('Checking dataset…');
       const dataset = parseMapDataset(selected.text, selected.id, selected.name);
+      serializeMapDatasets([...current.current, dataset]);
+      if (mounted.current) setStatus('Ready to import.');
+      return dataset;
+    });
+
+  const commitDataset = (dataset: ImportedMapDataset) =>
+    operation(async () => {
+      if (current.current.some((entry) => entry.id === dataset.id))
+        throw new Error('This exact dataset is already imported.');
       await save([...current.current, dataset]);
       if (mounted.current)
         setStatus(
@@ -87,6 +96,11 @@ export function useImportedMapDatasets() {
         );
       return dataset;
     });
+
+  const importDataset = async () => {
+    const dataset = await prepareDataset();
+    return dataset ? commitDataset(dataset) : undefined;
+  };
 
   const toggleDataset = (id: string) =>
     operation(async () => {
@@ -129,6 +143,8 @@ export function useImportedMapDatasets() {
     busy,
     status,
     importDataset,
+    prepareDataset,
+    commitDataset,
     toggleDataset,
     removeDataset,
     resetDatasets,

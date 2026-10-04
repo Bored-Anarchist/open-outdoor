@@ -13,6 +13,7 @@ Low-fidelity flow baseline (reading order, before visual treatment):
 - Track: navigation → recording/checkpoint status → glanceable metrics → start or resume → pause → deliberate finish/save. Recovery retains a separate discard confirmation.
 - Saved: navigation → private origin notice → saved list or empty state → activity detail.
 - Settings remain secondary; appearance overrides do not compete with recording actions.
+- The native header opens a dedicated Settings page for installed public packages, private imports, bundled source inventories, appearance, licenses and advanced diagnostics. The bottom navigation remains outside scrolling content and fills the bottom safe area; its controls clear the home indicator. Explore avoids duplicate headings and routine readiness paragraphs, with an expandable map legend.
 
 Each surface must wrap at narrow widths and increased text size. Native recorder actions retain their existing storage/sensor behavior. Browser examples are explicitly synthetic QA, never claims of a working native sensor or installed catalog.
 

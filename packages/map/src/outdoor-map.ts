@@ -403,6 +403,7 @@ export function searchOutdoorFeatureIndex(
   index: OutdoorFeatureIndex,
   query: string,
   limit = 30,
+  filter: OutdoorPlaceFilter = 'all',
 ): OutdoorFeatureSummary[] {
   const term = query.trim().toLocaleLowerCase();
   if (!term) return [];
@@ -410,6 +411,9 @@ export function searchOutdoorFeatureIndex(
     .filter(
       (feature) =>
         feature.properties.kind !== 'boundary' &&
+        (filter === 'all' ||
+          (feature.properties.kind === 'poi' &&
+            matchesPlaceFilter(outdoorIoverlanderCategory(feature.properties.category), filter))) &&
         (feature.properties.name + ' ' + feature.properties.unit)
           .toLocaleLowerCase()
           .includes(term),
@@ -433,7 +437,7 @@ export class OutdoorMapAdapter implements MapAdapter {
     rerouting: false,
   } as const;
   private snapshot: OutdoorMapSnapshot = {
-    camera: { center: [-74.25, 42.08], zoom: 10 },
+    camera: { center: [-98, 39], zoom: 3 },
     selectedRoute: null,
     activeTrack: [],
     trackBreaks: [],
@@ -673,6 +677,7 @@ export interface TieredOfflineVectorBasemapInput {
   readonly worldMaximumZoom: number;
   readonly regionalMinimumZoom: number;
   readonly regionalMaximumZoom: number;
+  readonly useRegionalDetail?: boolean;
 }
 
 function checkedZoom(value: number, label: string): number {
@@ -684,10 +689,9 @@ function checkedZoom(value: number, label: string): number {
 
 /**
  * Composes a worldwide low-zoom archive with a higher-resolution regional
- * archive. Keeping the archives as separate sources is intentional: outside
- * the regional archive, MapLibre can continue overzooming the worldwide source
- * instead of requesting missing tiles from an archive that advertises a
- * global maximum zoom.
+ * archive. The caller checks exact tile coverage before enabling regional
+ * detail. World geometry stops at that tier's minimum zoom so coarse roads,
+ * shorelines and labels do not remain superimposed on detailed geometry.
  */
 export function createTieredOfflineVectorBasemapStyle(
   input: TieredOfflineVectorBasemapInput,
@@ -710,14 +714,24 @@ export function createTieredOfflineVectorBasemapStyle(
   );
   const layers = sanitized.layers.flatMap((layer) => {
     if (layer.type === 'background' || !Object.hasOwn(layer, 'source')) return [{ ...layer }];
-    const worldLayer = { ...layer, source: 'offline-world' };
+    const worldLayer = {
+      ...layer,
+      source: 'offline-world',
+      ...(input.useRegionalDetail !== false
+        ? { maxzoom: Math.min(Number(layer.maxzoom ?? 24), regionalMinimumZoom) }
+        : {}),
+    };
     const regionalLayer = {
       ...layer,
       id: `${layer.id}-regional`,
       source: 'offline-regional',
       minzoom: Math.max(Number(layer.minzoom ?? 0), regionalMinimumZoom),
     };
-    return [worldLayer, regionalLayer];
+    if (input.useRegionalDetail === false) return [worldLayer];
+    return [
+      ...(Number(layer.minzoom ?? 0) < regionalMinimumZoom ? [worldLayer] : []),
+      ...(Number(layer.maxzoom ?? 24) > regionalMinimumZoom ? [regionalLayer] : []),
+    ];
   });
 
   return {
@@ -747,6 +761,7 @@ export function createTieredOfflineVectorBasemapStyle(
 
 export interface OutdoorMapStyleOptions {
   readonly includePlaces?: boolean;
+  readonly excludedFeatureIds?: readonly string[];
 }
 
 export function createOutdoorMapStyle(
@@ -768,7 +783,17 @@ export function createOutdoorMapStyle(
       (layer) =>
         options.includePlaces !== false || (layer.id !== 'dec-poi' && layer.id !== 'dec-camping'),
     )
-    .map((layer) => ({ ...layer, source: 'outdoors' as const }));
+    .map((layer) => ({
+      ...layer,
+      source: 'outdoors' as const,
+      filter: options.excludedFeatureIds?.length
+        ? [
+            'all',
+            layer.filter,
+            ['!', ['in', ['get', 'id'], ['literal', options.excludedFeatureIds]]],
+          ]
+        : layer.filter,
+    }));
   return {
     ...(basemap ?? {}),
     version: 8 as const,

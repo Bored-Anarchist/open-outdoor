@@ -1,4 +1,5 @@
 import { requireOptionalNativeModule } from 'expo';
+import type { OutdoorPlaceFilter } from '@open-outdoor/map';
 
 export type NativeTrackingMode = 'balanced' | 'endurance' | 'high-accuracy';
 
@@ -117,8 +118,9 @@ interface OpenOutdoorNativeSpikesModule {
   readonly cancelLaptopPackage: () => Promise<void>;
   readonly disconnectLaptopPackages: () => Promise<void>;
   readonly changeStatePackage: (state: string, action: string) => Promise<string>;
-  readonly searchStatePackages: (query: string) => Promise<string>;
+  readonly searchStatePackages: (query: string, filter: OutdoorPlaceFilter) => Promise<string>;
   readonly statePackageDetail: (id: string) => Promise<string | null>;
+  readonly statePackagePlaces: (bounds: readonly number[]) => Promise<string>;
   readonly pickMapDataset: () => Promise<{
     readonly id: string;
     readonly name: string;
@@ -178,6 +180,7 @@ function requiredModule(): OpenOutdoorNativeSpikesModule {
 
 export const nativeSpikes = {
   statePackagesAvailable: typeof module?.loadStatePackages === 'function',
+  statePackagePlacesAvailable: typeof module?.statePackagePlaces === 'function',
   laptopPackagesAvailable: typeof module?.connectLaptopPackages === 'function',
   laptopUpdatesAvailable:
     module?.laptopUpdatesEnabled === true && typeof module?.connectLaptopUpdates === 'function',
@@ -206,8 +209,10 @@ export const nativeSpikes = {
   pickStatePackage: () => requiredModule().pickStatePackage(),
   changeStatePackage: (state: string, action: string) =>
     requiredModule().changeStatePackage(state, action),
-  searchStatePackages: (query: string) => requiredModule().searchStatePackages(query),
+  searchStatePackages: (query: string, filter: OutdoorPlaceFilter = 'all') =>
+    requiredModule().searchStatePackages(query, filter),
   statePackageDetail: (id: string) => requiredModule().statePackageDetail(id),
+  statePackagePlaces: (bounds: readonly number[]) => requiredModule().statePackagePlaces(bounds),
   mapImportAvailable: typeof module?.pickMapDataset === 'function',
   pickMapDataset: () => requiredModule().pickMapDataset(),
   loadMapDatasets: (): Promise<string | null> => requiredModule().loadMapDatasets(),

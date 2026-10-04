@@ -1,6 +1,8 @@
 # Offline state package loader
 
-The app has a dedicated path for installing complete public state catalogs. Select one `state.sqlite` file in **Explore → Offline state packages → Install or update a state**. Each state is one package regardless of its GeoJSON import-part count. State catalog installation does not pass through the manual GeoJSON importer or consume its five slots or 50 MiB allowance.
+The app has a dedicated path for installing complete public state catalogs. Select one `state.sqlite` file in **Settings → Maps → Add a map → From Files**. Each state is one package regardless of its GeoJSON import-part count. State catalog installation does not pass through the manual GeoJSON importer or consume its five slots or 50 MiB allowance. Installed public packages and private imports appear separately in **Maps**, with explicit visibility switches and coverage actions.
+
+Stock builds include only the world/regional basemaps and an empty place catalog. New York is installed explicitly, just like other states. Removing or hiding its package does not reveal a bundled New York starter catalog underneath. The large world/regional basemap archives remain part of the base app; removing the starter catalog saves approximately 1.6 MB of geometry plus its embedded index.
 
 Files imports use a compiled checksum allowlist. Open Outdoor Local additionally supports [signed updates from an explicitly trusted laptop](LAPTOP_STATE_UPDATES.md), without rebuilding the app for compatible state snapshots. Production signed-provenance and release-keyring integration remain separate gates under ADR-031.
 

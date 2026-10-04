@@ -9,7 +9,7 @@ import {
   type AppSection,
 } from '@open-outdoor/shared';
 
-import { campingLegend, createProductMapStyle, phase1OfflineMapFixture } from '@open-outdoor/map';
+import { campingLegend, phase1OfflineMapFixture } from '@open-outdoor/map';
 
 import { badge, button, detailCard, escapeHtml, icon, notice } from './components';
 
@@ -60,34 +60,14 @@ function applyAppearance(value: Appearance): void {
 }
 
 function mapPreview(): string {
-  // Preview uses the actual style paints; the SVG is a synthetic schematic, not a geographic map.
-
-  const style = createProductMapStyle(appearance).document as {
-    layers: { id: string; paint: Record<string, string> }[];
-  };
-
-  const paint = (id: string, key: string) =>
-    style.layers.find((layer) => layer.id === id)!.paint[key]!;
-
-  return `<figure class="map"><figcaption>Explore the preserve <span class="map-mode">Sample map</span></figcaption>
-
-    <svg viewBox="0 0 600 250" role="img" aria-label="Land, water, dashed selected route, solid recording and ringed user location">
-
-      <rect width="600" height="250" fill="${paint('background', 'background-color')}"/>
-
-      <path d="M0 15L360 0 510 140 360 250H0Z" fill="${paint('land', 'fill-color')}"/>
-
-      <g fill="none" stroke="${paint('background', 'background-color')}" stroke-width="2" opacity=".7"><path d="M-20 90Q120 -10 280 60T440 100"/><path d="M-20 110Q120 10 280 80T440 120"/><path d="M-20 130Q120 30 280 100T440 140"/><path d="M-20 150Q120 50 280 120T440 160"/></g><path d="M450 0Q280 100 600 240L600 0Z" fill="${paint('water', 'fill-color')}"/>
-
-      <path d="M30 200L130 100 260 150 340 70" fill="none" stroke="${paint('selected-halo', 'line-color')}" stroke-width="10"/>
-
-      <path d="M30 200L130 100 260 150 340 70" fill="none" stroke="${paint('selected-route', 'line-color')}" stroke-width="5" stroke-dasharray="15 5"/>
-
-      <path d="M30 200L130 100 195 125" fill="none" stroke="${paint('active-recording', 'line-color')}" stroke-width="6"/>
-
-      <text x="50" y="45" font-size="12" letter-spacing="2" fill="${palettes[appearance].text}">HEMLOCK PRESERVE</text><text x="440" y="86" font-size="11" fill="${palettes[appearance].text}">Pine Lake</text><circle cx="340" cy="70" r="7" fill="${palettes[appearance].surface}" stroke="${paint('selected-route', 'line-color')}" stroke-width="3"/><circle cx="195" cy="125" r="12" fill="${paint('location-halo', 'circle-color')}"/><circle cx="195" cy="125" r="7" fill="${paint('user-location', 'circle-color')}"/>
-
-    </svg><p>Dashed: selected route · Solid: active recording · Ring: your location. Display only; no turn instructions.</p></figure>`;
+  const p = palettes[appearance];
+  return `<figure class="map"><figcaption>Illustrative map</figcaption><svg viewBox="0 0 390 700" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Synthetic land, water, dashed planned route and ringed location">
+    <rect width="390" height="700" fill="${p.land}"/><path d="M0 90L160 0 290 80 390 190 260 280 0 250Z" fill="${p.selected}"/><path d="M280 0H390V700H330L335 260 280 130Z" fill="${p.water}"/>
+    <g fill="none" stroke="${p.surface}" stroke-width="1" opacity=".7">${Array.from({ length: 14 }, (_, i) => `<path d="M-10 ${120 + i * 35}Q140 ${50 + i * 35} 250 ${100 + i * 35}T420 ${150 + i * 35}"/>`).join('')}</g>
+    <path d="M0 539L130 420 260 490 390 406" fill="none" stroke="${p.border}" stroke-width="2"/>
+    <path d="M55 497L112 329 174 371 221 245 259 189" fill="none" stroke="${p.surface}" stroke-width="7"/><path d="M55 497L112 329 174 371 221 245 259 189" fill="none" stroke="${p.route}" stroke-width="4" stroke-dasharray="12 7"/>
+    <circle cx="259" cy="189" r="7" fill="${p.route}" stroke="${p.surface}" stroke-width="3"/><circle cx="174" cy="371" r="11" fill="${p.surface}"/><circle cx="174" cy="371" r="6" fill="${p.location}"/>
+    <text x="34" y="165" font-size="11" font-weight="700" fill="${p.muted}">HEMLOCK PRESERVE</text><text x="294" y="225" font-size="11" fill="${p.muted}">Pine Lake</text></svg></figure>`;
 }
 
 function legend(): string {
@@ -114,15 +94,50 @@ function resultDetail(name = route.name): string {
   });
 }
 
+let settingsOpen = false;
+let settingsPage: 'index' | 'maps' | 'appearance' | 'about' | 'advanced' = 'index';
+let placeOpen = false;
+
 function surface(): string {
+  if (settingsOpen) {
+    if (settingsPage === 'maps')
+      return `<div class="settings-list"><h2>Bundled</h2><article class="inventory-row">${icon('folder')}<div><strong>Illustrative map</strong><p>Synthetic browser fixture</p></div></article><h2>Public packages</h2><p>No public packages</p><h2>Private data</h2><p>No private datasets</p><p class="quiet-note">Package installation requires the native app.</p></div>`;
+    if (settingsPage === 'appearance')
+      return `<div class="settings-list"><label for="appearance">Appearance</label><select id="appearance">${appearances.map((value) => `<option value="${value}" ${appearance === value ? 'selected' : ''}>${value === 'high-contrast' ? 'High contrast' : value === 'dark' ? 'Dark' : 'Light'}</option>`).join('')}</select><p>Text size follows your device.</p></div>`;
+    if (settingsPage === 'about')
+      return `<div class="settings-list"><h2>Open Outdoor</h2><p>Offline maps and private hikes</p><details class="card"><summary>Map sources</summary><p>All places and geometry here are synthetic browser references. Apache-2.0 · No network assets.</p></details><details class="card"><summary>Map limits</summary><p>No turn instructions. Mapped places do not establish access or camping permission.</p></details><details class="card"><summary>Licenses</summary><p>Original Open Outdoor tokens, geometry and map styles · Apache-2.0</p></details></div>`;
+    if (settingsPage === 'advanced')
+      return `<details class="design-tools" open><summary>Design preview</summary><p class="fixture-label">Synthetic reference</p><label for="field-state">Field state preview</label><select id="field-state">${Object.entries(
+        fieldStates,
+      )
+        .map(
+          ([value, state]) =>
+            `<option value="${value}" ${value === selectedState ? 'selected' : ''}>${escapeHtml(state.title)}</option>`,
+        )
+        .join(
+          '',
+        )}</select><div id="field-notice" role="status">${notice(selectedState)}</div>${catalog()}</details>`;
+    return `<div class="settings-list">${[
+      ['maps', 'Maps', 'Public packages and private data', 'folder'],
+      ['appearance', 'Appearance', 'Light · Dark · High contrast', 'settings'],
+      ['about', 'About and sources', 'Attribution and licenses', 'folder'],
+      ['advanced', 'Advanced', 'Design preview and component library', 'settings'],
+    ]
+      .map(
+        ([value, title, sub, glyph]) =>
+          `<button class="inventory-row" data-settings-page="${value}">${icon(glyph as 'folder' | 'settings')}<span><strong>${title}</strong><small>${sub}</small></span><span aria-hidden="true">›</span></button>`,
+      )
+      .join('')}</div>`;
+  }
   if (section === 'explore')
-    return `<div class="explore-workspace"><div>${mapPreview()}<div class="map-key"><span><i class="route-dot"></i>Selected route</span><span><i class="location-dot"></i>Your location</span><span>Illustrative map</span></div>${legend()}</div><div class="place-panel"><p class="section-kicker">On this map</p>${resultDetail()}</div></div>`;
+    return `<div class="explore-workspace">${mapPreview()}<div class="map-toolbar"><button data-section="search">${icon('search')}Find a place</button><button class="icon-button" id="settings" aria-label="Settings">${icon('settings')}</button></div><details class="map-tools"><summary>Map tools</summary>${legend()}</details><div class="place-panel"><span class="badge">Public</span><h2>${route.name}</h2><p class="access-preview">Access unknown</p><button id="place-details" class="primary-action">Details</button>${placeOpen ? `<div id="selected-detail">${resultDetail()}</div><button id="close-place">Close place</button>` : ''}</div><span class="map-attribution">Illustrative map</span></div>`;
   if (section === 'search')
-    return `<section class="card search-card"><div class="section-title"><div><h2>Where would you like to go?</h2></div><span class="round-icon">${icon('search')}</span></div><label for="query">Place or trail name</label><div class="search-field">${icon('search')}<input type="search" id="query" value="${escapeHtml(searchText)}" autocomplete="off" placeholder="Try a trail, forest or campsite"></div><label for="kind">Explore by type</label><select id="kind"><option value="all">All places</option><option value="trail">Trails</option><option value="poi">Places</option><option value="land">Land</option></select><p id="result-count" role="status" class="section-kicker"></p><ul id="results" class="results"></ul><div id="selected-detail"></div><p class="quiet-note">Searches the synthetic places included in this preview.</p></section>`;
+    return `<section class="search-card"><label for="query">Place or trail name</label><div class="search-field">${icon('search')}<input type="search" id="query" value="${escapeHtml(searchText)}" autocomplete="off" placeholder="Find a place"></div><label for="kind">Categories</label><select id="kind"><option value="all">All places</option><option value="trail">Trails</option><option value="poi">Places</option><option value="land">Land</option></select><p id="result-count" role="status" class="section-kicker"></p><ul id="results" class="results"></ul><div id="selected-detail"></div></section>`;
   if (section === 'track')
-    return `<section class="card recording-card"><div class="section-title"><div><h2>Ready to head out?</h2></div><span class="badge">${icon('private')} On your device</span></div><div class="recording-orbit" aria-hidden="true"><div>${icon('explore')}</div><span></span></div><p class="recording-caption">Your route will appear as you walk.</p><div class="recording-metrics"><div><span>Distance</span><strong>— <small>km</small></strong><em>Not started</em></div><div><span>Ascent</span><strong>— <small>m</small></strong><em>Not started</em></div></div><div class="gps-state">${icon('info')} GPS unavailable in this browser preview</div>${button('Start recording', 'id="start" class="primary-action"', 'track')}<p class="quiet-note">Recording requires the native app and device location permission. No activity is recording here.</p></section>`;
-  return `<section class="card saved-card"><div class="journal-art" aria-hidden="true"><div class="journal-page">${icon('explore')}<span></span><span></span></div>${icon('saved')}</div><h2>No hikes saved yet</h2><p>After your first recording, you can return here to see the route and the details you captured. Your activities stay on your device.</p>${button('Explore the map', 'data-section="explore" class="primary-action"', 'explore')}<p class="quiet-note">No saved activities in this browser preview.</p></section>`;
+    return `<section class="recording-card"><span class="badge">Ready</span><div class="path-placeholder" aria-hidden="true">${icon('explore')}</div><div class="recording-metrics"><div><span>Distance</span><strong>—</strong></div><div><span>Ascent</span><strong>—</strong></div><div><span>GPS</span><strong>—</strong></div></div><div class="inventory-row">${icon('track')}<div><strong>Recording mode</strong><p>Balanced</p></div></div>${button('Start recording', 'id="start" class="primary-action"', 'track')}<p class="quiet-note">Recording requires the native app.</p></section>`;
+  return `<section class="saved-card"><div class="journal-art" aria-hidden="true"><div class="journal-page">${icon('explore')}<span></span><span></span></div>${icon('saved')}</div><h2>No hikes yet</h2>${button('Record a hike', 'data-section="track" class="primary-action"', 'track')}<p class="quiet-note">Saved on your device</p></section>`;
 }
+
 function catalog(): string {
   return `<section id="catalog" aria-labelledby="catalog-heading"><h2 id="catalog-heading">Component catalog</h2><p>Every example below is synthetic QA. Expand a component to review its states.</p>
 
@@ -225,25 +240,10 @@ function render(): void {
 
   applyAppearance(appearance);
 
-  root.innerHTML = `<a class="skip" href="#surface">Skip to content</a><header class="product-header"><div class="brand">${icon('explore')} ${t.brand.name}<span class="edition">Offline field guide</span></div><div class="page-intro"><h1>${{ explore: 'Explore outdoors', search: 'Find a place', track: 'Record a hike', saved: 'Your hikes' }[section]}</h1><p>${{ explore: 'Trails, open spaces and places to pause.', search: 'Search the places on your offline map.', track: 'Keep a record of where the day takes you.', saved: 'The routes and memories you bring home.' }[section]}</p></div></header>
-
-    <nav aria-label="Primary" class="controls">${(['explore', 'search', 'track', 'saved'] as const).map((value) => button(value[0]!.toUpperCase() + value.slice(1), `data-section="${value}" aria-pressed="${section === value}"`, value)).join('')}</nav>
-
-<section id="surface" tabindex="-1" aria-label="${section}">${surface()}</section>
-
-    <p id="action-status" role="status" aria-live="polite"></p><details class="design-tools"><summary>Design preview settings &amp; component library</summary><p class="fixture-label">Synthetic offline fixture · For visual reference only</p>    <div class="review-controls card"><label for="appearance">Appearance</label><select id="appearance">${appearances.map((value) => `<option value="${value}" ${appearance === value ? 'selected' : ''}>${value}</option>`).join('')}</select><label for="field-state">Field state preview</label><select id="field-state">${Object.entries(
-      fieldStates,
-    )
-
-      .map(
-        ([value, state]) =>
-          `<option value="${value}" ${value === selectedState ? 'selected' : ''}>${escapeHtml(state.title)}</option>`,
-      )
-
-      .join('')}</select><a href="#catalog">Review component catalog</a></div>
-
-<div id="field-notice" role="status" aria-live="polite">${notice(selectedState)}</div>${catalog()}</details><footer>Original Open Outdoor tokens, geometry and map styles · Apache-2.0 · No network assets</footer>`;
-
+  root.dataset.section = settingsOpen ? 'settings' : section;
+  root.innerHTML = `<a class="skip" href="#surface">Skip to content</a><header class="product-header">${settingsOpen ? `<button id="back">Back</button>` : ''}<h1>${settingsOpen ? { index: 'Settings', maps: 'Maps', appearance: 'Appearance', about: 'About and sources', advanced: 'Advanced' }[settingsPage] : section === 'explore' ? 'Explore' : section === 'search' ? 'Search' : section === 'track' ? 'Track' : 'Saved'}</h1>${section !== 'explore' || settingsOpen ? `<button class="icon-button" id="settings" aria-label="Settings">${icon('settings')}</button>` : ''}</header>
+    <nav aria-label="Primary" class="controls">${(['explore', 'search', 'track', 'saved'] as const).map((value) => button(value[0]!.toUpperCase() + value.slice(1), `data-section="${value}" aria-pressed="${!settingsOpen && section === value}"`, value)).join('')}</nav>
+    <section id="surface" tabindex="-1" aria-label="${settingsOpen ? 'Settings' : section}">${surface()}</section><p id="action-status" role="status" aria-live="polite"></p>`;
   // Reserve real layout space for the phone navigation so controls cannot sit underneath it.
   const navigation = root.querySelector<HTMLElement>('nav[aria-label="Primary"]')!;
   const content = document.createElement('div');
@@ -253,8 +253,9 @@ function render(): void {
     if (child !== navigation) content.appendChild(child);
   }
   root.append(content, navigation);
-  root.querySelectorAll<HTMLButtonElement>('[data-section]').forEach((control) =>
+  root.querySelectorAll<HTMLButtonElement>('button[data-section]').forEach((control) =>
     control.addEventListener('click', () => {
+      settingsOpen = false;
       section = control.dataset.section as AppSection;
 
       render();
@@ -263,7 +264,7 @@ function render(): void {
     }),
   );
 
-  root.querySelector<HTMLSelectElement>('#appearance')!.addEventListener('change', (event) => {
+  root.querySelector<HTMLSelectElement>('#appearance')?.addEventListener('change', (event) => {
     appearance = (event.target as HTMLSelectElement).value as Appearance;
 
     render();
@@ -271,7 +272,7 @@ function render(): void {
     root.querySelector<HTMLSelectElement>('#appearance')!.focus();
   });
 
-  root.querySelector<HTMLSelectElement>('#field-state')!.addEventListener('change', (event) => {
+  root.querySelector<HTMLSelectElement>('#field-state')?.addEventListener('change', (event) => {
     selectedState = (event.target as HTMLSelectElement).value as FieldState;
 
     root.querySelector('#field-notice')!.innerHTML = notice(selectedState);
@@ -282,10 +283,41 @@ function render(): void {
   root.querySelector('#kind')?.addEventListener('change', updateSearch);
 
   root.querySelectorAll('details').forEach((element) => {
-    element.open = expanded.has(element.querySelector('summary')?.textContent ?? '');
+    element.open =
+      element.classList.contains('design-tools') ||
+      expanded.has(element.querySelector('summary')?.textContent ?? '');
   });
 
-  if (section === 'search') {
+  root.querySelector('#settings')?.addEventListener('click', () => {
+    settingsOpen = true;
+    settingsPage = 'index';
+    render();
+    root.querySelector<HTMLButtonElement>('#back')?.focus();
+  });
+  root.querySelector('#back')?.addEventListener('click', () => {
+    if (settingsPage === 'index') settingsOpen = false;
+    else settingsPage = 'index';
+    render();
+    root.querySelector<HTMLElement>('#surface')?.focus();
+  });
+  root.querySelectorAll<HTMLButtonElement>('[data-settings-page]').forEach((control) =>
+    control.addEventListener('click', () => {
+      settingsPage = control.dataset.settingsPage as typeof settingsPage;
+      render();
+      root.querySelector<HTMLElement>('#surface')?.focus();
+    }),
+  );
+  root.querySelector('#place-details')?.addEventListener('click', () => {
+    placeOpen = true;
+    render();
+    root.querySelector<HTMLButtonElement>('#close-place')?.focus();
+  });
+  root.querySelector('#close-place')?.addEventListener('click', () => {
+    placeOpen = false;
+    render();
+    root.querySelector<HTMLButtonElement>('#place-details')?.focus();
+  });
+  if (!settingsOpen && section === 'search') {
     root.querySelector<HTMLSelectElement>('#kind')!.value = searchKind;
 
     updateSearch();
