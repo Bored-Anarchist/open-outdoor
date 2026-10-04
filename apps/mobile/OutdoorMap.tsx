@@ -13,6 +13,7 @@ import {
   useState,
   useSyncExternalStore,
   type ComponentProps,
+  type ReactNode,
 } from 'react';
 
 import {
@@ -419,6 +420,8 @@ function PlaceKey({
 
 export function OutdoorMap({
   adapter,
+  topInset = 0,
+  recordingBanner,
 
   placeJournal,
 
@@ -441,6 +444,8 @@ export function OutdoorMap({
   visible,
 }: {
   adapter: OutdoorMapAdapter;
+  topInset?: number;
+  recordingBanner?: ReactNode;
 
   placeJournal: PlaceJournalService | null;
 
@@ -481,6 +486,8 @@ export function OutdoorMap({
   const pendingFinish = useRef(false);
   const legendOpen = sheet === 'legend';
   const [toolbarHeight, setToolbarHeight] = useState(112);
+  const toolbarTop = topInset + 2;
+  const mapControlsTop = toolbarTop + toolbarHeight + 16;
   const offlineCartography = useMemo(
     () =>
       protomapsLayers(
@@ -1205,7 +1212,7 @@ export function OutdoorMap({
               mapStyle={mapStyle}
 
               attribution
-              attributionPosition={{ top: toolbarHeight + 16, left: 16 }}
+              attributionPosition={{ top: mapControlsTop, left: 16 }}
 
               logo={false}
 
@@ -1558,7 +1565,7 @@ export function OutdoorMap({
             <View
               pointerEvents="box-none"
 
-              style={{ position: 'absolute', right: 16, top: toolbarHeight + 16, gap: 8 }}
+              style={{ position: 'absolute', right: 16, top: mapControlsTop, gap: 8 }}
             >
               <ProductIconButton
                 label={followUser ? 'Stop following my location' : 'Center on my location'}
@@ -1600,9 +1607,16 @@ export function OutdoorMap({
         <>
           <View
             pointerEvents="box-none"
-            style={{ position: 'absolute', left: 16, right: 16, top: 8, gap: 8 }}
+            style={{
+              position: 'absolute',
+              left: 16,
+              right: 16,
+              top: toolbarTop,
+              gap: 6,
+            }}
             onLayout={(event) => setToolbarHeight(event.nativeEvent.layout.height)}
           >
+            {recordingBanner}
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1 }}>
                 <ProductButton

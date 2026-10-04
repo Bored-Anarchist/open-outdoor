@@ -1,6 +1,6 @@
 # WP-501 Product design system
 
-Status: visual direction revised and styling integrated. Automated acceptance for this revision was not run; physical production acceptance remains gated.
+Status: visual direction revised and styling integrated. The approved native bar layout has synthetic layout and navigation regression coverage; physical production acceptance remains gated.
 
 ## Decomposition and flows
 
@@ -14,6 +14,7 @@ Low-fidelity flow baseline (reading order, before visual treatment):
 - Saved: navigation → private origin notice → saved list or empty state → activity detail.
 - Settings remain secondary; appearance overrides do not compete with recording actions.
 - The native header opens a dedicated Settings page for installed public packages, private imports, bundled source inventories, appearance, licenses and advanced diagnostics. The bottom navigation remains outside scrolling content and fills the bottom safe area; its controls clear the home indicator. Explore avoids duplicate headings and routine readiness paragraphs, with an expandable map legend.
+- Explore's map extends behind the status area to the screen's top edge. Search, Settings and category controls float over it, offset by the device's top safe-area inset. An active recording banner joins these floating controls instead of shrinking the map. Measured toolbar height keeps location, zoom and attribution controls below the toolbar as text and recording state change. Other pages retain top safe-area protection. Bottom tabs use compact spacing, at least 52-pixel targets and wrapping labels; their height grows with larger text.
 
 Each surface must wrap at narrow widths and increased text size. Native recorder actions retain their existing storage/sensor behavior. Browser examples are explicitly synthetic QA, never claims of a working native sensor or installed catalog.
 

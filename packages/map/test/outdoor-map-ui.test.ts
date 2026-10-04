@@ -503,3 +503,22 @@ it('ignores a cluster expansion that finishes after leaving Explore', async () =
   await act(async () => root.root.findByType('native-map').props.onDidFinishRenderingMapFully());
   expect(mocks.jump).not.toHaveBeenCalled();
 });
+
+it('keeps floating controls and attribution below the status area and a growing toolbar', async () => {
+  props.topInset = 47;
+  props.recordingBanner = createElement('recording-banner');
+  await mount();
+  const toolbar = root.root.findAllByType('view').find((node) => node.props.onLayout)!;
+  expect(toolbar.props.style).toMatchObject({ top: 49, left: 16, right: 16 });
+  expect(toolbar.findAllByType('recording-banner')).toHaveLength(1);
+  await act(async () => toolbar.props.onLayout({ nativeEvent: { layout: { height: 180 } } }));
+  expect(root.root.findByType('native-map').props.attributionPosition).toEqual({
+    top: 245,
+    left: 16,
+  });
+  expect(
+    root.root
+      .findAllByType('view')
+      .some((node) => node.props.style?.top === 245 && node.props.style?.right === 16),
+  ).toBe(true);
+});
