@@ -1,6 +1,8 @@
 import Bonjour from 'bonjour-service';
 import QRCode from 'qrcode';
 import { randomBytes } from 'node:crypto';
+import { networkInterfaces } from 'node:os';
+import { laptopAddress, literalHost } from './laptop-network.mjs';
 
 export function pairingPayload(address, pairingCode, signerFingerprint) {
   return JSON.stringify({
@@ -28,9 +30,26 @@ export function canViewPairingPage(remoteAddress, localAddress, fetchSite) {
   );
 }
 
-export function advertiseLaptop(host, port, { BonjourClass = Bonjour, onError = () => {} } = {}) {
+export function advertiseLaptop(
+  host,
+  port,
+  { BonjourClass = Bonjour, onError = () => {}, interfaces = networkInterfaces() } = {},
+) {
   const id = randomBytes(4).toString('hex');
-  const bonjour = new BonjourClass({ interface: host }, onError);
+  const selected = literalHost(host);
+  if (!selected) throw new Error('Choose a literal laptop address.');
+  let options = { interface: host };
+  if (selected.family === 6) {
+    const adapter = Object.entries(interfaces).find(([, entries]) =>
+      entries?.some((entry) => literalHost(entry.address)?.host === selected.host),
+    );
+    const scope =
+      selected.scope ?? adapter?.[1]?.find((entry) => entry.scopeid > 0)?.scopeid ?? adapter?.[0];
+    if (!scope || !/^[A-Za-z0-9_.-]{1,32}$/.test(String(scope)))
+      throw new Error('IPv6 discovery requires a local interface scope. Use QR or manual pairing.');
+    options = { type: 'udp6', ip: `ff02::fb%${scope}`, interface: `::%${scope}`, bind: '::' };
+  }
+  const bonjour = new BonjourClass(options, onError);
   let service;
   try {
     // Publication probes asynchronously; scope records before its first announcement.
@@ -40,13 +59,17 @@ export function advertiseLaptop(host, port, { BonjourClass = Bonjour, onError = 
       type: 'openoutdoor',
       protocol: 'tcp',
       port,
-      disableIPv6: true,
-      txt: { v: '1', address: `http://${host}:${port}` },
+      disableIPv6: selected.family === 4,
+      txt: { v: '1', address: laptopAddress(host, port) },
     });
     const records = service.records.bind(service);
     service.records = () =>
-      records().filter(
-        (record) => record.type !== 'AAAA' && (record.type !== 'A' || record.data === host),
+      records().filter((record) =>
+        record.type === 'A'
+          ? selected.family === 4 && literalHost(record.data)?.host === selected.host
+          : record.type === 'AAAA'
+            ? selected.family === 6 && literalHost(record.data)?.host === selected.host
+            : true,
       );
   } catch (error) {
     bonjour.destroy();

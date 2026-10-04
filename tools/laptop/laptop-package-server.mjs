@@ -1,38 +1,23 @@
 import { createServer } from 'node:http';
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { open, readFile, realpath } from 'node:fs/promises';
-import { networkInterfaces } from 'node:os';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { pipeline } from 'node:stream/promises';
 import { advertiseLaptop, canViewPairingPage, pairingPage } from './laptop-pairing.mjs';
 import { loadLaptopUpdateSigner } from './laptop-update-signing.mjs';
+import {
+  isLaptopHost,
+  laptopAddress,
+  laptopAddresses,
+  literalHost,
+  matchesRequestHost,
+} from './laptop-network.mjs';
 
 const defaultRoot = fileURLToPath(
   new URL('../../packages/map/src/assets/state-packages/US', import.meta.url),
 );
 const maximumBytes = 3 * 1024 ** 3;
-
-export function isPrivateIPv4(host) {
-  const parts = host.split('.');
-  if (
-    parts.length !== 4 ||
-    parts.some((part) => !/^(0|[1-9]\d{0,2})$/.test(part) || Number(part) > 255)
-  )
-    return false;
-  const [a, b] = parts.map(Number);
-  return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
-}
-
-export function laptopAddresses() {
-  return Object.values(networkInterfaces())
-    .flat()
-    .filter(
-      (entry) =>
-        entry && !entry.internal && entry.family === 'IPv4' && isPrivateIPv4(entry.address),
-    )
-    .map((entry) => entry.address);
-}
 
 function validatePin(pin) {
   if (
@@ -79,8 +64,12 @@ export async function createLaptopPackageServer({
   root = defaultRoot,
   token = randomBytes(16).toString('hex'),
   signer,
+  pairingEndpoint,
 } = {}) {
   if (!/^[a-f0-9]{32}$/.test(token)) throw new Error('Invalid pairing code.');
+  const pairingAddress = pairingEndpoint
+    ? laptopAddress(pairingEndpoint.host, pairingEndpoint.port)
+    : null;
   const directory = await realpath(root);
   const inventory = JSON.parse(await readFile(resolve(directory, 'loader-inventory.json'), 'utf8'));
   if (
@@ -134,11 +123,10 @@ export async function createLaptopPackageServer({
       response.end(message);
     };
     const address = request.socket.remoteAddress?.replace(/^::ffff:/, '');
-    const host = `${request.socket.localAddress?.replace(/^::ffff:/, '')}:${request.socket.localPort}`;
     // Reject browser origins and rebinding hosts; never send CORS headers or tokens in URLs.
     if (
-      (!isPrivateIPv4(address ?? '') && address !== '127.0.0.1') ||
-      request.headers.host !== host ||
+      (!isLaptopHost(address ?? '') && address !== '127.0.0.1' && address !== '::1') ||
+      !matchesRequestHost(request.headers.host, request.socket) ||
       request.headers.origin ||
       request.headers['transfer-encoding'] ||
       (request.headers['content-length'] && request.headers['content-length'] !== '0')
@@ -155,7 +143,11 @@ export async function createLaptopPackageServer({
       )
         return fail(403, 'Open the pairing page on the laptop itself.');
       try {
-        const page = await pairingPage(`http://${host}`, token, signer?.identity.keyId);
+        const page = await pairingPage(
+          pairingAddress ?? laptopAddress(request.socket.localAddress, request.socket.localPort),
+          token,
+          signer?.identity.keyId,
+        );
         response.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
           'Content-Security-Policy':
@@ -213,11 +205,20 @@ async function main() {
   for (let i = 0; i < args.length; i += 2) {
     if (args[i] === '--host') host = args[i + 1];
     else if (args[i] === '--port') port = Number(args[i + 1]);
-    else throw new Error('Usage: pnpm map:laptop [--host PRIVATE_IPV4] [--port PORT]');
+    else throw new Error('Usage: pnpm map:laptop [--host LOCAL_IP] [--port PORT]');
   }
-  if (!host || !isPrivateIPv4(host) || !laptopAddresses().includes(host))
+  const selected = literalHost(host);
+  host = laptopAddresses().find((candidate) => {
+    const value = literalHost(candidate);
+    return (
+      selected &&
+      value?.host === selected.host &&
+      (selected.scope === undefined || value.scope === selected.scope)
+    );
+  });
+  if (!host || !isLaptopHost(host))
     throw new Error(
-      'Connect this laptop to Wi-Fi, then select its private IPv4 address with --host.',
+      'Connect this laptop to Wi-Fi, then select its local IPv4 or IPv6 address with --host.',
     );
   if (!Number.isInteger(port) || port < 1024 || port > 65535)
     throw new Error('Choose a port between 1024 and 65535.');
@@ -225,7 +226,7 @@ async function main() {
   const signer = await loadLaptopUpdateSigner();
   let result;
   try {
-    result = await createLaptopPackageServer({ signer });
+    result = await createLaptopPackageServer({ signer, pairingEndpoint: { host, port } });
   } catch (error) {
     await signer.close();
     throw error;
@@ -244,6 +245,23 @@ async function main() {
     await signer.close();
     throw error;
   });
+  // A loopback page works even when browsers cannot navigate scoped link-local IPv6 URLs.
+  const pairingServer = createServer((request, response) => {
+    if (request.url !== '/pair') {
+      response.writeHead(404);
+      response.end();
+      return;
+    }
+    server.emit('request', request, response);
+  });
+  await new Promise((accept, reject) => {
+    pairingServer.once('error', reject);
+    pairingServer.listen(0, '127.0.0.1', accept);
+  }).catch(async (error) => {
+    server.close();
+    await signer.close();
+    throw error;
+  });
   let stopDiscovery = () => {};
   try {
     stopDiscovery = advertiseLaptop(host, port, {
@@ -252,8 +270,9 @@ async function main() {
   } catch {
     console.log('Nearby discovery is unavailable. Use QR or manual pairing.');
   }
+  const address = laptopAddress(host, port);
   console.log(
-    `\nOpen Outdoor → Explore → Offline state packages → Connect to laptop\nOpen http://${host}:${port}/pair on this laptop to show the pairing QR code.\nLaptop address: http://${host}:${port}\nPairing code: ${token}\nSigning fingerprint: ${signer.identity.keyId}\n${availableStates.length} verified public states available.`,
+    `\nOpen Outdoor → Settings → Maps → Add a map → From laptop\nPairing page: http://127.0.0.1:${pairingServer.address().port}/pair\nLaptop address: ${address}\nPairing code: ${token}\nSigning fingerprint: ${signer.identity.keyId}\n${availableStates.length} verified public states available.`,
   );
   if (missingStates.length)
     console.log(
@@ -266,6 +285,8 @@ async function main() {
     stopDiscovery();
     server.close();
     server.closeAllConnections();
+    pairingServer.close();
+    pairingServer.closeAllConnections();
     void signer.close();
   };
   process.once('SIGINT', stop);

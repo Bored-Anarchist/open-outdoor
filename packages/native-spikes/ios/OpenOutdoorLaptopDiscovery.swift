@@ -60,12 +60,14 @@ internal final class OpenOutdoorLaptopDiscovery: NSObject, NetServiceBrowserDele
       let url = try? OpenOutdoorLaptopEndpoint.url(address), url.port == sender.port,
       sender.addresses?.contains(where: { data in
         data.withUnsafeBytes { bytes -> Bool in
-          guard let pointer = bytes.baseAddress, data.count >= MemoryLayout<sockaddr_in>.size else { return false }
+          guard let pointer = bytes.baseAddress, data.count >= MemoryLayout<sockaddr>.size else { return false }
           let socket = pointer.assumingMemoryBound(to: sockaddr.self)
-          guard socket.pointee.sa_family == sa_family_t(AF_INET) else { return false }
+          let family = socket.pointee.sa_family
+          guard (family == sa_family_t(AF_INET) && data.count >= MemoryLayout<sockaddr_in>.size) ||
+            (family == sa_family_t(AF_INET6) && data.count >= MemoryLayout<sockaddr_in6>.size) else { return false }
           var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
           guard getnameinfo(socket, socklen_t(data.count), &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST) == 0 else { return false }
-          return String(cString: host) == url.host
+          return OpenOutdoorLaptopEndpoint.matchesResolvedAddress(String(cString: host), url: url)
         }
       }) == true, !found.contains(where: { $0["address"] == url.absoluteString }) else { return }
     found.append(["name": sender.name, "address": url.absoluteString])

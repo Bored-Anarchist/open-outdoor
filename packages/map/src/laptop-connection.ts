@@ -1,3 +1,5 @@
+import { parseLaptopHost } from './laptop-address';
+
 export interface LaptopStatePackage {
   readonly state: string;
   readonly name: string;
@@ -25,24 +27,18 @@ export interface LaptopTransferProgress {
   readonly totalBytes: number;
 }
 
-/** Accept only a literal private IPv4 address: no DNS, URL secrets or alternate origins. */
+/** Accept literal unicast IPv4/IPv6 addresses: no DNS, URL secrets or alternate origins. */
 export function validateLaptopAddress(address: string): string {
-  const match = /^http:\/\/(\d{1,3}(?:\.\d{1,3}){3}):(\d{4,5})\/?$/.exec(address.trim());
-  const parts = match?.[1]?.split('.') ?? [];
-  const numbers = parts.map(Number);
-  const [a, b = -1] = numbers;
+  const input = address.trim();
+  const match = /^http:\/\/(\[[^\]]+\]|\d{1,3}(?:\.\d{1,3}){3}):(\d{4,5})\/?$/.exec(input);
+  const raw = match?.[1] ?? '';
+  const parsed = parseLaptopHost(raw.startsWith('[') ? raw.slice(1, -1) : raw);
   const port = Number(match?.[2]);
-  if (
-    parts.length !== 4 ||
-    parts.some((part) => !/^(0|[1-9]\d{0,2})$/.test(part) || Number(part) > 255) ||
-    !(a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)) ||
-    port < 1024 ||
-    port > 65535
-  )
+  if (input.length > 160 || !parsed || port < 1024 || port > 65535)
     throw new Error(
       'Enter the laptop address shown in its terminal, such as http://192.168.1.20:8765.',
     );
-  return `http://${parts.join('.')}:${port}`;
+  return `http://${parsed.ipv6 ? `[${parsed.host}]` : parsed.host}:${port}`;
 }
 
 export function validateLaptopConnection(
