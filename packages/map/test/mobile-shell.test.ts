@@ -85,6 +85,7 @@ vi.mock('../../../apps/mobile/MapSettings', () => ({
   MapSettings: 'settings',
   MapNotices: 'notices',
 }));
+vi.mock('../../../apps/mobile/PlaceNote', () => ({ PlaceNote: 'place-note' }));
 import App from '../../../apps/mobile/App';
 import { createMobileApplication } from '../../../apps/mobile/application';
 
@@ -149,14 +150,47 @@ it('retains query and map instance through Search, Settings and tab changes', as
   });
   const map = root.root.findByType('map');
   await act(async () => map.props.onQueryChange('Hemlock'));
+  await act(async () => map.props.onPlaceFilterChange('water'));
   await act(async () => root.root.findByType('navigation').props.onChange('search'));
   expect(root.root.findByType('map')).toBe(map);
   expect(map.props.query).toBe('Hemlock');
+  expect(map.props.placeFilter).toBe('water');
   await act(async () => map.props.onOpenSettings());
   expect(map.props.visible).toBe(false);
   await act(async () => root.root.findByType('navigation').props.onChange('search'));
   expect(map.props.visible).toBe(true);
   expect(map.props.query).toBe('Hemlock');
+  expect(map.props.placeFilter).toBe('water');
+});
+
+it('opens saved notes directly even when their map package is absent', async () => {
+  native.available = true;
+  const place = {
+    featureId: 'synthetic-removed-place',
+    featureName: 'Removed-package place',
+    note: 'Kept note',
+    checkIns: [],
+  };
+  const service = { get: vi.fn(() => place), save: vi.fn() };
+  vi.mocked(createMobileApplication).mockResolvedValue({
+    placeJournal: service,
+    repository: { listPlaceJournal: () => [place] },
+    library: { list: () => [] },
+  } as never);
+  await act(async () => {
+    root = create(createElement(App));
+  });
+  await act(async () => root.root.findByType('navigation').props.onChange('saved'));
+  const button = (label: string) =>
+    root.root.findAllByType('button').find((node) => node.props.label === label)!;
+  await act(async () => button('Places').props.onPress());
+  await act(async () => button(place.featureName).props.onPress());
+  expect(root.root.findByType('sheet').props.title).toBe('Place note');
+  expect(root.root.findByType('place-note').props).toMatchObject({
+    place: { id: place.featureId, name: place.featureName },
+    service,
+  });
+  expect(root.root.findByType('map').props.statePackages.packages).toEqual([]);
 });
 
 it('reviews before saving, keeps recording on return, and retains a failed save for retry', async () => {

@@ -1,6 +1,6 @@
 import { HikeCaptureControls, type HikeCaptureActions } from './HikeCaptureControls';
 
-import { hikeRouteDetails, type HikeRouteDetails } from '@open-outdoor/shared/hike-route';
+import { mapHikeRoute } from './mapHikeRoute';
 
 import { HikeDetails } from './HikeDetails';
 
@@ -74,8 +74,6 @@ import {
   type IoverlanderCategory,
 } from '@open-outdoor/shared';
 
-import type { PlaceJournalEntry } from '@open-outdoor/storage';
-
 import { layers as protomapsLayers, namedFlavor } from '@protomaps/basemaps';
 
 import { ProductText as Text } from './accessibility';
@@ -90,6 +88,7 @@ import {
   usePalette,
 } from './ProductComponents';
 import { ProductSheet } from './ProductSheet';
+import { PlaceNote } from './PlaceNote';
 
 import worldOverviewAsset from '../../packages/map/src/assets/world-overview-z6.pmtiles';
 
@@ -429,6 +428,8 @@ export function OutdoorMap({
   section,
   query,
   onQueryChange,
+  placeFilter,
+  onPlaceFilterChange: setPlaceFilter,
   statePackages,
   coverage,
   onCoverageShown,
@@ -449,6 +450,8 @@ export function OutdoorMap({
   section: 'explore' | 'search';
   query: string;
   onQueryChange: (value: string) => void;
+  placeFilter: OutdoorPlaceFilter;
+  onPlaceFilterChange: (value: OutdoorPlaceFilter) => void;
   statePackages: StatePackagesService;
   coverage: [number, number, number, number] | null;
   onCoverageShown: () => void;
@@ -553,6 +556,10 @@ export function OutdoorMap({
     feature: OutdoorFeatureSummary;
     packages: typeof statePackages.packages;
   } | null>(null);
+  const selectionRequest = useRef(0);
+  useEffect(() => {
+    selectionRequest.current++;
+  }, [state.selectedFeatureId, statePackages.packages]);
 
   const featureIndex = useMemo<OutdoorFeatureIndex>(
     () => ({
@@ -613,8 +620,6 @@ export function OutdoorMap({
     [imports.datasets],
   );
 
-  const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
-
   const [markerDensity, setMarkerDensity] = useState<OutdoorMarkerDensity>('automatic');
 
   const [openMenu, setOpenMenu] = useState<'places' | 'density' | null>(null);
@@ -648,47 +653,34 @@ export function OutdoorMap({
     [statePackages.packages, placeFilter, state.selectedFeatureId, markerDensity, precisePlaceIds],
   );
 
-  const mapStyle = useMemo(
-    () =>
-      outdoorDataUri && worldOverviewUri && regionalOverviewUri && offlineFontUri
-        ? (() => {
-            const base = createOutdoorMapStyle(
-              outdoorDataUri,
-
-              createTieredOfflineVectorBasemapStyle({
-                worldArchiveUri: worldOverviewUri,
-
-                regionalArchiveUri: regionalOverviewUri,
-
-                fontUri: offlineFontUri,
-
-                sourceLayers: offlineCartography,
-
-                worldMaximumZoom: worldBasemapManifest.maximumZoom,
-
-                regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
-
-                regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
-                useRegionalDetail,
-              }),
-
-              { includePlaces: false, excludedFeatureIds: excludedBundledIds },
-            );
-            return withStatePackageLayers(base, stateMap) as unknown as StyleSpecification;
-          })()
-        : null,
-
-    [
-      offlineFontUri,
+  const mapStyle = useMemo(() => {
+    if (!outdoorDataUri || !worldOverviewUri || !regionalOverviewUri || !offlineFontUri)
+      return null;
+    const base = createOutdoorMapStyle(
       outdoorDataUri,
-      regionalOverviewUri,
-      worldOverviewUri,
-      stateMap,
-      excludedBundledIds,
-      useRegionalDetail,
-      offlineCartography,
-    ],
-  );
+      createTieredOfflineVectorBasemapStyle({
+        worldArchiveUri: worldOverviewUri,
+        regionalArchiveUri: regionalOverviewUri,
+        fontUri: offlineFontUri,
+        sourceLayers: offlineCartography,
+        worldMaximumZoom: worldBasemapManifest.maximumZoom,
+        regionalMinimumZoom: regionalBasemapManifest.minimumZoom,
+        regionalMaximumZoom: regionalBasemapManifest.maximumZoom,
+        useRegionalDetail,
+      }),
+      { includePlaces: false, excludedFeatureIds: excludedBundledIds },
+    );
+    return withStatePackageLayers(base, stateMap) as unknown as StyleSpecification;
+  }, [
+    offlineFontUri,
+    outdoorDataUri,
+    regionalOverviewUri,
+    worldOverviewUri,
+    stateMap,
+    excludedBundledIds,
+    useRegionalDetail,
+    offlineCartography,
+  ]);
 
   const [showSourceDetails, setShowSourceDetails] = useState(false);
   const firstMapLabelId = mapStyle?.layers.find((layer) => layer.type === 'symbol')?.id;
@@ -702,41 +694,17 @@ export function OutdoorMap({
       ? selectedState.current.feature
       : null);
 
-  const selectedHike = useMemo<HikeRouteDetails | null>(() => {
-    if (!selected || selected.properties.kind !== 'trail') return null;
-    if (
-      statePackages.detail?.summary.id === selected.id &&
-      statePackages.detail.geometry &&
-      (statePackages.detail.geometry.type === 'LineString' ||
-        statePackages.detail.geometry.type === 'MultiLineString')
-    )
-      return hikeRouteDetails(statePackages.detail.geometry);
-
-    if (selected.properties.origin === 'private-catalog') {
-      const feature = imports.datasets
-
-        .filter((dataset) => dataset.visible)
-
-        .flatMap((dataset) => dataset.collection.features)
-
-        .find((feature) => feature.id === selected.id);
-
-      if (
-        feature &&
-        (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiLineString')
-      )
-        return hikeRouteDetails(feature.geometry);
-
-      return null;
-    }
-
-    if (bundledHikes.sourceSha256 !== mobileMapDataMetadata.sha256) return null;
-
-    return (
-      (bundledHikes.hikes as unknown as Readonly<Record<string, HikeRouteDetails>>)[selected.id] ??
-      null
-    );
-  }, [selected, imports.datasets, statePackages.detail]);
+  const selectedHike = useMemo(
+    () =>
+      mapHikeRoute(
+        selected,
+        imports.datasets,
+        statePackages.detail,
+        bundledHikes,
+        mobileMapDataMetadata.sha256,
+      ),
+    [selected, imports.datasets, statePackages.detail],
+  );
 
   const [selectedHikeSample, setSelectedHikeSample] = useState<number | null>(null);
 
@@ -848,7 +816,7 @@ export function OutdoorMap({
         : [],
     }),
 
-    [selectedHike, selectedHikeSample, captured?.id, graphic],
+    [selectedHike, selectedHikeSample, captured?.id, graphic, palette.route],
   );
 
   const selectedProperties = selected?.properties;
@@ -886,6 +854,7 @@ export function OutdoorMap({
   ]);
 
   const setSelected = (feature: OutdoorFeatureSummary | null) => {
+    selectionRequest.current++;
     if (!feature) {
       selectedState.current = null;
       statePackages.clearSelection();
@@ -915,12 +884,6 @@ export function OutdoorMap({
       });
     onCoverageShown();
   }, [loaded, coverage, onCoverageShown]);
-
-  const [journalEntry, setJournalEntry] = useState<PlaceJournalEntry | null>(null);
-
-  const [noteDraft, setNoteDraft] = useState('');
-
-  const [journalStatus, setJournalStatus] = useState('');
 
   const [directionsStatus, setDirectionsStatus] = useState('');
 
@@ -971,11 +934,11 @@ export function OutdoorMap({
   const results = useMemo(
     () =>
       mergeStateSummaries(
-        searchOutdoorFeatureIndex(featureIndex, query),
+        searchOutdoorFeatureIndex(featureIndex, query, 30, placeFilter),
         statePackages.results,
       ).slice(0, 30),
 
-    [featureIndex, query, statePackages.results],
+    [featureIndex, query, placeFilter, statePackages.results],
   );
 
   const track = useMemo(
@@ -1015,16 +978,8 @@ export function OutdoorMap({
   }, [regionalOverviewUri]);
 
   useEffect(() => {
-    const entry = selected && placeJournal ? placeJournal.get(selected.id) : null;
-
-    setJournalEntry(entry);
-
-    setNoteDraft(entry?.note ?? '');
-
-    setJournalStatus('');
-
     setDirectionsStatus('');
-  }, [placeJournal, selected?.id]);
+  }, [selected?.id]);
 
   function select(feature: OutdoorFeatureSummary) {
     setFollowUser(false);
@@ -1054,56 +1009,6 @@ export function OutdoorMap({
     setFollowUser(false);
 
     camera.current?.zoomTo(nextOutdoorZoom(zoom, direction), { duration: 160 });
-  }
-
-  async function saveJournal(checkIn: boolean): Promise<void> {
-    if (!selected || !placeJournal) return;
-
-    const occurredAt = new Date().toISOString();
-
-    const prior = placeJournal.get(selected.id);
-
-    const entry: PlaceJournalEntry = {
-      featureId: selected.id,
-
-      featureName: selected.properties.name,
-
-      note: noteDraft,
-
-      checkIns: checkIn
-        ? [
-            ...(prior?.checkIns ?? []),
-
-            {
-              id: `checkin-${Date.now()}-${(prior?.checkIns.length ?? 0) + 1}`,
-
-              occurredAt,
-            },
-          ]
-        : (prior?.checkIns ?? []),
-
-      updatedAt: occurredAt,
-    };
-
-    setJournalStatus(checkIn ? 'Saving private check-in…' : 'Saving private note…');
-
-    try {
-      const saved = await placeJournal.save(entry);
-
-      setJournalEntry(saved);
-
-      setNoteDraft(saved.note);
-
-      setJournalStatus(
-        checkIn ? 'Checked in. Your note is saved privately.' : 'Your private note is saved.',
-      );
-    } catch (error) {
-      setJournalStatus(
-        `Could not save privately: ${error instanceof Error ? error.message : String(error)}`,
-      );
-
-      throw error;
-    }
   }
 
   async function shareDirectionsDestination(): Promise<void> {
@@ -1317,6 +1222,7 @@ export function OutdoorMap({
               onDidFailLoadingMap={() => setFailed(true)}
 
               onPress={(event) => {
+                const request = ++selectionRequest.current;
                 void mapView.current
 
                   ?.queryRenderedFeatures(event.nativeEvent.point, {
@@ -1331,6 +1237,7 @@ export function OutdoorMap({
                   })
 
                   .then((features) => {
+                    if (request !== selectionRequest.current) return;
                     const id = features.find((feature) => feature.properties?.kind !== 'boundary')
                       ?.properties?.id;
 
@@ -1339,7 +1246,7 @@ export function OutdoorMap({
                     if (feature) select(feature);
                     else if (typeof id === 'string' && statePackages.ready)
                       void statePackages.select(id).then((summary) => {
-                        if (summary) {
+                        if (summary && request === selectionRequest.current) {
                           selectedState.current = {
                             feature: summary,
                             packages: statePackages.packages,
@@ -1399,11 +1306,13 @@ export function OutdoorMap({
                   const properties = rendered?.properties;
 
                   if (properties?.point_count && properties.cluster_id !== undefined) {
+                    const request = ++selectionRequest.current;
                     void placeSource.current
 
                       ?.getClusterExpansionZoom(Number(properties.cluster_id))
 
                       .then((expansionZoom) => {
+                        if (request !== selectionRequest.current) return;
                         setFollowUser(false);
 
                         camera.current?.jumpTo({
@@ -1416,7 +1325,9 @@ export function OutdoorMap({
                         });
                       })
 
-                      .catch(() => changeZoom('in'));
+                      .catch(() => {
+                        if (request === selectionRequest.current) changeZoom('in');
+                      });
 
                     return;
                   }
@@ -2182,86 +2093,10 @@ export function OutdoorMap({
         onClose={() => setNoteOpen(false)}
       >
         {selected ? (
-          <>
-            <View style={{ gap: 8 }}>
-              <Text accessibilityRole="header" style={{ fontWeight: '700' }}>
-                Private note and check-ins
-              </Text>
-
-              <TextInput
-                accessibilityLabel={`Private note for ${selected.properties.name}`}
-
-                accessibilityHint="Stored only in this app's protected user data"
-
-                placeholder="Add a note for your next visit"
-
-                placeholderTextColor={palette.muted}
-
-                value={noteDraft}
-
-                onChangeText={setNoteDraft}
-
-                multiline
-
-                maxLength={5_000}
-
-                style={{
-                  color: palette.text,
-
-                  borderColor: palette.border,
-
-                  borderWidth: 1,
-
-                  borderRadius: 10,
-
-                  minHeight: 96,
-
-                  padding: 12,
-
-                  textAlignVertical: 'top',
-                }}
-              />
-
-              <ProductButton
-                label="Check in"
-
-                hint="Save the current time and this note privately for the selected place"
-
-                disabled={placeJournal === null}
-
-                onPress={() => saveJournal(true)}
-              />
-
-              <ProductButton
-                label="Save note"
-
-                hint="Update your private place note without creating a check-in"
-
-                disabled={
-                  placeJournal === null || noteDraft.trim() === (journalEntry?.note.trim() ?? '')
-                }
-
-                onPress={() => saveJournal(false)}
-              />
-
-              <Text accessibilityLiveRegion="polite">
-                {placeJournal === null
-                  ? 'Private storage is not ready; map details remain available.'
-                  : journalStatus ||
-                    `${journalEntry?.checkIns.length ?? 0} private check-ins saved on this device.`}
-              </Text>
-
-              {(journalEntry?.checkIns ?? []).slice(0, 5).map((checkIn) => (
-                <Text key={checkIn.id}>
-                  Checked in {new Date(checkIn.occurredAt).toLocaleString()}
-                </Text>
-              ))}
-
-              {(journalEntry?.checkIns.length ?? 0) > 5 ? (
-                <Text>Showing your 5 newest check-ins.</Text>
-              ) : null}
-            </View>
-          </>
+          <PlaceNote
+            place={{ id: selected.id, name: selected.properties.name }}
+            service={placeJournal}
+          />
         ) : null}
       </ProductSheet>
       <ProductSheet

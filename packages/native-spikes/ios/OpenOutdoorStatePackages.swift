@@ -386,17 +386,23 @@ internal final class OpenOutdoorStatePackages {
     } else { throw failure("Unsupported state package action.") }
     return try list()
   }
-  func search(_ query: String) throws -> String {
+  func search(_ query: String, category: String = "all") throws -> String {
     let tokens = query.prefix(200).split(whereSeparator: { !$0.isLetter && !$0.isNumber })
     guard !tokens.isEmpty else { return "[]" }
     let expression = tokens.prefix(8).map { "\"\($0)\"*" }.joined(separator: " AND ")
+    let searchSQL = """
+      SELECT f.summary FROM search JOIN features f ON f.ordinal=search.rowid
+      WHERE search MATCH ? AND (?='all' OR
+        (json_extract(f.summary,'$.properties.kind')='poi' AND json_extract(f.summary,'$.properties.category')=?))
+      ORDER BY rank LIMIT 30
+      """
     var found: [[String: Any]] = []
     var ids = Set<String>()
     var payloadBytes = 0
     for entry in try entries().filter({ $0.visible && $0.quarantined != true }) {
       let db = try open(file(entry.current, "sqlite"))
       defer { sqlite3_close(db) }
-      for row in try rows(db, "SELECT f.summary FROM search JOIN features f ON f.ordinal=search.rowid WHERE search MATCH ? ORDER BY rank LIMIT 30", [expression]) {
+      for row in try rows(db, searchSQL, [expression, category, category]) {
         payloadBytes += row[0].utf8.count
         if payloadBytes > 2 * 1024 * 1024 { break }
         if let value = try JSONSerialization.jsonObject(with: Data(row[0].utf8)) as? [String: Any],

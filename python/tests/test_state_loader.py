@@ -107,6 +107,25 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(geometry.geom_type, 'Polygon')
         self.assertGreater(geometry.area, 0)
 
+    def test_native_search_filters_categories_before_limiting_results(self):
+        native = (builder.ROOT / 'packages/native-spikes/ios/OpenOutdoorStatePackages.swift').read_text(encoding='utf-8')
+        query = re.search(r'let searchSQL = """\s*(.*?)\s*"""', native, re.S).group(1)
+        with tempfile.TemporaryDirectory(prefix='state-search-', dir=builder.scratch_root()) as directory:
+            base = pathlib.Path(directory)
+            self.source(base)
+            builder.build_state({'state': 'NY', 'name': 'New York'}, base, max_zoom=5)
+            with closing(sqlite3.connect(base / 'state.sqlite')) as db:
+                for ordinal in range(2, 37):
+                    summary = {'id': f'synthetic-{ordinal}', 'properties': {'name': 'Spring Spring', 'kind': 'poi', 'category': 'campsite'}}
+                    db.execute('INSERT INTO features VALUES(?,?,?,?)', (ordinal, summary['id'], json.dumps(summary), '{}'))
+                    db.execute('INSERT INTO search(rowid,name,unit,category) VALUES(?,?,?,?)', (ordinal, 'Spring Spring', 'Spring', 'campsite'))
+                water = [json.loads(row[0]) for row in db.execute(query, ['"Spring"*', 'water', 'water'])]
+                self.assertEqual([feature['id'] for feature in water], ['site-water'])
+                self.assertEqual(len(db.execute(query, ['"Spring"*', 'all', 'all']).fetchall()), 30)
+                self.assertEqual(db.execute(query, ['"Spring"*', "water' OR 1=1--", "water' OR 1=1--"]).fetchall(), [])
+                db.execute("UPDATE features SET summary=json_set(summary,'$.properties.kind','trail') WHERE id='site-water'")
+                self.assertEqual(db.execute(query, ['"Spring"*', 'water', 'water']).fetchall(), [])
+
 
 if __name__ == '__main__':
     unittest.main()

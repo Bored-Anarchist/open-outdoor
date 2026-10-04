@@ -31,6 +31,7 @@ import {
 import { recordedHikeDisplay, storedHikeObservations } from '@open-outdoor/recorder';
 
 import type { RecordedActivity } from '@open-outdoor/storage';
+import type { OutdoorPlaceFilter } from '@open-outdoor/map';
 
 import type { HikeCaptureView } from './HikeCaptureControls';
 
@@ -62,6 +63,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { OutdoorMap } from './OutdoorMap';
 import { MapSettings, MapNotices } from './MapSettings';
 import { ProductSheet } from './ProductSheet';
+import { PlaceNote } from './PlaceNote';
 import {
   RecordingScreen,
   RecordedPathPreview,
@@ -75,14 +77,6 @@ import { useImportedMapDatasets } from './useImportedMapDatasets';
 type RecorderUiState = 'idle' | 'recording' | 'paused' | 'recoverable';
 
 type RecoveryReason = 'process-termination' | 'permission-loss' | 'native-error';
-
-const modeLabels: Readonly<Record<NativeTrackingMode, string>> = {
-  balanced: 'Balanced',
-
-  endurance: 'Endurance',
-
-  'high-accuracy': 'High Accuracy',
-};
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -143,9 +137,11 @@ function AppContent({
     'index' | 'maps' | 'appearance' | 'recording' | 'about' | 'advanced'
   >('index');
   const [libraryPage, setLibraryPage] = useState<'hikes' | 'places'>('hikes');
+  const [savedPlace, setSavedPlace] = useState<{ id: string; name: string } | null>(null);
   const [finishReview, setFinishReview] = useState(false);
   const [query, setQuery] = useState('');
-  const statePackages = useStatePackages(query);
+  const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
+  const statePackages = useStatePackages(query, placeFilter);
   const [coverage, setCoverage] = useState<[number, number, number, number] | null>(null);
   const scroll = useRef<ScrollView>(null);
 
@@ -396,7 +392,7 @@ function AppContent({
 
       setRecorderState('recording');
 
-      setStatus('Recording ' + modeLabels[mode] + '.');
+      setStatus('Recording ' + recordingModes[mode] + '.');
 
       return true;
     } catch (error) {
@@ -430,8 +426,6 @@ function AppContent({
       await drainPausedCapture();
 
       refreshCapturedDisplay('paused');
-
-      setRecorderState('paused');
 
       setStatus('Paused. Sensors stopped.');
 
@@ -793,6 +787,8 @@ function AppContent({
             section={section === 'search' ? 'search' : 'explore'}
             query={query}
             onQueryChange={setQuery}
+            placeFilter={placeFilter}
+            onPlaceFilterChange={setPlaceFilter}
             statePackages={statePackages}
             coverage={coverage}
             onCoverageShown={() => setCoverage(null)}
@@ -898,8 +894,7 @@ function AppContent({
                         subtitle={`${place.note ? '1 note · ' : ''}${place.checkIns.length} check-ins`}
                         icon="saved"
                         onPress={() => {
-                          map.setSelectedFeature(place.featureId);
-                          setSection('explore');
+                          setSavedPlace({ id: place.featureId, name: place.featureName });
                         }}
                       />
                     ))}
@@ -934,7 +929,7 @@ function AppContent({
                 />
                 <ProductRow
                   title="Recording"
-                  subtitle={modeLabels[mode]}
+                  subtitle={recordingModes[mode]}
                   icon="track"
                   onPress={() => setSettingsPage('recording')}
                 />
@@ -1090,6 +1085,15 @@ function AppContent({
         />
       </SafeAreaView>
       <ProductSheet
+        title="Place note"
+        visible={savedPlace !== null}
+        onClose={() => setSavedPlace(null)}
+      >
+        {savedPlace ? (
+          <PlaceNote place={savedPlace} service={application?.placeJournal ?? null} />
+        ) : null}
+      </ProductSheet>
+      <ProductSheet
         title="Save hike"
         visible={finishReview && active}
         onClose={() => setFinishReview(false)}
@@ -1132,52 +1136,6 @@ function AppContent({
 
 function createStyles(p: Palette) {
   return StyleSheet.create({
-    searchInput: {
-      color: p.text,
-
-      backgroundColor: p.surface,
-
-      borderColor: p.border,
-
-      borderWidth: 2,
-
-      borderRadius: t.radius.control,
-
-      minHeight: t.target.minimum,
-
-      padding: t.space.md,
-
-      fontSize: t.type.body,
-    },
-
-    activityHeading: { color: p.text, fontSize: t.type.body, fontWeight: '700' },
-
-    alert: {
-      backgroundColor: p.surface,
-
-      borderColor: p.danger,
-
-      borderRadius: t.radius.card,
-
-      borderWidth: 2,
-
-      marginBottom: t.space.lg,
-
-      padding: t.space.lg,
-    },
-
-    alertCopy: { color: p.text, fontSize: t.type.body, lineHeight: t.type.lineHeight },
-
-    alertHeading: {
-      color: p.danger,
-
-      fontSize: t.type.title,
-
-      fontWeight: '700',
-
-      marginBottom: t.space.sm,
-    },
-
     container: {
       backgroundColor: p.background,
       flexGrow: 1,
@@ -1185,104 +1143,28 @@ function createStyles(p: Palette) {
       paddingTop: 4,
       paddingBottom: 32,
     },
-
-    brand: { color: p.text, fontSize: 21, fontWeight: '800', letterSpacing: -0.6 },
-
-    intro: { color: p.muted, fontSize: 16, lineHeight: 24, marginBottom: 24 },
-
     controls: { gap: t.space.md },
-
-    metricGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: t.space.md },
-
     copy: {
       color: p.text,
-
       fontSize: t.type.body,
-
       lineHeight: t.type.lineHeight,
-
       marginBottom: t.space.lg,
     },
-
-    eyebrow: {
-      color: p.accent,
-      fontSize: 11,
-      fontWeight: '800',
-      letterSpacing: 2,
-      marginBottom: 8,
-    },
-
     heading: {
       color: p.text,
-
       fontSize: 30,
       fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-
       letterSpacing: -0.5,
-
       lineHeight: 36,
-
       fontWeight: '500',
-
       marginBottom: t.space.md,
     },
-
-    mapAlternative: {
-      backgroundColor: p.land,
-
-      borderColor: p.border,
-
-      borderRadius: t.radius.card,
-
-      borderWidth: 2,
-
-      marginBottom: t.space.lg,
-
-      minHeight: 176,
-
-      padding: t.space.lg,
-    },
-
-    mapCopy: { color: p.text, fontSize: t.type.body, lineHeight: t.type.lineHeight },
-
-    mapHeading: { color: p.text, fontSize: t.type.title, fontWeight: '800' },
-
-    routeLine: {
-      backgroundColor: p.route,
-
-      borderRadius: t.radius.badge,
-
-      height: 8,
-
-      marginVertical: t.space.xxl,
-    },
-
     sectionHeading: {
       color: p.text,
-
       fontSize: t.type.title,
-
       fontWeight: '800',
-
       marginBottom: t.space.md,
-
       marginTop: t.space.xl,
-    },
-
-    status: {
-      backgroundColor: p.selected,
-
-      borderRadius: t.radius.card,
-
-      color: p.text,
-
-      fontSize: t.type.body,
-
-      lineHeight: t.type.lineHeight,
-
-      marginBottom: t.space.lg,
-
-      padding: t.space.lg,
     },
   });
 }

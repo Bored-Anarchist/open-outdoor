@@ -5,9 +5,9 @@ The approved [Visual Design Guide](Open%20Outdoor%20Visual%20Design%20Guide.docx
 ## Navigation and discovery
 
 - Explore fills the screen above the bottom navigation. Search and Settings float over the map; categories, layers, and marker detail remain nearby. Place selection opens a compact preview. Place evidence, notes, tools, and the legend use separate scrolling system sheets.
-- Search uses flat place rows and retained query/category state. Going through Settings or another tab preserves the mounted map, selection, filters, and camera.
+- Search uses flat place rows and retained query/category state. Categories filter local and installed-package results before the result limit. Going through Settings or another tab preserves the mounted map, selection, filters, and camera.
 - Track centers readiness, durable recorded time, a path preview, distance, ascent, and GPS quality. Recording mode and location explanations stay secondary. Pause, resume, recovery, and discard retain their existing recorder behavior. Finish opens a review; Save hike performs the durable finish operation. Failed saves remain available for retry.
-- Saved separates hikes from places. Finished hikes show their actual names and dates, with the first hike's durable path preview. Notes and check-ins reopen the selected place. Empty states lead directly to recording or exploration.
+- Saved separates hikes from places. Finished hikes show their actual names and dates, with the first hike's durable path preview. Notes and check-ins open directly and remain available after their map package is removed. Empty states lead directly to recording or exploration.
 - Explore, Search, Track, and Saved remain labeled and reachable. Navigation occupies its own bottom safe-area row; content scrolls above it.
 
 ## Settings and map inventory

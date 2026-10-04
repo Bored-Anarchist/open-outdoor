@@ -403,6 +403,7 @@ export function searchOutdoorFeatureIndex(
   index: OutdoorFeatureIndex,
   query: string,
   limit = 30,
+  filter: OutdoorPlaceFilter = 'all',
 ): OutdoorFeatureSummary[] {
   const term = query.trim().toLocaleLowerCase();
   if (!term) return [];
@@ -410,6 +411,9 @@ export function searchOutdoorFeatureIndex(
     .filter(
       (feature) =>
         feature.properties.kind !== 'boundary' &&
+        (filter === 'all' ||
+          (feature.properties.kind === 'poi' &&
+            matchesPlaceFilter(outdoorIoverlanderCategory(feature.properties.category), filter))) &&
         (feature.properties.name + ' ' + feature.properties.unit)
           .toLocaleLowerCase()
           .includes(term),

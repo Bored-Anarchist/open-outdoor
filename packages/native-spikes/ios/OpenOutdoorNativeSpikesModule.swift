@@ -47,8 +47,8 @@ public final class OpenOutdoorNativeSpikesModule: Module {
     AsyncFunction("changeStatePackage") { (state: String, action: String) -> String in
       try self.statePackageStore.change(state, action)
     }.runOnQueue(statePackageQueue)
-    AsyncFunction("searchStatePackages") { (query: String) -> String in
-      try self.statePackageStore.search(query)
+    AsyncFunction("searchStatePackages") { (query: String, filter: String) -> String in
+      try self.statePackageStore.search(query, category: filter)
     }.runOnQueue(statePackageQueue)
     AsyncFunction("statePackageDetail") { (id: String) -> String? in
       try self.statePackageStore.detail(id)

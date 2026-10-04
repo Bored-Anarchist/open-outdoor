@@ -66,7 +66,9 @@ test('manual imports retain their existing guardrails', () => {
 
 test('state picker bridges only catalog summaries, never a complete GeoJSON payload', () => {
   const hook = text('apps/mobile/useStatePackages.ts');
-  assert.ok(hook.includes('searchStatePackages(query)') && hook.includes('statePackageDetail(id)'));
+  assert.ok(
+    hook.includes('searchStatePackages(query, filter)') && hook.includes('statePackageDetail(id)'),
+  );
   assert.ok(!hook.includes('parseMapDataset') && !hook.includes('serializeMapDatasets'));
   assert.ok(native.includes('read(upToCount: 1024 * 1024)'));
   assert.ok(native.includes('length(geometry)<=2097152'));

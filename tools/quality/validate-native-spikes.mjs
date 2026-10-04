@@ -55,6 +55,9 @@ if (
 const recordingScreen = await text('apps/mobile/RecordingScreen.tsx');
 const captureControls = await text('apps/mobile/HikeCaptureControls.tsx');
 const mapSettings = await text('apps/mobile/MapSettings.tsx');
+const placeNote = await text('apps/mobile/PlaceNote.tsx');
+const placeJournal = await text('apps/mobile/usePlaceJournal.ts');
+const privatePersistence = await text('apps/mobile/privatePersistence.ts');
 const mobileIndex = await text('apps/mobile/index.ts');
 const startupBoundary = await text('apps/mobile/StartupErrorBoundary.tsx');
 const storage = await text('packages/native-spikes/ios/OpenOutdoorStorageCoordinatorSpike.swift');
@@ -311,15 +314,12 @@ for (const token of [
 ]) {
   requireText(mobileMap.replace(/\s+/g, ' '), token, 'live offline GPS map position');
 }
-for (const token of [
-  'iOverlander community information',
-  'Private note and check-ins',
-  'Check in',
-  'Save note',
-  'placeJournal.save(entry)',
-]) {
-  requireText(mobileMap, token, 'private place journal and community details');
-}
+requireText(mobileMap, 'iOverlander community information', 'community details');
+requireText(mobileMap, '<PlaceNote', 'Explore private notes');
+requireText(mobileApp, '<PlaceNote', 'Saved private notes');
+for (const token of ['Check in', 'Save note'])
+  requireText(placeNote, token, 'private journal actions');
+requireText(placeJournal, 'service.save(place.id', 'serialized journal updates');
 for (const token of [
   'Directions',
   'ActionSheetIOS.showActionSheetWithOptions',
@@ -335,9 +335,14 @@ for (const scheme of ['comgooglemaps', 'waze']) {
   }
 }
 requireText(
-  mobileApplication,
-  'repository.savePlaceJournal(entry)',
+  privatePersistence,
+  'await store.commitPrivateSnapshot',
   'protected place journal persistence',
+);
+requireText(
+  privatePersistence,
+  'repository.savePlaceJournal(saved)',
+  'durable journal publication',
 );
 rejectText(mobileMap, 'openfreemap-liberty.json', 'network-free native basemap');
 requireText(

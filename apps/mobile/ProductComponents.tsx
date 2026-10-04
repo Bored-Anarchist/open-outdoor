@@ -227,7 +227,7 @@ export function ProductButton({
           textAlign: 'center',
         }}
       >
-        {error ? `${label}. ${error}` : busy || pending ? `${label}…` : selected ? label : label}
+        {error ? `${label}. ${error}` : busy || pending ? `${label}…` : label}
       </Text>
     </Pressable>
   );
