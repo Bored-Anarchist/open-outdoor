@@ -16,6 +16,8 @@ Settings contains Maps, Appearance, Recording, About and sources, and Advanced. 
 
 Maps distinguishes bundled coverage, installed public packages, and private datasets. Each installed entry has an explicit visibility switch and a detail page with coverage, metadata, and removal. Integrity errors disable unsafe actions. Removal and unreadable-storage reset require confirmation; notes and hikes remain intact.
 
+Stock builds bundle only the world/regional basemaps. New York and every other state catalog are added explicitly. Explore opens on a broad basemap overview, and an empty install offers Add a map in Explore and Search. Bundled coverage reflects the basemap instead of a New York starter region. Custom private builds retain their explicit overlay configuration.
+
 Add a map supports Files, laptop packages, and GeoJSON. GeoJSON is validated before review, without being installed. Import persists the reviewed draft; cancellation leaves storage untouched, and failed writes can be retried. Laptop pairing offers discovery and QR scanning with expandable manual entry. Full signing fingerprints and trust consequences remain available before approval, and saved keys can be revoked offline. Transfer cancellation and verification protections remain intact.
 
 ## Components and accessibility

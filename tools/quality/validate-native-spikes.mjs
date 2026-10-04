@@ -39,6 +39,19 @@ const mobileBinding = await text('apps/mobile/nativeSpikes.ts');
 const mobileApp = await text('apps/mobile/App.tsx');
 const mobileApplication = await text('apps/mobile/application.ts');
 const mobileMap = await text('apps/mobile/OutdoorMap.tsx');
+const stockMapData = await text('apps/mobile/mapData.public.ts');
+requireText(stockMapData, 'base-outdoors.geojson', 'stock basemap-only build');
+for (const token of ['new-york-outdoors', 'new-york-hikes', '.private-map-data']) {
+  rejectText(stockMapData, token, 'stock basemap-only build');
+}
+const stockCatalog = JSON.parse(await text('packages/map/src/assets/base-outdoors.geojson'));
+if (
+  stockCatalog.type !== 'FeatureCollection' ||
+  !Array.isArray(stockCatalog.features) ||
+  stockCatalog.features.length !== 0
+) {
+  throw new Error('Stock builds must not preinstall a state catalog.');
+}
 const recordingScreen = await text('apps/mobile/RecordingScreen.tsx');
 const captureControls = await text('apps/mobile/HikeCaptureControls.tsx');
 const mapSettings = await text('apps/mobile/MapSettings.tsx');

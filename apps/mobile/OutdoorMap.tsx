@@ -533,6 +533,12 @@ export function OutdoorMap({
     () => bundledFeaturesForStatePackages(bundledFeatureIndex.features, statePackages.packages),
     [statePackages.packages],
   );
+  const noCatalogs =
+    statePackages.ready &&
+    imports.ready &&
+    bundledFeatureIndex.features.length === 0 &&
+    statePackages.packages.length === 0 &&
+    imports.datasets.length === 0;
   const excludedBundledIds = useMemo(() => {
     const included = new Set(bundledFeatures.map((feature) => feature.id));
     return bundledFeatureIndex.features
@@ -893,8 +899,6 @@ export function OutdoorMap({
 
   const [failed, setFailed] = useState(false);
 
-  const [outside, setOutside] = useState(false);
-
   const [followUser, setFollowUser] = useState(false);
 
   const [zoom, setZoom] = useState(state.camera.zoom);
@@ -1244,6 +1248,17 @@ export function OutdoorMap({
             hint="Choose categories for results and map"
             onPress={() => setToolsOpen(true)}
           />
+          {noCatalogs ? (
+            <View style={{ paddingVertical: 24, gap: 16 }}>
+              <Text>Add a map to search places.</Text>
+              <ProductButton
+                label="Add a map"
+                hint="Open Maps to install a state package or import private data"
+                primary
+                onPress={onOpenMaps}
+              />
+            </View>
+          ) : null}
           {query.trim() ? (
             <Text accessibilityLiveRegion="polite" style={{ color: palette.muted, fontSize: 14 }}>
               {results.length}
@@ -1262,7 +1277,7 @@ export function OutdoorMap({
               }}
             />
           ))}
-          {query.trim() && results.length === 0 ? (
+          {!noCatalogs && query.trim() && results.length === 0 ? (
             <View style={{ paddingVertical: 32, gap: 16 }}>
               <Text style={{ fontSize: 23 }}>No matches</Text>
               <Text>Try another name or category.</Text>
@@ -1339,18 +1354,6 @@ export function OutdoorMap({
 
               onRegionDidChange={(event) => {
                 const [x, y] = event.nativeEvent.center;
-
-                setOutside(
-                  (x < -79.77 || x > -71.75 || y < 40.47 || y > 45.02) &&
-                    !statePackages.packages.some(
-                      (entry) =>
-                        entry.visible &&
-                        x >= entry.bounds[0] &&
-                        x <= entry.bounds[2] &&
-                        y >= entry.bounds[1] &&
-                        y <= entry.bounds[3],
-                    ),
-                );
 
                 setZoom(event.nativeEvent.zoom);
                 setViewport({
@@ -1745,7 +1748,7 @@ export function OutdoorMap({
             }}
           >
             <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-              {failed || assetError || !loaded || outside ? (
+              {failed || assetError || !loaded ? (
                 <Text
                   accessibilityLiveRegion="polite"
                   style={{
@@ -1755,9 +1758,7 @@ export function OutdoorMap({
                 >
                   {failed || assetError
                     ? 'Map could not render. Search remains available.'
-                    : !loaded
-                      ? 'Loading map…'
-                      : 'Outside downloaded map coverage.'}
+                    : 'Loading map…'}
                 </Text>
               ) : null}
               {statePlaces.error || statePlaces.limited ? (
@@ -1819,8 +1820,16 @@ export function OutdoorMap({
                       fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
                     }}
                   >
-                    Explore this area
+                    {noCatalogs ? 'No maps added' : 'Explore this area'}
                   </Text>
+                  {noCatalogs ? (
+                    <ProductButton
+                      label="Add a map"
+                      hint="Open Maps to install a state package or import private data"
+                      primary
+                      onPress={onOpenMaps}
+                    />
+                  ) : null}
                   <ProductButton
                     label="Legend"
                     hint="Read map symbols and source-independent access warnings"

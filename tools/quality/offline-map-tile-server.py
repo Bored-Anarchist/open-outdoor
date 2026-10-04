@@ -60,6 +60,8 @@ with ExitStack() as stack:
     query = re.search(r'func places.*?let sql = """\s*(SELECT json_object.*?)\s*"""', native, re.S).group(1)
 
     class Handler(BaseHTTPRequestHandler):
+        protocol_version = 'HTTP/1.1'
+
         def do_GET(self):
             path = urlparse(self.path).path
             if path == '/places':
@@ -88,6 +90,10 @@ with ExitStack() as stack:
         def log_message(self, *_):
             pass
 
-    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    class TileServer(ThreadingHTTPServer):
+        # Broad overview views request many tiles at once.
+        request_queue_size = 64
+
+    server = TileServer(('127.0.0.1', 0), Handler)
     print(f'QA_TILE_SERVER={server.server_port}', flush=True)
     server.serve_forever()

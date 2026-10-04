@@ -2,7 +2,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { layers, namedFlavor } from '@protomaps/basemaps';
-import dataUrl from '../../packages/map/src/assets/new-york-outdoors.geojson?url';
+import dataUrl from '../../packages/map/src/assets/base-outdoors.geojson?url';
 import fontUrl from '../../packages/map/src/assets/NotoSans-Variable.ttf?url';
 import {
   createOutdoorMapStyle,

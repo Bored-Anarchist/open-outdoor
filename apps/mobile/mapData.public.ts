@@ -1,7 +1,6 @@
-import mobileMapDataAsset from '../../packages/map/src/assets/new-york-outdoors.geojson';
-import mobileMapDataIndex from '../../packages/map/src/assets/new-york-outdoors.index.json';
-import publicManifest from '../../packages/map/src/assets/new-york-outdoors.manifest.json';
-import mobileHikeData from '../../packages/map/src/assets/new-york-hikes.json';
+import mobileMapDataAsset from '../../packages/map/src/assets/base-outdoors.geojson';
+import type { OutdoorFeatureIndex } from '@open-outdoor/map';
+import type { HikeRouteDetails } from '@open-outdoor/shared/hike-route';
 
 export interface MobileMapSourceSummary {
   readonly id: string;
@@ -23,17 +22,24 @@ export interface MobileMapDataMetadata {
   readonly sources: readonly MobileMapSourceSummary[];
 }
 
-export { mobileMapDataAsset, mobileMapDataIndex, mobileHikeData };
+export { mobileMapDataAsset };
+const emptyCatalogSha256 = '299aeb5113c8d42e75f0f937a72927867d0ad25e78d6f41a66c63293d125b959';
+// Stock builds contain basemaps only. State catalogs are explicitly installed in Maps.
+export const mobileMapDataIndex: OutdoorFeatureIndex = { schemaVersion: 1, features: [] };
+export const mobileHikeData = {
+  sourceSha256: emptyCatalogSha256,
+  attribution: '',
+  hikes: {} as Readonly<Record<string, HikeRouteDetails>>,
+};
 export const mobileMapDataMetadata = {
   schemaVersion: 1,
-  classification: publicManifest.classification,
+  classification: 'SOURCE_REDISTRIBUTABLE',
   hasPrivateData: false,
-  label: 'NYS boundary + NPS + USFS + BLM public catalog',
-  featureCount: publicManifest.featureCount,
-  sha256: publicManifest.sha256,
-  hikeProfileCount: Object.keys(mobileHikeData.hikes).length,
-  acquiredAt: publicManifest.acquiredAt,
-  attribution:
-    'NYS ITS Geospatial Services; National Park Service; USDA Forest Service; Bureau of Land Management',
-  sources: publicManifest.catalogSources,
+  label: 'Offline basemaps',
+  featureCount: 0,
+  sha256: emptyCatalogSha256,
+  hikeProfileCount: 0,
+  acquiredAt: '',
+  attribution: '',
+  sources: [] as readonly MobileMapSourceSummary[],
 } satisfies MobileMapDataMetadata;

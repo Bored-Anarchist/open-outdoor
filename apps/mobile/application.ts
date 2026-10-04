@@ -151,7 +151,7 @@ export interface PlaceJournalService {
 /**
  * The offline map is available without private storage or tracking capabilities.
  * Keeping this construction synchronous prevents recorder startup failures from
- * hiding the bundled public geography.
+ * hiding the offline basemap or installed map catalogs.
  */
 export function createOutdoorMapAdapter(): OutdoorMapAdapter {
   return new OutdoorMapAdapter();

@@ -16,6 +16,7 @@ import type { ImportedMapDatasetsService } from './useImportedMapDatasets';
 import type { ImportedMapDataset } from '@open-outdoor/map';
 import {
   mobileMapDataMetadata,
+  mobileMapDataIndex,
   mobileHikeData as bundledHikes,
 } from '@open-outdoor/mobile-map-data';
 import worldBasemapManifest from '../../packages/map/src/assets/world-basemap.manifest.json';
@@ -93,6 +94,17 @@ export function MapSettings({
   const [addAction, setAddAction] = useState<'files' | 'geojson' | null>(null);
   const entry = statePackages.packages.find((item) => item.state === selectedId);
   const dataset = imports.datasets.find((item) => item.id === selectedId);
+  const bundledBounds: [number, number, number, number] = mobileMapDataIndex.features.length
+    ? mobileMapDataIndex.features.reduce<[number, number, number, number]>(
+        (bounds, feature) => [
+          Math.min(bounds[0], feature.bounds[0]),
+          Math.min(bounds[1], feature.bounds[1]),
+          Math.max(bounds[2], feature.bounds[2]),
+          Math.max(bounds[3], feature.bounds[3]),
+        ],
+        [180, 90, -180, -90],
+      )
+    : ([...worldBasemapManifest.bounds] as [number, number, number, number]);
   const title =
     page === 'index'
       ? 'Maps'
@@ -246,13 +258,17 @@ export function MapSettings({
         <>
           <ProductCard title={mobileMapDataMetadata.label}>
             <Text>World overview · US and Canada overview</Text>
-            <Text>
-              {mobileMapDataMetadata.featureCount.toLocaleString()} features · Always shown
-            </Text>
+            {mobileMapDataMetadata.featureCount > 0 ? (
+              <Text>
+                {mobileMapDataMetadata.featureCount.toLocaleString()} features · Always shown
+              </Text>
+            ) : (
+              <Text>State packages are installed separately.</Text>
+            )}
             <ProductButton
               label="Coverage"
-              hint="Show the bundled New York coverage on Explore"
-              onPress={() => onShowCoverage([-79.7624, 40.4774, -71.7517, 45.0159])}
+              hint="Show bundled map coverage on Explore"
+              onPress={() => onShowCoverage(bundledBounds)}
             />
           </ProductCard>
           <ProductDisclosure title="Sources">
@@ -454,10 +470,16 @@ export function MapNotices() {
       </ProductCard>
       <ProductDisclosure title="Map sources">
         <Text>
-          Basemap: {worldBasemapManifest.attribution}. Overlay: {mobileMapDataMetadata.attribution}.
-          Hike elevations: {bundledHikes.attribution}. Geometry simplified for display. Public-use
+          Basemap: {worldBasemapManifest.attribution}. Geometry simplified for display. Public-use
           GIS boundaries are not legal surveys.
         </Text>
+        {mobileMapDataMetadata.attribution ? (
+          <Text>Overlay: {mobileMapDataMetadata.attribution}.</Text>
+        ) : null}
+        {bundledHikes.attribution ? (
+          <Text>Hike elevations: {bundledHikes.attribution}.</Text>
+        ) : null}
+        <Text>Installed package sources are listed in Maps.</Text>
       </ProductDisclosure>
       <ProductDisclosure title="Licenses">
         <Text selectable>

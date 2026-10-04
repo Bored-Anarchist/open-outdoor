@@ -433,7 +433,7 @@ export class OutdoorMapAdapter implements MapAdapter {
     rerouting: false,
   } as const;
   private snapshot: OutdoorMapSnapshot = {
-    camera: { center: [-74.25, 42.08], zoom: 10 },
+    camera: { center: [-98, 39], zoom: 3 },
     selectedRoute: null,
     activeTrack: [],
     trackBreaks: [],

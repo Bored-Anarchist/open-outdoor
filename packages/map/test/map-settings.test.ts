@@ -25,13 +25,14 @@ vi.mock('../../../apps/mobile/ProductComponents', () => ({
 }));
 vi.mock('@open-outdoor/mobile-map-data', () => ({
   mobileMapDataMetadata: {
-    label: 'Synthetic public bundle',
+    label: 'Offline basemaps',
     hasPrivateData: false,
-    featureCount: 1,
-    attribution: 'Synthetic',
+    featureCount: 0,
+    attribution: '',
     sources: [],
   },
-  mobileHikeData: { attribution: 'Synthetic' },
+  mobileHikeData: { attribution: '' },
+  mobileMapDataIndex: { schemaVersion: 1, features: [] },
 }));
 import { MapSettings } from '../../../apps/mobile/MapSettings';
 
@@ -67,6 +68,22 @@ it('distinguishes the bundled map from empty public installs and private imports
   expect(text).toContain('No private datasets');
   expect(text).not.toContain('Bundled private sources');
   expect(text).not.toContain('Permission is hereby granted');
+});
+
+it('shows basemap coverage rather than implying a New York catalog is bundled', async () => {
+  const show = vi.fn();
+  await act(async () => {
+    root = create(createElement(MapSettings, { imports, statePackages, onShowCoverage: show }));
+  });
+  const button = (label: string) =>
+    root.root.findAllByType('button').find((node) => node.props.label === label)!;
+  await act(async () => button('World + regional map').props.onPress());
+  const text = JSON.stringify(root.toJSON());
+  expect(text).toContain('State packages are installed separately.');
+  expect(text).not.toContain('NYS');
+  expect(text).not.toContain('0 features');
+  await act(async () => button('Coverage').props.onPress());
+  expect(show).toHaveBeenCalledWith([-180, -85.0511287, 180, 85.0511287]);
 });
 
 it('shows package visibility and routes public and private coverage to Explore', async () => {
