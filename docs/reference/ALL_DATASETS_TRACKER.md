@@ -1,9 +1,9 @@
 # All datasets tracker
 
-Generated from the pinned inventory (2026-09-29T02:21:17.361Z), state manifests, and agency source policy.
+Generated from the pinned inventory (2026-10-12T23:15:11.828Z), state manifests, and agency source policy.
 Regenerate with `pnpm docs:generate`; `pnpm docs:check` rejects stale output. Do not edit generated reports manually.
 
-50 state packages; 757,622 features; 77,013 POIs; 138,872 eligible agency features; 169 validated import parts.
+50 state packages; 757,632 features; 77,013 POIs; 138,882 eligible agency features; 169 validated import parts.
 
 These are package entries, not deduplicated national entities. Other categories retain source types. Ownership and historical records do not establish current access, conditions, or permission. Physical-phone acceptance remains pending.
 Public derivative receipts and private collection permissions remain separate. A candidate rights classification does not authorize ingestion. Source-specific terms and modifications remain in the manifests and distribution notices.

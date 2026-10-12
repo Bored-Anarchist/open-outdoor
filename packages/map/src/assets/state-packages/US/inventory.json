@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "publicDistribution": true,
-  "generatedAt": "2026-09-29T02:21:17.361Z",
+  "generatedAt": "2026-10-12T23:15:11.828Z",
   "states": [
     {
       "state": "AL",
@@ -480,13 +480,13 @@
     {
       "state": "UT",
       "name": "Utah",
-      "features": 73606,
+      "features": 73616,
       "poi": 4214,
       "other": 1016,
-      "agency": 48130,
+      "agency": 48140,
       "agencySources": 1,
       "parts": 10,
-      "bytes": 100278448
+      "bytes": 100289866
     },
     {
       "state": "VT",
@@ -556,10 +556,10 @@
     }
   ],
   "totals": {
-    "features": 757622,
+    "features": 757632,
     "poi": 77013,
     "other": 20540,
-    "agency": 138872,
+    "agency": 138882,
     "agencySources": 18,
     "parts": 169
   }

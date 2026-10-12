@@ -1125,12 +1125,12 @@
       "classification": "SOURCE_REDISTRIBUTABLE",
       "state": "UT",
       "name": "Utah",
-      "featureCount": 73606,
-      "sourceSha256": "7ce10055ca3c4fb63af5d4bf1efb09e7b91bd90518d314496cd721cebb677ceb",
-      "generatedAt": "2026-09-28T00:10:03.383Z",
-      "sourceIndexSha256": "d077da904ed436c31236f072f90b362a7852e0fbf7f0f661eb15c161a60a9e64",
-      "tilesSha256": "dcb854bee7543cfcab4200b03144d814708e71ce479e60db7b70b592abea48a3",
-      "tilesBytes": 8950049,
+      "featureCount": 73616,
+      "sourceSha256": "37d6ae07d674da6abc499767c0e0f42a03fd193ffb67231ff7c35d36993ce064",
+      "generatedAt": "2026-10-12T23:15:11.656Z",
+      "sourceIndexSha256": "dd4619d7a76bf6a23d1bbd7b17f42d16285e7312d3f5e09fe7861b8e53a4079c",
+      "tilesSha256": "3006f50780f7ad5f6a69e809311d2cfc14cf4288ae4cec66b6b266559234d79a",
+      "tilesBytes": 8950923,
       "maximumZoom": 10,
       "tileCount": 393,
       "bounds": [
@@ -1141,9 +1141,9 @@
       ],
       "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Utah Geospatial Resource Center (UGRC), SGID; data modified",
       "file": "UT/state.sqlite",
-      "sha256": "403ae9609b0337b719423a4ea90a6d7b154925588e275d454d903a9c7a8d8cac",
-      "bytes": 122912768,
-      "installedBytes": 131862817
+      "sha256": "40609cef516127a5ac91a44f779314c6db054ba706b2fbf74e444924df585197",
+      "bytes": 122413056,
+      "installedBytes": 131363979
     },
     {
       "schemaVersion": 1,

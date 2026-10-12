@@ -51,7 +51,7 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | SD | South Dakota | 5,616 | 311 | 27 | 0 | 2 |
 | TN | Tennessee | 6,044 | 2,167 | 999 | 0 | 2 |
 | TX | Texas | 12,960 | 1,145 | 416 | 0 | 2 |
-| UT | Utah | 73,606 | 4,214 | 1,016 | 48,130 | 10 |
+| UT | Utah | 73,616 | 4,214 | 1,016 | 48,140 | 10 |
 | VT | Vermont | 2,944 | 133 | 3 | 0 | 1 |
 | VA | Virginia | 11,676 | 1,467 | 625 | 675 | 3 |
 | WA | Washington | 19,086 | 2,593 | 316 | 0 | 5 |
@@ -59,7 +59,7 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | WI | Wisconsin | 10,355 | 196 | 1 | 0 | 2 |
 | WY | Wyoming | 35,218 | 5,523 | 1,087 | 0 | 5 |
 
-Totals: **757,622 features**, **77,013 POIs**, **20,540 Other POIs**, **138,872 direct agency features**, **169 validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.
+Totals: **757,632 features**, **77,013 POIs**, **20,540 Other POIs**, **138,882 direct agency features**, **169 validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.
 
 Agency receipts record source URLs, current terms checksums, query inventory, field list, edit dates, page checksums, attribution and modifications. Repeated parks/forestry roles ingest a feed only once. Uncleared permission-limited and unconfirmed sources remain excluded. Minnesota visitor derivatives and Virginia DCR data are included under their explicit source conditions for the noncommercial application; source terms remain separate from project code licensing. Arkansas facilities, CAL FIRE 2024 boundaries, and Massachusetts's 2015 trails are explicitly dated references; current access and completeness are not asserted. These snapshots make no current access or camping claim.
 
