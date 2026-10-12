@@ -75,4 +75,4 @@ node tools/packages/deduplicate-private-state-packages.mjs --all
 node tools/reporting/report-private-state-packages.mjs
 ```
 
-New York uses its separate reviewed DEC+iOverlander builder followed by `node tools/packages/package-private-new-york-agencies.mjs`. Selected public-designated OPRHP trails and facilities, camping and park locators are private dated references. Unchanged park polygons and temporal feeds remain separate private reference snapshots. Its civil boundary, NPS, and USFS data remain in the public system. See [remaining-gap resolution](STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md).
+New York uses its separate reviewed DEC+iOverlander builder followed by `node tools/packages/package-private-new-york-agencies.mjs`. Selected public-designated OPRHP trails and facilities, camping and park locators are private dated references. Unchanged park polygons and temporal feeds remain separate private reference snapshots. Its civil boundary, NPS, and USFS data remain in the public system. See [remaining-gap resolution](../archive/reports/STATE_AGENCY_GAP_RESOLUTION_2026-09-28.md).

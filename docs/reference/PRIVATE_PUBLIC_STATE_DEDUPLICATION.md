@@ -6,7 +6,7 @@ Removed **8,762 duplicate private entries** across **27 states**. Retained **527
 
 The public feature wins when both entries have the same normalized exact source-layer URL and external record ID with matching geometry dimension. Otherwise matching requires a meaningful normalized name, compatible normalized POI categories (raw categories are fallback evidence) and the same geometry dimension. Points must be within 25 meters. Lines and polygons must have bounds within 20 meters, length/area ratio at least 98%, and continuous bidirectional segment coverage no greater than 20 meters. Polygon matches also require intersection-over-union of at least 90%; uncertain geometry is retained for review. This accommodates public rounding and simplification. Generic names alone, nearby facilities, overlapping land parcels, and points inside park boundaries are insufficient.
 
-The [policy v2 audit fixes](PRIVATE_PUBLIC_DEDUPLICATION_FIXES_2026-09-28.md) document 40 restored uncertain removals, 49 additional POI matches and failure-recovery validation.
+The [policy v2 audit fixes](../archive/reports/PRIVATE_PUBLIC_DEDUPLICATION_FIXES_2026-09-28.md) document 40 restored uncertain removals, 49 additional POI matches and failure-recovery validation.
 
 These are conservative automatic matches, not a claim that every semantic duplicate or alternate-name record has been resolved. Different representations and uncertain matches stay private for review. Rights, access and currency classifications are unchanged.
 
