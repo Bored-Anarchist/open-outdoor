@@ -23,7 +23,7 @@ internal final class OpenOutdoorLaptopException: Exception, @unchecked Sendable 
     case 200: return nil
     case 301, 302, 303, 307, 308: return "The laptop redirected the connection. Use the address shown in its terminal."
     case 401: return "Pairing code rejected. Reconnect using the code currently shown on the laptop."
-    case 403: return "The laptop refused this connection. Use its current Wi-Fi address and check proxy or VPN settings."
+    case 403: return "The laptop refused this connection. Join its hotspot, use the current pairing page and check proxy or VPN settings."
     case 409: return "The laptop's state file changed. Restore the package on the laptop, restart its server and reconnect."
     default: return "The state package is unavailable. Check the laptop server and reconnect."
     }
@@ -34,16 +34,16 @@ internal final class OpenOutdoorLaptopException: Exception, @unchecked Sendable 
     if failure.domain == NSURLErrorDomain {
       switch failure.code {
       case NSURLErrorTimedOut:
-        return "Laptop connection timed out. Open its address with /v1/catalog in iPhone Safari. If Safari cannot load it, check the laptop server, firewall, VPN and Wi-Fi device isolation."
+        return "Laptop connection timed out. Join the laptop Wi-Fi hotspot, then open its address with /v1/catalog in iPhone Safari. If Safari cannot load it, restart the laptop server and check its firewall."
       case NSURLErrorCannotConnectToHost, NSURLErrorCannotFindHost:
-        return "Could not reach the laptop. Check its current Wi-Fi address, running server and firewall. Open its address with /v1/catalog in iPhone Safari to check reachability."
+        return "Could not reach the laptop. Join its Wi-Fi hotspot, check its server and firewall, and scan the current pairing page. Open its address with /v1/catalog in iPhone Safari to check reachability."
       case NSURLErrorNotConnectedToInternet, NSURLErrorNetworkConnectionLost:
-        return "Check Wi-Fi and allow Open Outdoor in iPhone Settings → Privacy & Security → Local Network."
+        return "Join the laptop Wi-Fi hotspot and allow Open Outdoor in iPhone Settings → Privacy & Security → Local Network."
       case NSURLErrorAppTransportSecurityRequiresSecureConnection:
         return "iOS blocked this laptop address. Install the latest Open Outdoor build and try again."
       default: break
       }
     }
-    return "Could not reach the laptop. Check Wi-Fi, its server and firewall, and allow Local Network access in iPhone Settings."
+    return "Could not reach the laptop. Join its Wi-Fi hotspot, check its server and firewall, and allow Local Network access in iPhone Settings."
   }
 }

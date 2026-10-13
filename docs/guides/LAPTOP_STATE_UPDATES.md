@@ -6,7 +6,7 @@ The owner requested updates without rebuilding the app on 2026-09-30. This exten
 
 1. Install the app build containing this feature once. Compatible later state snapshots do not need another app build.
 2. Rebuild or restore the desired public state packages on the laptop using [package maintenance](PACKAGE_MAINTENANCE.md). Keep the generated `loader-inventory.json` with its exact SQLite files. Restart `pnpm map:laptop` after changing them: the server publishes a verified startup snapshot.
-3. Open the printed `/pair` link on the laptop. In the phone's **Connect to laptop** panel, scan its QR code. For manual pairing, copy the address, session code and full **signing fingerprint** from that page or terminal.
+3. Startup automatically enables the laptop's Windows Mobile hotspot. Open the printed `/pair` link on the laptop and join that hotspot from the phone using the Wi-Fi name/password shown there. In the phone's **Connect to laptop** panel, scan the app pairing QR. For manual pairing, copy the address, session code and full **signing fingerprint** from that page or terminal. See [Connect to laptop](CONNECT_TO_LAPTOP.md) for startup and shutdown behavior.
 4. Choose **Trust updates** after verifying that the pairing page belongs to your laptop. A public key received from the network alone cannot enable this approval. QR pairing only carries the independent fingerprint; approving trust is a separate explicit action.
 5. Review **Installed snapshot**, **Available snapshot**, packaging dates, version and sizes. Choose **Update** for an installed state or **Download** for a new state. **Check for updates** refreshes the connected server's published list.
 

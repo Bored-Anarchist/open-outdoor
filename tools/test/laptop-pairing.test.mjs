@@ -9,6 +9,7 @@ import {
   pairingPayload,
 } from '../laptop/laptop-pairing.mjs';
 
+// All addresses, network names and credentials below are synthetic test fixtures.
 const address = 'http://192.168.1.20:8765';
 const code = 'a'.repeat(32); // Synthetic credential.
 
@@ -38,6 +39,16 @@ test('the pairing page is restricted to this laptop and first-party browser visi
   assert.equal(canViewPairingPage('192.168.1.21', '192.168.1.20', 'none'), false);
   assert.equal(canViewPairingPage('192.168.1.20', '192.168.1.20', 'cross-site'), false);
   assert.equal(canViewPairingPage('192.168.1.20', '192.168.1.20', 'same-site'), false);
+});
+
+test('the laptop-only page explains joining the hotspot and safely escapes Wi-Fi credentials', async () => {
+  const hotspot = { networkName: 'Synthetic <Wi-Fi>', passphrase: 'test<&"password' };
+  const page = await pairingPage(address, code, undefined, hotspot);
+  assert.match(page, /1\. Join the laptop hotspot/);
+  assert.match(page, /2\. Pair in Open Outdoor/);
+  assert.match(page, /Synthetic &lt;Wi-Fi&gt;/);
+  assert.match(page, /test&lt;&amp;&quot;password/);
+  assert.ok(!pairingPayload(address, code).includes(hotspot.passphrase));
 });
 
 test('signed-update QR carries only public fingerprint metadata alongside the session code', async () => {
