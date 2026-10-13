@@ -1,9 +1,9 @@
 # State outdoor data package tracker
 
-Generated from the pinned inventory (2026-09-29T02:21:17.361Z), state manifests, and agency source policy.
+Generated from the pinned inventory (2026-10-12T23:58:41.674Z), state manifests, and agency source policy.
 Regenerate with `pnpm docs:generate`; `pnpm docs:check` rejects stale output. Do not edit generated reports manually.
 
-50 state packages; 757,622 features; 77,013 POIs; 138,872 eligible agency features; 169 validated import parts.
+50 state packages; 757,632 features; 77,013 POIs; 138,882 eligible agency features; 169 validated import parts.
 
 These are package entries, not deduplicated national entities. Other categories retain source types. Ownership and historical records do not establish current access, conditions, or permission. Physical-phone acceptance remains pending.
 Public derivative receipts and private collection permissions remain separate. A candidate rights classification does not authorize ingestion. Source-specific terms and modifications remain in the manifests and distribution notices.
@@ -57,7 +57,7 @@ Public derivative receipts and private collection permissions remain separate. A
 | SD | South Dakota | 5616 | 311 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/SD/manifest.json) |
 | TN | Tennessee | 6044 | 2167 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/TN/manifest.json) |
 | TX | Texas | 12960 | 1145 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/TX/manifest.json) |
-| UT | Utah | 73606 | 4214 | 48130 | 10 | [Manifest](../../packages/map/src/assets/state-packages/US/UT/manifest.json) |
+| UT | Utah | 73616 | 4214 | 48140 | 10 | [Manifest](../../packages/map/src/assets/state-packages/US/UT/manifest.json) |
 | VT | Vermont | 2944 | 133 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/VT/manifest.json) |
 | VA | Virginia | 11676 | 1467 | 675 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/VA/manifest.json) |
 | WA | Washington | 19086 | 2593 | 0 | 5 | [Manifest](../../packages/map/src/assets/state-packages/US/WA/manifest.json) |

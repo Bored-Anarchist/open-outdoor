@@ -13,8 +13,8 @@
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 1218,
-      "sha256": "4e46fad525fae5a58fdd0fb7766b6563ecfc235531542d66f5194416db630139"
+      "bytes": 921,
+      "sha256": "4c4e736f68bf1c7691e10d979c813cf83fa924e0fe8fd9234d1c26f9a90d7fcd"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -25,7 +25,7 @@
     "limitations": [
       "Dated informational references, not live permission, closure or camping claims.",
       "Some states have no eligible direct agency feed; source gaps remain explicit.",
-      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
     ]
   },
   "disclaimers": [
@@ -34,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 66285,
-  "generatedAt": "2026-09-28T00:08:19.371Z",
+  "generatedAt": "2026-10-12T23:58:41.490Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ca",
   "rights": {
@@ -523,7 +523,7 @@
       "vintage": "2024; dated boundary reference; current forest directory says fourteen forests, later service metadata says fifteen; completeness not asserted",
       "rightsStatus": "Supported",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-28T00:05:10.202Z",
+      "retrievedAt": "2026-10-12T23:57:03.127Z",
       "sourceUpdated": "2024; dated boundary reference; current forest directory says fourteen forests, later service metadata says fifteen; completeness not asserted",
       "featureCount": 15,
       "bytes": 387441,
@@ -539,7 +539,7 @@
         "Shape_Area"
       ],
       "idField": "FID",
-      "termsEvidence": "docs/STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md; CAL FIRE credited distribution and marked modifications",
+      "termsEvidence": "docs/archive/reports/STATE_AGENCY_REDISTRIBUTION_RIGHTS_2026-09-26.md; CAL FIRE credited distribution and marked modifications",
       "modifications": "Reprojected to WGS84; selected visitor fields; historical boundary reference; no current access claim.",
       "packagedFeatureCount": 15,
       "filteredFeatureCount": 0,
