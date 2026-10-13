@@ -113,9 +113,10 @@
       "name": "California",
       "featureCount": 66285,
       "sourceSha256": "8d95fa7ba95fd67ef238b8716d03f0a0938f4e1e9b18724186c71bdabf38596c",
-      "generatedAt": "2026-09-28T00:08:19.371Z",
-      "tilesSha256": "86dec897335010c5cd9d5c8f762a576e7910897f58c8c729870f5220a24c2651",
-      "tilesBytes": 13353445,
+      "generatedAt": "2026-10-12T23:58:41.490Z",
+      "sourceIndexSha256": "c8738142864c89552de3e64ce490e846f7562d5d8bd505f70d6c6f93cb49748e",
+      "tilesSha256": "bbed61d96ab39651774d52cd6c410bda7352a346881576d66f435fa6417dcf3f",
+      "tilesBytes": 13362562,
       "maximumZoom": 10,
       "tileCount": 728,
       "bounds": [
@@ -125,11 +126,10 @@
         42.0685
       ],
       "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; California Department of Forestry and Fire Protection (CAL FIRE); data modified",
-      "sourceIndexSha256": "c8738142864c89552de3e64ce490e846f7562d5d8bd505f70d6c6f93cb49748e",
       "file": "CA/state.sqlite",
-      "sha256": "436ce8011ab2ad8f470903af32fe03a69c1904e81927e5eb939963f1c692185d",
-      "bytes": 114155520,
-      "installedBytes": 127508965
+      "sha256": "7bc372a4dbe14dc9d328130515a75acc7c9ec238b396346506e5f9be445181f7",
+      "bytes": 114163712,
+      "installedBytes": 127526274
     },
     {
       "schemaVersion": 1,

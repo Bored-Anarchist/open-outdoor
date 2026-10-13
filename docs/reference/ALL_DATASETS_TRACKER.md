@@ -1,6 +1,6 @@
 # All datasets tracker
 
-Generated from the pinned inventory (2026-10-12T23:15:11.828Z), state manifests, and agency source policy.
+Generated from the pinned inventory (2026-10-12T23:58:41.674Z), state manifests, and agency source policy.
 Regenerate with `pnpm docs:generate`; `pnpm docs:check` rejects stale output. Do not edit generated reports manually.
 
 50 state packages; 757,632 features; 77,013 POIs; 138,882 eligible agency features; 169 validated import parts.
