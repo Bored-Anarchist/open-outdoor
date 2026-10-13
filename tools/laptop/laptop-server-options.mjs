@@ -2,20 +2,13 @@ export class LaptopServerConfigurationError extends Error {}
 
 /** The Windows hotspot chooses the interface; callers can only choose the port. */
 export function laptopServerOptions(args) {
-  let port = 8765;
-  const seen = new Set();
-  for (let i = 0; i < args.length; i += 2) {
-    const option = args[i];
-    if (option !== '--port' || !args[i + 1] || seen.has(option))
-      throw new LaptopServerConfigurationError(
-        'Usage: pnpm map:laptop [--port PORT]. The server starts and uses the laptop hotspot automatically; --host is no longer supported.',
-      );
-    seen.add(option);
-    if (!/^[0-9]{4,5}$/.test(args[i + 1]))
-      throw new LaptopServerConfigurationError('Choose a port between 1024 and 65535.');
-    port = Number(args[i + 1]);
-  }
-  if (!Number.isInteger(port) || port < 1024 || port > 65535)
+  if (args.length === 0) return { port: 8765 };
+  if (args.length !== 2 || args[0] !== '--port' || !args[1])
+    throw new LaptopServerConfigurationError(
+      'Usage: pnpm map:laptop [--port PORT]. The server starts and uses the laptop hotspot automatically; --host is no longer supported.',
+    );
+  const port = Number(args[1]);
+  if (!/^[0-9]{4,5}$/.test(args[1]) || !Number.isInteger(port) || port < 1024 || port > 65535)
     throw new LaptopServerConfigurationError('Choose a port between 1024 and 65535.');
   return { port };
 }

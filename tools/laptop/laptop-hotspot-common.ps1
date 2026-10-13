@@ -22,6 +22,26 @@ function Get-HotspotManager {
     return $taskType::CreateFromConnectionProfile($taskProfile)
 }
 
+function Invoke-HotspotFirewallSetup([string]$ScriptPath, [string]$NodePath, [int]$Port, $InputTask) {
+    if ($InputTask.IsCompleted) { throw 'Server stopped during firewall approval.' }
+    # Shell elevation blocks until UAC is answered. Launch its unelevated broker
+    # without RunAs so this helper can observe cancellation/EOF and kill the broker.
+    $taskBroker = Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"' + $ScriptPath + '"'), '-NodePath', ('"' + $NodePath + '"'), '-Port', [string]$Port) -PassThru
+    try {
+        for ($taskAttempt = 0; $taskAttempt -lt 120 -and -not $taskBroker.HasExited; $taskAttempt++) {
+            if ($InputTask.IsCompleted) { throw 'Server stopped during firewall approval.' }
+            Start-Sleep -Seconds 1
+        }
+        if ($InputTask.IsCompleted) { throw 'Server stopped during firewall approval.' }
+        if (-not $taskBroker.HasExited) { throw 'Firewall setup timed out.' }
+        $taskBroker.WaitForExit()
+        if ($taskBroker.ExitCode -ne 0) { throw 'Firewall setup did not complete.' }
+    } finally {
+        try { if (-not $taskBroker.HasExited) { $taskBroker.Kill() } }
+        finally { $taskBroker.Dispose() }
+    }
+}
+
 function Get-HotspotEndpoint {
     # Modern Mobile hotspot does not reliably appear in the legacy HNetShare COM API.
     # Require one active Wi-Fi Direct adapter with an assigned private IPv4 address.

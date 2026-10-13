@@ -109,6 +109,7 @@ export function startLaptopHotspot({
               await Promise.race([
                 exit,
                 new Promise((_, rejectClose) => {
+                  // Allow a pending WinRT operation plus both bounded restoration calls.
                   deadline = setTimeout(() => {
                     child.kill();
                     rejectClose(
@@ -116,7 +117,7 @@ export function startLaptopHotspot({
                         'Hotspot cleanup timed out. Turn off Mobile hotspot in Windows Settings.',
                       ),
                     );
-                  }, 30_000);
+                  }, 75_000);
                 }),
               ]);
             } finally {

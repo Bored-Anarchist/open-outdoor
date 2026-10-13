@@ -219,6 +219,16 @@ test('changed packages cannot be served after catalog verification', async (t) =
   assert.equal((await get('/v1/packages/NY')).status, 409);
 });
 
+test('cancelling package verification rejects startup instead of treating files as missing', async (t) => {
+  const root = await fixture(t);
+  await stateFile(root, 'NY');
+  const controller = new AbortController();
+  const started = createLaptopPackageServer({ root, token, signal: controller.signal });
+  // Abort while startup is awaiting filesystem work, rather than before it is called.
+  controller.abort(new Error('Synthetic verification cancellation'));
+  await assert.rejects(started, (error) => error === controller.signal.reason);
+});
+
 test('inventory cannot advertise private, duplicate or path-traversing packages', async (t) => {
   for (const states of [
     [{ ...pin('NY'), channel: 'private' }],

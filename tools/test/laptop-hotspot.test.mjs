@@ -194,9 +194,91 @@ test('server binds only the hotspot and releases listeners, signer and hotspot o
   assert.deepEqual(fake.calls.slice(3), [
     'discovery stopped',
     'server closed',
-    'signer closed',
     'hotspot closed',
+    'signer closed',
   ]);
+});
+
+test('the ownership lock remains held until asynchronous hotspot cleanup finishes', async () => {
+  const fake = resources();
+  let finishCleanup;
+  fake.dependencies.startHotspot = async () => ({
+    ...hotspot,
+    close: () =>
+      new Promise((resolve) => {
+        finishCleanup = resolve;
+      }),
+  });
+  // The fixture normally checks its original connection object; accept this delayed helper.
+  fake.dependencies.createPackageServer = async () => fake.result;
+  const session = await startLaptopServer({ port: 8765, onMessage: () => {} }, fake.dependencies);
+  const closing = session.close();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(typeof finishCleanup, 'function');
+  assert.ok(!fake.calls.includes('signer closed'));
+  finishCleanup();
+  await closing;
+  assert.ok(fake.calls.includes('signer closed'));
+});
+
+test('hotspot cleanup failures still release the ownership lock', async () => {
+  const fake = resources();
+  fake.dependencies.startHotspot = async () => ({
+    ...hotspot,
+    close: async () => {
+      throw new Error('Synthetic hotspot cleanup failure');
+    },
+  });
+  fake.dependencies.createPackageServer = async () => fake.result;
+  const session = await startLaptopServer({ port: 8765, onMessage: () => {} }, fake.dependencies);
+  await assert.rejects(session.close(), /hotspot cleanup failure/);
+  assert.ok(fake.calls.includes('signer closed'));
+});
+
+test('aborting a running session closes sharing without relying on the CLI', async () => {
+  const fake = resources();
+  const controller = new AbortController();
+  const session = await startLaptopServer(
+    { port: 8765, signal: controller.signal, onMessage: () => {} },
+    fake.dependencies,
+  );
+  controller.abort();
+  await session.close();
+  assert.ok(fake.calls.includes('server closed'));
+  assert.ok(fake.calls.includes('hotspot closed'));
+  assert.ok(fake.calls.includes('signer closed'));
+});
+
+test('helper loss cancels verification and closes a running session even with a custom failure handler', async () => {
+  for (const duringStartup of [true, false]) {
+    const fake = resources();
+    let disconnect;
+    let verificationSignal;
+    fake.dependencies.startHotspot = async ({ onDisconnect }) => {
+      disconnect = onDisconnect;
+      return { ...hotspot, close: async () => fake.calls.push('hotspot closed') };
+    };
+    fake.dependencies.createPackageServer = async ({ signal }) => {
+      verificationSignal = signal;
+      if (duringStartup) disconnect(new Error('Synthetic helper loss'));
+      return fake.result;
+    };
+    const failures = [];
+    const started = startLaptopServer(
+      { port: 8765, onMessage: () => {}, onFailure: (error) => failures.push(error) },
+      fake.dependencies,
+    );
+    if (duringStartup) await assert.rejects(started, /helper loss/);
+    else {
+      const session = await started;
+      disconnect(new Error('Synthetic helper loss'));
+      await session.close();
+    }
+    assert.equal(verificationSignal.aborted, true);
+    assert.equal(failures.length, 1);
+    assert.ok(fake.calls.includes('hotspot closed'));
+    assert.ok(fake.calls.includes('signer closed'));
+  }
 });
 
 test('startup failure and cancellation unwind hotspot ownership; signer contention does not start a hotspot', async () => {

@@ -33,28 +33,22 @@ try {
     }
     if (-not $taskEndpoint) { throw 'Hotspot address unavailable.' }
     $taskNode = (Get-Item -LiteralPath $NodePath).FullName
+    $taskInput = $taskReader.ReadLineAsync()
     $taskFailure = 'Administrator approval is required for the hotspot-only firewall rule. Approve the Windows prompt, then retry pnpm map:laptop.'
     if (-not (Test-HotspotFirewall $taskEndpoint $taskNode $Port)) {
         Send-HotspotEvent @{ event = 'approval' }
-        $taskFirewallScript = Join-Path $PSScriptRoot 'laptop-hotspot-firewall.ps1'
-        $taskHelper = Start-Process -FilePath (Join-Path $PSHOME 'powershell.exe') -Verb RunAs -WindowStyle Hidden -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ('"' + $taskFirewallScript + '"'), '-NodePath', ('"' + $taskNode + '"'), '-Port', [string]$Port) -PassThru
-        # Check the parent pipe while UAC is pending, so Ctrl+C can still release the hotspot.
-        $taskInput = $taskReader.ReadLineAsync()
-        for ($taskAttempt = 0; $taskAttempt -lt 120 -and -not $taskHelper.HasExited; $taskAttempt++) {
-            if ($taskInput.IsCompleted) { throw 'Server stopped during firewall approval.' }
-            Start-Sleep -Seconds 1
-        }
-        if (-not $taskHelper.HasExited) { throw 'Firewall setup timed out.' }
-        $taskHelper.WaitForExit()
-        if ($taskHelper.ExitCode -ne 0 -or -not (Test-HotspotFirewall $taskEndpoint $taskNode $Port)) { throw 'Firewall setup did not complete.' }
-    } else { $taskInput = $taskReader.ReadLineAsync() }
+        $taskFirewallScript = Join-Path $PSScriptRoot 'laptop-hotspot-firewall-launch.ps1'
+        Invoke-HotspotFirewallSetup $taskFirewallScript $taskNode $Port $taskInput
+        if (-not (Test-HotspotFirewall $taskEndpoint $taskNode $Port)) { throw 'Firewall setup did not complete.' }
+    }
+    if ($taskInput.IsCompleted) { throw 'Server stopped before hotspot readiness.' }
     $taskConfig = $taskManager.GetCurrentAccessPointConfiguration()
     Send-HotspotEvent @{ event = 'ready'; host = $taskEndpoint.host; prefixLength = $taskEndpoint.prefixLength; interfaceAlias = $taskEndpoint.interfaceAlias; networkName = $taskConfig.Ssid; passphrase = $taskConfig.Passphrase }
     $taskFailure = 'The laptop hotspot stopped or changed its address. Restart pnpm map:laptop and rejoin its hotspot on the phone.'
     while (-not $taskInput.IsCompleted) {
         Start-Sleep -Seconds 5
         $taskCurrent = Get-HotspotEndpoint
-        if ([string]$taskManager.TetheringOperationalState -ne 'On' -or -not $taskCurrent -or $taskCurrent.host -ne $taskEndpoint.host -or $taskCurrent.interfaceIndex -ne $taskEndpoint.interfaceIndex) { throw 'Hotspot connection changed.' }
+        if ([string]$taskManager.TetheringOperationalState -ne 'On' -or -not $taskCurrent -or $taskCurrent.host -ne $taskEndpoint.host -or $taskCurrent.subnet -ne $taskEndpoint.subnet -or $taskCurrent.interfaceAlias -ne $taskEndpoint.interfaceAlias -or $taskCurrent.interfaceIndex -ne $taskEndpoint.interfaceIndex) { throw 'Hotspot connection changed.' }
     }
 } catch { Send-HotspotEvent @{ event = 'error'; message = $taskFailure } }
 finally {

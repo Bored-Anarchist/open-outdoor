@@ -1,13 +1,43 @@
 # All addresses, adapter names and executable paths below are synthetic fixtures.
 # Network and firewall commands are stubbed; no real device configuration is recorded.
 $ErrorActionPreference = 'Stop'
-foreach ($taskFile in @('laptop-hotspot-common.ps1', 'laptop-hotspot.ps1', 'laptop-hotspot-firewall.ps1')) {
+foreach ($taskFile in @('laptop-hotspot-common.ps1', 'laptop-hotspot.ps1', 'laptop-hotspot-firewall.ps1', 'laptop-hotspot-firewall-launch.ps1')) {
     $taskTokens = $null
     $taskErrors = $null
     [void][System.Management.Automation.Language.Parser]::ParseFile((Join-Path $PSScriptRoot $taskFile), [ref]$taskTokens, [ref]$taskErrors)
     if ($taskErrors) { throw "Invalid PowerShell syntax in $taskFile" }
 }
 . (Join-Path $PSScriptRoot 'laptop-hotspot-common.ps1')
+# Exercise approval cancellation without opening UAC or changing the firewall.
+& {
+    function Start-Process {
+        param($FilePath, $WindowStyle, $ArgumentList, [switch]$PassThru)
+        if ($WindowStyle -ne 'Hidden') { throw 'The approval broker must be hidden.' }
+        $script:taskBrokerStarted = $true
+        $taskProcess = [pscustomobject]@{ HasExited = $script:taskMode -ne 'cancel'; ExitCode = $script:taskExitCode }
+        $taskProcess | Add-Member ScriptMethod WaitForExit { $script:taskBrokerWaited = $true }
+        $taskProcess | Add-Member ScriptMethod Kill { $script:taskBrokerKilled = $true }
+        $taskProcess | Add-Member ScriptMethod Dispose { $script:taskBrokerDisposed = $true }
+        return $taskProcess
+    }
+    function Start-Sleep { param($Seconds) $script:taskInput.IsCompleted = $true }
+    foreach ($script:taskMode in @('success', 'denied', 'cancel', 'eof')) {
+        $script:taskBrokerStarted = $false
+        $script:taskBrokerWaited = $false
+        $script:taskBrokerKilled = $false
+        $script:taskBrokerDisposed = $false
+        $script:taskExitCode = if ($script:taskMode -eq 'denied') { 1 } else { 0 }
+        $script:taskInput = [pscustomobject]@{ IsCompleted = $script:taskMode -eq 'eof' }
+        $taskRejected = $false
+        try { Invoke-HotspotFirewallSetup 'C:\Synthetic\firewall.ps1' 'C:\Synthetic\node.exe' 8765 $script:taskInput } catch { $taskRejected = $true }
+        if ($taskRejected -ne ($script:taskMode -ne 'success')) { throw "Wrong approval result for $script:taskMode" }
+        if ($script:taskMode -eq 'eof') {
+            if ($script:taskBrokerStarted) { throw 'EOF must not launch an approval broker.' }
+        } elseif (-not $script:taskBrokerDisposed) { throw 'Approval broker handles must always be released.' }
+        if ($script:taskMode -eq 'cancel' -and -not $script:taskBrokerKilled) { throw 'Pending approval must be terminated on cancellation.' }
+        if ($script:taskMode -eq 'success' -and (-not $script:taskBrokerWaited -or $script:taskBrokerKilled)) { throw 'Successful approval must read the exit code without killing the broker.' }
+    }
+}
 $script:taskAdapters = @(
     [pscustomobject]@{ Name = 'Wi-Fi'; Status = 'Up'; InterfaceDescription = 'Physical wireless adapter'; InterfaceIndex = 1 },
     [pscustomobject]@{ Name = 'Test hotspot'; Status = 'Up'; InterfaceDescription = 'Microsoft Wi-Fi Direct Virtual Adapter #99'; InterfaceIndex = 2 }

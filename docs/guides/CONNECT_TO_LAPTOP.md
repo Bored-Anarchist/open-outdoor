@@ -48,6 +48,8 @@ Press **Ctrl+C** to close listeners/discovery, expire the pairing code and relea
 
 Windows' no-client idle shutdown is disabled while the server awaits its phone and restored to its previous setting on exit. A piped PowerShell helper also cleans up when the parent server exits unexpectedly. Turning the hotspot off manually or changing its address stops sharing with restart guidance; the server does not switch adapters. Abrupt OS shutdown or a stuck helper cannot guarantee immediate cleanup; a cleanup warning directs the user to Windows Mobile hotspot settings.
 
+Cancellation also interrupts package verification. Administrator approval runs through a separate hidden launcher so the owning helper can observe cancellation while UAC is pending. Shutdown keeps the ownership lock until hotspot cleanup finishes, preventing a new server from racing the previous session's cleanup. Address, subnet or adapter-name changes stop sharing. See the [PR 22 bug audit](../reference/PR22_BUG_AUDIT.md) for regressions and remaining physical checks.
+
 The narrow per-port firewall rule remains for later starts and is refreshed with administrator approval if its configuration changes. Restarting creates a fresh pairing code; reopen the current page and rescan.
 
 ## Troubleshooting
