@@ -2,7 +2,7 @@
 
 All 50 active packages under Git-ignored `PrivateData/catalogs/US/<state>/current/` were compared only with the public package for the same state. Public data and its manifests remain unchanged. This report publishes counts only; original records, community narratives, match IDs and coordinates remain private.
 
-Removed **8,762 duplicate private entries** across **27 states**. Retained **527,080 private features**: **463,797 agency/DEC/OPRHP records** and **63,283 iOverlander places**. New York's reviewed identity catalog, map/index and 5,289 DEC profiles remain unchanged; it has zero qualifying public matches.
+Removed **8,762 duplicate private entries** across **27 states**. Retained **527,081 private features**: **463,798 agency/DEC/OPRHP records** and **63,283 iOverlander places**. New York's reviewed identity catalog, map/index and 5,289 DEC profiles remain unchanged; it has zero qualifying public matches.
 
 The public feature wins when both entries have the same normalized exact source-layer URL and external record ID with matching geometry dimension. Otherwise matching requires a meaningful normalized name, compatible normalized POI categories (raw categories are fallback evidence) and the same geometry dimension. Points must be within 25 meters. Lines and polygons must have bounds within 20 meters, length/area ratio at least 98%, and continuous bidirectional segment coverage no greater than 20 meters. Polygon matches also require intersection-over-union of at least 90%; uncertain geometry is retained for review. This accommodates public rounding and simplification. Generic names alone, nearby facilities, overlapping land parcels, and points inside park boundaries are insufficient.
 
@@ -27,7 +27,7 @@ Deduplicated community places keep their descriptions and check-ins in a checksu
 | Florida (FL) | 15 | 16,699 | 2,445 | 19,144 |
 | Georgia (GA) | 1 | 6,262 | 814 | 7,076 |
 | Hawaii (HI) | 16 | 584 | 79 | 663 |
-| Idaho (ID) | 7,014 | 63,894 | 1,968 | 65,862 |
+| Idaho (ID) | 7,014 | 63,895 | 1,968 | 65,863 |
 | Illinois (IL) | 0 | 384 | 586 | 970 |
 | Indiana (IN) | 0 | 6,148 | 458 | 6,606 |
 | Iowa (IA) | 0 | 2,876 | 555 | 3,431 |
