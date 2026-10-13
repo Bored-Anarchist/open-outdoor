@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { isHotspotClient, startLaptopHotspot, validateHotspot } from '../laptop/laptop-hotspot.mjs';
 import { startLaptopServer } from '../laptop/laptop-package-server.mjs';
 
+// All addresses, adapter/network names and credentials below are synthetic fixtures.
+// The standard Windows hotspot address is an example, not captured device configuration.
 const hotspot = {
   host: '192.168.137.1',
   prefixLength: 24,

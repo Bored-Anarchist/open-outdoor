@@ -1,3 +1,5 @@
+# All addresses, adapter names and executable paths below are synthetic fixtures.
+# Network and firewall commands are stubbed; no real device configuration is recorded.
 $ErrorActionPreference = 'Stop'
 foreach ($taskFile in @('laptop-hotspot-common.ps1', 'laptop-hotspot.ps1', 'laptop-hotspot-firewall.ps1')) {
     $taskTokens = $null

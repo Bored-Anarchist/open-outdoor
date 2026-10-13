@@ -11,6 +11,7 @@ import {
   matchesRequestHost,
 } from '../laptop/laptop-network.mjs';
 
+// All IPv4/IPv6 addresses and interface scopes below are synthetic test fixtures.
 test('startup accepts only a port; the managed hotspot chooses the address', () => {
   assert.deepEqual(laptopServerOptions([]), { port: 8765 });
   assert.deepEqual(laptopServerOptions(['--port', '9000']), { port: 9000 });

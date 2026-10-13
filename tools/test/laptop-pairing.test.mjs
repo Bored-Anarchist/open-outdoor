@@ -9,6 +9,7 @@ import {
   pairingPayload,
 } from '../laptop/laptop-pairing.mjs';
 
+// All addresses, network names and credentials below are synthetic test fixtures.
 const address = 'http://192.168.1.20:8765';
 const code = 'a'.repeat(32); // Synthetic credential.
 
