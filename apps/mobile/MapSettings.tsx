@@ -397,7 +397,7 @@ export function MapSettings({
           />
           <ProductRow
             title="From laptop"
-            subtitle="Use the same Wi-Fi"
+            subtitle="Join the laptop hotspot"
             onPress={() => setPage('laptop')}
           />
           <ProductRow

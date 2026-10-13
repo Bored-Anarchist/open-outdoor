@@ -43,7 +43,7 @@ export function LaptopPackages({
       {!embedded && (
         <ProductButton
           label={open ? 'Close laptop connection' : 'Connect to laptop'}
-          hint="Browse and download public state packages from a laptop on the same Wi-Fi"
+          hint="Join the laptop Wi-Fi hotspot to browse and download public state packages"
           disabled={service.busy}
           onPress={() => {
             if (open && service.laptopAvailable) {
@@ -101,8 +101,8 @@ export function LaptopPackages({
             Connect to laptop
           </Text>
           <Text>
-            Use the same trusted Wi-Fi. Scan the laptop's pairing code, or enter its address and
-            code.
+            Start the server on your laptop, then join its Wi-Fi hotspot in phone Settings. Scan the
+            pairing QR on the laptop, or enter its address and code.
           </Text>
           {!service.laptopAvailable ? (
             <Text>Install an app build with laptop connections to enable this feature.</Text>
@@ -131,7 +131,7 @@ export function LaptopPackages({
                       ))}
                       <ProductButton
                         label="Search again"
-                        hint="Search nearby laptops on this Wi-Fi for five seconds"
+                        hint="Search the laptop hotspot for five seconds"
                         disabled={service.busy || pairing.discovering || pairing.scanning}
                         busy={pairing.discovering}
                         onPress={() => {
@@ -160,7 +160,7 @@ export function LaptopPackages({
                       <TextInput
                         accessibilityLabel="Laptop address"
                         accessibilityHint="Enter the local address shown by the laptop package server"
-                        placeholder="http://192.168.1.20:8765"
+                        placeholder="Address shown on the laptop pairing page"
                         placeholderTextColor={palette.muted}
                         value={address}
                         onChangeText={setAddress}

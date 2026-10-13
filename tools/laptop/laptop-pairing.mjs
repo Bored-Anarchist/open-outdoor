@@ -14,14 +14,23 @@ export function pairingPayload(address, pairingCode, signerFingerprint) {
   });
 }
 
-export async function pairingPage(address, pairingCode, signerFingerprint) {
+export async function pairingPage(address, pairingCode, signerFingerprint, hotspot) {
   const svg = await QRCode.toString(pairingPayload(address, pairingCode, signerFingerprint), {
     type: 'svg',
     errorCorrectionLevel: 'M',
     margin: 4,
   });
-  // Both values originate in the validated server configuration, never request input.
-  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect Open Outdoor</title><style>body{font:20px system-ui;max-width:560px;margin:40px auto;padding:20px;background:#fff;color:#152820}svg{width:100%;max-width:440px}code{overflow-wrap:anywhere}h1{font-size:30px}</style><main><h1>Connect your phone</h1><p>Keep both devices on the same trusted Wi-Fi. In Open Outdoor, choose Settings → Maps → Add a map → From laptop, then Scan QR code.</p>${svg.replace('<svg ', '<svg role="img" aria-label="Laptop pairing QR code" ')}<p>Laptop address: <code>${address}</code></p><p>Manual pairing code: <code>${pairingCode}</code></p>${signerFingerprint ? `<p>Signing fingerprint: <code>${signerFingerprint}</code></p><p>Approve this laptop for state updates only after comparing this fingerprint or scanning this page.</p>` : ''}<p>Keep the laptop server running. Closing the server expires this code. Downloads use local HTTP.</p></main></html>`;
+  // A Windows hotspot name/password can contain markup; keep both laptop-local and escaped.
+  const escape = (value) =>
+    String(value).replace(
+      /[&<>"']/g,
+      (character) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character],
+    );
+  const join = hotspot
+    ? `<h2>1. Join the laptop hotspot</h2><p>On your phone, open Settings → Wi-Fi and join <strong>${escape(hotspot.networkName)}</strong>.</p><p>Wi-Fi password: <code>${escape(hotspot.passphrase)}</code></p><p>Keep the phone connected to this hotspot during pairing and downloads.</p><h2>2. Pair in Open Outdoor</h2>`
+    : '<p>Join the laptop hotspot on your phone before pairing.</p>';
+  return `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Connect Open Outdoor</title><style>body{font:20px system-ui;max-width:560px;margin:40px auto;padding:20px;background:#fff;color:#152820}svg{width:100%;max-width:440px}code{overflow-wrap:anywhere}h1{font-size:30px}h2{font-size:24px}</style><main><h1>Connect your phone</h1>${join}<p>In Open Outdoor, choose Settings → Maps → Add a map → From laptop, then Scan QR code.</p>${svg.replace('<svg ', '<svg role="img" aria-label="Laptop pairing QR code" ')}<p>Laptop address: <code>${escape(address)}</code></p><p>Manual pairing code: <code>${escape(pairingCode)}</code></p>${signerFingerprint ? `<p>Signing fingerprint: <code>${escape(signerFingerprint)}</code></p><p>Approve this laptop for state updates only after comparing this fingerprint or scanning this page.</p>` : ''}<p>Keep the laptop server running. Closing the server expires this code. Downloads use local HTTP.</p></main></html>`;
 }
 
 export function canViewPairingPage(remoteAddress, localAddress, fetchSite) {

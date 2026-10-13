@@ -40,6 +40,16 @@ test('the pairing page is restricted to this laptop and first-party browser visi
   assert.equal(canViewPairingPage('192.168.1.20', '192.168.1.20', 'same-site'), false);
 });
 
+test('the laptop-only page explains joining the hotspot and safely escapes Wi-Fi credentials', async () => {
+  const hotspot = { networkName: 'Synthetic <Wi-Fi>', passphrase: 'test<&"password' };
+  const page = await pairingPage(address, code, undefined, hotspot);
+  assert.match(page, /1\. Join the laptop hotspot/);
+  assert.match(page, /2\. Pair in Open Outdoor/);
+  assert.match(page, /Synthetic &lt;Wi-Fi&gt;/);
+  assert.match(page, /test&lt;&amp;&quot;password/);
+  assert.ok(!pairingPayload(address, code).includes(hotspot.passphrase));
+});
+
 test('signed-update QR carries only public fingerprint metadata alongside the session code', async () => {
   const fingerprint = 'c'.repeat(64);
   assert.deepEqual(JSON.parse(pairingPayload(address, code, fingerprint)), {

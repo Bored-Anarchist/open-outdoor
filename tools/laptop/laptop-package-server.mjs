@@ -8,6 +8,7 @@ import { pipeline } from 'node:stream/promises';
 import { advertiseLaptop, canViewPairingPage, pairingPage } from './laptop-pairing.mjs';
 import { loadLaptopUpdateSigner } from './laptop-update-signing.mjs';
 import { isLaptopHost, laptopAddress, matchesRequestHost } from './laptop-network.mjs';
+import { isHotspotClient, startLaptopHotspot } from './laptop-hotspot.mjs';
 import {
   LaptopServerConfigurationError,
   laptopServerOptions,
@@ -65,6 +66,7 @@ export async function createLaptopPackageServer({
   token = randomBytes(16).toString('hex'),
   signer,
   pairingEndpoint,
+  hotspot,
 } = {}) {
   if (!/^[a-f0-9]{32}$/.test(token)) throw new Error('Invalid pairing code.');
   const pairingAddress = pairingEndpoint
@@ -127,6 +129,7 @@ export async function createLaptopPackageServer({
     if (
       (!isLaptopHost(address ?? '') && address !== '127.0.0.1' && address !== '::1') ||
       !matchesRequestHost(request.headers.host, request.socket) ||
+      (hotspot && address !== '127.0.0.1' && !isHotspotClient(address, hotspot)) ||
       request.headers.origin ||
       request.headers['transfer-encoding'] ||
       (request.headers['content-length'] && request.headers['content-length'] !== '0')
@@ -147,6 +150,7 @@ export async function createLaptopPackageServer({
           pairingAddress ?? laptopAddress(request.socket.localAddress, request.socket.localPort),
           token,
           signer?.identity.keyId,
+          hotspot,
         );
         response.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',
@@ -198,14 +202,56 @@ export async function createLaptopPackageServer({
   return { server, token, availableStates: [...packages.keys()], missingStates: missing };
 }
 
-async function main() {
-  const { host, port } = laptopServerOptions(process.argv.slice(2));
-  console.log('Verifying local public state packages…');
-  const signer = await loadLaptopUpdateSigner();
+export async function startLaptopServer(
+  { port, signal, onMessage = console.log, onFailure = console.error },
+  {
+    startHotspot = startLaptopHotspot,
+    loadSigner = loadLaptopUpdateSigner,
+    createPackageServer = createLaptopPackageServer,
+    advertise = advertiseLaptop,
+  } = {},
+) {
+  let signer;
+  let hotspot;
   let result;
   let pairingServer;
+  let stopDiscovery = () => {};
+  let closing;
+  const close = () => {
+    if (!closing)
+      closing = (async () => {
+        let discoveryError;
+        try {
+          stopDiscovery();
+        } catch (error) {
+          discoveryError = error;
+        }
+        for (const server of [result?.server, pairingServer]) {
+          if (!server) continue;
+          server.closeAllConnections();
+          await new Promise((done) => server.close(done));
+        }
+        try {
+          await signer?.close();
+        } finally {
+          await hotspot?.close();
+        }
+        if (discoveryError) throw discoveryError;
+      })();
+    return closing;
+  };
   try {
-    result = await createLaptopPackageServer({ signer, pairingEndpoint: { host, port } });
+    signal?.throwIfAborted();
+    // The identity lock prevents competing servers from owning the same hotspot lifecycle.
+    signer = await loadSigner();
+    signal?.throwIfAborted();
+    onMessage('Starting the laptop Wi-Fi hotspot…');
+    hotspot = await startHotspot({ port, signal, onMessage, onDisconnect: onFailure });
+    signal?.throwIfAborted();
+    const { host } = hotspot;
+    onMessage('Verifying local public state packages…');
+    result = await createPackageServer({ signer, pairingEndpoint: { host, port }, hotspot });
+    signal?.throwIfAborted();
     const { server, availableStates } = result;
     if (!availableStates.length) {
       throw new LaptopServerConfigurationError(
@@ -214,7 +260,7 @@ async function main() {
     }
     server.listen(port, host);
     await once(server, 'listening');
-    // A loopback page works even when browsers cannot navigate scoped link-local IPv6 URLs.
+    // Wi-Fi credentials and pairing codes stay on a laptop-only page.
     pairingServer = createServer((request, response) => {
       if (request.url !== '/pair') {
         response.writeHead(404);
@@ -225,47 +271,62 @@ async function main() {
     });
     pairingServer.listen(0, '127.0.0.1');
     await once(pairingServer, 'listening');
+    signal?.throwIfAborted();
+    try {
+      stopDiscovery = advertise(host, port, {
+        onError: () => onMessage('Nearby discovery is unavailable. Use QR or manual pairing.'),
+      });
+    } catch {
+      onMessage('Nearby discovery is unavailable. Use QR or manual pairing.');
+    }
+    const { token, missingStates } = result;
+    const address = laptopAddress(host, port);
+    const pairingUrl = `http://127.0.0.1:${pairingServer.address().port}/pair`;
+    onMessage(
+      `\nJoin the laptop hotspot on your phone: ${hotspot.networkName}\nOpen the pairing page on this laptop for the hotspot password, then scan the app pairing QR.\nOpen Outdoor → Settings → Maps → Add a map → From laptop\nPairing page: ${pairingUrl}\nLaptop address: ${address}\nPairing code: ${token}\nSigning fingerprint: ${signer.identity.keyId}\n${availableStates.length} verified public states available.`,
+    );
+    if (missingStates.length)
+      onMessage(
+        `Missing or invalid states: ${missingStates.join(', ')}. Restore them and restart to add them.`,
+      );
+    onMessage(
+      'Keep this terminal open and the phone on the laptop hotspot. Transfers use local HTTP. Ctrl+C stops sharing; a hotspot started by this server is turned off.',
+    );
+    onMessage(
+      `Phone reachability check: open ${address}/v1/catalog in Safari. "Pairing code required" means the hotspot server is reachable.`,
+    );
+    return { ...result, hotspot, pairingUrl, close };
   } catch (error) {
-    result?.server.close();
-    result?.server.closeAllConnections();
-    pairingServer?.close();
-    pairingServer?.closeAllConnections();
-    await signer.close();
+    await close();
     throw error;
   }
-  const { server, token, availableStates, missingStates } = result;
-  let stopDiscovery = () => {};
-  try {
-    stopDiscovery = advertiseLaptop(host, port, {
-      onError: () => console.log('Nearby discovery is unavailable. Use QR or manual pairing.'),
-    });
-  } catch {
-    console.log('Nearby discovery is unavailable. Use QR or manual pairing.');
-  }
-  const address = laptopAddress(host, port);
-  console.log(
-    `\nOpen Outdoor → Settings → Maps → Add a map → From laptop\nPairing page: http://127.0.0.1:${pairingServer.address().port}/pair\nLaptop address: ${address}\nPairing code: ${token}\nSigning fingerprint: ${signer.identity.keyId}\n${availableStates.length} verified public states available.`,
-  );
-  if (missingStates.length)
-    console.log(
-      `Missing or invalid states: ${missingStates.join(', ')}. Restore them and restart to add them.`,
-    );
-  console.log(
-    'Keep this terminal open. Use a trusted local network; transfers use HTTP. Ctrl+C stops sharing and expires this pairing code.',
-  );
-  console.log(
-    `Phone reachability check: open ${address}/v1/catalog in Safari. "Pairing code required" means the server is reachable. If it cannot load, check device isolation, VPN routing and the firewall's allowed phone addresses, even when both devices show the same Wi-Fi name.`,
-  );
-  const stop = () => {
-    stopDiscovery();
-    server.close();
-    server.closeAllConnections();
-    pairingServer.close();
-    pairingServer.closeAllConnections();
-    void signer.close();
-  };
+}
+
+async function main() {
+  const options = laptopServerOptions(process.argv.slice(2));
+  const controller = new AbortController();
+  const stop = () => controller.abort();
   process.once('SIGINT', stop);
   process.once('SIGTERM', stop);
+  let session;
+  const finish = () => {
+    void session?.close().catch((error) => console.error(laptopServerFailureMessage(error)));
+  };
+  controller.signal.addEventListener('abort', finish, { once: true });
+  try {
+    session = await startLaptopServer({
+      ...options,
+      signal: controller.signal,
+      onFailure: (error) => {
+        console.error(laptopServerFailureMessage(error));
+        process.exitCode = 1;
+        stop();
+      },
+    });
+    if (controller.signal.aborted) await session.close();
+  } catch (error) {
+    if (!controller.signal.aborted) throw error;
+  }
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href)

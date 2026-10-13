@@ -44,7 +44,7 @@ export function useLaptopPairing(
       setStatus(
         values.length
           ? 'Nearby laptops found. Scan the QR code on your laptop to pair.'
-          : 'No laptop found. Start its package server, then search again or scan its QR code.',
+          : 'No laptop found. Start its server, join its Wi-Fi hotspot, then search again or scan its QR code.',
       );
     } catch {
       if (request === generation.current && active.current)
