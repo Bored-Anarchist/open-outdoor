@@ -10,8 +10,15 @@ const json = async (path) => JSON.parse(await readFile(path, 'utf8'));
 
 export function compareSourceRevision(previous, revision, signature, acknowledge = false) {
   if (!Number.isSafeInteger(revision) || revision <= 0)
-    return { status: 'unversioned', pending: previous?.pending === true };
-  if (!previous) return { status: 'baseline-established', pending: false, signature, revision };
+    return { status: 'unversioned', pending: true, acquisitionRequired: true };
+  if (!previous)
+    return {
+      status: 'baseline-established',
+      pending: !acknowledge,
+      acquisitionRequired: !acknowledge,
+      signature,
+      revision,
+    };
   const pending = !acknowledge && (previous.pending || previous.signature !== signature);
   return {
     status: pending ? 'changed' : 'unchanged',
@@ -26,8 +33,7 @@ export function compareSourceRevision(previous, revision, signature, acknowledge
 export async function packageSourceReferences(repository = root) {
   const sources = new Map();
   const add = (url, state, channel) => {
-    if (typeof url !== 'string' || !/^https:\/\/.*\/(?:FeatureServer|MapServer)\/\d+$/i.test(url))
-      return;
+    if (typeof url !== 'string' || !url.startsWith('https://')) return;
     const key = `${channel}:${url}`;
     const entry = sources.get(key) ?? { key, url, channel, states: [] };
     if (!entry.states.includes(state)) entry.states.push(state);
@@ -57,15 +63,33 @@ export async function packageSourceReferences(repository = root) {
     }
     for (const source of privateManifest?.agency?.sources ?? privateManifest?.sources ?? [])
       add(source.sourceUrl ?? source.url, state.code, 'private');
+    if (state.code === 'NY') {
+      add('https://developer.nps.gov/api/v1/mapdata/parkboundaries/{parkCode}', 'NY', 'public');
+      const oprhp = await json(join(repository, 'config/private-new-york-oprhp-sources.json'));
+      for (const source of oprhp.sources) add(source.url, 'NY', 'private');
+      for (const url of [
+        'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2',
+        'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/0',
+        'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/2',
+        'https://data.ny.gov/resource/yvkb-z58x.json',
+      ])
+        add(url, 'NY', 'private');
+    }
   }
   return [...sources.values()].sort((a, b) => a.key.localeCompare(b.key));
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const args = process.argv.slice(2).filter((arg) => arg !== '--');
-  if (args.some((arg) => arg !== '--acknowledge'))
-    throw new Error('Usage: node tools/packages/check-package-source-updates.mjs [--acknowledge]');
-  const acknowledge = args.includes('--acknowledge');
+  let state;
+  let acknowledge = false;
+  for (let index = 0; index < args.length; index++) {
+    if (args[index] === '--acknowledge') acknowledge = true;
+    else if (args[index] === '--state' && /^[A-Z]{2}$/.test(args[index + 1] ?? ''))
+      state = args[++index];
+    else throw new Error('Usage: check-package-source-updates.mjs [--state NY] [--acknowledge]');
+  }
+  const reportName = state ? `latest-source-check-${state}.json` : 'latest-source-check.json';
   await mkdir(reportRoot, { recursive: true });
   const baselinePath = join(reportRoot, 'source-revisions.json');
   let previous = {};
@@ -74,7 +98,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
-  const references = await packageSourceReferences();
+  const references = (await packageSourceReferences())
+    .filter((source) => !state || source.states.includes(state))
+    .map((source) => (state ? { ...source, states: [state] } : source));
+  if (!references.length) throw new Error(`No source references for ${state}`);
   const metadata = new Map();
   const rows = [];
   const next = { ...previous };
@@ -82,6 +109,15 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const worker = async () => {
     while (index < references.length) {
       const source = references[index++];
+      if (!/\/(?:FeatureServer|MapServer)\/\d+$/i.test(source.url)) {
+        rows.push({
+          ...source,
+          status: 'manual-refresh',
+          pending: true,
+          acquisitionRequired: true,
+        });
+        continue;
+      }
       try {
         if (!metadata.has(source.url))
           metadata.set(
@@ -110,7 +146,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
         rows.push({
           ...source,
           status: 'error',
-          pending: previous[source.key]?.pending === true,
+          pending: true,
           error: String(error).slice(0, 180),
         });
       }
@@ -133,10 +169,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     errors: rows.filter((row) => row.status === 'error').length,
   };
   await atomicSourceWrite(baselinePath, JSON.stringify(next, null, 2) + '\n');
-  await atomicSourceWrite(
-    join(reportRoot, 'latest-source-check.json'),
-    JSON.stringify(report, null, 2) + '\n',
-  );
+  await atomicSourceWrite(join(reportRoot, reportName), JSON.stringify(report, null, 2) + '\n');
   console.log(
     JSON.stringify({
       sources: rows.length,
@@ -144,7 +177,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       changedStates: report.changedStates,
       baselineEstablished: rows.filter((row) => row.status === 'baseline-established').length,
       unversioned: rows.filter((row) => row.status === 'unversioned').length,
-      report: '.scratch/package-maintenance/latest-source-check.json',
+      report: `.scratch/package-maintenance/${reportName}`,
     }),
   );
   if (report.errors) process.exitCode = 1;

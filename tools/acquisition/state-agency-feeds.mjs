@@ -441,6 +441,8 @@ export async function stageApprovedFeed(feed, approval, fetchImpl = sourceFetch,
       throw error;
     });
     await atomicSourceWrite(join(outputDirectory, filename), bytes);
+    // Source-specific evidence must be complete before the active receipt changes.
+    if (options.prepareReceipt) await options.prepareReceipt(receipt, outputDirectory);
     if (old) await atomicSourceWrite(join(outputDirectory, 'previous-receipt.json'), old);
     await atomicSourceWrite(
       join(outputDirectory, 'receipt.json'),

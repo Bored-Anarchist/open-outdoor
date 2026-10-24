@@ -4,7 +4,7 @@
 
 The inventory verifier checks each package checksum and its feature counts against the manifest. 43 packages contain agency + iOverlander data, New York contains DEC + selected OPRHP + iOverlander, and 6 packages use iOverlander alone because no eligible staged agency records are available.
 
-Totals: **463,802 agency/DEC features**, **63,283 iOverlander places**, and **527,085 features**. Counts do not establish current access, source completeness, or permission to redistribute.
+Totals: **463,686 agency/DEC features**, **63,283 iOverlander places**, and **526,969 features**. Counts do not establish current access, source completeness, or permission to redistribute.
 
 The [private/public deduplication report](PRIVATE_PUBLIC_STATE_DEDUPLICATION.md) records same-state matches, retained counts, thresholds and recoverable private audit files. Rebuilds automatically apply these checks; inventory verification replays every match against the pinned public package.
 
@@ -47,7 +47,7 @@ California combines both source packages. Connecticut and Massachusetts use thei
 | New Hampshire (NH) | Agency + iOverlander | 20,012 | 351 | 20,363 |
 | New Jersey (NJ) | Agency + iOverlander | 10,007 | 218 | 10,225 |
 | New Mexico (NM) | Agency + iOverlander | 34 | 2,071 | 2,105 |
-| New York (NY) | DEC + OPRHP + iOverlander | 40,087 | 1,186 | 41,273 |
+| New York (NY) | DEC + OPRHP + iOverlander | 39,971 | 1,186 | 41,157 |
 | North Carolina (NC) | Agency + iOverlander | 67 | 1,018 | 1,085 |
 | North Dakota (ND) | Agency + iOverlander | 48 | 389 | 437 |
 | Ohio (OH) | Agency + iOverlander | 11,572 | 611 | 12,183 |

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "publicDistribution": true,
-  "generatedAt": "2026-10-24T16:16:45.447Z",
+  "generatedAt": "2026-10-24T20:53:40.857Z",
   "states": [
     {
       "state": "AL",
@@ -348,13 +348,13 @@
     {
       "state": "NY",
       "name": "New York",
-      "features": 326,
-      "poi": 80,
+      "features": 327,
+      "poi": 81,
       "other": 0,
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 1532794
+      "bytes": 1647938
     },
     {
       "state": "NC",
@@ -556,8 +556,8 @@
     }
   ],
   "totals": {
-    "features": 745341,
-    "poi": 77019,
+    "features": 745342,
+    "poi": 77020,
     "other": 20540,
     "agency": 138891,
     "agencySources": 18,

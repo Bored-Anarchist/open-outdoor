@@ -87,3 +87,18 @@ pnpm map:sources:check
 Backups must be outside the repository. Restrict private-folder access before copying. The backup receipt is completed only after all pinned files are verified. Immutable checksum objects share storage across release views; no snapshots are automatically deleted. Private backups cover active catalogs and pinned deduplication recovery/enrichment, not all original source archives. Keep the two channels separate.
 
 The source checker fetches exact API layer metadata without feature records. It stores baselines and reports in ignored `.scratch/package-maintenance/`; pending changes persist across checks. Each weekly package refresh must also fully acquire every API the report marks unversioned (105 references at the 2026-10-24 review), through its existing source-specific public, private or New York pipeline. Rebuild affected packages, deduplicate private data, independently verify and back up the results. Run `pnpm map:sources:check --acknowledge` only after every changed source and every unversioned API resolved in the cycle has completed those steps. A first observation baseline does not prove package freshness. If rights, approval, adapter, endpoint or verification blocks a source, leave it pending and record the blocker.
+
+
+## New York refresh
+
+Run `pnpm map:ny:refresh` from the repository root with the pinned Node and Python runtimes. Set `OPEN_OUTDOOR_PYTHON` to the pinned Python executable when it is not on PATH. Compile `packages/shared` and `packages/data` and build the public parser before the first run in a fresh checkout.
+
+The command acquires the civil boundary, NPS API data, federal layers and all eight configured OPRHP layers. It rebuilds the public NY package and SQLite loader, updates the private OPRHP overlay, reconciles private/public duplicates and independently verifies public packages, private receipts and state loaders. Its timestamped report is under `.scratch/package-maintenance/ny-*/report.json`. Preserve the report when acquisition fails. Finish with the separate public/private backup commands above; this command does not publish or back up packages.
+
+Every OPRHP run reacquires feature records, including when an older receipt already exists. New raw data and hash-named terms/layer evidence are written before the active source receipt changes. An evidence failure preserves the preceding receipt and its data. Closed/proposed/nonpublic selections and separate condition snapshots retain the existing policy.
+
+If NPS acquisition fails, public composition explicitly retains the existing NPS records and source receipts and records `sourceFreshness.nps.status: retained-stale`. A newer federal or package build date does not change the NPS acquisition date. Without that explicit fallback, composition rejects older NPS snapshots or legacy snapshots that omit existing visitor details. The overall refresh exits unsuccessfully with a partial report while unresolved sources remain.
+
+DEC acquisition still requires `PrivateData/agency-feeds/ny-publisher-grant.json` and a coordinated identity/profile rebuild. Missing grant evidence remains an unresolved blocker; existing DEC records and profiles are preserved. iOverlander remains a reviewed local archive input and is reported separately. These restrictions are not waived by a successful rebuild.
+
+`pnpm map:sources:check -- --state NY` checks all NY references and writes `latest-source-check-NY.json`. Exact ArcGIS layers receive revision checks. NPS APIs, Socrata inputs and other non-layer endpoints are listed as requiring manual acquisition instead of silently disappearing. Unversioned layers remain pending even after `--acknowledge`; metadata checks and first-observation baselines never establish record freshness.

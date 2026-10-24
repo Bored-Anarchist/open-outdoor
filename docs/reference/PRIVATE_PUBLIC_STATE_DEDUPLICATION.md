@@ -2,7 +2,7 @@
 
 All 50 active packages under Git-ignored `PrivateData/catalogs/US/<state>/current/` were compared only with the public package for the same state. Public data and its manifests remain unchanged. This report publishes counts only; original records, community narratives, match IDs and coordinates remain private.
 
-Removed **8,766 duplicate private entries** across **27 states**. Retained **527,085 private features**: **463,802 agency/DEC/OPRHP records** and **63,283 iOverlander places**. New York's reviewed identity catalog, map/index and 5,289 DEC profiles remain unchanged; it has zero qualifying public matches.
+Removed **8,766 duplicate private entries** across **27 states**. Retained **526,969 private features**: **463,686 agency/DEC/OPRHP records** and **63,283 iOverlander places**. Deduplication preserves New York's current reviewed identity catalog, map/index and 5,289 DEC profiles; it has zero qualifying public matches.
 
 The public feature wins when both entries have the same normalized exact source-layer URL and external record ID with matching geometry dimension. Otherwise matching requires a meaningful normalized name, compatible normalized POI categories (raw categories are fallback evidence) and the same geometry dimension. Points must be within 25 meters. Lines and polygons must have bounds within 20 meters, length/area ratio at least 98%, and continuous bidirectional segment coverage no greater than 20 meters. Polygon matches also require intersection-over-union of at least 90%; uncertain geometry is retained for review. This accommodates public rounding and simplification. Generic names alone, nearby facilities, overlapping land parcels, and points inside park boundaries are insufficient.
 
@@ -47,7 +47,7 @@ Deduplicated community places keep their descriptions and check-ins in a checksu
 | New Hampshire (NH) | 0 | 20,012 | 351 | 20,363 |
 | New Jersey (NJ) | 136 | 10,007 | 218 | 10,225 |
 | New Mexico (NM) | 3 | 34 | 2,071 | 2,105 |
-| New York (NY) | 0 | 40,087 | 1,186 | 41,273 |
+| New York (NY) | 0 | 39,971 | 1,186 | 41,157 |
 | North Carolina (NC) | 1 | 67 | 1,018 | 1,085 |
 | North Dakota (ND) | 0 | 48 | 389 | 437 |
 | Ohio (OH) | 0 | 11,572 | 611 | 12,183 |

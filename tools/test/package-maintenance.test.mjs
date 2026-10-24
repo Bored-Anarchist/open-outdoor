@@ -7,6 +7,8 @@ import { Readable } from 'node:stream';
 import { reusableSource, sourceHash } from '../packages/package-source-cache.mjs';
 import { restoreArtifact } from '../packages/restore-public-package-artifacts.mjs';
 import { prohibitedPackageFiles } from '../packages/package-storage-policy.mjs';
+import { assertNpsSnapshotUsable } from '../packages/new-york-source-freshness.mjs';
+import { stagePrivateNewYorkOprhp } from '../acquisition/stage-private-new-york-oprhp.mjs';
 import { stageApprovedFeed } from '../acquisition/state-agency-feeds.mjs';
 
 test('source cache requires edit revision, matching query signature and intact local bytes', async () => {
@@ -159,4 +161,90 @@ test('private refresh reuses unchanged API data, refreshes changed revisions, an
   } finally {
     await rm(stagingRoot, { recursive: true, force: true });
   }
+});
+
+test('OPRHP reacquires existing records and preserves the active receipt if evidence fails', async () => {
+  const stagingRoot = await mkdtemp(join(tmpdir(), 'outdoor-oprhp-refresh-'));
+  const source = {
+    id: 'nys-oprhp-trails',
+    state: 'NY',
+    sourceType: 'arcgis-layer',
+    url: 'https://example.org/FeatureServer/0',
+    termsUrl: 'https://example.org/terms',
+    rightsStatus: 'Unconfirmed',
+    provisionalPrivateValidation: true,
+    mode: 'durable',
+  };
+  let requests = 0;
+  let failEvidence = false;
+  const fetchImpl = async (url, options = {}) => {
+    let value;
+    if (url === source.termsUrl) {
+      if (failEvidence) throw Error('terms unavailable');
+      value = { licenseInfo: 'private reference' };
+    } else if (!options.body) value = { maxRecordCount: 100, editingInfo: { lastEditDate: 123 } };
+    else if (new URLSearchParams(options.body).get('returnIdsOnly') === 'true')
+      value = { objectIds: [1], objectIdFieldName: 'OBJECTID' };
+    else {
+      requests++;
+      value = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            id: 1,
+            geometry: { type: 'Point', coordinates: [-74, 42] },
+            properties: { OBJECTID: 1, name: String(requests) },
+          },
+        ],
+      };
+    }
+    return {
+      ok: true,
+      json: async () => value,
+      arrayBuffer: async () => Buffer.from(JSON.stringify(value)),
+    };
+  };
+  try {
+    const options = { stagingRoot, sources: [source], fetchImpl };
+    await stagePrivateNewYorkOprhp(options);
+    const receiptPath = join(stagingRoot, 'US/NY', source.id, 'receipt.json');
+    const first = JSON.parse(await readFile(receiptPath));
+    await stagePrivateNewYorkOprhp(options);
+    const second = await readFile(receiptPath);
+    assert.equal(requests, 2);
+    assert.notEqual(JSON.parse(second).sha256, first.sha256);
+    failEvidence = true;
+    await assert.rejects(stagePrivateNewYorkOprhp(options), /terms unavailable/);
+    assert.deepEqual(await readFile(receiptPath), second);
+    for (const evidence of JSON.parse(second).evidence) {
+      const bytes = await readFile(join(stagingRoot, 'US/NY', source.id, evidence.file));
+      assert.equal(sourceHash(bytes), evidence.sha256);
+    }
+  } finally {
+    await rm(stagingRoot, { recursive: true, force: true });
+  }
+});
+
+test('public NY composition rejects older NPS snapshots and snapshots missing visitor details', () => {
+  const previous = [
+    {
+      properties: {
+        sourceId: 'nps-parks-ny',
+        sourceUpdated: '2026-09-16T00:00:00Z',
+        description: 'Visitor guidance',
+      },
+    },
+  ];
+  const snapshot = {
+    retrievedAt: '2026-09-14T00:00:00Z',
+    parks: [{}],
+    campgrounds: [],
+    alerts: [],
+  };
+  assert.throws(() => assertNpsSnapshotUsable(snapshot, previous), /predates/);
+  snapshot.retrievedAt = '2026-10-24T00:00:00Z';
+  assert.throws(() => assertNpsSnapshotUsable(snapshot, previous), /omits visitor details/);
+  snapshot.parks[0].visitorDetails = {};
+  assert.doesNotThrow(() => assertNpsSnapshotUsable(snapshot, previous));
 });

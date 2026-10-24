@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
+import { assertNpsSnapshotUsable } from './new-york-source-freshness.mjs';
 import {
   federalNewYorkAppFeatures,
   npsNewYorkAppFeatures,
@@ -173,7 +174,11 @@ if (heldStateFeatures.length || heldStateSources.length) {
   throw new Error('public base still contains rights-held New York state agency data');
 }
 
-const npsFeatures = npsNewYorkAppFeatures(nps.document);
+const retainNps = args.get('retain-nps') === 'true';
+if (!retainNps) assertNpsSnapshotUsable(nps.document, baseDocument.features);
+const npsFeatures = retainNps
+  ? baseDocument.features.filter((f) => String(f.properties?.sourceId).startsWith('nps-'))
+  : npsNewYorkAppFeatures(nps.document);
 const federalFeatures = federalNewYorkAppFeatures(federal.document);
 const boundaryFeatures = baseDocument.features.filter(
   (feature) => feature.properties?.sourceId === 'nys-boundary',
@@ -296,6 +301,23 @@ const officialSources = [
   ),
 ];
 
+if (retainNps) {
+  for (let index = 0; index < officialSources.length; index++) {
+    if (officialSources[index].id.startsWith('nps-')) {
+      const previous = baseManifest.sources.find(
+        (source) => source.id === officialSources[index].id,
+      );
+      if (!previous) throw new Error('Retained NPS records require their original source receipt');
+      officialSources[index] = previous;
+    }
+  }
+}
+for (const source of officialSources) {
+  if (source.id.startsWith('nps-'))
+    source.retrievedAt ??= retainNps ? baseManifest.acquiredAt : nps.manifest.retrievedAt;
+  else if (source.id !== 'nys-boundary') source.retrievedAt = federal.manifest.retrievedAt;
+}
+
 const collectionBytes = Buffer.from(`${stableJson(outdoorAppCollection(features))}\n`);
 const indexBytes = Buffer.from(`${stableJson(outdoorAppIndex(features))}\n`);
 if (collectionBytes.byteLength > 24 * 1024 * 1024) {
@@ -365,8 +387,17 @@ const manifest = {
           : 'official managed-land snapshot',
     },
   ],
+  sourceFreshness: {
+    nps: {
+      status: retainNps ? 'retained-stale' : 'acquired',
+      retrievedAt: retainNps
+        ? (baseManifest.sourceFreshness?.nps?.retrievedAt ?? baseManifest.acquiredAt)
+        : nps.manifest.retrievedAt,
+    },
+    federal: { status: 'acquired', retrievedAt: federal.manifest.retrievedAt },
+  },
   officialSnapshots: {
-    nps: nps.snapshot,
+    nps: retainNps ? baseManifest.officialSnapshots.nps : nps.snapshot,
     federal: federal.snapshot,
   },
 };

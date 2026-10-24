@@ -39,7 +39,7 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | NH | New Hampshire | 5,538 | 324 | 22 | 0 | 1 |
 | NJ | New Jersey | 14,743 | 102 | 41 | 0 | 3 |
 | NM | New Mexico | 12,897 | 1,921 | 386 | 0 | 4 |
-| NY | New York | 326 | 80 | 0 | 0 | 1 |
+| NY | New York | 327 | 81 | 0 | 0 | 1 |
 | NC | North Carolina | 9,541 | 2,675 | 1,351 | 6 | 3 |
 | ND | North Dakota | 1,125 | 54 | 4 | 0 | 1 |
 | OH | Ohio | 7,161 | 69 | 1 | 0 | 1 |
@@ -59,7 +59,7 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | WI | Wisconsin | 10,355 | 196 | 1 | 0 | 2 |
 | WY | Wyoming | 35,218 | 5,523 | 1,087 | 0 | 5 |
 
-Totals: **745,341 features**, **77,019 POIs**, **20,540 Other POIs**, **138,891 direct agency features**, **167 validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.
+Totals: **745,342 features**, **77,020 POIs**, **20,540 Other POIs**, **138,891 direct agency features**, **167 validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.
 
 Agency receipts record source URLs, current terms checksums, query inventory, field list, edit dates, page checksums, attribution and modifications. Repeated parks/forestry roles ingest a feed only once. Uncleared permission-limited and unconfirmed sources remain excluded. Minnesota visitor derivatives and Virginia DCR data are included under their explicit source conditions for the noncommercial application; source terms remain separate from project code licensing. Arkansas facilities, CAL FIRE 2024 boundaries, and Massachusetts's 2015 trails are explicitly dated references; current access and completeness are not asserted. These snapshots make no current access or camping claim.
 

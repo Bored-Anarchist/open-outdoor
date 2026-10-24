@@ -813,12 +813,12 @@
       "classification": "SOURCE_REDISTRIBUTABLE",
       "state": "NY",
       "name": "New York",
-      "featureCount": 326,
-      "sourceSha256": "ae5da0debe4f9b674c084c30c6994b84047ff9c70ba570521a8d38b48a87d92a",
-      "generatedAt": "2026-10-24T16:15:52.114Z",
-      "sourceIndexSha256": "fdd637043b4de4dd05bada43f9de57a924a9b503b503df753179634a51ffd51b",
-      "tilesSha256": "7e842b3da2b20606f45a420cd7f1d2c2d48a3b2813b9a0718cac5964c19118f6",
-      "tilesBytes": 394516,
+      "featureCount": 327,
+      "sourceSha256": "95dea8a8c74895755cd4845ece437e294c02aec1f66c20dcc84fd268e9fff976",
+      "generatedAt": "2026-10-24T20:53:40.819Z",
+      "sourceIndexSha256": "7ad75b6191320ea3df288e8ffbb1a0e41eee5c58909a8bda0114fc889115dcae",
+      "tilesSha256": "97ca7085d3ad292d61bc01134734396d3d5d54624cadc076f5eb6aa9b8b9d3d6",
+      "tilesBytes": 394945,
       "maximumZoom": 10,
       "tileCount": 468,
       "bounds": [
@@ -829,9 +829,9 @@
       ],
       "attribution": "NYS ITS Geospatial Services; National Park Service; USDA Forest Service; Bureau of Land Management",
       "file": "NY/state.sqlite",
-      "sha256": "f6ecfc2bdf3aa52bec66510317b08416ccd0b277d7f052ed9ae628391a2c487f",
-      "bytes": 2121728,
-      "installedBytes": 2516244
+      "sha256": "ee72043866a0b3cdce85057d03701b44233bece2f18bce2f4444c08f31ed514f",
+      "bytes": 2306048,
+      "installedBytes": 2700993
     },
     {
       "schemaVersion": 1,

@@ -102,7 +102,7 @@ describe('real offline New York map', () => {
     expect(indexBytes.length).toBe(manifest.indexBytes);
     expect(index.features).toHaveLength(collection.features.length);
     expect(collection.features.length).toBe(manifest.featureCount);
-    expect(collection.features.length).toBe(326);
+    expect(collection.features.length).toBe(327);
     expect(
       collection.features.every((feature) => !feature.properties.sourceId.startsWith('nys-dec-')),
     ).toBe(true);
@@ -129,7 +129,7 @@ describe('real offline New York map', () => {
     expect(manifest.catalogSources).toEqual([
       expect.objectContaining({ id: 'nys-boundary', featureCount: 1 }),
       expect.objectContaining({ id: 'nps', featureCount: 88 }),
-      expect.objectContaining({ id: 'usfs', featureCount: 237 }),
+      expect.objectContaining({ id: 'usfs', featureCount: 238 }),
       expect.objectContaining({ id: 'blm', featureCount: 0 }),
     ]);
   });

@@ -26,7 +26,7 @@ if (
   throw new Error('New York publisher grant must cover DEC and OPEN-NY before acquisition');
 }
 const output = new URL(
-  '../PrivateData/catalogs/US/New York/dec-source-acquisition/',
+  '../../PrivateData/catalogs/US/New York/dec-source-acquisition/',
   import.meta.url,
 );
 const sources = [
