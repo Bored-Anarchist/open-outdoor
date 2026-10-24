@@ -2,7 +2,7 @@
 
 All 50 active packages under Git-ignored `PrivateData/catalogs/US/<state>/current/` were compared only with the public package for the same state. Public data and its manifests remain unchanged. This report publishes counts only; original records, community narratives, match IDs and coordinates remain private.
 
-Removed **8,766 duplicate private entries** across **27 states**. Retained **527,057 private features**: **463,774 agency/DEC/OPRHP records** and **63,283 iOverlander places**. New York's reviewed identity catalog, map/index and 5,289 DEC profiles remain unchanged; it has zero qualifying public matches.
+Removed **8,766 duplicate private entries** across **27 states**. Retained **527,085 private features**: **463,802 agency/DEC/OPRHP records** and **63,283 iOverlander places**. New York's reviewed identity catalog, map/index and 5,289 DEC profiles remain unchanged; it has zero qualifying public matches.
 
 The public feature wins when both entries have the same normalized exact source-layer URL and external record ID with matching geometry dimension. Otherwise matching requires a meaningful normalized name, compatible normalized POI categories (raw categories are fallback evidence) and the same geometry dimension. Points must be within 25 meters. Lines and polygons must have bounds within 20 meters, length/area ratio at least 98%, and continuous bidirectional segment coverage no greater than 20 meters. Polygon matches also require intersection-over-union of at least 90%; uncertain geometry is retained for review. This accommodates public rounding and simplification. Generic names alone, nearby facilities, overlapping land parcels, and points inside park boundaries are insufficient.
 
@@ -23,7 +23,7 @@ Deduplicated community places keep their descriptions and check-ins in a checksu
 | California (CA) | 5 | 0 | 8,016 | 8,016 |
 | Colorado (CO) | 1,213 | 920 | 3,692 | 4,612 |
 | Connecticut (CT) | 0 | 0 | 176 | 176 |
-| Delaware (DE) | 35 | 7,646 | 61 | 7,707 |
+| Delaware (DE) | 35 | 7,645 | 61 | 7,706 |
 | Florida (FL) | 15 | 16,699 | 2,445 | 19,144 |
 | Georgia (GA) | 1 | 6,260 | 814 | 7,074 |
 | Hawaii (HI) | 16 | 584 | 79 | 663 |
@@ -35,12 +35,12 @@ Deduplicated community places keep their descriptions and check-ins in a checksu
 | Kentucky (KY) | 1 | 4,092 | 446 | 4,538 |
 | Louisiana (LA) | 0 | 28 | 550 | 578 |
 | Maine (ME) | 0 | 12,942 | 661 | 13,603 |
-| Maryland (MD) | 1 | 626 | 261 | 887 |
+| Maryland (MD) | 1 | 628 | 261 | 889 |
 | Massachusetts (MA) | 0 | 0 | 373 | 373 |
 | Michigan (MI) | 2 | 0 | 1,143 | 1,143 |
 | Minnesota (MN) | 1 | 0 | 835 | 835 |
 | Mississippi (MS) | 1 | 2,928 | 444 | 3,372 |
-| Missouri (MO) | 0 | 2,137 | 787 | 2,924 |
+| Missouri (MO) | 0 | 2,132 | 787 | 2,919 |
 | Montana (MT) | 6 | 8,752 | 2,168 | 10,920 |
 | Nebraska (NE) | 0 | 0 | 504 | 504 |
 | Nevada (NV) | 2 | 30 | 1,635 | 1,665 |
@@ -58,14 +58,14 @@ Deduplicated community places keep their descriptions and check-ins in a checksu
 | South Carolina (SC) | 0 | 324 | 491 | 815 |
 | South Dakota (SD) | 0 | 298 | 716 | 1,014 |
 | Tennessee (TN) | 0 | 5,789 | 777 | 6,566 |
-| Texas (TX) | 0 | 6,681 | 2,912 | 9,593 |
+| Texas (TX) | 0 | 6,686 | 2,912 | 9,598 |
 | Utah (UT) | 9 | 96 | 3,706 | 3,802 |
-| Vermont (VT) | 163 | 4,578 | 406 | 4,984 |
+| Vermont (VT) | 163 | 4,579 | 406 | 4,985 |
 | Virginia (VA) | 7 | 2,655 | 920 | 3,575 |
 | Washington (WA) | 2 | 7,426 | 3,281 | 10,707 |
 | West Virginia (WV) | 1 | 5,834 | 353 | 6,187 |
 | Wisconsin (WI) | 0 | 123 | 866 | 989 |
-| Wyoming (WY) | 0 | 31,803 | 1,588 | 33,391 |
+| Wyoming (WY) | 0 | 31,829 | 1,588 | 33,417 |
 
 ## Rebuild and verify
 

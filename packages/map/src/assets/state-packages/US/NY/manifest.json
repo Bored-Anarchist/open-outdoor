@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
-  "acquiredAt": "2026-09-16T09:29:28.517Z",
-  "sha256": "0248177d6195f0fcd9cf1282f761806b829b786e31fa959035a558e635abd89e",
-  "bytes": 1634780,
-  "indexSha256": "ae3bd7f4938f228326a0bb290f1ab536dfb1705bcd81aba98612bf67c4037883",
-  "indexBytes": 288520,
+  "acquiredAt": "2026-10-24T15:19:20.217Z",
+  "sha256": "367640327bad3b6a3120e9f5c20a53a087954492c7559734324ee9d2a33dff81",
+  "bytes": 1521422,
+  "indexSha256": "47f061b8854b216f2b82d2535b6d09e4b1d5c09c01e55421b1d49513c9ae03e6",
+  "indexBytes": 174032,
   "featureCount": 326,
   "coordinateReferenceSystem": "EPSG:4326",
   "simplificationDegrees": 0.00003,
@@ -15,7 +15,7 @@
     "limitations": [
       "Dated informational references, not live permission, closure or camping claims.",
       "Some states have no eligible direct agency feed; source gaps remain explicit.",
-      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
     ]
   },
   "rights": {
@@ -35,7 +35,7 @@
       "https://data.fs.usda.gov/geodata/edw/datasets.php",
       "https://www.blm.gov/services/geospatial/GISData"
     ],
-    "reviewedAt": "2026-09-27",
+    "reviewedAt": "2026-10-24",
     "sourceTerms": []
   },
   "sources": [
@@ -46,20 +46,22 @@
       "fields": [
         "OBJECTID",
         "NAME",
+        "ABBREV",
+        "FIPS_CODE",
         "DATEMOD"
       ],
       "attribution": "NYS ITS Geospatial Services",
       "featureCount": 1,
-      "inventorySha256": "1cdb82d29226b6f6577db63ec7ed10c00188e36164f977c46a4f35354a3ca105",
+      "inventorySha256": "9c710d60f5d6ddd9cc24fd7119a5208ba239c47c53310f058422eb723f867975",
       "pages": [
         {
-          "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0/query?objectIds=1&outFields=OBJECTID%2CNAME%2CDATEMOD&outSR=4326&returnGeometry=true&geometryPrecision=5&maxAllowableOffset=0.00003&f=geojson",
-          "sha256": "d80d0cd81de3bd1b686f61aa1599a923758be5ec1f1d475d6fa37aa8f1c16105",
+          "url": "https://gisservices.its.ny.gov/arcgis/rest/services/NYS_Civil_Boundaries/FeatureServer/0/query?objectIds=1&outFields=OBJECTID%2CNAME%2CABBREV%2CFIPS_CODE%2CDATEMOD&returnGeometry=true&outSR=4326&geometryPrecision=5&maxAllowableOffset=0.00003&f=geojson",
+          "sha256": "9c710d60f5d6ddd9cc24fd7119a5208ba239c47c53310f058422eb723f867975",
           "count": 1
         }
       ],
       "packagedFeatureCount": 1,
-      "packagedFeatureSha256": "dc6345047cf90f72e9a021df6f3230f774db49f867486b17acea007f75f9ff8d"
+      "packagedFeatureSha256": "a76512ef4a2dafa5664b1bb711fbdb5f9f519ee79be0a94b1ea5d06291fdc93f"
     },
     {
       "id": "nps-parks-ny",
@@ -84,21 +86,21 @@
       ],
       "attribution": "National Park Service",
       "featureCount": 60,
-      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
       "pages": [
         {
           "url": "https://developer.nps.gov/api/v1/parks?stateCode=NY",
-          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
           "count": 28
         },
         {
           "url": "https://developer.nps.gov/api/v1/mapdata/parkboundaries/{parkCode}",
-          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
           "count": 32
         }
       ],
       "packagedFeatureCount": 60,
-      "packagedFeatureSha256": "6ac26a1ff2ac910fdbc3352d77f06fcfce3e2dbcded9bd075000a7594624e425"
+      "packagedFeatureSha256": "c42309304da8f7b2619cc7badf1eef7ae7038d219ed7ed3beb4678a53f031db5"
     },
     {
       "id": "nps-campgrounds-ny",
@@ -123,16 +125,16 @@
       ],
       "attribution": "National Park Service",
       "featureCount": 4,
-      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
       "pages": [
         {
           "url": "https://developer.nps.gov/api/v1/campgrounds?stateCode=NY",
-          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
           "count": 4
         }
       ],
       "packagedFeatureCount": 4,
-      "packagedFeatureSha256": "3597b1aa3a8ece37c640c7532078e5d057eb45f9d5ee749ed8274e1ad3e2b487"
+      "packagedFeatureSha256": "d63726a88f37e9885dea9405927302652211d5bd1558eb17a7589970d8b70f3f"
     },
     {
       "id": "nps-alerts-ny",
@@ -156,17 +158,17 @@
         "fees"
       ],
       "attribution": "National Park Service",
-      "featureCount": 24,
-      "inventorySha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "featureCount": 23,
+      "inventorySha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
       "pages": [
         {
           "url": "https://developer.nps.gov/api/v1/alerts?stateCode=NY",
-          "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
-          "count": 24
+          "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
+          "count": 23
         }
       ],
-      "packagedFeatureCount": 24,
-      "packagedFeatureSha256": "e1ec10a228c8a7053491eb1dcebfd45977c27bd9ce4875195c31d1fe47d1a07d"
+      "packagedFeatureCount": 23,
+      "packagedFeatureSha256": "c523633412a8b54c32b2a6c76e5ac325ee2a45f919aa22a3b86e4475d54af919"
     },
     {
       "id": "usfs-surface-ownership-ny",
@@ -190,17 +192,17 @@
         "fees"
       ],
       "attribution": "USDA Forest Service",
-      "featureCount": 200,
-      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "featureCount": 201,
+      "inventorySha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
       "pages": [
         {
           "url": "https://apps.fs.usda.gov/ArcX/rest/services/EDW/EDW_SurfaceOwnership_01/MapServer/0",
-          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
-          "count": 200
+          "sha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
+          "count": 201
         }
       ],
-      "packagedFeatureCount": 200,
-      "packagedFeatureSha256": "45c2eff493d71e3deb1b0913e00d91f56e8a302da7f141e156376bd6e9f834ad"
+      "packagedFeatureCount": 201,
+      "packagedFeatureSha256": "f260b0c3342f278815ffa31bc68dc9dcb0621124ef95d7c35a9809f9ba32bba2"
     },
     {
       "id": "usfs-recreation-sites-ny",
@@ -225,11 +227,11 @@
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 25,
-      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "inventorySha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
       "pages": [
         {
           "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_RecInfraRecreationSites_02/MapServer/0",
-          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "sha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
           "count": 25
         }
       ],
@@ -259,16 +261,16 @@
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 12,
-      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "inventorySha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
       "pages": [
         {
           "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/1",
-          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "sha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
           "count": 12
         }
       ],
       "packagedFeatureCount": 12,
-      "packagedFeatureSha256": "4ea3c91c98e24f945bb18838443c04bf44928acb478fe7ee58859e30baa4f564"
+      "packagedFeatureSha256": "5ecca1f8759edb91c4aa22f65401aa7ba4ff1806ba5311fd73cf527c8b1daf47"
     },
     {
       "id": "usfs-mvum-trails-ny",
@@ -293,11 +295,11 @@
       ],
       "attribution": "USDA Forest Service",
       "featureCount": 0,
-      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "inventorySha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
       "pages": [
         {
           "url": "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_MVUM_02/MapServer/2",
-          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "sha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
           "count": 0
         }
       ],
@@ -327,11 +329,11 @@
       ],
       "attribution": "Bureau of Land Management",
       "featureCount": 0,
-      "inventorySha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "inventorySha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
       "pages": [
         {
           "url": "https://gis.blm.gov/arcgis/rest/services/lands/BLM_Natl_SMA_LimitedScale/MapServer/1",
-          "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+          "sha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
           "count": 0
         }
       ],
@@ -349,13 +351,13 @@
     {
       "id": "nps",
       "label": "National Park Service",
-      "featureCount": 88,
+      "featureCount": 87,
       "status": "official parks, campgrounds, alerts and boundaries"
     },
     {
       "id": "usfs",
       "label": "US Forest Service",
-      "featureCount": 237,
+      "featureCount": 238,
       "status": "official ownership, recreation and MVUM snapshot"
     },
     {
@@ -368,63 +370,22 @@
   "officialSnapshots": {
     "nps": {
       "file": "nps-new-york.json",
-      "bytes": 4217600,
-      "sha256": "7155d919ba0387de630cbeaded441691ff8b688dc0febdf1c07242da3be9fd4f",
+      "bytes": 4149857,
+      "sha256": "1b26f7fa9ded035ff47fb56abbe17266dea4d22c4bc9dffdbcfa65bc76581068",
       "manifestFile": "manifest.json",
       "manifestBytes": 719,
-      "manifestSha256": "718a9a01f0924c1a38af61c2144b5b34bfa7bf5c9b2b1a4efdb62393b02d83ef"
+      "manifestSha256": "5f24bed460e32f61559235f4bc698cd6badffcc3a1eb32d3911998d0dd903623"
     },
     "federal": {
       "file": "federal-new-york.json",
-      "bytes": 200059,
-      "sha256": "fb66c5d281da3f11e44a80959b046d4921aea984b00a42ae529b32f98e28d01c",
+      "bytes": 201587,
+      "sha256": "c41378c7682d789f3157f07427a40dd7f6dfde0b3d3142aeab500293eb5dbebe",
       "manifestFile": "manifest.json",
       "manifestBytes": 1471,
-      "manifestSha256": "62025b8b7abed0042d9d5fdbf61697cb7f8a66666f8b8be7423c4b8a1b783852"
+      "manifestSha256": "f2cc9362fb5de0339789650ea88a6d799221e74b84577091e3b6abba6a77345e"
     }
   },
-  "packageId": "outdoor-ny",
-  "state": {
-    "code": "NY",
-    "fips": "36",
-    "name": "New York"
-  },
-  "stateName": "New York",
-  "distribution": "public",
-  "publicDistribution": true,
-  "packageMode": "public-baseline",
-  "generatedAt": "2026-09-28T00:09:30.617Z",
-  "output": {
-    "file": "outdoors.geojson",
-    "featureCount": 326,
-    "bytes": 1646190,
-    "sha256": "1880a3430878f82cf187b43c7ffa652e47cd214b2a772a60a81570e5d8f2e337"
-  },
-  "artifacts": {
-    "geojson": {
-      "file": "outdoors.geojson",
-      "featureCount": 326,
-      "bytes": 1646190,
-      "sha256": "1880a3430878f82cf187b43c7ffa652e47cd214b2a772a60a81570e5d8f2e337"
-    },
-    "index": {
-      "file": "index.json",
-      "bytes": 299930,
-      "sha256": "e6af4361f1e15352ede49cdf3882391fc06ad33a9ad3c821c2d6c291d2f9e6ba"
-    },
-    "notices": {
-      "file": "DATA_NOTICES.md",
-      "bytes": 327,
-      "sha256": "66176d0c1d9e7fd909727c27440008e86a2fd95cedcf083cc6a301d758a631a8"
-    }
-  },
-  "agency": {
-    "status": "no-eligible-staged-feed",
-    "sourceCount": 0,
-    "featureCount": 0,
-    "sources": [],
-    "held": []
-  },
+  "publicStatePackage": "state-packages/US/NY/manifest.json",
   "poi": {
     "taxonomy": "iOverlander-compatible; PROJECT_SCOPE.md 12.1",
     "categoryIds": [
@@ -461,15 +422,57 @@
       "overnight-prohibited",
       "other"
     ],
-    "featureCount": 81,
+    "featureCount": 80,
     "categoryCounts": {
       "tourist_attraction": 34,
-      "warning": 24,
+      "warning": 23,
       "campsite": 8,
       "shorterm_parking": 15
     },
     "recordsFromIoverlander": false,
     "unknownTypesPreserved": true
+  },
+  "packageId": "outdoor-ny",
+  "state": {
+    "code": "NY",
+    "fips": "36",
+    "name": "New York"
+  },
+  "stateName": "New York",
+  "distribution": "public",
+  "publicDistribution": true,
+  "packageMode": "public-baseline",
+  "generatedAt": "2026-10-24T16:15:52.114Z",
+  "output": {
+    "file": "outdoors.geojson",
+    "featureCount": 326,
+    "bytes": 1532794,
+    "sha256": "ae5da0debe4f9b674c084c30c6994b84047ff9c70ba570521a8d38b48a87d92a"
+  },
+  "artifacts": {
+    "geojson": {
+      "file": "outdoors.geojson",
+      "featureCount": 326,
+      "bytes": 1532794,
+      "sha256": "ae5da0debe4f9b674c084c30c6994b84047ff9c70ba570521a8d38b48a87d92a"
+    },
+    "index": {
+      "file": "index.json",
+      "bytes": 185404,
+      "sha256": "fdd637043b4de4dd05bada43f9de57a924a9b503b503df753179634a51ffd51b"
+    },
+    "notices": {
+      "file": "DATA_NOTICES.md",
+      "bytes": 229,
+      "sha256": "5f144252ee6e91d5a64cb80bd5629a0c1dd98678902361b68589bf05d6ae5ed9"
+    }
+  },
+  "agency": {
+    "status": "no-eligible-staged-feed",
+    "sourceCount": 0,
+    "featureCount": 0,
+    "sources": [],
+    "held": []
   },
   "import": {
     "parts": [
@@ -477,9 +480,9 @@
         "file": "parts/outdoors-001.geojson",
         "featureCount": 326,
         "normalizedFeatureCount": 326,
-        "positions": 53526,
-        "bytes": 1646190,
-        "sha256": "c312621d8be728cd008da83235b29fd32e7056e24c96a8ea0ce2a597f49d3200",
+        "positions": 53555,
+        "bytes": 1532794,
+        "sha256": "33ac4c8aa9dd497326f6fd68a61bdfb9d3bf94e53a0a2f6dfe1cded88540570e",
         "parserValidation": "passed"
       }
     ],

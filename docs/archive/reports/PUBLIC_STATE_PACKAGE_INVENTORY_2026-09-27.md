@@ -10,16 +10,16 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | AL | Alabama | 1,995 | 307 | 120 | 0 | 2 |
 | AK | Alaska | 22,999 | 1,602 | 483 | 0 | 23 |
-| AZ | Arizona | 16,757 | 4,186 | 1,766 | 0 | 4 |
+| AZ | Arizona | 16,761 | 4,187 | 1,766 | 0 | 4 |
 | AR | Arkansas | 6,214 | 424 | 191 | 227 | 2 |
-| CA | California | 66,285 | 6,402 | 2,030 | 15 | 12 |
+| CA | California | 65,475 | 6,402 | 2,030 | 15 | 11 |
 | CO | Colorado | 31,137 | 5,950 | 1,226 | 1,209 | 7 |
 | CT | Connecticut | 24,047 | 385 | 269 | 14,731 | 3 |
 | DE | Delaware | 2,683 | 0 | 0 | 0 | 1 |
 | FL | Florida | 14,006 | 1,812 | 1,225 | 0 | 3 |
 | GA | Georgia | 5,958 | 517 | 122 | 0 | 2 |
-| HI | Hawaii | 1,071 | 78 | 31 | 0 | 1 |
-| ID | Idaho | 25,629 | 4,845 | 172 | 0 | 8 |
+| HI | Hawaii | 1,072 | 78 | 31 | 0 | 1 |
+| ID | Idaho | 25,593 | 4,844 | 172 | 0 | 8 |
 | IL | Illinois | 10,614 | 131 | 1 | 0 | 2 |
 | IN | Indiana | 3,361 | 65 | 0 | 0 | 1 |
 | IA | Iowa | 4,893 | 0 | 0 | 0 | 1 |
@@ -29,22 +29,22 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | ME | Maine | 4,334 | 111 | 44 | 0 | 1 |
 | MD | Maryland | 4,910 | 694 | 390 | 0 | 1 |
 | MA | Massachusetts | 70,399 | 4,952 | 3,110 | 49,787 | 8 |
-| MI | Michigan | 31,083 | 597 | 12 | 9,460 | 4 |
+| MI | Michigan | 31,092 | 597 | 12 | 9,469 | 4 |
 | MN | Minnesota | 25,726 | 966 | 8 | 7,872 | 4 |
 | MS | Mississippi | 2,733 | 711 | 348 | 0 | 1 |
 | MO | Missouri | 6,447 | 206 | 28 | 0 | 1 |
-| MT | Montana | 29,557 | 10,241 | 546 | 0 | 8 |
+| MT | Montana | 29,560 | 10,244 | 546 | 0 | 8 |
 | NE | Nebraska | 2,332 | 16 | 0 | 74 | 1 |
-| NV | Nevada | 29,318 | 1,253 | 373 | 6,686 | 5 |
+| NV | Nevada | 17,855 | 1,253 | 373 | 6,686 | 4 |
 | NH | New Hampshire | 5,538 | 324 | 22 | 0 | 1 |
 | NJ | New Jersey | 14,743 | 102 | 41 | 0 | 3 |
-| NM | New Mexico | 12,896 | 1,920 | 386 | 0 | 4 |
-| NY | New York | 326 | 81 | 0 | 0 | 1 |
+| NM | New Mexico | 12,897 | 1,921 | 386 | 0 | 4 |
+| NY | New York | 326 | 80 | 0 | 0 | 1 |
 | NC | North Carolina | 9,541 | 2,675 | 1,351 | 6 | 3 |
 | ND | North Dakota | 1,125 | 54 | 4 | 0 | 1 |
 | OH | Ohio | 7,161 | 69 | 1 | 0 | 1 |
 | OK | Oklahoma | 2,299 | 284 | 62 | 0 | 1 |
-| OR | Oregon | 44,590 | 5,329 | 1,250 | 0 | 7 |
+| OR | Oregon | 44,591 | 5,330 | 1,250 | 0 | 7 |
 | PA | Pennsylvania | 14,246 | 377 | 120 | 0 | 2 |
 | RI | Rhode Island | 1,767 | 1 | 0 | 0 | 1 |
 | SC | South Carolina | 4,347 | 190 | 38 | 0 | 1 |
@@ -53,13 +53,13 @@ The full `outdoors.geojson` preserves source details and provenance; `parts/` co
 | TX | Texas | 12,960 | 1,145 | 416 | 0 | 2 |
 | UT | Utah | 73,616 | 4,214 | 1,016 | 48,140 | 10 |
 | VT | Vermont | 2,944 | 133 | 3 | 0 | 1 |
-| VA | Virginia | 11,676 | 1,467 | 625 | 675 | 3 |
-| WA | Washington | 19,086 | 2,593 | 316 | 0 | 5 |
+| VA | Virginia | 11,670 | 1,467 | 625 | 675 | 3 |
+| WA | Washington | 19,091 | 2,595 | 316 | 0 | 5 |
 | WV | West Virginia | 2,883 | 520 | 76 | 0 | 1 |
 | WI | Wisconsin | 10,355 | 196 | 1 | 0 | 2 |
 | WY | Wyoming | 35,218 | 5,523 | 1,087 | 0 | 5 |
 
-Totals: **757,632 features**, **77,013 POIs**, **20,540 Other POIs**, **138,882 direct agency features**, **169 validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.
+Totals: **745,341 features**, **77,019 POIs**, **20,540 Other POIs**, **138,891 direct agency features**, **167 validated parts**. Cross-border national features may occur in neighboring state packages; these are package entries, not unique national entities.
 
 Agency receipts record source URLs, current terms checksums, query inventory, field list, edit dates, page checksums, attribution and modifications. Repeated parks/forestry roles ingest a feed only once. Uncleared permission-limited and unconfirmed sources remain excluded. Minnesota visitor derivatives and Virginia DCR data are included under their explicit source conditions for the noncommercial application; source terms remain separate from project code licensing. Arkansas facilities, CAL FIRE 2024 boundaries, and Massachusetts's 2015 trails are explicitly dated references; current access and completeness are not asserted. These snapshots make no current access or camping claim.
 

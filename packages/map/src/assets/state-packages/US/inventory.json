@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "publicDistribution": true,
-  "generatedAt": "2026-10-24T13:53:53.483Z",
+  "generatedAt": "2026-10-24T16:16:45.447Z",
   "states": [
     {
       "state": "AL",
@@ -13,7 +13,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 6302545
+      "bytes": 6302673
     },
     {
       "state": "AK",
@@ -24,18 +24,18 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 23,
-      "bytes": 94482233
+      "bytes": 94494243
     },
     {
       "state": "AZ",
       "name": "Arizona",
-      "features": 16757,
-      "poi": 4186,
+      "features": 16761,
+      "poi": 4187,
       "other": 1766,
       "agency": 0,
       "agencySources": 0,
       "parts": 4,
-      "bytes": 29413065
+      "bytes": 29438394
     },
     {
       "state": "AR",
@@ -46,18 +46,18 @@
       "agency": 227,
       "agencySources": 1,
       "parts": 2,
-      "bytes": 10023915
+      "bytes": 10025992
     },
     {
       "state": "CA",
       "name": "California",
-      "features": 66285,
+      "features": 65475,
       "poi": 6402,
       "other": 2030,
       "agency": 15,
       "agencySources": 1,
-      "parts": 12,
-      "bytes": 106258406
+      "parts": 11,
+      "bytes": 105432618
     },
     {
       "state": "CO",
@@ -68,7 +68,7 @@
       "agency": 1209,
       "agencySources": 1,
       "parts": 7,
-      "bytes": 56916403
+      "bytes": 56929535
     },
     {
       "state": "CT",
@@ -101,7 +101,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 3,
-      "bytes": 21662856
+      "bytes": 21663590
     },
     {
       "state": "GA",
@@ -112,29 +112,29 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 9871923
+      "bytes": 9872689
     },
     {
       "state": "HI",
       "name": "Hawaii",
-      "features": 1071,
+      "features": 1072,
       "poi": 78,
       "other": 31,
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 2709607
+      "bytes": 2707328
     },
     {
       "state": "ID",
       "name": "Idaho",
-      "features": 25629,
-      "poi": 4845,
+      "features": 25593,
+      "poi": 4844,
       "other": 172,
       "agency": 0,
       "agencySources": 0,
       "parts": 8,
-      "bytes": 56192653
+      "bytes": 56165953
     },
     {
       "state": "IL",
@@ -145,7 +145,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 13919004
+      "bytes": 13919826
     },
     {
       "state": "IN",
@@ -156,7 +156,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 4859500
+      "bytes": 4859710
     },
     {
       "state": "IA",
@@ -178,7 +178,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 2891240
+      "bytes": 2891278
     },
     {
       "state": "KY",
@@ -189,7 +189,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 12518234
+      "bytes": 12524422
     },
     {
       "state": "LA",
@@ -200,7 +200,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 6901168
+      "bytes": 6901240
     },
     {
       "state": "ME",
@@ -211,7 +211,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 7507099
+      "bytes": 7507279
     },
     {
       "state": "MD",
@@ -222,7 +222,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 7681296
+      "bytes": 7681270
     },
     {
       "state": "MA",
@@ -233,18 +233,18 @@
       "agency": 49787,
       "agencySources": 3,
       "parts": 8,
-      "bytes": 73222554
+      "bytes": 73222556
     },
     {
       "state": "MI",
       "name": "Michigan",
-      "features": 31083,
+      "features": 31092,
       "poi": 597,
       "other": 12,
-      "agency": 9460,
+      "agency": 9469,
       "agencySources": 1,
       "parts": 4,
-      "bytes": 45070588
+      "bytes": 45094543
     },
     {
       "state": "MN",
@@ -255,7 +255,7 @@
       "agency": 7872,
       "agencySources": 2,
       "parts": 4,
-      "bytes": 39899338
+      "bytes": 39906458
     },
     {
       "state": "MS",
@@ -266,7 +266,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 4755131
+      "bytes": 4755299
     },
     {
       "state": "MO",
@@ -277,18 +277,18 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 9726397
+      "bytes": 9727292
     },
     {
       "state": "MT",
       "name": "Montana",
-      "features": 29557,
-      "poi": 10241,
+      "features": 29560,
+      "poi": 10244,
       "other": 546,
       "agency": 0,
       "agencySources": 0,
       "parts": 8,
-      "bytes": 57393882
+      "bytes": 57415790
     },
     {
       "state": "NE",
@@ -299,18 +299,18 @@
       "agency": 74,
       "agencySources": 1,
       "parts": 1,
-      "bytes": 3541886
+      "bytes": 3542042
     },
     {
       "state": "NV",
       "name": "Nevada",
-      "features": 29318,
+      "features": 17855,
       "poi": 1253,
       "other": 373,
       "agency": 6686,
       "agencySources": 1,
-      "parts": 5,
-      "bytes": 41959641
+      "parts": 4,
+      "bytes": 28703991
     },
     {
       "state": "NH",
@@ -321,7 +321,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 8305310
+      "bytes": 8307162
     },
     {
       "state": "NJ",
@@ -337,24 +337,24 @@
     {
       "state": "NM",
       "name": "New Mexico",
-      "features": 12896,
-      "poi": 1920,
+      "features": 12897,
+      "poi": 1921,
       "other": 386,
       "agency": 0,
       "agencySources": 0,
       "parts": 4,
-      "bytes": 24972630
+      "bytes": 24980105
     },
     {
       "state": "NY",
       "name": "New York",
       "features": 326,
-      "poi": 81,
+      "poi": 80,
       "other": 0,
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 1646190
+      "bytes": 1532794
     },
     {
       "state": "NC",
@@ -365,7 +365,7 @@
       "agency": 6,
       "agencySources": 1,
       "parts": 3,
-      "bytes": 19469426
+      "bytes": 19470812
     },
     {
       "state": "ND",
@@ -376,7 +376,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 3157726
+      "bytes": 3157914
     },
     {
       "state": "OH",
@@ -387,7 +387,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 10336829
+      "bytes": 10337247
     },
     {
       "state": "OK",
@@ -398,18 +398,18 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 3972750
+      "bytes": 3972892
     },
     {
       "state": "OR",
       "name": "Oregon",
-      "features": 44590,
-      "poi": 5329,
+      "features": 44591,
+      "poi": 5330,
       "other": 1250,
       "agency": 0,
       "agencySources": 0,
       "parts": 7,
-      "bytes": 70432642
+      "bytes": 70451768
     },
     {
       "state": "PA",
@@ -420,7 +420,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 20398063
+      "bytes": 20398649
     },
     {
       "state": "RI",
@@ -442,7 +442,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 7762399
+      "bytes": 7762741
     },
     {
       "state": "SD",
@@ -453,7 +453,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 9973076
+      "bytes": 9974544
     },
     {
       "state": "TN",
@@ -464,7 +464,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 11625271
+      "bytes": 11626145
     },
     {
       "state": "TX",
@@ -475,7 +475,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 18219578
+      "bytes": 18219804
     },
     {
       "state": "UT",
@@ -486,7 +486,7 @@
       "agency": 48140,
       "agencySources": 1,
       "parts": 10,
-      "bytes": 100289866
+      "bytes": 100302229
     },
     {
       "state": "VT",
@@ -497,29 +497,29 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 4909012
+      "bytes": 4910644
     },
     {
       "state": "VA",
       "name": "Virginia",
-      "features": 11676,
+      "features": 11670,
       "poi": 1467,
       "other": 625,
       "agency": 675,
       "agencySources": 2,
       "parts": 3,
-      "bytes": 20212460
+      "bytes": 20206312
     },
     {
       "state": "WA",
       "name": "Washington",
-      "features": 19086,
-      "poi": 2593,
+      "features": 19091,
+      "poi": 2595,
       "other": 316,
       "agency": 0,
       "agencySources": 0,
       "parts": 5,
-      "bytes": 35888346
+      "bytes": 36129935
     },
     {
       "state": "WV",
@@ -530,7 +530,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 1,
-      "bytes": 5175599
+      "bytes": 5176237
     },
     {
       "state": "WI",
@@ -541,7 +541,7 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 2,
-      "bytes": 16553880
+      "bytes": 16555302
     },
     {
       "state": "WY",
@@ -552,15 +552,15 @@
       "agency": 0,
       "agencySources": 0,
       "parts": 5,
-      "bytes": 50892170
+      "bytes": 50896952
     }
   ],
   "totals": {
-    "features": 757632,
-    "poi": 77013,
+    "features": 745341,
+    "poi": 77019,
     "other": 20540,
-    "agency": 138882,
+    "agency": 138891,
     "agencySources": 18,
-    "parts": 169
+    "parts": 167
   }
 }

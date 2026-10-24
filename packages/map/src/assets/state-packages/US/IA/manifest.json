@@ -4,7 +4,7 @@
       "file": "outdoors.geojson",
       "featureCount": 4893,
       "bytes": 7005304,
-      "sha256": "7c2ea5643979af4adfb8c5d33bf8c0b36b003dbe8c17230b65f507f986d32e68"
+      "sha256": "95c390dde5e503a46d763d55fc9d09ced0681c81f0129ca68f4dde3d96697e1a"
     },
     "index": {
       "file": "index.json",
@@ -13,8 +13,8 @@
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 441,
-      "sha256": "253ed31bdf098dcf7f9f9e4dbb47dcbfd06537be612eee759867dc99e0c4f4dd"
+      "bytes": 225,
+      "sha256": "470c5056a11e7a484b19cb0b6d4fed933ce37a364d463258a49c2af688f68516"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -25,7 +25,7 @@
     "limitations": [
       "Dated informational references, not live permission, closure or camping claims.",
       "Some states have no eligible direct agency feed; source gaps remain explicit.",
-      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
     ]
   },
   "disclaimers": [
@@ -34,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 4893,
-  "generatedAt": "2026-09-28T00:08:47.564Z",
+  "generatedAt": "2026-10-24T16:15:04.805Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ia",
   "rights": {
@@ -97,6 +97,7 @@
         "U.S. Geological Survey Gap Analysis Project",
         "PAD-US data providers and state stewards"
       ],
+      "bytes": 6903810,
       "fields": [
         "OBJECTID",
         "FeatClass",
@@ -128,10 +129,13 @@
       "inventoryFeatureCount": 4790,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 4790,
-      "packagedFeatureSha256": "4cfd5b7ad397007d2cc1cf209be410df469a01e78868e1be75e11d15305f4d5f",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "packagedFeatureSha256": "803af64a08fbd255ba0d0584ecad166063a5aec6f72177be74b71dab188e249c",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "3a8a6a37f732ea2124d9bd6be98f631bca9fd018c155ade7f65d7ccb5053e1f2",
+      "sha256": "fcb5062ac852f0f8a0883c98e4b2458aecfc805282161691f36c3e78e95a95e7",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 4790,
+      "sourceRevision": 1776880752730,
       "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
       "unreturnedFeatureCount": 0,
       "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
@@ -141,6 +145,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 101536,
       "fields": [
         "OBJECTID",
         "TRLFEATTYPE",
@@ -176,8 +181,10 @@
       "inventoryFeatureCount": 103,
       "name": "NPS public trails",
       "packagedFeatureCount": 103,
-      "packagedFeatureSha256": "bbc1cb98507318e515b7d9d4f31dbf21953d3e4f1fbeba000b8a4de4efd8f353",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "packagedFeatureSha256": "4afc1718a31ef6cf71e087be14300d4cb74d7d314d4e2eab5c9be1e2e9a78cf1",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "679b7ace453d74fcd949ffe101103efe34c909e058a7da0aa8188600602b5474",
+      "sha256": "b04bbf5dd4258e500ae36f850992aa566c675ae0e3444b7cf1405b660a3ead7e",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 103,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
@@ -189,6 +196,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "POINAME",
@@ -221,7 +229,9 @@
       "name": "NPS public points of interest",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "c3f819eb974bc12beec6ff0cbe21de39552b01642353b65ff0a58366bfff4198",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 58,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
@@ -233,6 +243,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "trail_name",
@@ -278,7 +289,9 @@
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "1f1578bcda94da920f837be0dabf5071b67b778ca0ca1487828ac3c0ed603e2d",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -290,6 +303,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "site_cn",
@@ -333,7 +347,9 @@
       "name": "USFS recreation sites",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "fb41a134b07b4cb27c7bc9648258a3674dc4638df9a55ee6385c548fec16e125",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -345,6 +361,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -383,7 +400,9 @@
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "520282a34a9fd3eef0f1fe7d492ce6f0767e8b3b7a1f5cd6043c3b48f67f3de3",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -395,6 +414,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -432,7 +452,9 @@
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "77fc3d896a36893363dc0de02faf7b531c6291f04458efd79e53d8b66fa01606",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -444,6 +466,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "SMA_ID",
@@ -464,7 +487,9 @@
       "name": "BLM surface management agency boundaries",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "7e85554065fe03ae598591c37e11ac9950dd3deee48712c38699ca0a463b980a",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://www.blm.gov/services/geospatial/GISData",
@@ -476,6 +501,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "FET_TYPE",
@@ -496,7 +522,9 @@
       "name": "BLM public recreation sites",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:03:33.285Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "b4da57a1c1f6e95ed804c475d82234f3086b9cdb9291648917aa8c59d1c95af4",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
@@ -533,7 +561,7 @@
     "file": "outdoors.geojson",
     "featureCount": 4893,
     "bytes": 7005304,
-    "sha256": "7c2ea5643979af4adfb8c5d33bf8c0b36b003dbe8c17230b65f507f986d32e68"
+    "sha256": "95c390dde5e503a46d763d55fc9d09ced0681c81f0129ca68f4dde3d96697e1a"
   },
   "agency": {
     "status": "no-eligible-staged-feed",

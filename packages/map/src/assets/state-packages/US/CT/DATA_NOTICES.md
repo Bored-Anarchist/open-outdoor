@@ -42,4 +42,4 @@ Modifications: Selected source fields; WGS84, five decimal places, source simpli
 
 <span style='font-family:Helvetica, sans-serif; font-size:15.3333px;'>CC0</span>
 
-National and other public source credits: National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Connecticut Department of Energy and Environmental Protection. Their terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.
+National and other public-source attributions and terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.

@@ -29,4 +29,4 @@ MANAGER. THIS DATA MAY BE UPDATED WITHOUT NOTIFICATION. </i></p>
 
 <p style='text-align:justify;'>Last Updated October 2025</p>
 
-National and other public source credits: National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Nevada Division of State Parks and contributing trail managers. Their terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.
+National and other public-source attributions and terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.
