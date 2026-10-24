@@ -16,7 +16,7 @@ internal final class OpenOutdoorLaptopException: Exception, @unchecked Sendable 
   override var code: String { failureCode }
   override var reason: String { failureMessage }
   override var debugDescription: String { failureMessage }
-  var message: String { failureMessage }
+  override var message: String { failureMessage }
 
   static func responseMessage(_ status: Int) -> String? {
     switch status {

@@ -79,6 +79,8 @@ The old Metro 0.84.4 and xcode 3 UUID overrides are obsolete with Expo 58's Metr
 
 The Node 26 test run also exposed an ingestion deadline race: a parser result could win the promise race after its deadline when the event loop delayed the timeout callback. Ingestion now starts the timer before invoking the parser and checks monotonic elapsed time before accepting its result. A blocking-parser regression verifies that overdue output is quarantined.
 
+Expo 58 makes its native Exception.message property overridable. The laptop exception now explicitly overrides that property, preserving actionable error messages through the installed Expo bridge. The existing macOS regression compiles the actual SDK exception definitions and exercises the bridge before the full native build.
+
 The final npm audit reports two high-severity findings, zero critical, moderate or low findings:
 
 - [node-forge signature verification, GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv): latest 1.4.0 is affected and no patched release is published.
