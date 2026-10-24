@@ -840,11 +840,11 @@
       "state": "NC",
       "name": "North Carolina",
       "featureCount": 9541,
-      "sourceSha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4",
-      "generatedAt": "2026-09-29T02:21:17.324Z",
-      "sourceIndexSha256": "28a0461780657b1c8b721431cc02be63a7238a26b79ca4cd4da4e749c9c60e9f",
-      "tilesSha256": "70c404d2152fa383415e55afaf27162650337fd018d4ddeec4723035b79e4dfc",
-      "tilesBytes": 3601759,
+      "sourceSha256": "b49c2d85498410eb73b723a2b270252f4a430b174547181c0a7c706cff76ebaa",
+      "generatedAt": "2026-10-24T13:53:49.670Z",
+      "sourceIndexSha256": "5934202a4b8cba319b1ed9d1fb24e8c57b9f3341d1639172ddb219e7f9d69b24",
+      "tilesSha256": "80a506a9aad4bb3f093f3f16216852cbb446b48fcd196134ab29ad4a28834f14",
+      "tilesBytes": 3601765,
       "maximumZoom": 10,
       "tileCount": 245,
       "bounds": [
@@ -855,9 +855,9 @@
       ],
       "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
       "file": "NC/state.sqlite",
-      "sha256": "b19a712f45daf6abc6be02e7117c4223ff08f0a115f63230ea50a23ee01800a1",
+      "sha256": "c0ee7287c8ed64eaa1b7a81970db025a34c8b82add8d475614c9f7a75fca888f",
       "bytes": 23658496,
-      "installedBytes": 27260255
+      "installedBytes": 27260261
     },
     {
       "schemaVersion": 1,
@@ -1178,11 +1178,11 @@
       "state": "VA",
       "name": "Virginia",
       "featureCount": 11676,
-      "sourceSha256": "a07ffa9921553fe37ce8fb59a40ccf962336a096365048a9eff2c45c400d9b5b",
-      "generatedAt": "2026-09-28T23:53:26.193Z",
-      "sourceIndexSha256": "c217ceaaf56d2383b915aa1882f834efcfe0743405f597d43a942a2f8f673564",
-      "tilesSha256": "3059dccecb16eccce309ef986bf59cd21be61b640ee64aa2ad2298dec272370e",
-      "tilesBytes": 2576198,
+      "sourceSha256": "f92c7e509a7bb6ff9d23921c103a79558be2023d82c41990ce27be3dfde07a7d",
+      "generatedAt": "2026-10-24T13:53:53.398Z",
+      "sourceIndexSha256": "2508d9172247ac5ea88cf075cb56947d9dde8cf58da0d0bc84b048cdfd4a89ee",
+      "tilesSha256": "c7350c3919d6aafb67663454226755f579f7744d6b52184ca32fa63683ffc526",
+      "tilesBytes": 2576362,
       "maximumZoom": 10,
       "tileCount": 246,
       "bounds": [
@@ -1193,9 +1193,9 @@
       ],
       "attribution": "National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
       "file": "VA/state.sqlite",
-      "sha256": "8e177a8221d0306f7d8a189ae648bb02898fb8d17e4eb0b0094c53acbfab34ca",
+      "sha256": "e9b61840689b1f90a45da583b74d4af974103da504a1415b600f4767ca102cee",
       "bytes": 23162880,
-      "installedBytes": 25739078
+      "installedBytes": 25739242
     },
     {
       "schemaVersion": 1,

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "classification": "SOURCE_REDISTRIBUTABLE",
   "publicDistribution": true,
-  "generatedAt": "2026-10-12T23:58:41.674Z",
+  "generatedAt": "2026-10-24T13:53:53.483Z",
   "states": [
     {
       "state": "AL",
@@ -508,7 +508,7 @@
       "agency": 675,
       "agencySources": 2,
       "parts": 3,
-      "bytes": 20211890
+      "bytes": 20212460
     },
     {
       "state": "WA",

@@ -4,17 +4,17 @@
       "file": "outdoors.geojson",
       "featureCount": 9541,
       "bytes": 19469426,
-      "sha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4"
+      "sha256": "b49c2d85498410eb73b723a2b270252f4a430b174547181c0a7c706cff76ebaa"
     },
     "index": {
       "file": "index.json",
       "bytes": 5422271,
-      "sha256": "28a0461780657b1c8b721431cc02be63a7238a26b79ca4cd4da4e749c9c60e9f"
+      "sha256": "5934202a4b8cba319b1ed9d1fb24e8c57b9f3341d1639172ddb219e7f9d69b24"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 4194,
-      "sha256": "dca7fd90f1b67e8cc3d96af8792b59823a11a630d07f9e6e6a5528f0ecd3c8da"
+      "bytes": 3671,
+      "sha256": "259ff84b67898bc469dc7485eca3e0ccb369c6749924ac1f3054b89fa7a8e731"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -34,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 9541,
-  "generatedAt": "2026-09-29T02:21:17.324Z",
+  "generatedAt": "2026-10-24T13:53:49.670Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-nc",
   "rights": {
@@ -553,17 +553,19 @@
       "datasetPurpose": "managed-land-boundaries",
       "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
       "coverageLimitations": "Six named property tracts; not a complete NCFS inventory, visitor entrance map or access authorization. Shoebuckle name normalized to Dan River ESF using the NCFS acquisition announcement. Verify current visitor access with NCFS.",
+      "refreshSignature": "5d108f36074dc7bb96c77e4f28ef821f9be543d6311c42459c33598477d8958d",
+      "sourceRevision": 1792689152465,
       "rightsStatus": "Supported",
       "upstreamRightsStatus": "Supported",
       "rightsResolution": "dataset-specific-license-overrides-general-website-policy",
       "distributionConditions": "NC OneMap permits free and unrestricted use. Credit NC DOA/SPO, CGIA and NC OneMap; retain source disclaimers. No warranty or manager endorsement. Informational property geometry; access and camping permission unverified. Source data remain outside the project code license.",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-29T02:15:51.932Z",
-      "sourceUpdated": "2026-09-24T10:29:21.654Z",
+      "retrievedAt": "2026-10-24T13:49:52.918Z",
+      "sourceUpdated": "2026-10-22T17:12:32.465Z",
       "featureCount": 6,
       "bytes": 6585,
-      "sha256": "5b6aabe59fe78d36182d73c26d43b4e7bc600061bcd35bc9d97e89792f99c210",
-      "metadataSha256": "1fab82e5e4fb2e0dbf2d78c777daab42f5054d856d704688eb53c68466876691",
+      "sha256": "dc091fe6c3a57927284ee6378122246ce0c6b7576abbd6ec17f2c84adc132b3b",
+      "metadataSha256": "e5b5c258acb94bd2b14545f888c334fc7df2427b1f797fd30f449bf433f99aa9",
       "termsSha256": "76adcb93414bd60c14bf77cabcd6ff095d66130162cce1c5db636d74ab1ca020",
       "licenseText": "<div><span style='color:rgb(0, 0, 0); font-family:&quot;Avenir Next W01&quot;, &quot;Avenir Next W00&quot;, &quot;Avenir Next&quot;, Avenir, &quot;Helvetica Neue&quot;, sans-serif; font-size:16px;'><i>DISCLAIMER:</i> </span><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'>The NC Department of Administration, State Property Office is charged with maintaining an inventory of state-owned lands, buildings, and space in buildings for use by state agencies to efficiently and effectively manage their allocated properties. Although effort has been made to ensure the accuracy of information, errors and conditions originating from sources used to develop the data may be reflected in the information supplied. The user must be aware of possible conditions and bear responsibility with respect to errors, collection methodologies, currency, and other conditions related to all data, web services or applications. While every effort has been made by data providers to ensure this information is accurate and reliable, there is no assumption of liability for any damages caused by inaccuracies in the data, web services or applications. There is no warranty, express or implied, nor does the fact of access or distribution constitute any such warranty. Written release agreements to authorize use of the geospatial data, web services, and applications provided by the State Property Office are not required and will not be issued. The use of trade names or commercial products does not constitute their endorsement by the Department of Administration or North Carolina State Government. Any sale of this data must not violate applicable state laws or regulations.</span></font><br /></div><div><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'><br /></span></font></div><div><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'>CGIA Terms: </span></font><a href='https://www.nconemap.gov/pages/terms' target='_blank' rel='nofollow ugc noopener noreferrer'>https://www.nconemap.gov/pages/terms</a></div>",
       "termsText": "{\"source\":\"PAGEEDITOR\",\"folderId\":null,\"values\":{\"sites\":[{\"id\":\"33650305fdf24a1bb46465e4bc598e93\",\"title\":\"NC OneMap\"},{\"id\":\"a0424edfcf8845c3beb9e56ee6db7508\",\"title\":\"NC OneMap - Copied\"}],\"layout\":{\"sections\":[{\"containment\":\"fixed\",\"isFooter\":false,\"style\":{\"background\":{\"isFile\":false,\"isUrl\":true,\"state\":\"\",\"display\":{},\"transparency\":0,\"position\":{\"x\":\"center\",\"y\":\"center\"},\"color\":\"#f3f3f3\"},\"color\":\"#4d4d4d\",\"rowLayout\":\"box\"},\"rows\":[{\"cards\":[{\"component\":{\"name\":\"markdown-card\",\"settings\":{\"markdown\":\"<h4>Disclaimer</h4>\\n<p>The NC Center for Geographic Information and Analysis (CGIA) is charged with the development and maintenance of NC OneMap and, in cooperation with partner organizations, is committed to offering access to current State geospatial information at no charge. By sharing their content, all partner organizations understand this free and unrestricted use policy. Although every effort has been made to ensure the accuracy of information, errors and conditions originating from sources used to develop the data may be reflected in the information supplied. The user must be aware of possible conditions and bear responsibility with respect to errors, collection methodologies, currency, and other conditions related to all data, web services or applications.<br><br>\\n\\nWhile every effort has been made by data providers to ensure this information is accurate and reliable, there is no assumption of liability for any damages caused by inaccuracies in the data, web services or applications. There is no warranty, express or implied, nor does the fact of access or distribution constitute any such warranty.<br><br>\\n\\nWritten release agreements to authorize use of the geospatial data, web services, and applications found on the NC OneMap website are not required and will not be issued. The use of trade names or commercial products does not constitute their endorsement by CGIA or North Carolina State Government. Any sale of this data must not violate applicable state laws or regulations.</p><p><br></p>\\n\\n<h4>Website Citation</h4><p>When citing NC OneMap in printed or online publications please use the following citation:</p>\\n\\n<pre role=\\\"textbox\\\" tabindex=\\\"0\\\" aria-label=\\\"Code block (read only)\\\"><em>NC OneMap (2019)</em>. North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic<br>Information and Analysis. Available at www.nconemap.gov.</pre><p>\\n</p>\",\"schemaVersion\":2.1}},\"width\":12,\"showEditor\":false}]}],\"visibility\":{\"access\":\"default\",\"groups\":[]}}]},\"updatedAt\":\"2026-07-22T11:46:21.656Z\",\"updatedBy\":\"nconemap\"}}",
@@ -572,9 +574,9 @@
       "pages": [
         {
           "count": 6,
-          "sha256": "1e6875c15ae74fab7cc1f4538e10475dac5364c28a14723decc955980e0f1648",
-          "firstId": 445,
-          "lastId": 726
+          "sha256": "b106406109107777c2b6b44dd990645a724b09a6c8d1a133ebae80e6cdb48fbb",
+          "firstId": 449,
+          "lastId": 727
         }
       ],
       "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
@@ -584,7 +586,7 @@
         "count": 0,
         "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
       },
-      "packagedFeatureSha256": "64e9d108fa78db9defd0b3c0adc0ef610cc53bb401a1941cab8b03e8f174f911"
+      "packagedFeatureSha256": "4888644d3ff5c31a62ee3adaed0161e32d878947013639c0caea67c5ab148d72"
     }
   ],
   "state": {
@@ -616,7 +618,7 @@
     "file": "outdoors.geojson",
     "featureCount": 9541,
     "bytes": 19469426,
-    "sha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4"
+    "sha256": "b49c2d85498410eb73b723a2b270252f4a430b174547181c0a7c706cff76ebaa"
   },
   "agency": {
     "status": "included",
@@ -629,7 +631,7 @@
         "count": 6,
         "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
         "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
-        "sourceUpdated": "2026-09-24T10:29:21.654Z"
+        "sourceUpdated": "2026-10-22T17:12:32.465Z"
       }
     ],
     "held": []
@@ -696,7 +698,7 @@
         "normalizedFeatureCount": 6308,
         "positions": 179091,
         "bytes": 7285440,
-        "sha256": "9090d5cb1e450f1a02df61eccdf23935b8ccbf89e3b07fa53ea67cd203cd1a02",
+        "sha256": "dc7ab7edaf3ade2f5a70e666fa91a4debadc9c1a2779f3238861ea4499494519",
         "parserValidation": "passed"
       },
       {

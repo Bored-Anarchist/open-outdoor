@@ -3,18 +3,18 @@
     "geojson": {
       "file": "outdoors.geojson",
       "featureCount": 11676,
-      "bytes": 20211890,
-      "sha256": "a07ffa9921553fe37ce8fb59a40ccf962336a096365048a9eff2c45c400d9b5b"
+      "bytes": 20212460,
+      "sha256": "f92c7e509a7bb6ff9d23921c103a79558be2023d82c41990ce27be3dfde07a7d"
     },
     "index": {
       "file": "index.json",
       "bytes": 7001178,
-      "sha256": "c217ceaaf56d2383b915aa1882f834efcfe0743405f597d43a942a2f8f673564"
+      "sha256": "2508d9172247ac5ea88cf075cb56947d9dde8cf58da0d0bc84b048cdfd4a89ee"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 2577,
-      "sha256": "94dd6d217b3749cbc83fba6c5bad713879af3f86a0d739e2790038c5d5cc6041"
+      "bytes": 2250,
+      "sha256": "cabb5e382df43605e0a5964038d6d1deff5f21f8bbbd402380501b552921128f"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -34,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 11676,
-  "generatedAt": "2026-09-28T23:53:26.193Z",
+  "generatedAt": "2026-10-24T13:53:53.398Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-va",
   "rights": {
@@ -620,17 +620,19 @@
       "license": "Virginia DCR noncommercial redistribution; DCR credit required",
       "termsUrl": "https://services1.arcgis.com/PxUNqSbaWFvFgHnJ/ArcGIS/rest/services/SP_Boundary/FeatureServer/info/iteminfo?f=json",
       "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
+      "refreshSignature": "d5ec5e464aa3205c8f4a76f3f3e9396e24c4ac44f33464abb9f83996e2a5b9c3",
+      "sourceRevision": 1792521714730,
       "rightsStatus": "Supported",
       "upstreamRightsStatus": "Conditional",
       "distributionConditions": "Noncommercial redistribution only; redistribution for profit is prohibited. Credit Virginia Department of Conservation and Recreation. Source data retain their separate terms, outside the project code license.",
       "conditionalClearance": "conditions-satisfied-for-this-processed-distribution",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-28T23:45:12.570Z",
-      "sourceUpdated": "2026-07-06T18:55:50.108Z",
+      "retrievedAt": "2026-10-24T13:49:55.656Z",
+      "sourceUpdated": "2026-10-20T18:41:54.730Z",
       "featureCount": 44,
-      "bytes": 329341,
-      "sha256": "8a6569c017f6a66cf39758817ef5903f0225e09166a8d87aeae93b3ce6582b1e",
-      "metadataSha256": "67329419ea1bb094b661f0f184898dbb33b959c1320e84aab116342b1eb7b479",
+      "bytes": 329915,
+      "sha256": "8b9781b07a92c628a3776a61a148d76b7371bb649acf4ee90a501ea41f46c7f3",
+      "metadataSha256": "0c9760665779bda4f645db58e631826bef99010d61b902bc865623e05cf18c68",
       "termsSha256": "0fa0c5a3dc7960e3c68293445e45e9cd4b234efc0604854070f677c9e51bb33a",
       "licenseText": "<div style='text-align:Left;'><div><div><p><span>The re-distribution of this dataset for profit is prohibited. All rights credited to Virginia Department of Conservation and Recreation. </span></p></div></div></div>",
       "serviceItemId": "ed5fd662aff446a2b4bb714159791a0a",
@@ -653,7 +655,7 @@
       "pages": [
         {
           "count": 44,
-          "sha256": "6404b5b26c7926c20cd5d78d9d6baa2fdb942329e97500b8d48b45ffa722247c",
+          "sha256": "2a86978ef5148bf54eb002a8e00510941e371c6eb1c2cef723dd22965e2e0db9",
           "firstId": 1,
           "lastId": 86
         }
@@ -665,7 +667,7 @@
         "count": 0,
         "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
       },
-      "packagedFeatureSha256": "43a752b56836d049bf390bbd0f98a3e06c6a36ff55c2cb065f7ea200dffcbfda"
+      "packagedFeatureSha256": "0ee16e74f791c2e511692a1eb3768fbc9c57443690f5843c40a6515236dab89a"
     }
   ],
   "state": {
@@ -696,8 +698,8 @@
   "output": {
     "file": "outdoors.geojson",
     "featureCount": 11676,
-    "bytes": 20211890,
-    "sha256": "a07ffa9921553fe37ce8fb59a40ccf962336a096365048a9eff2c45c400d9b5b"
+    "bytes": 20212460,
+    "sha256": "f92c7e509a7bb6ff9d23921c103a79558be2023d82c41990ce27be3dfde07a7d"
   },
   "agency": {
     "status": "included",
@@ -718,7 +720,7 @@
         "count": 44,
         "license": "Virginia DCR noncommercial redistribution; DCR credit required",
         "attribution": "Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor",
-        "sourceUpdated": "2026-07-06T18:55:50.108Z"
+        "sourceUpdated": "2026-10-20T18:41:54.730Z"
       }
     ],
     "held": []
@@ -783,9 +785,9 @@
         "file": "parts/outdoors-001.geojson",
         "featureCount": 5404,
         "normalizedFeatureCount": 5404,
-        "positions": 179383,
-        "bytes": 7130464,
-        "sha256": "634d6bbd56a6a1e5765ccff1b252302df977d858eded2dcb41b713c23ba4ce32",
+        "positions": 179410,
+        "bytes": 7131034,
+        "sha256": "8f37caa4e68b0866521a85a5e641c94430c5118726d4caee89eaf6302639c894",
         "parserValidation": "passed"
       },
       {

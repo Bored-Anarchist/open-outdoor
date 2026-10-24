@@ -32,4 +32,4 @@ Conditions: Noncommercial redistribution only; redistribution for profit is proh
 
 <div style='text-align:Left;'><div><div><p><span>The re-distribution of this dataset for profit is prohibited. All rights credited to Virginia Department of Conservation and Recreation. </span></p></div></div></div>
 
-National and other public source credits: National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Virginia Department of Conservation and Recreation (DCR), Virginia State Parks; data modified by Open Outdoor. Their terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.
+National and other public-source attributions and terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.
