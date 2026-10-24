@@ -88,7 +88,9 @@ The final npm audit reports two high-severity findings, zero critical, moderate 
 - [node-forge signature verification, GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv): latest 1.4.0 is affected and no patched release is published.
 - [Zod collection memory exhaustion, GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5): Expo CLI requires Zod 3.25.76; the patch is in Zod 4.6.6+. A forced major override is not a supported fix.
 
-Both paths originate in Expo's CLI/build tooling. This does not establish that they are harmless or complete a release security audit. A future compatible upstream fix must be adopted; do not suppress these advisories.
+Both paths originate in Expo's CLI/build tooling. The subsequent security review added [version-pinned local backports](../../patches/README.md) for both reproduced parser defects, with 21 compatibility/security regressions. The registry audit still reports both upstream versions, and no advisory is suppressed. This does not complete a release security audit; replace the backports with compatible released upstream fixes when available.
+
+The same review tightened connector deadlines between pipeline stages so a blocking parser cannot continue into normalization, checkpointing or emission after its deadline. Monitored emissions and checkpoints now use the same monotonic deadline helper: an overdue emit preserves the previous last-good snapshot, while an overdue checkpoint raises the existing checkpoint-failure alert.
 
 ## Validation
 

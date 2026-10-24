@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-The repository includes pinned application dependencies and the public New York geographic snapshot described below. Release inventories supplement these notices. The [current dependency baseline](docs/reference/DEPENDENCY_BASELINE.md) supersedes the historical version numbers below.
+The repository includes pinned application dependencies and the public New York geographic snapshot described below. Release inventories supplement these notices. The [current dependency baseline](docs/reference/DEPENDENCY_BASELINE.md) supersedes the historical version numbers below. The [CLI security backports](patches/README.md) record locally modified node-forge and Zod dependencies, their provenance and complete retained licenses.
 
 Before any third-party item is committed or distributed, the implementing pull request must record:
 

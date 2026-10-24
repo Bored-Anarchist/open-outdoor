@@ -10,6 +10,7 @@ import {
   type StoredRawAsset,
 } from './connector.js';
 import { assertProcessingRootIsolation, runConnector } from './ingestion.js';
+import { withDeadline } from './deadline.js';
 
 export type FieldKind = 'string' | 'number' | 'boolean' | 'object' | 'array';
 export interface ConnectorHealthPolicy {
@@ -174,21 +175,7 @@ async function boundedOperation<T>(
   operation: (signal: AbortSignal) => Promise<T>,
   milliseconds: number,
 ): Promise<T> {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      operation(controller.signal),
-      new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => {
-          controller.abort();
-          reject(new Error('operation deadline'));
-        }, milliseconds);
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
+  return withDeadline(operation, milliseconds, () => new Error('operation deadline'));
 }
 export async function runMonitoredConnector<P, N, E>(
   connector: Connector<P, N, E>,

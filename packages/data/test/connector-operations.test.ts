@@ -301,6 +301,39 @@ describe('WP-406 connector operations', () => {
     expect(result.reports.map((report) => report.status)).toEqual(['quarantined', 'healthy']);
     expect(result.reports[0]?.alerts).toContain('run-failed');
   });
+  it.each(['emit', 'checkpoint'] as const)(
+    'rejects an overdue %s even when its timer cannot run',
+    async (phase) => {
+      const destination = await store();
+      const base = connector();
+      await runMonitoredConnector(base, policy, destination, 'baseline', now, rows);
+      const source = {
+        ...base,
+        manifest: {
+          ...base.manifest,
+          limits: { ...base.manifest.limits, maxParserMilliseconds: 20 },
+        },
+        [phase]: async () => {
+          Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 40);
+          return good;
+        },
+      };
+      const report = await runMonitoredConnector(
+        source,
+        policy,
+        destination,
+        'overdue',
+        '2026-09-09T00:01:00Z',
+        rows,
+      );
+      expect(report.alerts).toContain(phase === 'emit' ? 'run-failed' : 'checkpoint-failed');
+      expect(report.status).toBe(phase === 'emit' ? 'quarantined' : 'healthy');
+      expect((await destination.load(source.manifest))?.lastGood?.at).toBe(
+        phase === 'emit' ? now : '2026-09-09T00:01:00Z',
+      );
+    },
+  );
+
   it('rejects invalid health policies and time regression', async () => {
     const destination = await store();
     const source = connector();
