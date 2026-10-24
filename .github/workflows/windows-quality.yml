@@ -16,7 +16,7 @@ concurrency:
 jobs:
   route:
     name: Route quality checks
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 3
     outputs:
       run_expensive: ${{ steps.route.outputs.run_expensive }}
@@ -62,7 +62,7 @@ jobs:
     name: windows-quality
     needs: [route, windows-shared]
     if: always()
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 3
     steps:
       - name: Require the routed quality checks to succeed

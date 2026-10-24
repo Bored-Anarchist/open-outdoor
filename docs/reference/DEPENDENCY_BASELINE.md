@@ -70,6 +70,8 @@ All optional groups were installed and tested under Python 3.15.1. Pyogrio uses 
 | actions/setup-python | 7.1.0 | Updated immutable commit |
 | actions/upload-artifact | 7.0.2 | Updated immutable commit |
 | astral-sh/setup-uv | 10.3.2 | Updated immutable commit |
+| Linux CI image | Ubuntu 26.04 | Latest available LTS hosted image; pinned in public and downstream workflows |
+| Windows CI image | Windows Server 2025 | Already current; the hosted image provides Visual Studio 2026 |
 
 GDAL, PostGIS and standalone SQLite are configuration targets, not newly installed services or replacements for operating-system libraries. The tested Python runtime supplies SQLite 3.53.1; the pyogrio wheel supplies GDAL 3.12.4, pyproj supplies PROJ 9.8.1, and Shapely supplies GEOS 3.14.1. Those native libraries follow their upstream wheel/runtime distributions rather than the standalone tooling targets. Git, GitHub CLI, Windows, Apple frameworks and sideloading software are host prerequisites, not dependencies managed by these lockfiles. Historical acquisition tools, dataset snapshots and completed evidence retain their original provenance versions.
 
