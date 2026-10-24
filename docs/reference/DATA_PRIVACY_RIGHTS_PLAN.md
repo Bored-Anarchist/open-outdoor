@@ -5,7 +5,7 @@
 
 ## Package storage policy
 
-Full public state datasets are generated locally or restored from owner-managed external artifact storage. Public Git/CI retains source definitions, source-rights evidence, manifests, checksums, notices and counts; it does not retain complete state packages. Private datasets and enrichment remain excluded from public artifacts and CI. External hosting does not change source rights or release gates. See [package maintenance](../guides/PACKAGE_MAINTENANCE.md).
+Full public state datasets are generated locally or restored from owner-managed external artifact storage. Public Git commits and CI artifacts retain source definitions, source-rights evidence, manifests, checksums, notices and counts; they do not retain complete state packages. Separately, states whose source rights explicitly allow redistribution may be published as checksum-verified GitHub Release assets after the package gates pass. Private datasets and enrichment remain excluded from public artifacts and CI. Hosting does not change source rights or release gates. See [package maintenance](../guides/PACKAGE_MAINTENANCE.md).
 
 ## 1. Data classification
 

@@ -31,6 +31,18 @@ Add `--refresh` to either acquisition command to bypass its cache. Public packag
 
 For complete release verification, restore or acquire all required states, then run `pnpm map:public:verify`, `pnpm map:states:verify` and `pnpm test:state-loader`. Missing inputs remain errors. Rerun private deduplication after public changes. Commit verified manifests, pins, notices and counts; leave generated files ignored.
 
+## Publish redistribution-approved public packages
+
+Public state archives may be published as GitHub Release assets after the existing rights, privacy, package, loader and backup checks pass. This keeps generated datasets out of Git commits and CI artifacts. Never include private packages, source archives, private evidence or credentials. Publish only states whose manifests say `publicDistribution: true` and `classification: SOURCE_REDISTRIBUTABLE`; follow each source's attribution and redistribution conditions. Keep the verified external public backup as the recovery copy.
+
+Build an asset directory from the completed public backup receipt with the pinned Python runtime:
+
+```powershell
+uv run --frozen --group loader python tools/packages/export_public_package_release.py --output .scratch/public-github-release-<date>
+```
+
+The exporter checks every input against the backup receipt, creates one archive per state plus inventories, verifies archive CRCs and emits SHA-256 checksums and a release manifest. Review the report and exact asset directory, then upload the complete directory to a dated GitHub Release on the verified metadata commit. Keep each asset below GitHub's per-asset size limit. A downloaded state archive can be extracted into a local external mirror and restored with `pnpm map:public:restore -- <STATE> --from <mirror>`.
+
 ## Restore exact snapshots from external storage
 
 Use an owner-managed external directory or HTTPS object store for exact pinned snapshots. Organize verified local files as `<STATE>/outdoors.geojson`, `<STATE>/index.json`, `<STATE>/state.sqlite` and optional `<STATE>/parts/outdoors-NNN.geojson`. Use immutable release/checksum paths and a retention policy for required releases. Never put private data in the public store.
@@ -41,7 +53,7 @@ $env:OPEN_OUTDOOR_PUBLIC_ARTIFACT_BASE_URL = 'https://your-artifact-host.example
 pnpm map:public:restore -- CO --parts
 ```
 
-This checkout now has a verified local external mirror configured in ignored `.private/package-maintenance.json`; other clones need their own configuration. No cloud host was provisioned. See the [operations report](../archive/reports/PACKAGE_OPERATIONS_2026-09-29.md) for backup and restore evidence. Populate a mirror from verified generated local outputs using your storage provider's tooling. Restore streams one file at a time, skips intact local files, verifies committed size/SHA-256, and replaces only verified files. Redirects and credential-bearing base URLs are rejected. Restoration does not activate phone catalogs or grant distribution rights. API rebuilds may differ from historical snapshots: restore historical pins from a mirror or review and commit new rebuild pins.
+This checkout now has a verified local external mirror configured in ignored `.private/package-maintenance.json`; other clones need their own configuration. No cloud host was provisioned. See the [operations report](../archive/reports/PACKAGE_OPERATIONS_2026-09-29.md) for backup and restore evidence. Populate a mirror from verified generated local outputs or downloaded, checksum-verified release archives. Restore streams one file at a time, skips intact local files, verifies committed size/SHA-256, and replaces only verified files. Redirects and credential-bearing base URLs are rejected. Restoration does not activate phone catalogs or grant distribution rights. API rebuilds may differ from historical snapshots: restore historical pins from a mirror or review and commit new rebuild pins.
 
 ## Private refresh and recovery
 
