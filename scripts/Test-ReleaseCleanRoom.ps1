@@ -17,7 +17,7 @@ function Invoke-Checked {
     if (-not $succeeded) { throw "Clean-room step failed: $Name" }
 }
 try {
-    if ((& node --version).Trim() -ne 'v24.19.0' -or (& pnpm --version).Trim() -ne '11.20.0') { throw 'Pinned Node/pnpm required.' }
+    if ((& node --version).Trim() -ne 'v26.12.1' -or (& pnpm --version).Trim() -ne '12.15.0') { throw 'Pinned Node/pnpm required.' }
     # Fetch public hosting only: no local clone or working files are copied. Run on a separately provisioned public-only host.
     Invoke-Checked 'clone' { & git -c http.sslBackend=schannel clone --no-checkout https://github.com/Bored-Anarchist/open-outdoor.git $checkout }
     Push-Location $checkout

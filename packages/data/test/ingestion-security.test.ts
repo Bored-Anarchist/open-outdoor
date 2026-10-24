@@ -323,6 +323,24 @@ describe('WP-202 ingestion security and raw boundary', () => {
     expect(result.quarantine).toMatchObject([{ externalId: 'bad', reason: 'payload-limit' }]);
   });
 
+  it('quarantines a parser that blocks the event loop beyond its deadline', async () => {
+    const base = isolatedConnector({
+      ...isolatedManifest,
+      limits: { ...isolatedManifest.limits, maxPayloadBytes: 64, maxParserMilliseconds: 5 },
+    });
+    const connector: Connector<string, string, string> = {
+      ...base,
+      parse: async () => {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
+        return 'late';
+      },
+    };
+    const result = await runConnector(connector, 'blocked-parser-run', '2026-09-01T00:00:00.000Z');
+    expect(result.emitted).toEqual([]);
+    expect(result.quarantine).not.toHaveLength(0);
+    expect(result.quarantine.every((item) => item.reason === 'parser-timeout')).toBe(true);
+  });
+
   it('enforces task timeouts and transport allowlists through quarantine', async () => {
     const timeoutBase = isolatedConnector({
       ...isolatedManifest,

@@ -1,4 +1,11 @@
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  type ScrollViewInstance,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ProductHeader, usePalette } from './ProductComponents';
@@ -18,7 +25,7 @@ export function ProductSheet({
   children: ReactNode;
 }) {
   const p = usePalette();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   useEffect(() => {
     if (visible) scroll.current?.scrollTo({ y: 0, animated: false });
   }, [visible, title]);

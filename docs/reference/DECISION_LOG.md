@@ -136,3 +136,9 @@ Open Outdoor Local may enroll a laptop public key only after an independently sc
 This extends ADR-051's local development loader path. It does not supersede ADR-031/WP-010 production release trust, provision a production keyring, weaken private/public separation or claim release acceptance. The native installer gates laptop-owned signature activation/enrollment to `org.openoutdoor.local`; production identities continue to require their independently controlled release trust. Files imports retain compiled pins. No new dependency or private-data migration is introduced.
 
 Validation uses synthetic Node signing/transport tests, app/helper/UI tests and the same native CryptoKit trust class with injected persistence on macOS, followed by an unsigned iOS build. Physical update, lock/interruption, rollback/replay and key-loss/revocation cases remain required. See [signed laptop state updates](../guides/LAPTOP_STATE_UPDATES.md).
+
+## ADR-053 — Refresh the supported dependency and build baseline
+
+Accepted for implementation on 2026-10-24 at the owner's request to update project dependencies and external tooling in PR #23. This supersedes the version selections in ADR-012, ADR-013, ADR-015 and ADR-037. The current pins are Node 26.12.1, pnpm 12.15.0, Python 3.15.1, uv 0.13.5, Expo 58.0.17, React 19.3.0 and React Native 0.88.0. Xcode 27.1 is selected exactly on the xcode-27 runner; the iOS deployment target remains 16.4. Workspace/browser checks use TypeScript 7.0.2 while mobile retains Expo's supported 6.0.3.
+
+Keep the 24-hour npm release quarantine and strict peer checks. React/renderer, mobile TypeScript and fresh Expo patch exceptions are documented in the [dependency baseline](DEPENDENCY_BASELINE.md), alongside the remaining upstream CLI advisories. Existing phase and physical acceptance evidence retains its original tool versions; this refresh requires new build evidence and does not confer physical-device or independent release acceptance.

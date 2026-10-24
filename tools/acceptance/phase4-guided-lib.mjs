@@ -48,7 +48,7 @@ export function evaluatePhase4Report(report, sourceCommit) {
     blockers.push('candidate mismatch');
   if (report.cleanBefore !== true || report.cleanAfter !== true)
     blockers.push('candidate must be clean before and after checks');
-  if (report.nodeVersion !== 'v24.19.0') blockers.push('pinned Node version required');
+  if (report.nodeVersion !== 'v26.12.1') blockers.push('pinned Node version required');
   for (const path of PHASE4_INPUTS) {
     if (!/^[a-f0-9]{64}$/.test(report.inputHashes?.[path] ?? ''))
       blockers.push(`missing input hash: ${path}`);

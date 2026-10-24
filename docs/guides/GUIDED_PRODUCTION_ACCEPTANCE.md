@@ -6,7 +6,7 @@ The Phase 5 runner coordinates automated checks, the phone checklist and the pos
 
 ## Windows
 
-Use the pinned Node 24.19.0/pnpm 11.20.0 environment and commit changes first:
+Use the pinned Node 26.12.1/pnpm 12.15.0 environment and commit changes first:
 
 ```text
 pnpm phase5:acceptance

@@ -5,7 +5,7 @@
 ## Candidate preparation
 
 1. Run the complete Windows quality gate and record the exact commit and release-config SHA-256.
-2. Dispatch `macos-ios-build` once for that commit. Confirm the autolinked `OpenOutdoorNativeSpikes` pod compiles under Xcode 26.4.1 and record the IPA digest.
+2. Dispatch `macos-ios-build` once for that commit. Confirm the autolinked `OpenOutdoorNativeSpikes` pod compiles under Xcode 27.1 and record the IPA digest.
 3. Sign/install through AltServer with `org.openoutdoor.local`; do not delete the existing app container for the A→B path.
 4. Keep routes, device/account identifiers, screenshots, and raw logs private. Publish only reviewed summaries.
 

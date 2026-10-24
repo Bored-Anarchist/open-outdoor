@@ -2,10 +2,10 @@
   "name": "open-outdoor",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.20.0",
+  "packageManager": "pnpm@12.15.0",
   "engines": {
-    "node": "24.19.0",
-    "pnpm": "11.20.0"
+    "node": "26.12.1",
+    "pnpm": "12.15.0"
   },
   "scripts": {
     "source": "node tools/catalog/source.mjs",
@@ -76,21 +76,21 @@
     "docs:check": "node tools/reporting/report-public-state-packages.mjs --check"
   },
   "devDependencies": {
-    "@types/node": "24.10.1",
-    "ajv": "8.18.0",
-    "axe-core": "4.13.0",
+    "@types/node": "26.6.5",
+    "ajv": "8.20.0",
+    "axe-core": "4.14.0",
     "bonjour-service": "1.4.4",
     "jsqr": "1.4.0",
-    "maplibre-gl": "6.9.0",
-    "playwright": "1.62.1",
+    "maplibre-gl": "6.15.0",
+    "playwright": "1.64.1",
     "polygon-clipping": "0.15.7",
-    "prettier": "3.9.0",
+    "prettier": "3.9.10",
     "qrcode": "1.5.4",
-    "react": "19.2.3",
-    "react-test-renderer": "19.2.3",
-    "typescript": "6.0.3",
-    "vite": "8.0.16",
-    "vitest": "4.1.11",
-    "yaml": "2.9.0"
+    "react": "19.3.0",
+    "react-test-renderer": "19.3.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5",
+    "yaml": "2.9.1"
   }
 }

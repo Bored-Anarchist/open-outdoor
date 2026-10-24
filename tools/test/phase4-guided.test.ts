@@ -18,7 +18,7 @@ function passingReport() {
     completedCommit: commit,
     cleanBefore: true,
     cleanAfter: true,
-    nodeVersion: 'v24.19.0',
+    nodeVersion: 'v26.12.1',
     inputHashes: Object.fromEntries(PHASE4_INPUTS.map((path: string) => [path, 'b'.repeat(64)])),
     commands: PHASE4_COMMANDS.map((id: string) => ({ id, passed: true, exitCode: 0 })),
     passedTestFiles: Object.values(PHASE4_PACKAGES).map((entry) => entry[1]),

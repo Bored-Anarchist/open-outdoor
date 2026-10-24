@@ -12,6 +12,7 @@ Specifications, current generated reports and policy references. Each document r
 - [current state dataset audit](CURRENT_STATE_DATASET_AUDIT.md)
 - [data privacy rights plan](DATA_PRIVACY_RIGHTS_PLAN.md)
 - [decision log](DECISION_LOG.md)
+- [dependency baseline](DEPENDENCY_BASELINE.md)
 - [diagnostics plan](DIAGNOSTICS_PLAN.md)
 - [documentation audit](DOCUMENTATION_AUDIT.md)
 - [implementation roadmap](IMPLEMENTATION_ROADMAP.md)

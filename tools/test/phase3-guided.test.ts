@@ -101,7 +101,7 @@ function guidedReport() {
     completedAt: '2026-09-02T12:10:00.000Z',
     sourceCommit: commit,
     workingTreeClean: true,
-    nodeVersion: 'v24.19.0',
+    nodeVersion: 'v26.12.1',
     platform: 'win32',
     status: 'passed',
     physicalReport: { path: 'phase3-physical.json', sha256: 'c'.repeat(64) },

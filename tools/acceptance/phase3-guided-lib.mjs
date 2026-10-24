@@ -180,7 +180,7 @@ export function evaluatePhase3GuidedReport(report, options = {}) {
     blockers.push('report source commit does not match the evaluated candidate');
   }
   if (report?.workingTreeClean !== true) blockers.push('candidate working tree was not clean');
-  if (report?.nodeVersion !== 'v24.19.0') blockers.push('runner did not use pinned Node v24.19.0');
+  if (report?.nodeVersion !== 'v26.12.1') blockers.push('runner did not use pinned Node v26.12.1');
   const commands = new Map(
     (Array.isArray(report?.commands) ? report.commands : []).map((command) => [
       command.id,

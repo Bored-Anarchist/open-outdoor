@@ -326,17 +326,23 @@ async function withTimeout<T>(
   milliseconds: number,
 ): Promise<T> {
   const controller = new AbortController();
+  const started = performance.now();
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
-    return await Promise.race([
-      operation(controller.signal),
-      new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => {
-          controller.abort();
-          reject(new IngestionSecurityError('parser-timeout', 'isolated task timed out'));
-        }, milliseconds);
-      }),
-    ]);
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        controller.abort();
+        reject(new IngestionSecurityError('parser-timeout', 'isolated task timed out'));
+      }, milliseconds);
+    });
+    const result = await Promise.race([operation(controller.signal), timeout]);
+    // A blocked event loop can resolve the operation before an overdue timer runs.
+    // Use monotonic elapsed time as well so late results never enter the catalog.
+    if (performance.now() - started >= milliseconds) {
+      controller.abort();
+      throw new IngestionSecurityError('parser-timeout', 'isolated task timed out');
+    }
+    return result;
   } finally {
     if (timer) clearTimeout(timer);
   }

@@ -5,6 +5,12 @@ if ($IsWindows) {
     throw 'The unsigned iOS archive must be built by the pinned macOS workflow. See docs/guides/IOS_SIDELOAD_FEASIBILITY.md.'
 }
 
+$release = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../config/release.json') -Raw | ConvertFrom-Json
+$cocoapodsVersion = (& pod --version).Trim()
+if ($LASTEXITCODE -ne 0 -or $cocoapodsVersion -ne $release.ios.cocoapods) {
+    throw "CocoaPods $($release.ios.cocoapods) is required; found '$cocoapodsVersion'."
+}
+
 $sourceCommit = (& git rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $sourceCommit -notmatch '^[0-9a-fA-F]{40}$') {
     throw 'Unable to resolve the exact source commit for the iOS candidate.'
