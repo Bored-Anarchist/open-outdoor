@@ -2,7 +2,7 @@
 
 `app-icon.png` is the app's original mountain and winding trail artwork, generated on 2026-09-30 using the built-in image generation tool at the project owner's request. No reference images, stock artwork, existing brand marks or external visual assets were supplied. The project distributes this AI-assisted asset under its Apache-2.0 terms; see [the project notices](../../../THIRD_PARTY_NOTICES.md).
 
-The source is a 1254 × 1254 opaque RGB PNG. `expo.icon` in [app.json](../app.json) points to it. The pinned Expo 56 prebuild icon plugin generates the opaque 1024 × 1024 universal iOS asset from this master; iOS applies its own corner mask. The image contains no text, credentials, location data or embedded home-screen mockup. Installing a new native app build is required to see the icon on the home screen.
+The source is a 1254 × 1254 opaque RGB PNG. `expo.icon` in [app.json](../app.json) points to it. The pinned Expo 58 prebuild icon plugin generates the opaque 1024 × 1024 universal iOS asset from this master; iOS applies its own corner mask. The image contains no text, credentials, location data or embedded home-screen mockup. Installing a new native app build is required to see the icon on the home screen.
 
 ## Generation prompt
 

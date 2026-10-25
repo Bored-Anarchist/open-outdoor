@@ -1,9 +1,9 @@
 # State outdoor data package tracker
 
-Generated from the pinned inventory (2026-10-12T23:58:41.674Z), state manifests, and agency source policy.
+Generated from the pinned inventory (2026-10-24T20:53:40.857Z), state manifests, and agency source policy.
 Regenerate with `pnpm docs:generate`; `pnpm docs:check` rejects stale output. Do not edit generated reports manually.
 
-50 state packages; 757,632 features; 77,013 POIs; 138,882 eligible agency features; 169 validated import parts.
+50 state packages; 745,342 features; 77,020 POIs; 138,891 eligible agency features; 167 validated import parts.
 
 These are package entries, not deduplicated national entities. Other categories retain source types. Ownership and historical records do not establish current access, conditions, or permission. Physical-phone acceptance remains pending.
 Public derivative receipts and private collection permissions remain separate. A candidate rights classification does not authorize ingestion. Source-specific terms and modifications remain in the manifests and distribution notices.
@@ -16,16 +16,16 @@ Public derivative receipts and private collection permissions remain separate. A
 | --- | --- | --- | --- | --- | --- | --- |
 | AL | Alabama | 1995 | 307 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/AL/manifest.json) |
 | AK | Alaska | 22999 | 1602 | 0 | 23 | [Manifest](../../packages/map/src/assets/state-packages/US/AK/manifest.json) |
-| AZ | Arizona | 16757 | 4186 | 0 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/AZ/manifest.json) |
+| AZ | Arizona | 16761 | 4187 | 0 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/AZ/manifest.json) |
 | AR | Arkansas | 6214 | 424 | 227 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/AR/manifest.json) |
-| CA | California | 66285 | 6402 | 15 | 12 | [Manifest](../../packages/map/src/assets/state-packages/US/CA/manifest.json) |
+| CA | California | 65475 | 6402 | 15 | 11 | [Manifest](../../packages/map/src/assets/state-packages/US/CA/manifest.json) |
 | CO | Colorado | 31137 | 5950 | 1209 | 7 | [Manifest](../../packages/map/src/assets/state-packages/US/CO/manifest.json) |
 | CT | Connecticut | 24047 | 385 | 14731 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/CT/manifest.json) |
 | DE | Delaware | 2683 | 0 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/DE/manifest.json) |
 | FL | Florida | 14006 | 1812 | 0 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/FL/manifest.json) |
 | GA | Georgia | 5958 | 517 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/GA/manifest.json) |
-| HI | Hawaii | 1071 | 78 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/HI/manifest.json) |
-| ID | Idaho | 25629 | 4845 | 0 | 8 | [Manifest](../../packages/map/src/assets/state-packages/US/ID/manifest.json) |
+| HI | Hawaii | 1072 | 78 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/HI/manifest.json) |
+| ID | Idaho | 25593 | 4844 | 0 | 8 | [Manifest](../../packages/map/src/assets/state-packages/US/ID/manifest.json) |
 | IL | Illinois | 10614 | 131 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/IL/manifest.json) |
 | IN | Indiana | 3361 | 65 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/IN/manifest.json) |
 | IA | Iowa | 4893 | 0 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/IA/manifest.json) |
@@ -35,22 +35,22 @@ Public derivative receipts and private collection permissions remain separate. A
 | ME | Maine | 4334 | 111 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/ME/manifest.json) |
 | MD | Maryland | 4910 | 694 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/MD/manifest.json) |
 | MA | Massachusetts | 70399 | 4952 | 49787 | 8 | [Manifest](../../packages/map/src/assets/state-packages/US/MA/manifest.json) |
-| MI | Michigan | 31083 | 597 | 9460 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/MI/manifest.json) |
+| MI | Michigan | 31092 | 597 | 9469 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/MI/manifest.json) |
 | MN | Minnesota | 25726 | 966 | 7872 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/MN/manifest.json) |
 | MS | Mississippi | 2733 | 711 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/MS/manifest.json) |
 | MO | Missouri | 6447 | 206 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/MO/manifest.json) |
-| MT | Montana | 29557 | 10241 | 0 | 8 | [Manifest](../../packages/map/src/assets/state-packages/US/MT/manifest.json) |
+| MT | Montana | 29560 | 10244 | 0 | 8 | [Manifest](../../packages/map/src/assets/state-packages/US/MT/manifest.json) |
 | NE | Nebraska | 2332 | 16 | 74 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/NE/manifest.json) |
-| NV | Nevada | 29318 | 1253 | 6686 | 5 | [Manifest](../../packages/map/src/assets/state-packages/US/NV/manifest.json) |
+| NV | Nevada | 17855 | 1253 | 6686 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/NV/manifest.json) |
 | NH | New Hampshire | 5538 | 324 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/NH/manifest.json) |
 | NJ | New Jersey | 14743 | 102 | 0 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/NJ/manifest.json) |
-| NM | New Mexico | 12896 | 1920 | 0 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/NM/manifest.json) |
-| NY | New York | 326 | 81 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/NY/manifest.json) |
+| NM | New Mexico | 12897 | 1921 | 0 | 4 | [Manifest](../../packages/map/src/assets/state-packages/US/NM/manifest.json) |
+| NY | New York | 327 | 81 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/NY/manifest.json) |
 | NC | North Carolina | 9541 | 2675 | 6 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/NC/manifest.json) |
 | ND | North Dakota | 1125 | 54 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/ND/manifest.json) |
 | OH | Ohio | 7161 | 69 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/OH/manifest.json) |
 | OK | Oklahoma | 2299 | 284 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/OK/manifest.json) |
-| OR | Oregon | 44590 | 5329 | 0 | 7 | [Manifest](../../packages/map/src/assets/state-packages/US/OR/manifest.json) |
+| OR | Oregon | 44591 | 5330 | 0 | 7 | [Manifest](../../packages/map/src/assets/state-packages/US/OR/manifest.json) |
 | PA | Pennsylvania | 14246 | 377 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/PA/manifest.json) |
 | RI | Rhode Island | 1767 | 1 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/RI/manifest.json) |
 | SC | South Carolina | 4347 | 190 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/SC/manifest.json) |
@@ -59,8 +59,8 @@ Public derivative receipts and private collection permissions remain separate. A
 | TX | Texas | 12960 | 1145 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/TX/manifest.json) |
 | UT | Utah | 73616 | 4214 | 48140 | 10 | [Manifest](../../packages/map/src/assets/state-packages/US/UT/manifest.json) |
 | VT | Vermont | 2944 | 133 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/VT/manifest.json) |
-| VA | Virginia | 11676 | 1467 | 675 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/VA/manifest.json) |
-| WA | Washington | 19086 | 2593 | 0 | 5 | [Manifest](../../packages/map/src/assets/state-packages/US/WA/manifest.json) |
+| VA | Virginia | 11670 | 1467 | 675 | 3 | [Manifest](../../packages/map/src/assets/state-packages/US/VA/manifest.json) |
+| WA | Washington | 19091 | 2595 | 0 | 5 | [Manifest](../../packages/map/src/assets/state-packages/US/WA/manifest.json) |
 | WV | West Virginia | 2883 | 520 | 0 | 1 | [Manifest](../../packages/map/src/assets/state-packages/US/WV/manifest.json) |
 | WI | Wisconsin | 10355 | 196 | 0 | 2 | [Manifest](../../packages/map/src/assets/state-packages/US/WI/manifest.json) |
 | WY | Wyoming | 35218 | 5523 | 0 | 5 | [Manifest](../../packages/map/src/assets/state-packages/US/WY/manifest.json) |

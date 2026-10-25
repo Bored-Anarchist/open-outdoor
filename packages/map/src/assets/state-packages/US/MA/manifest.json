@@ -3,18 +3,18 @@
     "geojson": {
       "file": "outdoors.geojson",
       "featureCount": 70399,
-      "bytes": 73222554,
-      "sha256": "059f4cde235c3960afec2df9d7773a3ef937d23347b9b8a6208a2308bfb254e7"
+      "bytes": 73222556,
+      "sha256": "1dc0febf17f64f5af92165b0fb94302a6bbb7631a3b3bc8450b34c0787b0756d"
     },
     "index": {
       "file": "index.json",
-      "bytes": 45062218,
-      "sha256": "3a798854788a641bfe219912b86e1d2cfc5f8ea6f22eab32e61cb3789ec9beef"
+      "bytes": 45062220,
+      "sha256": "dc2a507f23c87a3396d53d0664dc570e2255c1e4a97fecbf52a1bb1afcdf3635"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 2288,
-      "sha256": "ad1d98e08de55aa1e201917a7517f6a6e0d57bd384247afb54446992371ed066"
+      "bytes": 1943,
+      "sha256": "44d59d9d5862b3c13051789580c85363c0079f71d48bb384c756ae8bf093cb74"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -25,7 +25,7 @@
     "limitations": [
       "Dated informational references, not live permission, closure or camping claims.",
       "Some states have no eligible direct agency feed; source gaps remain explicit.",
-      "No iOverlander records, DEC held data, OPRHP records, or permission-limited agency data."
+      "No iOverlander records, DEC held data, OPRHP records, or uncleared agency data. Approved conditional derivatives retain their separate terms."
     ]
   },
   "disclaimers": [
@@ -34,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 70399,
-  "generatedAt": "2026-09-28T00:09:01.894Z",
+  "generatedAt": "2026-10-24T16:15:21.342Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-ma",
   "rights": {
@@ -116,6 +116,7 @@
         "U.S. Geological Survey Gap Analysis Project",
         "PAD-US data providers and state stewards"
       ],
+      "bytes": 26105132,
       "fields": [
         "OBJECTID",
         "FeatClass",
@@ -147,10 +148,13 @@
       "inventoryFeatureCount": 20362,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 20362,
-      "packagedFeatureSha256": "a317c3eec4afec674b4796281757cb8039e17021cdc8cb0b89deade61dfb4425",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "packagedFeatureSha256": "ad9ec1fc2617c203c27d4bcd77e342858a52befbcd0a74b15433476acfc0c561",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "a4715c8635fe66f9b292f7282686d854a63a8aee3e19d0bc931776c9d022bcd0",
+      "sha256": "53b4978c71e93b73df3550c936fbb9fce41d1fd1fc696686d81893384c44cc24",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 20362,
+      "sourceRevision": 1776880752730,
       "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
       "unreturnedFeatureCount": 0,
       "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
@@ -160,6 +164,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 63260,
       "fields": [
         "OBJECTID",
         "TRLFEATTYPE",
@@ -195,8 +200,10 @@
       "inventoryFeatureCount": 779,
       "name": "NPS public trails",
       "packagedFeatureCount": 40,
-      "packagedFeatureSha256": "6df4d249cc98abd9109ca96c6695ac4b21c49923a9334dff5c5cb63c0b6b8105",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "packagedFeatureSha256": "bc0a1e9ef8d7bbd5e7006636b35d86475e5b6135d72343be02d7b4cdfca34c4c",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "b69c4dc0bbb473e846eb661663326af2093a9c509993ac23f9e0883ca2abc105",
+      "sha256": "929ff6d89e782620321f6f651696ec21203b1d1d0670e87fe2cb6bc2e9e2689f",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 779,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
@@ -208,6 +215,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 179526,
       "fields": [
         "OBJECTID",
         "POINAME",
@@ -239,8 +247,10 @@
       "inventoryFeatureCount": 605,
       "name": "NPS public points of interest",
       "packagedFeatureCount": 209,
-      "packagedFeatureSha256": "56cfd24400666045f1e13f79f17bdebd3ee046b1ba1a70011d710d79f9125898",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "packagedFeatureSha256": "2b8c3cae4503c7760b91ab913921fbf8eabb69f80ec265e17a4a74bc20d440f2",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "d1b99cf2096526ef4764749eae4861dc57f15c0bb7409234b07e864150deec43",
+      "sha256": "18932053edb881e80daea8544ef4a80e2a38b6fc6bdaeeb76b83baa4ec27052f",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 605,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
@@ -252,6 +262,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 9870,
       "fields": [
         "OBJECTID",
         "trail_name",
@@ -296,8 +307,10 @@
       "inventoryFeatureCount": 1,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 1,
-      "packagedFeatureSha256": "6b63e8a6b1acff50194c58a3a24580b17d63e50e48a2824785fd6576dfe6485b",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "packagedFeatureSha256": "9b65b4198342c87e698b83a697fed820a2a136674cb94de28dc105144508589b",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "d6360cfafb33ce9479803ffd276d1ed8d63fa4830d8fb08c04cf499ee972145f",
+      "sha256": "80768e2acafdebb5eebd5f1ba3d974422fd4e1155cb71a634fbb7223ed2fdd03",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 1,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -309,6 +322,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "site_cn",
@@ -352,7 +366,9 @@
       "name": "USFS recreation sites",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "64312fc8d3932b7f9b4a07347e957a076977fa3ece085c810652643d00410008",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -364,6 +380,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -402,7 +419,9 @@
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "3c3727694d5a79c95b53824e2a8fc47161d44b1b1176fcc2bc47ebe3650381ad",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -414,6 +433,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -451,7 +471,9 @@
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "a8b9e956ca095f1fb5238e6357b613b1846a2c4fb9cbe15d9a65239844625dbd",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -463,6 +485,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "SMA_ID",
@@ -483,7 +506,9 @@
       "name": "BLM surface management agency boundaries",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "da5d6ffdf2c41185cdbe95c423c859e7c2643f830bb4ce622cd732ac086489f2",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://www.blm.gov/services/geospatial/GISData",
@@ -495,6 +520,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "FET_TYPE",
@@ -515,7 +541,9 @@
       "name": "BLM public recreation sites",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:10:28.948Z",
+      "queriedAt": "2026-10-24T15:26:05.327Z",
+      "refreshSignature": "549ceb2c747d22d358b5b87face25c5cae4fa1c3609594b6d690cc7a7264afb7",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
@@ -532,15 +560,17 @@
       "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
       "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
       "vintage": "2015-06; historical reference, verify current manager maps",
+      "refreshSignature": "f379ce41bd7144227b355027bc4910fe427a20e4afde3f20e54cd9493813d14a",
       "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Supported",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-27T23:53:03.574Z",
+      "retrievedAt": "2026-10-24T15:17:01.805Z",
       "sourceUpdated": "2015-06; historical reference, verify current manager maps",
       "featureCount": 36859,
       "bytes": 18399082,
       "sha256": "b63f6c3539a85bbc8aa99776bb664a74c2c6c0cd4248f7fbf4829808f2b9af92",
       "metadataSha256": "35a3a2d5e72c2f82ad562dcf44d148c73cbe644a104099fb91845ad55faf86b8",
-      "termsSha256": "04fc634be46b0d9b0a63b80a649a1cdfc66bd1ae8b65662019f66a36a93cb86d",
+      "termsSha256": "ed166270c08c78bdea0715dfb35abae41d0538cbe13f3120fa72c8c3d4566394",
       "licenseText": "",
       "serviceItemId": null,
       "fields": [
@@ -1692,15 +1722,17 @@
       "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
       "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
       "vintage": "2015-06; historical reference, verify current manager maps",
+      "refreshSignature": "29519a09e126f10244191ff215a3eb6b6b82d57985fff5d66a3bc64e47749a4e",
       "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Supported",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-27T23:53:42.639Z",
+      "retrievedAt": "2026-10-24T15:17:40.651Z",
       "sourceUpdated": "2015-06; historical reference, verify current manager maps",
       "featureCount": 20786,
       "bytes": 40512530,
       "sha256": "7454c81fcd34494106938c5390d1f86b92f8dfb406d1b2bdd9b6f81c982da548",
       "metadataSha256": "b2b27522f77cec1f014a8f9539aeacd6c1efcc9fbf040a5b161ee2f7d286c563",
-      "termsSha256": "04fc634be46b0d9b0a63b80a649a1cdfc66bd1ae8b65662019f66a36a93cb86d",
+      "termsSha256": "ed166270c08c78bdea0715dfb35abae41d0538cbe13f3120fa72c8c3d4566394",
       "licenseText": "",
       "serviceItemId": null,
       "fields": [
@@ -2462,15 +2494,17 @@
       "termsUrl": "https://www.mass.gov/info-details/learn-about-massgis-data",
       "where": "OWNER_ABRV LIKE 'DCR%'",
       "attribution": "Bureau of Geographic Information (MassGIS), Commonwealth of Massachusetts, Executive Office of Technology and Security Services",
+      "refreshSignature": "74cfcdb8abbc1c7e4fae77c351495de56c2855ed9ffe9872d3ab1031022eb8f2",
       "rightsStatus": "Supported",
+      "upstreamRightsStatus": "Supported",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-27T23:53:58.396Z",
+      "retrievedAt": "2026-10-24T15:17:55.255Z",
       "sourceUpdated": "Not supplied",
       "featureCount": 8189,
       "bytes": 13895623,
       "sha256": "12a78deae631c72ecc46a211abccd0b56a96d932a41269a620d97041f4a3bf23",
       "metadataSha256": "68e3842806279303d18792801683ed4f298309b020f58b65582d0779742f3422",
-      "termsSha256": "04fc634be46b0d9b0a63b80a649a1cdfc66bd1ae8b65662019f66a36a93cb86d",
+      "termsSha256": "ed166270c08c78bdea0715dfb35abae41d0538cbe13f3120fa72c8c3d4566394",
       "licenseText": "",
       "serviceItemId": null,
       "fields": [
@@ -2824,8 +2858,8 @@
   "output": {
     "file": "outdoors.geojson",
     "featureCount": 70399,
-    "bytes": 73222554,
-    "sha256": "059f4cde235c3960afec2df9d7773a3ef937d23347b9b8a6208a2308bfb254e7"
+    "bytes": 73222556,
+    "sha256": "1dc0febf17f64f5af92165b0fb94302a6bbb7631a3b3bc8450b34c0787b0756d"
   },
   "agency": {
     "status": "included",
@@ -2957,8 +2991,8 @@
         "featureCount": 10000,
         "normalizedFeatureCount": 10000,
         "positions": 129508,
-        "bytes": 8343592,
-        "sha256": "0a4ba8056cb2589e56688b8ae0ec3a99c9144e8312a925779a96ed2a2f7f169d",
+        "bytes": 8343594,
+        "sha256": "073e2be4d208b2c18d6e5fc766fd2a558eb24474eb02898a9078d15cc5c91d15",
         "parserValidation": "passed"
       },
       {

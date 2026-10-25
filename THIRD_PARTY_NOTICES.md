@@ -1,6 +1,6 @@
 # Third-Party Notices
 
-The repository includes pinned application dependencies and the public New York geographic snapshot described below. Release inventories supplement these notices.
+The repository includes pinned application dependencies and the public New York geographic snapshot described below. Release inventories supplement these notices. The [current dependency baseline](docs/reference/DEPENDENCY_BASELINE.md) supersedes the historical version numbers below. The [CLI security backports](patches/README.md) record locally modified node-forge and Zod dependencies, their provenance and complete retained licenses.
 
 Before any third-party item is committed or distributed, the implementing pull request must record:
 
@@ -90,3 +90,38 @@ Virginia Department of Conservation and Recreation (DCR): State Park Trails and 
 ## Home-screen app icon (2026-09-30)
 
 The mountain and winding trail artwork in `apps/mobile/assets/app-icon.png` was created with the built-in image generation tool at the project owner's request. No third-party reference, stock image or existing brand mark was supplied. This original AI-assisted project asset is distributed under the repository's Apache-2.0 terms. Its exact generation prompt, source format and Expo integration are recorded in [the asset provenance](apps/mobile/assets/README.md). Native icon generation resizes the opaque square master; iOS applies the corner mask. No additional runtime dependency is introduced.
+
+## Dependency refresh (reviewed 2026-10-24)
+
+The [dependency baseline](docs/reference/DEPENDENCY_BASELINE.md) inventories current selections, compatibility exceptions, tool releases and outstanding advisories. These are unmodified upstream packages; project modifications are version selection, lockfile resolution, two React Native scroll-ref type updates and an ingestion deadline fix with a synthetic regression test. The implementation and test are original, AI-assisted project material under Apache-2.0. No new geographic data or third-party visuals are introduced.
+
+| Package / upstream owner | Version | Canonical source | License |
+| --- | --- | --- | --- |
+| @maplibre/maplibre-react-native | 11.5.0 | [Upstream](https://github.com/maplibre/maplibre-react-native) | MIT |
+| @protomaps/basemaps | 5.7.2 | [Upstream](https://github.com/protomaps/basemaps) | BSD-3-Clause |
+| @types/node | 26.6.5 | [Upstream](https://github.com/DefinitelyTyped/DefinitelyTyped) | MIT |
+| @types/react | 19.3.0 | [Upstream](https://github.com/DefinitelyTyped/DefinitelyTyped) | MIT |
+| ajv | 8.20.0 | [Upstream](https://github.com/ajv-validator/ajv) | MIT |
+| axe-core | 4.14.0 | [Upstream](https://github.com/dequelabs/axe-core) | MPL-2.0 |
+| bonjour-service | 1.4.4 | [Upstream](https://github.com/onlxltd/bonjour-service) | MIT |
+| expo | 58.0.17 | [Upstream](https://github.com/expo/expo) | MIT |
+| expo-asset | 58.0.18 | [Upstream](https://github.com/expo/expo) | MIT |
+| expo-status-bar | 58.0.4 | [Upstream](https://github.com/expo/expo) | MIT |
+| jsqr | 1.4.0 | [Upstream](https://github.com/cozmo/jsQR) | Apache-2.0 |
+| maplibre-gl | 6.15.0 | [Upstream](https://github.com/maplibre/maplibre-gl-js) | BSD-3-Clause |
+| playwright | 1.64.1 | [Upstream](https://github.com/microsoft/playwright) | Apache-2.0 |
+| polygon-clipping | 0.15.7 | [Upstream](https://github.com/mfogel/polygon-clipping) | MIT |
+| prettier | 3.9.10 | [Upstream](https://github.com/prettier/prettier) | MIT |
+| qrcode | 1.5.4 | [Upstream](https://github.com/soldair/node-qrcode) | MIT |
+| react | 19.3.0 | [Upstream](https://github.com/react/react) | MIT |
+| react-native | 0.88.0 | [Upstream](https://github.com/react/react-native) | MIT |
+| react-native-safe-area-context | 5.10.1 | [Upstream](https://github.com/appandflow/react-native-safe-area-context) | MIT |
+| react-test-renderer | 19.3.0 | [Upstream](https://github.com/react/react) | MIT |
+| typescript | 7.0.2 (workspace/browser); 6.0.3 (Expo mobile) | [Upstream](https://github.com/microsoft/TypeScript) | Apache-2.0 |
+| vite | 8.3.5 | [Upstream](https://github.com/vitejs/vite) | MIT |
+| vitest | 5.0.5 | [Upstream](https://github.com/vitest-dev/vitest) | MIT |
+| yaml | 2.9.1 | [Upstream](https://github.com/eemeli/yaml) | ISC |
+
+The runtime MapLibre Native iOS distribution advances to 6.31.0 under its retained BSD-2-Clause notice. The source and in-app full MapLibre, safe-area and basemap license texts remain applicable; release artifacts must retain their complete copyright/permission texts. React, React Native and Expo retain their upstream MIT notices. Development tools and Python package distributions must retain their own complete bundled notices, including native-library notices. Public/private, source/binary and offline redistribution remain permitted subject to each license; axe-core's MPL-2.0 source obligations remain applicable if its code is redistributed or modified. No new retention/deletion obligation is introduced. Exact transitive contents remain the responsibility of the release SBOM and independent license review.
+
+Python build-only updates are NumPy 2.5.4 (BSD-3-Clause, NumPy developers, https://github.com/numpy/numpy), pyproj 3.8.0 (MIT, Jeffrey Whitaker/contributors), Shapely 2.2.0 (BSD-3-Clause, Sean Gillies/contributors), pyogrio 0.13.0 (MIT, pyogrio contributors, https://github.com/geopandas/pyogrio), PyShp 3.1.6 (MIT, Joel Lawhead/contributors, https://github.com/GeospatialPython/pyshp), pmtiles 3.8.1 (BSD-3-Clause, Protomaps), and Hatchling 1.32.4 (MIT, Ofek Lev/contributors, https://github.com/pypa/hatch). Existing mapbox-vector-tile 2.2.0 remains current. Complete licenses and native dependency notices accompany their installed distributions; they are not embedded in catalog data.

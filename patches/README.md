@@ -1,0 +1,16 @@
+# CLI security backports
+
+Reviewed 2026-10-24. These patches are applied by pnpm's exact-version `patchedDependencies` configuration and hashed in `pnpm-lock.yaml`. Frozen installation must fail if patch contents drift from the lock. They are build/development tooling; no new mobile runtime package or geographic data is introduced.
+
+| Package | Advisory | Change and provenance |
+| --- | --- | --- |
+| node-forge 1.4.0 | [GHSA-86w9-cpqp-85rv](https://github.com/advisories/GHSA-86w9-cpqp-85rv) | Reject extra unconsumed children in the nested RSA DigestAlgorithm sequence. The three-line condition follows [upstream PR #1152](https://github.com/digitalbazaar/forge/pull/1152), head `ceba34402e329f0365134f23fe19898756527d65`, which remains unmerged. This is a locally reviewed backport, not a released upstream fix. |
+| Zod 3.25.76 | [GHSA-mrhx-c7xc-m3w5](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5) | Reject oversized bounded collections before parsing elements or allocating element errors. The v3 early returns and older bundled v4 adaptation follow the approach in [upstream commit a0ebf970f2d752e5f58527cd2942ff48be4f46bd](https://github.com/colinhacks/zod/commit/a0ebf970f2d752e5f58527cd2942ff48be4f46bd). CommonJS, ESM and TypeScript source exports are patched. The older v4 parser uses a private WeakSet consumed at its check boundary to avoid duplicate checks while preserving `.catch()` recovery and preceding `.overwrite()` behavior. |
+
+Node-forge is owned by Digital Bazaar, Inc. and contributors; its distribution permits the BSD license or GPLv2. This project selects the BSD license and retains the [complete upstream license](licenses/node-forge.txt), including copyright and disclaimer. Zod is owned by Colin McDonnell, copyright 2025, under the [complete MIT license](licenses/zod.txt). The patches contain modified upstream code and remain subject to those licenses. Public/private, source/binary and offline redistribution are permitted with the required complete notices. No new retention/deletion obligation applies. Retain this provenance, the patches and licenses with redistributed build tooling and release inventories.
+
+The project-authored synthetic tests and connector deadline implementation are AI-assisted Apache-2.0 material. Tests generate disposable RSA keys in memory; no production key, forged external credential, third-party test fixture or private dataset is retained.
+
+`tools/test/dependency-security.test.mjs` resolves packages through the installed Expo CLI and checks malformed RSA structures, valid signatures, synchronous/asynchronous collection validation, bounded diagnostic counts, valid transforms, nested paths, fallback refinements and overwrite ordering. It runs automatically in `pnpm test:release` / `pnpm quality`.
+
+Registry audit tools match upstream version ranges and therefore still report both advisory IDs. No advisory is ignored or relabeled as a clean audit. The local patches address the reproduced parser defects; they do not impose a universal size limit on intentionally unbounded schemas or establish complete denial-of-service resistance. Application callers must still bound untrusted input. Prefer a compatible released upstream fix when available, remove its local patch and retain the security regressions.

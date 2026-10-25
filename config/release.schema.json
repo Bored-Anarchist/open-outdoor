@@ -24,11 +24,11 @@
       "additionalProperties": false,
       "required": ["node", "pnpm", "python", "uv", "expo"],
       "properties": {
-        "node": { "const": "24.19.0" },
-        "pnpm": { "const": "11.20.0" },
-        "python": { "const": "3.13.14" },
-        "uv": { "const": "0.12.1" },
-        "expo": { "const": "56.0.20" }
+        "node": { "const": "26.12.1" },
+        "pnpm": { "const": "12.15.0" },
+        "python": { "const": "3.15.1" },
+        "uv": { "const": "0.13.5" },
+        "expo": { "const": "58.0.17" }
       }
     },
     "gis": {
@@ -36,19 +36,20 @@
       "additionalProperties": false,
       "required": ["gdal", "postgis", "sqlite"],
       "properties": {
-        "gdal": { "const": "3.13.0" },
+        "gdal": { "const": "3.13.3" },
         "postgis": { "const": "3.6.4" },
-        "sqlite": { "const": "3.53.4" }
+        "sqlite": { "const": "3.54.1" }
       }
     },
     "ios": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["deploymentTarget", "runner", "xcode"],
+      "required": ["deploymentTarget", "runner", "xcode", "cocoapods"],
       "properties": {
         "deploymentTarget": { "const": "16.4" },
-        "runner": { "const": "macos-26" },
-        "xcode": { "const": "26.4.1" }
+        "runner": { "const": "xcode-27" },
+        "xcode": { "const": "27.1" },
+        "cocoapods": { "const": "1.17.0" }
       }
     },
     "channels": {

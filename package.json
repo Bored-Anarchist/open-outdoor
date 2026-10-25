@@ -2,10 +2,10 @@
   "name": "open-outdoor",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@11.20.0",
+  "packageManager": "pnpm@12.15.0",
   "engines": {
-    "node": "24.19.0",
-    "pnpm": "11.20.0"
+    "node": "26.12.1",
+    "pnpm": "12.15.0"
   },
   "scripts": {
     "source": "node tools/catalog/source.mjs",
@@ -71,26 +71,28 @@
     "map:packages:backup": "node tools/packages/backup-package-artifacts.mjs",
     "map:laptop": "node tools/laptop/laptop-package-server.mjs",
     "test:laptop": "node --test tools/test/laptop-package-server.test.mjs tools/test/laptop-hotspot.test.mjs tools/test/laptop-network.test.mjs tools/test/laptop-pairing.test.mjs tools/test/laptop-update-signing.test.mjs tools/test/laptop-transport-policy.test.mjs && vitest run packages/map/test/laptop-connection.test.ts packages/map/test/laptop-pairing.test.ts packages/map/test/laptop-packages-hook.test.ts",
+    "map:private:ny:refresh": "node tools/acquisition/stage-private-new-york-oprhp.mjs && node tools/acquisition/acquire-outdoor-map.mjs && node tools/packages/rebuild-private-new-york.mjs",
+    "map:ny:refresh": "node tools/packages/refresh-new-york-packages.mjs",
     "map:sources:check": "node tools/packages/check-package-source-updates.mjs",
     "docs:generate": "node tools/reporting/report-public-state-packages.mjs",
     "docs:check": "node tools/reporting/report-public-state-packages.mjs --check"
   },
   "devDependencies": {
-    "@types/node": "24.10.1",
-    "ajv": "8.18.0",
-    "axe-core": "4.13.0",
+    "@types/node": "26.6.5",
+    "ajv": "8.20.0",
+    "axe-core": "4.14.0",
     "bonjour-service": "1.4.4",
     "jsqr": "1.4.0",
-    "maplibre-gl": "6.9.0",
-    "playwright": "1.62.1",
+    "maplibre-gl": "6.15.0",
+    "playwright": "1.64.1",
     "polygon-clipping": "0.15.7",
-    "prettier": "3.9.0",
+    "prettier": "3.9.10",
     "qrcode": "1.5.4",
-    "react": "19.2.3",
-    "react-test-renderer": "19.2.3",
-    "typescript": "6.0.3",
-    "vite": "8.0.16",
-    "vitest": "4.1.11",
-    "yaml": "2.9.0"
+    "react": "19.3.0",
+    "react-test-renderer": "19.3.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5",
+    "yaml": "2.9.1"
   }
 }

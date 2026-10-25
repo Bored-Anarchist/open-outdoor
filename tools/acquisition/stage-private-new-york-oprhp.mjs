@@ -1,71 +1,75 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { stageApprovedFeed } from './state-agency-feeds.mjs';
+import { atomicSourceWrite } from '../packages/package-source-cache.mjs';
+import { assertPrivateAcquisitionApproved, stageApprovedFeed } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from '../lib/native-curl-fetch.mjs';
+import { loadPrivateSourceApprovals } from './private-source-approvals.mjs';
 
-export async function stagePrivateNewYorkOprhp() {
-  const config = JSON.parse(await readFile('config/private-new-york-oprhp-sources.json', 'utf8'));
+export async function loadOprhpRefreshInputs({
+  stagingRoot = resolve('PrivateData/agency-feeds'),
+  sources,
+} = {}) {
+  const config = sources
+    ? { sources }
+    : JSON.parse(await readFile('config/private-new-york-oprhp-sources.json', 'utf8'));
+  const approvals = await loadPrivateSourceApprovals(config.sources, {
+    stagingRoot,
+    label: 'OPRHP',
+  });
+  return { sources: config.sources, approvals };
+}
+
+export async function stagePrivateNewYorkOprhp({
+  fetchImpl = nativeCurlFetch,
+  stagingRoot = resolve('PrivateData/agency-feeds'),
+  sources,
+} = {}) {
+  const inputs = await loadOprhpRefreshInputs({ stagingRoot, sources });
   const results = [];
-  for (const source of config.sources) {
-    const directory = resolve('PrivateData/agency-feeds/US/NY', source.id);
-    let receipt;
-    try {
-      receipt = JSON.parse(await readFile(join(directory, 'receipt.json'), 'utf8'));
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
-    }
-    if (receipt) {
-      if (receipt.sourceUrl !== source.url || receipt.publicDistribution !== false)
-        throw new Error(`${source.id}: conflicting staged receipt`);
-    } else {
-      const now = new Date();
-      const approval = {
-        sourceId: source.id,
-        sourceUrl: source.url,
-        collect: true,
-        privateStorage: true,
-        publicDistribution: false,
-        publisherGrant: false,
-        provisionalPrivateValidation: true,
-        ...(source.mode === 'reference-only' ? { referenceOnlyPrivateValidation: true } : {}),
-        evidenceUrl: source.termsUrl,
-        reviewedAt: now.toISOString(),
-        expiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
-      };
-      receipt = (await stageApprovedFeed(source, approval)).receipt;
-    }
-    const evidence = [];
-    for (const [file, url] of [
-      ['terms.json', source.termsUrl],
-      ['layer.json', `${source.url}?f=json`],
-    ]) {
-      const response = await nativeCurlFetch(url);
-      if (!response.ok) throw new Error(`${source.id}: metadata HTTP ${response.status}`);
-      const bytes = Buffer.from(await response.arrayBuffer());
-      const body = JSON.parse(bytes);
-      if (body.error) throw new Error(`${source.id}: metadata error`);
-      await writeFile(join(directory, file), bytes);
-      evidence.push({
-        file,
-        url,
-        bytes: bytes.length,
-        sha256: createHash('sha256').update(bytes).digest('hex'),
-      });
-    }
-    receipt.evidence = evidence;
-    receipt.rightsStatus = source.rightsStatus;
-    if (source.mode === 'reference-only') receipt.referenceOnlyPrivateValidation = true;
-    receipt.mode = source.mode;
-    receipt.attribution = source.attribution;
-    receipt.currentConditions = false;
-    receipt.sourceEditDate =
-      JSON.parse(await readFile(join(directory, 'layer.json'))).editingInfo?.lastEditDate ?? null;
-    receipt.snapshotWarning =
-      'Historical private reference only; verify current conditions with NY State Parks.';
-    await writeFile(join(directory, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`);
+  for (const source of inputs.sources) {
+    const approval = inputs.approvals[source.id];
+    const result = await stageApprovedFeed(source, approval, fetchImpl, {
+      stagingRoot,
+      refresh: true,
+      force: true,
+      prepareReceipt: async (receipt, directory) => {
+        assertPrivateAcquisitionApproved(source, approval);
+        const evidence = [];
+        for (const [kind, url] of [
+          ['terms', source.termsUrl],
+          ['layer', `${source.url}?f=json`],
+        ]) {
+          const response = await fetchImpl(url);
+          if (!response.ok) throw new Error(`${source.id}: metadata HTTP ${response.status}`);
+          const bytes = Buffer.from(await response.arrayBuffer());
+          const body = JSON.parse(bytes);
+          if (body.error) throw new Error(`${source.id}: metadata error`);
+          const sha256 = createHash('sha256').update(bytes).digest('hex');
+          const file = `${kind}-${sha256}.json`;
+          await atomicSourceWrite(join(directory, file), bytes);
+          evidence.push({ file, url, bytes: bytes.length, sha256 });
+        }
+        Object.assign(receipt, {
+          approval: {
+            reviewedAt: approval.reviewedAt,
+            expiresAt: approval.expiresAt,
+            sha256: createHash('sha256').update(JSON.stringify(approval)).digest('hex'),
+          },
+          evidence,
+          mode: source.mode,
+          attribution: source.attribution,
+          currentConditions: false,
+          sourceEditDate: receipt.sourceRevision ?? null,
+          snapshotWarning:
+            'Dated private reference only; verify current conditions with NY State Parks.',
+        });
+        assertPrivateAcquisitionApproved(source, approval);
+      },
+    });
+    const receipt = result.receipt;
     results.push({ id: source.id, features: receipt.featureCount, mode: source.mode });
     console.log(JSON.stringify(results.at(-1)));
   }

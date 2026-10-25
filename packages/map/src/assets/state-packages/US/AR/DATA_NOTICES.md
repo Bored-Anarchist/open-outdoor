@@ -14,4 +14,4 @@ Modifications: Selected source fields; WGS84, five decimal places, source simpli
 
 
 
-National and other public source credits: National Park Service; PAD-US data providers and state stewards; U.S. Department of Agriculture, Forest Service; U.S. Department of the Interior, Bureau of Land Management; U.S. Geological Survey Gap Analysis Project; Arkansas GIS Office; Arkansas State Parks and Forestry Commission. Their terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.
+National and other public-source attributions and terms are recorded in manifest.json. Snapshot geometry is informational; current access and camping permission must be verified with the manager.

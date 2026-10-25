@@ -5,7 +5,7 @@
 
 ## Build boundary
 
-The manual-only `macos-ios-build` workflow selects `/Applications/Xcode_26.4.1.app`, verifies the exact version, generates the Expo iOS project, and builds with code signing disabled. It publishes an unsigned IPA plus SHA-256 digest for one day. The workflow has read-only repository permission and receives no signing identity, Apple credential, provisioning profile, or private root.
+The manual-only `macos-ios-build` workflow selects `/Applications/Xcode_27.1.app`, verifies the exact version, generates the Expo iOS project, and builds with code signing disabled. It publishes an unsigned IPA plus SHA-256 digest for one day. The workflow has read-only repository permission and receives no signing identity, Apple credential, provisioning profile, or private root.
 
 An unsigned IPA cannot launch on an iPhone. Signing and installation happen from the operator's Windows machine through AltServer/AltStore using the `local` identity declared in `config/release.json`. Apple credentials must be typed only into AltServer and must never be stored in Git, CI, an issue, a diagnostic bundle, or a script.
 

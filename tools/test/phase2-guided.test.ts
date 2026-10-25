@@ -23,7 +23,7 @@ function passingReport() {
     completedAt: '2026-08-31T12:00:10.000Z',
     sourceCommit: 'a'.repeat(40),
     workingTreeClean: true,
-    nodeVersion: 'v24.19.0',
+    nodeVersion: 'v26.12.1',
     platform: 'win32',
     mode: 'live',
     status: 'passed',

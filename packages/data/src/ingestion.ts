@@ -10,6 +10,7 @@ import type {
   StoredRawAsset,
 } from './connector.js';
 import { evaluateSourceRights, validateConnectorManifest } from './connector.js';
+import { withDeadline } from './deadline.js';
 
 export type QuarantineReason =
   | 'rights-denied'
@@ -322,24 +323,14 @@ export class RawArtifactStore {
 }
 
 async function withTimeout<T>(
-  operation: (signal: AbortSignal) => Promise<T>,
+  operation: (signal: AbortSignal, assertActive: () => void) => Promise<T>,
   milliseconds: number,
 ): Promise<T> {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      operation(controller.signal),
-      new Promise<never>((_resolve, reject) => {
-        timer = setTimeout(() => {
-          controller.abort();
-          reject(new IngestionSecurityError('parser-timeout', 'isolated task timed out'));
-        }, milliseconds);
-      }),
-    ]);
-  } finally {
-    if (timer) clearTimeout(timer);
-  }
+  return withDeadline(
+    operation,
+    milliseconds,
+    () => new IngestionSecurityError('parser-timeout', 'isolated task timed out'),
+  );
 }
 
 export interface ConnectorRunResult<T> {
@@ -422,26 +413,26 @@ export async function runConnector<TParsed, TNormalized, TEmitted>(
   }
   for (const asset of assets) {
     try {
-      const output = await withTimeout(async (signal) => {
+      const output = await withTimeout(async (signal, assertActive) => {
         const context: ConnectorContext = { runId, signal };
         assertAssetLocator(asset, manifest);
         const fetched = await connector.fetch(asset, context);
-        signal.throwIfAborted();
+        assertActive();
         assertFetchedAsset(fetched, manifest.limits.maxPayloadBytes, manifest.limits.maxRedirects);
         const retained = evaluateSourceRights(manifest, { operation: 'retain-raw', now });
         if (!retained.allowed) {
           throw new IngestionSecurityError('rights-denied', retained.reasons.join(','));
         }
         const stored = await connector.storeRaw(fetched, context);
-        signal.throwIfAborted();
+        assertActive();
         const parsed = await connector.parse(fetched, context);
-        signal.throwIfAborted();
+        assertActive();
         const normalized = await connector.normalize(parsed, context);
-        signal.throwIfAborted();
+        assertActive();
         await connector.validate(normalized, context);
-        signal.throwIfAborted();
+        assertActive();
         await connector.checkpoint(stored, context);
-        signal.throwIfAborted();
+        assertActive();
         return connector.emit(normalized, context);
       }, manifest.limits.maxParserMilliseconds);
       emitted.push(await output);

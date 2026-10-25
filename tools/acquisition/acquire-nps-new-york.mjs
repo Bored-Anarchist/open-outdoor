@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 import { createHash } from 'node:crypto';
+import { nativeCurlFetch } from '../lib/native-curl-fetch.mjs';
+const sourceFetch = process.platform === 'win32' ? nativeCurlFetch : fetch;
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 
@@ -104,7 +106,7 @@ const apiKey = process.env.NPS_API_KEY || 'DEMO_KEY';
 
 async function fetchJson(url) {
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const response = await fetch(url, {
+    const response = await sourceFetch(url, {
       headers: {
         Accept: 'application/json',
         'User-Agent': 'Open-Outdoor private catalog acquisition',

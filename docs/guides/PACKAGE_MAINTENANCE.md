@@ -8,7 +8,7 @@ Git holds source definitions, rights decisions, adapters, schemas, tests, manife
 
 ## API acquisition and caching
 
-Prefer reviewed APIs, state-specific queries and selected fields. National baseline and public agency acquisition query IDs and metadata before feature pages. Local checksum-verified inputs are reused only with a positive publisher edit revision and matching query/configuration and metadata signature. Public agency license checks run before reuse. Missing revisions, changed queries or corrupt caches require acquisition; use `--refresh` to bypass public cache reuse when auditing or suspecting stale publisher metadata.
+Prefer reviewed APIs, state-specific queries and selected fields. National baseline and public agency acquisition query IDs and metadata before feature pages. Local checksum-verified inputs are reused only with a positive publisher edit revision and matching query/configuration and metadata signature. Public agency license checks run before reuse. Every API layer without a usable publisher revision must be fully reacquired through its source-specific adapter during each package-maintenance cycle, even when counts or prior hashes match. Use `--refresh` or the adapter's equivalent to bypass cache reuse. If current rights approval or an acquisition adapter is missing, leave the source unresolved and report that blocker; never infer freshness from metadata or counts.
 
 Public agency raw inputs stay in `.tmp-public-agency/`; normalized national caches stay in `.tmp-state-source-cache/`. These are disposable ignored caches. Private inputs stay in `PrivateData/agency-feeds/`. ZIP/KML/geodatabase-only sources still require local downloads. iOverlander updates use reviewed local archives; no iOverlander API is assumed.
 
@@ -31,6 +31,18 @@ Add `--refresh` to either acquisition command to bypass its cache. Public packag
 
 For complete release verification, restore or acquire all required states, then run `pnpm map:public:verify`, `pnpm map:states:verify` and `pnpm test:state-loader`. Missing inputs remain errors. Rerun private deduplication after public changes. Commit verified manifests, pins, notices and counts; leave generated files ignored.
 
+## Publish redistribution-approved public packages
+
+Public state archives may be published as GitHub Release assets after the existing rights, privacy, package, loader and backup checks pass. This keeps generated datasets out of Git commits and CI artifacts. Never include private packages, source archives, private evidence or credentials. Publish only states whose manifests say `publicDistribution: true` and `classification: SOURCE_REDISTRIBUTABLE`; follow each source's attribution and redistribution conditions. Keep the verified external public backup as the recovery copy.
+
+Build an asset directory from the completed public backup receipt with the pinned Python runtime:
+
+```powershell
+uv run --frozen --group loader python tools/packages/export_public_package_release.py --output .scratch/public-github-release-<date>
+```
+
+The exporter checks every input against the backup receipt, creates one archive per state plus inventories, verifies archive CRCs and emits SHA-256 checksums and a release manifest. Review the report and exact asset directory, then upload the complete directory to a dated GitHub Release on the verified metadata commit. Keep each asset below GitHub's per-asset size limit. A downloaded state archive can be extracted into a local external mirror and restored with `pnpm map:public:restore -- <STATE> --from <mirror>`.
+
 ## Restore exact snapshots from external storage
 
 Use an owner-managed external directory or HTTPS object store for exact pinned snapshots. Organize verified local files as `<STATE>/outdoors.geojson`, `<STATE>/index.json`, `<STATE>/state.sqlite` and optional `<STATE>/parts/outdoors-NNN.geojson`. Use immutable release/checksum paths and a retention policy for required releases. Never put private data in the public store.
@@ -41,7 +53,7 @@ $env:OPEN_OUTDOOR_PUBLIC_ARTIFACT_BASE_URL = 'https://your-artifact-host.example
 pnpm map:public:restore -- CO --parts
 ```
 
-This checkout now has a verified local external mirror configured in ignored `.private/package-maintenance.json`; other clones need their own configuration. No cloud host was provisioned. See the [operations report](../archive/reports/PACKAGE_OPERATIONS_2026-09-29.md) for backup and restore evidence. Populate a mirror from verified generated local outputs using your storage provider's tooling. Restore streams one file at a time, skips intact local files, verifies committed size/SHA-256, and replaces only verified files. Redirects and credential-bearing base URLs are rejected. Restoration does not activate phone catalogs or grant distribution rights. API rebuilds may differ from historical snapshots: restore historical pins from a mirror or review and commit new rebuild pins.
+This checkout now has a verified local external mirror configured in ignored `.private/package-maintenance.json`; other clones need their own configuration. No cloud host was provisioned. See the [operations report](../archive/reports/PACKAGE_OPERATIONS_2026-09-29.md) for backup and restore evidence. Populate a mirror from verified generated local outputs or downloaded, checksum-verified release archives. Restore streams one file at a time, skips intact local files, verifies committed size/SHA-256, and replaces only verified files. Redirects and credential-bearing base URLs are rejected. Restoration does not activate phone catalogs or grant distribution rights. API rebuilds may differ from historical snapshots: restore historical pins from a mirror or review and commit new rebuild pins.
 
 ## Private refresh and recovery
 
@@ -74,4 +86,24 @@ pnpm map:sources:check
 
 Backups must be outside the repository. Restrict private-folder access before copying. The backup receipt is completed only after all pinned files are verified. Immutable checksum objects share storage across release views; no snapshots are automatically deleted. Private backups cover active catalogs and pinned deduplication recovery/enrichment, not all original source archives. Keep the two channels separate.
 
-The source checker fetches exact API layer metadata without feature records. It stores baselines and reports in ignored `.tmp-package-maintenance/`; pending changes persist across checks. Run `pnpm map:sources:check --acknowledge` only after every pending source change has been rebuilt, independently verified and backed up. A first observation baseline does not prove package freshness. The weekly heartbeat uses these commands and existing source-specific pipelines.
+The source checker fetches exact API layer metadata without feature records. It stores baselines and reports in ignored `.scratch/package-maintenance/`; pending changes persist across checks. Each weekly package refresh must also fully acquire every API the report marks unversioned (105 references at the 2026-10-24 review), through its existing source-specific public, private or New York pipeline. Rebuild affected packages, deduplicate private data, independently verify and back up the results. Run `pnpm map:sources:check --acknowledge` only after every changed source and every unversioned API resolved in the cycle has completed those steps. A first observation baseline does not prove package freshness. If rights, approval, adapter, endpoint or verification blocks a source, leave it pending and record the blocker.
+
+
+## New York refresh
+
+Run `pnpm map:ny:refresh` from the repository root with the pinned Node and Python runtimes. Set `OPEN_OUTDOOR_PYTHON` to the pinned Python executable when it is not on PATH. Compile `packages/shared` and `packages/data` and build the public parser before the first run in a fresh checkout.
+
+The command acquires the civil boundary, NPS API data, federal layers, all eight configured OPRHP layers and all four configured DEC sources under their separate public/private approval gates. It rebuilds the public NY package and SQLite loader, rebuilds the private NY identity catalog and agency overlay with fresh DEC profiles, reconciles private/public duplicates and independently verifies public packages, private receipts and state loaders. Its timestamped report is under `.scratch/package-maintenance/ny-*/report.json`. Preserve the report when acquisition fails. Finish with the separate public/private backup commands above; this command does not publish or back up packages.
+
+Every OPRHP run requires existing, unexpired exact-source approvals in ignored `PrivateData/agency-feeds/approvals.json`. It validates every selected source before any network request and never creates, renews or writes approvals. Missing, expired or mismatched approvals stop the OPRHP stage, preserve its last-good package and remain explicit source blockers in the NY refresh report. Successful receipts retain the original approval review/expiry dates and a checksum of the approval record. With those approvals, the run reacquires feature records, including when an older receipt already exists. New raw data and hash-named terms/layer evidence are written before the active source receipt changes. An evidence failure preserves the preceding receipt and its data. Closed/proposed/nonpublic selections and separate condition snapshots retain the existing policy.
+
+If NPS acquisition fails, public composition explicitly retains the existing NPS records and source receipts and records `sourceFreshness.nps.status: retained-stale`. A newer federal or package build date does not change the NPS acquisition date. Without that explicit fallback, composition rejects older NPS snapshots or legacy snapshots that omit existing visitor details. The overall refresh exits unsuccessfully with a partial report while unresolved sources remain.
+
+DEC private acquisition uses the four exact sources in `config/private-new-york-dec-sources.json` and their current private-storage approvals from the same ignored ledger. Owner authorization allows private validation and private packages; it is never recorded as a publisher grant or public redistribution permission. The adapter stores complete checksummed source pages and checks API revisions/counts before atomically activating its private acquisition snapshot. iOverlander remains a reviewed local archive input and is reported separately. These restrictions are not waived by a successful rebuild.
+
+`pnpm map:sources:check -- --state NY` checks all NY references and writes `latest-source-check-NY.json`. Exact ArcGIS layers receive revision checks. NPS APIs, Socrata inputs and other non-layer endpoints are listed as requiring manual acquisition instead of silently disappearing. Unversioned layers remain pending even after `--acknowledge`; metadata checks and first-observation baselines never establish record freshness.
+
+
+For a private-only NY refresh, run `pnpm map:private:ny:refresh`, then run private verification and the private backup command above. Configure `.private/package-maintenance.json` with `newYorkPrivate.inputDirectory`, `reviewCsvPath`, `npsSnapshotPath`, `federalSnapshotPath` and optionally `terrainCache`. These are local paths under `PrivateData/` to the reviewed iOverlander inputs and checksum-pinned matching snapshots/decisions; matching references do not claim fresh NPS or federal records in the private package. The full builder preserves reviewed identity decisions, packages the DEC acquisition receipt and OPRHP approval provenance, regenerates trail profiles solely from locally cached terrain, verifies deduplication and activates the complete private package atomically. Missing cached terrain stops the rebuild without sending private geometry to a provider or replacing the last-good package. A failed DEC refresh can still allow an independently approved OPRHP overlay refresh.
+
+The owner explicitly authorized all eight configured OPRHP sources and all four configured DEC sources for private datasets/packages on October 24, 2026. Local approval records retain `publicDistribution: false` and `publisherGrant: false`. Acquisition commands reuse those records and never initialize or renew them; any setup or renewal is a separate owner-authorized action limited to those exact sources. Public NY continues to exclude DEC and OPRHP records and private hike profiles.

@@ -42,6 +42,7 @@ import {
   AppState,
   Platform,
   ScrollView,
+  type ScrollViewInstance,
   StyleSheet,
   useColorScheme,
   View,
@@ -147,7 +148,7 @@ function AppContent({
   const [placeFilter, setPlaceFilter] = useState<OutdoorPlaceFilter>('all');
   const statePackages = useStatePackages(query, placeFilter);
   const [coverage, setCoverage] = useState<[number, number, number, number] | null>(null);
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
 
   function showCoverage(bounds: [number, number, number, number]) {
     setCoverage([...bounds]);

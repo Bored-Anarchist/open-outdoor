@@ -178,6 +178,7 @@ export async function packagePrivateNewYorkAgencies({
       retrievedAt: receipt.retrievedAt,
       sourceEditDate: receipt.sourceEditDate,
       evidence: receipt.evidence,
+      ...(receipt.approval ? { approval: receipt.approval } : {}),
       ...(source.selection
         ? { selection: source.selection, excludeStatuses: source.excludeStatuses }
         : {}),

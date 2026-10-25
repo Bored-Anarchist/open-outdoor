@@ -1,12 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { reusableSource, sourceHash } from '../packages/package-source-cache.mjs';
 import { restoreArtifact } from '../packages/restore-public-package-artifacts.mjs';
 import { prohibitedPackageFiles } from '../packages/package-storage-policy.mjs';
+import { assertNpsSnapshotUsable } from '../packages/new-york-source-freshness.mjs';
+import { stagePrivateNewYorkOprhp } from '../acquisition/stage-private-new-york-oprhp.mjs';
 import { stageApprovedFeed } from '../acquisition/state-agency-feeds.mjs';
 
 test('source cache requires edit revision, matching query signature and intact local bytes', async () => {
@@ -159,4 +161,207 @@ test('private refresh reuses unchanged API data, refreshes changed revisions, an
   } finally {
     await rm(stagingRoot, { recursive: true, force: true });
   }
+});
+
+test('OPRHP reacquires existing records and preserves the active receipt if evidence fails', async () => {
+  const stagingRoot = await mkdtemp(join(tmpdir(), 'outdoor-oprhp-refresh-'));
+  const source = {
+    id: 'nys-oprhp-trails',
+    state: 'NY',
+    sourceType: 'arcgis-layer',
+    url: 'https://example.org/FeatureServer/0',
+    termsUrl: 'https://example.org/terms',
+    rightsStatus: 'Unconfirmed',
+    provisionalPrivateValidation: true,
+    mode: 'durable',
+  };
+  let requests = 0;
+  let failEvidence = false;
+  const fetchImpl = async (url, options = {}) => {
+    let value;
+    if (url === source.termsUrl) {
+      if (failEvidence) throw Error('terms unavailable');
+      value = { licenseInfo: 'private reference' };
+    } else if (!options.body) value = { maxRecordCount: 100, editingInfo: { lastEditDate: 123 } };
+    else if (new URLSearchParams(options.body).get('returnIdsOnly') === 'true')
+      value = { objectIds: [1], objectIdFieldName: 'OBJECTID' };
+    else {
+      requests++;
+      value = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            id: 1,
+            geometry: { type: 'Point', coordinates: [-74, 42] },
+            properties: { OBJECTID: 1, name: String(requests) },
+          },
+        ],
+      };
+    }
+    return {
+      ok: true,
+      json: async () => value,
+      arrayBuffer: async () => Buffer.from(JSON.stringify(value)),
+    };
+  };
+  try {
+    const approval = {
+      sourceId: source.id,
+      sourceUrl: source.url,
+      collect: true,
+      privateStorage: true,
+      publicDistribution: false,
+      publisherGrant: false,
+      provisionalPrivateValidation: true,
+      evidenceUrl: source.termsUrl,
+      reviewedAt: '2026-09-28T00:00:00Z',
+      expiresAt: '2030-01-01T00:00:00Z',
+    };
+    const approvalBytes = Buffer.from(JSON.stringify({ [source.id]: approval }));
+    const approvalPath = join(stagingRoot, 'approvals.json');
+    await writeFile(approvalPath, approvalBytes);
+    const options = { stagingRoot, sources: [source], fetchImpl };
+    await stagePrivateNewYorkOprhp(options);
+    const receiptPath = join(stagingRoot, 'US/NY', source.id, 'receipt.json');
+    const first = JSON.parse(await readFile(receiptPath));
+    assert.deepEqual(first.approval, {
+      reviewedAt: approval.reviewedAt,
+      expiresAt: approval.expiresAt,
+      sha256: sourceHash(JSON.stringify(approval)),
+    });
+    await stagePrivateNewYorkOprhp(options);
+    const second = await readFile(receiptPath);
+    assert.equal(requests, 2);
+    assert.notEqual(JSON.parse(second).sha256, first.sha256);
+    failEvidence = true;
+    await assert.rejects(stagePrivateNewYorkOprhp(options), /terms unavailable/);
+    assert.deepEqual(await readFile(receiptPath), second);
+    assert.deepEqual(await readFile(approvalPath), approvalBytes);
+    assert.deepEqual(JSON.parse(second).approval, first.approval);
+    for (const evidence of JSON.parse(second).evidence) {
+      const bytes = await readFile(join(stagingRoot, 'US/NY', source.id, evidence.file));
+      assert.equal(sourceHash(bytes), evidence.sha256);
+    }
+  } finally {
+    await rm(stagingRoot, { recursive: true, force: true });
+  }
+});
+
+test('public NY composition rejects older NPS snapshots and snapshots missing visitor details', () => {
+  const previous = [
+    {
+      properties: {
+        sourceId: 'nps-parks-ny',
+        sourceUpdated: '2026-09-16T00:00:00Z',
+        description: 'Visitor guidance',
+      },
+    },
+  ];
+  const snapshot = {
+    retrievedAt: '2026-09-14T00:00:00Z',
+    parks: [{}],
+    campgrounds: [],
+    alerts: [],
+  };
+  assert.throws(() => assertNpsSnapshotUsable(snapshot, previous), /predates/);
+  snapshot.retrievedAt = '2026-10-24T00:00:00Z';
+  assert.throws(() => assertNpsSnapshotUsable(snapshot, previous), /omits visitor details/);
+  snapshot.parks[0].visitorDetails = {};
+  assert.doesNotThrow(() => assertNpsSnapshotUsable(snapshot, previous));
+});
+
+test('OPRHP preflights all exact approvals before network or receipt changes', async (t) => {
+  const source = {
+    id: 'nys-oprhp-trails',
+    state: 'NY',
+    sourceType: 'arcgis-layer',
+    url: 'https://example.org/FeatureServer/0',
+    termsUrl: 'https://example.org/terms',
+    rightsStatus: 'Unconfirmed',
+    provisionalPrivateValidation: true,
+    mode: 'durable',
+  };
+  const approval = {
+    sourceId: source.id,
+    sourceUrl: source.url,
+    collect: true,
+    privateStorage: true,
+    publicDistribution: false,
+    publisherGrant: false,
+    provisionalPrivateValidation: true,
+    evidenceUrl: source.termsUrl,
+    reviewedAt: '2026-09-28T00:00:00Z',
+    expiresAt: '2030-01-01T00:00:00Z',
+  };
+  const cases = [
+    { name: 'missing ledger', ledger: undefined, pattern: /matching private approval required/ },
+    { name: 'missing source approval', ledger: {}, pattern: /matching private approval required/ },
+    {
+      name: 'expired approval',
+      ledger: { [source.id]: { ...approval, expiresAt: '2000-01-01' } },
+      pattern: /current source evidence/,
+    },
+    {
+      name: 'mismatched source',
+      ledger: { [source.id]: { ...approval, sourceUrl: 'https://example.org/FeatureServer/1' } },
+      pattern: /matching private approval/,
+    },
+    {
+      name: 'public distribution enabled',
+      ledger: { [source.id]: { ...approval, publicDistribution: true } },
+      pattern: /public output prohibited/,
+    },
+    { name: 'invalid ledger', ledger: [], pattern: /ledger must be an object/ },
+    {
+      name: 'later source expired',
+      ledger: {
+        [source.id]: approval,
+        'nys-oprhp-camping': {
+          ...approval,
+          sourceId: 'nys-oprhp-camping',
+          sourceUrl: 'https://example.org/FeatureServer/1',
+          expiresAt: '2000-01-01',
+        },
+      },
+      pattern: /nys-oprhp-camping.*current source evidence/,
+      sources: [
+        source,
+        { ...source, id: 'nys-oprhp-camping', url: 'https://example.org/FeatureServer/1' },
+      ],
+    },
+  ];
+  for (const scenario of cases)
+    await t.test(scenario.name, async () => {
+      const stagingRoot = await mkdtemp(join(tmpdir(), 'outdoor-oprhp-approval-'));
+      const receiptPath = join(stagingRoot, 'US/NY', source.id, 'receipt.json');
+      let requests = 0;
+      const fetchImpl = async () => {
+        requests++;
+        throw Error('must not contact source');
+      };
+      try {
+        await mkdir(join(stagingRoot, 'US/NY', source.id), { recursive: true });
+        const lastGood = Buffer.from('{"lastGood":true}');
+        await writeFile(receiptPath, lastGood);
+        const ledgerPath = join(stagingRoot, 'approvals.json');
+        const ledgerBytes =
+          scenario.ledger === undefined ? null : Buffer.from(JSON.stringify(scenario.ledger));
+        if (ledgerBytes) await writeFile(ledgerPath, ledgerBytes);
+        await assert.rejects(
+          stagePrivateNewYorkOprhp({
+            stagingRoot,
+            sources: scenario.sources ?? [source],
+            fetchImpl,
+          }),
+          scenario.pattern,
+        );
+        assert.equal(requests, 0);
+        assert.deepEqual(await readFile(receiptPath), lastGood);
+        if (ledgerBytes) assert.deepEqual(await readFile(ledgerPath), ledgerBytes);
+        else await assert.rejects(readFile(ledgerPath), { code: 'ENOENT' });
+      } finally {
+        await rm(stagingRoot, { recursive: true, force: true });
+      }
+    });
 });

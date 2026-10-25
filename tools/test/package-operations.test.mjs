@@ -7,7 +7,10 @@ import {
   backupPinnedFiles,
   privatePackageDescriptors,
 } from '../packages/backup-package-artifacts.mjs';
-import { compareSourceRevision } from '../packages/check-package-source-updates.mjs';
+import {
+  compareSourceRevision,
+  packageSourceReferences,
+} from '../packages/check-package-source-updates.mjs';
 import { sourceHash } from '../packages/package-source-cache.mjs';
 
 test('external mirror preserves state paths and reuses identical objects across snapshots', async () => {
@@ -71,6 +74,8 @@ test('private backups include active, recovery and enrichment files and reject u
 test('pending API changes survive repeated checks and clear only after explicit acknowledgement', () => {
   const baseline = compareSourceRevision(null, 100, 'first');
   assert.equal(baseline.status, 'baseline-established');
+  assert.equal(baseline.pending, true);
+  assert.equal(baseline.acquisitionRequired, true);
   const changed = compareSourceRevision(baseline, 101, 'next');
   assert.equal(changed.pending, true);
   assert.equal(compareSourceRevision(changed, 101, 'next').pending, true);
@@ -79,4 +84,29 @@ test('pending API changes survive repeated checks and clear only after explicit 
   assert.equal(acknowledged.pending, false);
   assert.equal(acknowledged.signature, 'next');
   assert.equal(compareSourceRevision(acknowledged, 101, 'next').status, 'unchanged');
+});
+
+test('unversioned sources require acquisition even on first observation and acknowledgement', () => {
+  for (const acknowledge of [false, true]) {
+    const result = compareSourceRevision(null, undefined, 'unknown', acknowledge);
+    assert.equal(result.pending, true);
+    assert.equal(result.acquisitionRequired, true);
+  }
+});
+
+test('source inventory includes NY DEC, all OPRHP layers, and NPS APIs', async () => {
+  const sources = await packageSourceReferences();
+  const ny = sources.filter((source) => source.states.includes('NY'));
+  const oprhp = JSON.parse(await readFile('config/private-new-york-oprhp-sources.json'));
+  for (const source of oprhp.sources)
+    assert.ok(ny.some((item) => item.channel === 'private' && item.url === source.url));
+  assert.ok(
+    ny.some((item) => item.channel === 'private' && item.url.includes('dil_trails/MapServer/2')),
+  );
+  assert.ok(ny.some((item) => item.channel === 'private' && item.url.includes('yvkb-z58x')));
+  assert.ok(
+    ny.some(
+      (item) => item.channel === 'public' && item.url.includes('developer.nps.gov/api/v1/parks'),
+    ),
+  );
 });

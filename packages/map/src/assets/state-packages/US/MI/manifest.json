@@ -2,19 +2,19 @@
   "artifacts": {
     "geojson": {
       "file": "outdoors.geojson",
-      "featureCount": 31083,
-      "bytes": 45070588,
-      "sha256": "c367ebc511cda31dd6d5d3320191ada9d61ed0c10b39d5f67fef919682e18c88"
+      "featureCount": 31092,
+      "bytes": 45094543,
+      "sha256": "a8b243b52f5c7f610a5961544685b0032e1ce4fb3233d60ba3e02f5aaab64de2"
     },
     "index": {
       "file": "index.json",
-      "bytes": 22451366,
-      "sha256": "150b349e1631dffb8fccb335fdd454eaf42a8cab5b0f54a62c4d93525078bfe0"
+      "bytes": 22472370,
+      "sha256": "a530d83fbe655e7a914f603941ae390fd0aca79565ec91165afde7884cffb3eb"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 4546,
-      "sha256": "6066f2f7dd6d1606d4f29f57c87f69d034a84763d30a9d48ca778673d47613e5"
+      "bytes": 4240,
+      "sha256": "2c9fb6a962e76fdcf5f74cb3d4d7b9eccab01bf39b4e8a5703993b7fd2284e30"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -33,8 +33,8 @@
     "Confirm current rules and conditions with the responsible land manager before travel."
   ],
   "distribution": "public",
-  "featureCount": 31083,
-  "generatedAt": "2026-09-29T01:00:55.779Z",
+  "featureCount": 31092,
+  "generatedAt": "2026-10-24T16:15:26.650Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-mi",
   "rights": {
@@ -106,6 +106,7 @@
         "U.S. Geological Survey Gap Analysis Project",
         "PAD-US data providers and state stewards"
       ],
+      "bytes": 8964391,
       "fields": [
         "OBJECTID",
         "FeatClass",
@@ -137,10 +138,13 @@
       "inventoryFeatureCount": 5754,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 5754,
-      "packagedFeatureSha256": "0e414cb19cbe1605dcb44d0b2a733188f2a2c5617ceb5cd6e41854d0a3676d9e",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "packagedFeatureSha256": "23cdd4be01b66355f4ad244d781b1b99e9fc899754575a4da5a01f8b6b3e40de",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "1b7d6e4388e74a0fcc158784c5cfa766a6e99c99a76ad31a2fd17d6c837f9e98",
+      "sha256": "cc2bfaeb6e27d20e806ccf3bcf7a79daf7a5ba9abd462a942ba4d545e6b8a58f",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 5754,
+      "sourceRevision": 1776880752730,
       "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
       "unreturnedFeatureCount": 0,
       "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
@@ -150,6 +154,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 312983,
       "fields": [
         "OBJECTID",
         "TRLFEATTYPE",
@@ -185,8 +190,10 @@
       "inventoryFeatureCount": 377,
       "name": "NPS public trails",
       "packagedFeatureCount": 163,
-      "packagedFeatureSha256": "45cc3dcf4b0c2433a40c5ffd1d84cf95d8e3b143e22c5b7bd60f9c1a0fddd6a5",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "packagedFeatureSha256": "ed5b6f38cee2cf2af9d924c8234b494cb185f7905134b661b0674eb8dcf9c2a9",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "b3fb5c63a5832b130811b70a7c8f439aa325e2ed5adf5c27c03fef03a9cad381",
+      "sha256": "8865712fbb08cdc34c552ca7f4578cad1c328af09ea380287851c1f5e32ab8c2",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 377,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
@@ -198,6 +205,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "POINAME",
@@ -230,7 +238,9 @@
       "name": "NPS public points of interest",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "caa176dd674c2e6dc8188210d8026c65fda8768e6727719c3939a45cbce3a0c3",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 387,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
@@ -242,6 +252,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 8205855,
       "fields": [
         "OBJECTID",
         "trail_name",
@@ -286,8 +297,10 @@
       "inventoryFeatureCount": 4951,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 4951,
-      "packagedFeatureSha256": "83dd364ad72313bf4307a2372616fc362ab288fbefd816c6acdff93770fbc1df",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "packagedFeatureSha256": "d99dfe1d5917ab38f344325ca9435d47a0742523aa130fdb226942274577c337",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "f52886bff0811e0d2cc14578277aa77753ddb3941cd7622e75662acae2fcfee9",
+      "sha256": "d6d831bef56316d2bccd5b3309b129cd88d8e698b23dba4a59ef69bc6ec820c7",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 4951,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -299,6 +312,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 972732,
       "fields": [
         "OBJECTID",
         "site_cn",
@@ -341,8 +355,10 @@
       "inventoryFeatureCount": 597,
       "name": "USFS recreation sites",
       "packagedFeatureCount": 597,
-      "packagedFeatureSha256": "3687bbd2bcf498d8d49c22ae1b1d0b747a0a5be5cd102ef77ff4f272709795a6",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "packagedFeatureSha256": "e19888200fb94209ec4a3bcbc57766d1ed0d041993e584e950eb0a2b94239886",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "ba338822fe68ce30f592d5d17ce2b436daf51307333506dd066f58b71481746d",
+      "sha256": "1ad2873b624eb0fb4448973a9990a7923d7ce272800d42c27c0889c901dbd2b7",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 597,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -354,6 +370,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 7645079,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -391,8 +408,10 @@
       "inventoryFeatureCount": 6792,
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 6792,
-      "packagedFeatureSha256": "67d76fd4ef7e631e4aaaec714d07db9532fcf2729cc132a2b173ad2e1b591f85",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "packagedFeatureSha256": "71de0376bb4ea9b392353876665bd2d1d18cab46cf3ab3de04f6c7aa7cf0197f",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "33358922035c8d0a917de03d38910a42d0170d906e26437a9eae49223c8a5364",
+      "sha256": "feb834fb3a7d99b5f0d392491058c5b410a9983496535a4146ff882745158827",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 6792,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -404,6 +423,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 3587753,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -440,8 +460,10 @@
       "inventoryFeatureCount": 3366,
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 3366,
-      "packagedFeatureSha256": "8b2ea2d844cba5be31a722f2b62b5b836fe0596233c10cec26855078845b68f9",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "packagedFeatureSha256": "ad9b53d35def5cabfcfb1ccd721d3fb57a4f8e6490fff6701a9fcf1cee5062b8",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "0cbe8afe622e335d5eb80479632f29dfae58967822d9320e8943102112ef0f5f",
+      "sha256": "789d779ee9cbfc81cd96aaf803b411bd4ad0e86d0a4afd84c97e3899e31f518d",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 3366,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -453,6 +475,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "SMA_ID",
@@ -473,7 +496,9 @@
       "name": "BLM surface management agency boundaries",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "d2737ee92272e25a6b093ec512cbe7ebd29fdfa4111f7841ad01e6dee17e366c",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://www.blm.gov/services/geospatial/GISData",
@@ -485,6 +510,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "FET_TYPE",
@@ -505,7 +531,9 @@
       "name": "BLM public recreation sites",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:11:45.355Z",
+      "queriedAt": "2026-10-24T15:26:06.982Z",
+      "refreshSignature": "29db93d23b0cd47f37172dc04ac1ee92800eef215bdbf138ce0915ec46037b6d",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
@@ -567,17 +595,18 @@
         "last_edited_date",
         "Shape__Length"
       ],
+      "refreshSignature": "d70a585c9de1f2655ef8b6cb5c78f23c4494088d54d40d3b6202c42279700b0f",
       "rightsStatus": "Supported",
       "upstreamRightsStatus": "Permission required",
       "rightsResolution": "dataset-specific-license-overrides-general-website-policy",
       "distributionConditions": "Michigan DNR public-record dataset; use, reproduction and distribution unrestricted under the source terms. Provided AS IS; current access and conditions remain unverified. Source data are outside the project code license.",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-29T00:43:50.528Z",
+      "retrievedAt": "2026-10-24T15:19:03.973Z",
       "sourceUpdated": "Not supplied",
-      "featureCount": 9460,
-      "bytes": 9534565,
-      "sha256": "b3f5f964fb318cb5261557793b4efbfdeb230106b55843eb63e9af5b51dd66de",
-      "metadataSha256": "1100fe4606a65b9f146989a4599d7df1bad117b262ad0b2c7131116496667095",
+      "featureCount": 9469,
+      "bytes": 9543999,
+      "sha256": "ec9242393f315833b398f756e2555a784bcecfab43611f20fac6d7b970550c99",
+      "metadataSha256": "c9fccea8480f60a750b814dc57a1b142c0c52b342fed313536f22495df32aba4",
       "termsSha256": "37594eb88611945a488f4caf8aac19c61d0ee87e1bb767e7c7f783690d4242f6",
       "licenseText": "<div style='text-align:Left;'><div><div><p><span>This dataset is a public record and, as more fully described below, there are no restrictions on the use, reproduction, or distribution of this dataset. Notwithstanding the foregoing, the public release of this dataset should not be construed, expressed or implied, as to whether any use constitutes a legally permissible purpose. It is the sole responsibility of the user to determine if the data is usable for their purposes. This dataset is provided “AS IS” and on an “AS AVAILABLE” basis. The State of Michigan (“State”) makes no warranties, express or implied, regarding the accuracy, adequacy, reliability, timeliness, or completeness of this dataset. The State also does not make any warranties, express or implied, for the continued quality, accuracy, or currency of this dataset after it has been downloaded, nor the quality or accuracy of any analyses or re-uses of this dataset. THE STATE DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS DATASET AND ANY INFORMATION PROVIDED TO YOU, INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT OF PROPRIETARY RIGHTS. THE STATE WILL NOT BE LIABLE, REGARDLESS OF THE FORM OF ACTION, WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY OR BY STATUTE OR OTHERWISE, FOR ANY CLAIM FOR CONSEQUENTIAL, INCIDENTAL, INDIRECT, OR SPECIAL DAMAGES, INCLUDING WITHOUT LIMITATION LOST PROFITS AND LOST BUSINESS OPPORTUNITIES, RELATED TO THE ACCESS OR USE OF THIS DATASET. IN NO EVENT WILL THE STATE BE LIABLE FOR ANY AMOUNTS THAT MAY RESULT FROM THE ACCESS OR USE OF THIS DATASET, REGARDLESS OF THE FORM OF ACTION, WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR BY STATUTE OR OTHERWISE. You forever release the State, its departments, subdivisions, officers, and employees from all claims, rights, actions, demands, damages, liabilities, expenses and fees, which arise out of or relate to your access or use of this dataset. You must defend, indemnify and hold the State, its departments, subdivisions, officers, and employees harmless, without limitation, from and against all actions, claims, losses, liabilities, damages, costs, attorney fees, and expenses (including those required to establish the right to indemnification) arising out of or relating to your access or use of this dataset. The State reserves the right to modify or remove this dataset for any reason, without notice, at any time. Nothing in these terms constitutes or is intended to be a limitation upon, or waiver of, any privileges and immunities that apply to the State. These terms are governed by and interpreted under the laws of the State of Michigan without regard to conflict of laws provisions. These terms do not apply to other materials or content, including maps or logos, that may be located on the site or portal containing this dataset and that may be protected by intellectual property rights such copyright, trademark, or patent. Nothing in these terms should be construed, expressed or implied, as impacting any existing rights or licenses in such materials or content, if any.</span></p></div></div></div>",
       "serviceItemId": null,
@@ -585,7 +614,7 @@
       "pages": [
         {
           "count": 200,
-          "sha256": "5d5f274ffa31f02d3ccd200543b50548703a3268294093b873575073a205a9bf",
+          "sha256": "ca565d670c4c21d57266366750889c9682d4e8858069d842807d25143bfe8d03",
           "firstId": 15,
           "lastId": 637
         },
@@ -639,13 +668,13 @@
         },
         {
           "count": 200,
-          "sha256": "dac85a7a64a1121feb4b40e134ac836e2f039168db57381b0774e1344be325f7",
+          "sha256": "6c555f857d9554c6910afcfa6e88ba46d8b88669236e3cb01085df1ae219d4a8",
           "firstId": 2379,
           "lastId": 3376
         },
         {
           "count": 200,
-          "sha256": "a4301e711f930e3dcece2afc05ed57f087f2b3b632855d04c17500753d17d113",
+          "sha256": "1ac7d7b23cf90b1e3df87f39b00e3d0f28a2ab5ddbe73875d366fe8da6941eff",
           "firstId": 3377,
           "lastId": 3771
         },
@@ -663,13 +692,13 @@
         },
         {
           "count": 200,
-          "sha256": "8e223752cada989fcf2f7c7c3dd0eb34f6e1c01d361c839ce2feb6358349ffc7",
+          "sha256": "4ff6948d38c418248efb951d0d78cdbd61debdca705e4817692004e84fb0362e",
           "firstId": 4204,
           "lastId": 4480
         },
         {
           "count": 200,
-          "sha256": "8df0c0c977dc8df561951a410bd846de7ff72d7ad1ac0556fc4add35844632a9",
+          "sha256": "b269297645772d87da3c5e976ac528ae42c871bbbd26d229f7cdf59a1c96457e",
           "firstId": 4481,
           "lastId": 4785
         },
@@ -681,13 +710,13 @@
         },
         {
           "count": 200,
-          "sha256": "25b9a548daaedd40d7830a2645e90a666d39a72ed3e64148297fb54349df2305",
+          "sha256": "a3ad066c2c1bfd8f1d7898bc26dc93fb01f563d2de6e21d6824689a5eb441eb9",
           "firstId": 5022,
           "lastId": 5259
         },
         {
           "count": 200,
-          "sha256": "eed01f0a936f0f5dd73c08504fdafa4a582f2405045974bda2cc4f17d79acb1d",
+          "sha256": "f2c4edbb708d9bb8534aa83211c75d8881acdcceda72814e3814c09883a0f764",
           "firstId": 5260,
           "lastId": 5680
         },
@@ -711,13 +740,13 @@
         },
         {
           "count": 200,
-          "sha256": "01e79477a5d27038276780f8f30f1dc7ce993bd45cfe08b4d0215be14642710a",
+          "sha256": "68855da0cc7ef896c4e786d4a63e0b03d2801e31d7a5cf5f8c7c1df3829e866e",
           "firstId": 6300,
           "lastId": 6524
         },
         {
           "count": 200,
-          "sha256": "67b0539750ad3257ba8fffa16a2405cbf559ddb0f1d57b5e4756ab2802148f56",
+          "sha256": "975833ff9982a0ff37bc894b340082982ab41290a591f30d5fda07b823a92f80",
           "firstId": 6525,
           "lastId": 6756
         },
@@ -729,19 +758,19 @@
         },
         {
           "count": 200,
-          "sha256": "3e1bd5e8f123d55a55f0473e01d951bef2be93f25a20e7731bd53882fff878a5",
+          "sha256": "1efc8f111918d76b6b148b28522d00b899f811734981cfbdfc4fb496f1b9915d",
           "firstId": 6996,
           "lastId": 7426
         },
         {
           "count": 200,
-          "sha256": "934b500e53a078ec10aaaf4ef48da190601d07593f4b9932e5bde23b5ac7f027",
+          "sha256": "614a12a05652284be4d9d42f0a6b10de891623b5fd6fdfb137d78e229f274e38",
           "firstId": 7427,
           "lastId": 7769
         },
         {
           "count": 200,
-          "sha256": "cb4e61a94945801a5c9df05e5bb62fc9ba17669613bf655a4789cfbf95247c31",
+          "sha256": "39d3928ff8de0fc430e94b17f25488a352e1d150931f9413d8e92de34bcdfa41",
           "firstId": 7770,
           "lastId": 8048
         },
@@ -753,7 +782,7 @@
         },
         {
           "count": 200,
-          "sha256": "c013a1afba22b56714d252848a02e37cf77e6a3d283842b2cc05a63272588582",
+          "sha256": "449f89a07b9c1f2c071d17daf58648c4948304ee3d72ac87ad1c7dfd422e94ea",
           "firstId": 8463,
           "lastId": 8665
         },
@@ -777,109 +806,109 @@
         },
         {
           "count": 200,
-          "sha256": "c5161bf6aa31c7866b6c5fa5199d2a6fe129eeb2a431490060bbf08220e32324",
+          "sha256": "11fe1ac16cc6c2e759d5158d6bda7a0e2cb180ba086b751a8ccb0ebc603d5ac2",
           "firstId": 9472,
           "lastId": 9695
         },
         {
           "count": 200,
-          "sha256": "f8f8868ba685c4d95e83222e5359eedbac9a29f7afba4816e20c4733f8165f2b",
+          "sha256": "6ac1a4b8102945163197670ad7bc31c374b9c28eb57fbd2e032d075eaf732668",
           "firstId": 9696,
           "lastId": 12132
         },
         {
           "count": 200,
-          "sha256": "43bc5665398d819131cb3d491fac76405258d2bbf638430513cfc5e594ae0b46",
+          "sha256": "a5f5f8b7fd48826306de67ea02bc1fec51cb14475b024fcdcaaba2f50ea18e31",
           "firstId": 12135,
           "lastId": 13203
         },
         {
           "count": 200,
-          "sha256": "b3a92ce9f5c531592462f2002d034d511722d6fb4cd2b274151ef614047f11a7",
+          "sha256": "8d94acfaccaeb7076f5cf956b4a0bb4a6541202f058e17607e4e16b8eb91891c",
           "firstId": 13204,
           "lastId": 13759
         },
         {
           "count": 200,
-          "sha256": "995e6611031062fe0dcc692616453bf9f9dd2c76ba48219a3109971be9526c53",
+          "sha256": "718b080178c3e53280b1e272cb8d9b49d74d45547797422d9e3b0e94c84c801e",
           "firstId": 13760,
           "lastId": 14528
         },
         {
           "count": 200,
-          "sha256": "a953d43a032dc129cd0d0d7f3a22e03109cb2e86fa13af436e22ada63cfc924f",
+          "sha256": "f0d1c7004356eb146c07ddc4e5a85ab2b60b3eda1ffa57c0adc199d35747ad50",
           "firstId": 14599,
           "lastId": 14974
         },
         {
           "count": 200,
-          "sha256": "6e92d6bc4c2e2fc86b5b795b8754069a7ad3b7025327f571972b08b75ceac6bc",
+          "sha256": "85384fd3864e28b2be50edfda77c3397d1ab9ba08345b642135095f2a9db322e",
           "firstId": 14975,
           "lastId": 15582
         },
         {
           "count": 200,
-          "sha256": "cfd21f56f1309a8943580c487430518e956a4e1f185d31657615901c01bc9837",
+          "sha256": "84f98023eafc23909fe01822ac5cbb164ffb980967cdfa4d2c8a662d6ae0c56c",
           "firstId": 15583,
           "lastId": 15924
         },
         {
           "count": 200,
-          "sha256": "1abcc786e7925e5251987c6d782aaa1b7d73c84ee02fb9e7139d489cfe808ab6",
+          "sha256": "26e7dc2fc81f589b8b372060981b2665441a29325ed800a2875e48bd30e2bc4a",
           "firstId": 15925,
-          "lastId": 16186
+          "lastId": 16187
         },
         {
           "count": 200,
-          "sha256": "9fcfa113bc08535b3e7dab52a444f1e86e5da8e152ddc2e5fabe1ad7c7d69eb9",
-          "firstId": 16187,
-          "lastId": 16482
+          "sha256": "89590ebc76346c69f05563da61906f4d9cb2ed97d35e3d3a9c487da7ff3e15ce",
+          "firstId": 16188,
+          "lastId": 16483
         },
         {
           "count": 200,
-          "sha256": "1ebde8f375db109a66a27bea879ede5d94e69db6215f9ce779380905f0d21838",
-          "firstId": 16483,
-          "lastId": 17297
+          "sha256": "79b77623ad2281c50195d30068ab32abece817160ed0cbf3105570b85b3cdf4f",
+          "firstId": 16484,
+          "lastId": 17298
         },
         {
           "count": 200,
-          "sha256": "ed26c38316a15f5b966b1cebaad20cff95433f5614df93c268e8ccdd9eff9da6",
-          "firstId": 17298,
-          "lastId": 18207
+          "sha256": "d4301a7d725a0bc8ff856b8f2e923ebeb532ee60ca00cb2a81077e1164ceb310",
+          "firstId": 17299,
+          "lastId": 18211
         },
         {
           "count": 200,
-          "sha256": "ddd26a663166adf8f9d1279cb8b8fbb6352f313ae2df849113155df42cde80b8",
-          "firstId": 18211,
-          "lastId": 18896
+          "sha256": "8d376aed870503f9117b87845875bf18b816a886ac6337cb27ac0923a5cbc11a",
+          "firstId": 18212,
+          "lastId": 18897
         },
         {
           "count": 200,
-          "sha256": "a6e7a77e70be8061ca7bcc751938ec334415e4f4f931f41df261808f3d8cc80f",
-          "firstId": 18897,
-          "lastId": 19569
+          "sha256": "b17ca6dc6b19044f40cd035ed8ff0e79f72ace2a85aebccd913a9f2461d50a78",
+          "firstId": 18898,
+          "lastId": 19570
         },
         {
           "count": 200,
-          "sha256": "dd75aa87cd0b967f8922158dc7ec562f7a198721f29598c13773ccd4bb769799",
-          "firstId": 19570,
-          "lastId": 126155
+          "sha256": "5b15ae11535ffba4fadd32d2e5fdbb7c612f897fda5b6ef51ab0497134f77618",
+          "firstId": 19571,
+          "lastId": 126598
         },
         {
-          "count": 60,
-          "sha256": "5a680585131ed6a93c1c825efb65babd5ed776cc7da878dab5463b017c949bcf",
-          "firstId": 126598,
-          "lastId": 150221
+          "count": 69,
+          "sha256": "e5e9664d9939bfefd0475419952368a16af9a4b75a2bd0845e6ef43ed0aac799",
+          "firstId": 126600,
+          "lastId": 178725
         }
       ],
       "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
-      "packagedFeatureCount": 9460,
+      "packagedFeatureCount": 9469,
       "filteredFeatureCount": 0,
       "geometryRejections": {
         "count": 0,
         "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
       },
-      "packagedFeatureSha256": "0c30da30f7fdc748f18fbf512ea02600bd71cae5433294c4c6dd19a60274140c"
+      "packagedFeatureSha256": "2a78d31859e6ee64b018cfc80611f21f7d9726cf8a8dfc659dda89d2b655dae2"
     }
   ],
   "state": {
@@ -909,19 +938,19 @@
   "packageMode": "federal-and-agency",
   "output": {
     "file": "outdoors.geojson",
-    "featureCount": 31083,
-    "bytes": 45070588,
-    "sha256": "c367ebc511cda31dd6d5d3320191ada9d61ed0c10b39d5f67fef919682e18c88"
+    "featureCount": 31092,
+    "bytes": 45094543,
+    "sha256": "a8b243b52f5c7f610a5961544685b0032e1ce4fb3233d60ba3e02f5aaab64de2"
   },
   "agency": {
     "status": "included",
     "sourceCount": 1,
-    "featureCount": 9460,
+    "featureCount": 9469,
     "sources": [
       {
         "id": "mi-dnr-hiking",
         "url": "https://gisagodnr.state.mi.us/arcgis/rest/services/DNR/DNRTrailsOPENDATA/FeatureServer/2",
-        "count": 9460,
+        "count": 9469,
         "license": "State of Michigan dataset-specific public-record terms; unrestricted use, reproduction and distribution",
         "attribution": "Michigan Department of Natural Resources; data processed by Open Outdoor; no endorsement",
         "sourceUpdated": "Not supplied"
@@ -981,36 +1010,36 @@
         "file": "parts/outdoors-001.geojson",
         "featureCount": 8431,
         "normalizedFeatureCount": 8431,
-        "positions": 122095,
-        "bytes": 12573372,
-        "sha256": "71e781aa8fb078130e86672cf3b245d9fa2602ba4ba85b8802f51de6d7bf6cf3",
+        "positions": 122130,
+        "bytes": 12574455,
+        "sha256": "9936c4808feebf3b1d878debab9562d12143436ca6e5665746320409a91e608e",
         "parserValidation": "passed"
       },
       {
         "file": "parts/outdoors-002.geojson",
         "featureCount": 10000,
         "normalizedFeatureCount": 10000,
-        "positions": 73303,
-        "bytes": 7124324,
-        "sha256": "c42424fb097da6051592692d510123251ebbe21b6276198749de75db1a70354e",
+        "positions": 73271,
+        "bytes": 7130356,
+        "sha256": "4d7f8a2bd3297d465a41e7bc81b71f288d8ee5428df1a113b911da04c860e7fd",
         "parserValidation": "passed"
       },
       {
         "file": "parts/outdoors-003.geojson",
-        "featureCount": 8886,
-        "normalizedFeatureCount": 8886,
-        "positions": 179997,
-        "bytes": 8755246,
-        "sha256": "6607bf94aa88d808b623f11e3e3ab75740f8c590bbf02bf438386df9b89a8a0b",
+        "featureCount": 8888,
+        "normalizedFeatureCount": 8888,
+        "positions": 179994,
+        "bytes": 8765325,
+        "sha256": "c3bc1cf292ce991ccf2a94deef543b399f7987b2bc935a44e548b6e53bed734d",
         "parserValidation": "passed"
       },
       {
         "file": "parts/outdoors-004.geojson",
-        "featureCount": 3766,
-        "normalizedFeatureCount": 3766,
-        "positions": 151411,
-        "bytes": 5093328,
-        "sha256": "00a1526beb2d3372244769a90ada5485926b3e673b9e660e09e3b93c1841de97",
+        "featureCount": 3773,
+        "normalizedFeatureCount": 3773,
+        "positions": 151489,
+        "bytes": 5098917,
+        "sha256": "024cbf077a97cad9148d930b83c9ed78fdb77ab88342ceef3c5ed5616cf80e69",
         "parserValidation": "passed"
       }
     ],

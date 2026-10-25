@@ -3,18 +3,18 @@
     "geojson": {
       "file": "outdoors.geojson",
       "featureCount": 9541,
-      "bytes": 19469426,
-      "sha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4"
+      "bytes": 19470812,
+      "sha256": "c430b3bdbb3a6e496fa2528089fe2ec1358d81a238ac2b82574489b91a0711f1"
     },
     "index": {
       "file": "index.json",
-      "bytes": 5422271,
-      "sha256": "28a0461780657b1c8b721431cc02be63a7238a26b79ca4cd4da4e749c9c60e9f"
+      "bytes": 5423657,
+      "sha256": "2c6b669d7e33f3f56021996679e112f2fb5e279682332229662e4cb1a0bd7ba7"
     },
     "notices": {
       "file": "DATA_NOTICES.md",
-      "bytes": 4194,
-      "sha256": "dca7fd90f1b67e8cc3d96af8792b59823a11a630d07f9e6e6a5528f0ecd3c8da"
+      "bytes": 3671,
+      "sha256": "259ff84b67898bc469dc7485eca3e0ccb369c6749924ac1f3054b89fa7a8e731"
     }
   },
   "classification": "SOURCE_REDISTRIBUTABLE",
@@ -34,7 +34,7 @@
   ],
   "distribution": "public",
   "featureCount": 9541,
-  "generatedAt": "2026-09-29T02:21:17.324Z",
+  "generatedAt": "2026-10-24T16:15:54.686Z",
   "geometryProcessing": "Source-specific simplification parameters are recorded in each source receipt.",
   "packageId": "outdoor-nc",
   "rights": {
@@ -106,6 +106,7 @@
         "U.S. Geological Survey Gap Analysis Project",
         "PAD-US data providers and state stewards"
       ],
+      "bytes": 11693179,
       "fields": [
         "OBJECTID",
         "FeatClass",
@@ -137,10 +138,13 @@
       "inventoryFeatureCount": 4642,
       "name": "USGS PAD-US fee managers",
       "packagedFeatureCount": 4642,
-      "packagedFeatureSha256": "c1c15f88449e9fb7dc191af2b3bfd76112d8dc418a1c0097a10a7ad0d21ae7bc",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "fa8c8aabc9a4ac4d97fd10a3d4bdc61685e6b665c4314b8debb9bc0291550ce3",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "e166cb9e5379abd89b533455a036a3306528a2b358a755467749315632a9a06d",
+      "sha256": "aace58a9a389b1d04da4f9683bdc77dbe67dc16a0ef9ede9d1dab760bc8fe770",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 4642,
+      "sourceRevision": 1776880752730,
       "terms": "https://www.usgs.gov/programs/gap-analysis-project/science/pad-us-data-download",
       "unreturnedFeatureCount": 0,
       "url": "https://services.arcgis.com/v01gqwM5QqNysAAi/arcgis/rest/services/Fee_Managers_PADUS/FeatureServer/0"
@@ -150,6 +154,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 1791841,
       "fields": [
         "OBJECTID",
         "TRLFEATTYPE",
@@ -185,8 +190,10 @@
       "inventoryFeatureCount": 853,
       "name": "NPS public trails",
       "packagedFeatureCount": 851,
-      "packagedFeatureSha256": "251e712b4c59bee771ed6e74aae50cd9d047ae6160b8d79d6bc91e3d49586244",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "0aadccfbce77d991f9c2b762836f5d95146e833d6e5c82172212d13d49a25bad",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "13fbae0924d7337fc82fbe8d441b6603df57ca591296f24e02e3c7ad917aa35b",
+      "sha256": "7e6696160eb8b387b878712326af2e39c2006940a178e7d923211e3eeb07fdc6",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 852,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_Trails_Geographic/FeatureServer/0/iteminfo",
@@ -198,6 +205,7 @@
       "attribution": [
         "National Park Service"
       ],
+      "bytes": 1901685,
       "fields": [
         "OBJECTID",
         "POINAME",
@@ -229,8 +237,10 @@
       "inventoryFeatureCount": 2286,
       "name": "NPS public points of interest",
       "packagedFeatureCount": 2286,
-      "packagedFeatureSha256": "4caea79b175532ad16e1f7eefe9da6176fa2a4b4d235431043b4008228516781",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "981110264a06954c11d6144d7c14ed41a2fc485aa45e8e859225e87fca8b8a04",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "83faa4e8c219918029fd08cf0be8ae8d5395cd3973b30fc215bc3e598877c37d",
+      "sha256": "2ab04be99526dc969a2608d6fe8dd38a0feff94ba1cb2cd333596095c76e78bb",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 2286,
       "terms": "https://mapservices.nps.gov/arcgis/rest/services/NationalDatasets/NPS_Public_POIs_Geographic/FeatureServer/0/iteminfo",
@@ -242,6 +252,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 2570946,
       "fields": [
         "OBJECTID",
         "trail_name",
@@ -286,8 +297,10 @@
       "inventoryFeatureCount": 693,
       "name": "USFS National Forest System trails",
       "packagedFeatureCount": 693,
-      "packagedFeatureSha256": "f92cd7227ae4cbc1f98a2202031cae1906c6582c9badeeae0265fc5f32d1cecc",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "ad04d814634e2f1778d0320da4bb965bfd4dfa95ca9854a70816fd29479b33b8",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "29fcaec45131fb0e298b30a67c070a8ab18177f0eadc3e8d63c938faa7e6f97a",
+      "sha256": "93202dae4c40eac84a4a795126bf7abbde8b2415efc9292d7d2d3c7466494a1e",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 693,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -299,6 +312,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 491105,
       "fields": [
         "OBJECTID",
         "site_cn",
@@ -341,8 +355,10 @@
       "inventoryFeatureCount": 389,
       "name": "USFS recreation sites",
       "packagedFeatureCount": 389,
-      "packagedFeatureSha256": "a1b8b615355fe2732ba8ce6e9d2ef833c9010087fa8091970ec469544c6c6d3c",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "03b911a22c181a97ad3be0f4f1d0550461d4a313016a2954bc072f634003bd00",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "64d6decae6cfa68d13ebc258a4683c25bff254aeb24840a1764aa10d09188cc1",
+      "sha256": "2124f48a97f5fa23388d55c280532d9a9f96d7fa41e5bbf224037219a7e636a4",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 389,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -354,6 +370,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 842308,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -391,8 +408,10 @@
       "inventoryFeatureCount": 595,
       "name": "USFS motor vehicle use map roads",
       "packagedFeatureCount": 595,
-      "packagedFeatureSha256": "786d33b4c7991da14abfd7b924b9f38588fab688188f7df0336af12544d0d54c",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "c09e706806b9eb2e1573c8e7c39e8e1835defcb20ce7c51cc008438efffdb0a1",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "db5ad915909464dd5a1c6afc60631314aa91af0f9a6f51aac25d0608bb7f4c8f",
+      "sha256": "b19b011a03b4ecb49a3260ae9509cd8dcee91f85a099e02fba512753fe2a57eb",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 595,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -404,6 +423,7 @@
       "attribution": [
         "U.S. Department of Agriculture, Forest Service"
       ],
+      "bytes": 122140,
       "fields": [
         "OBJECTID",
         "rte_cn",
@@ -440,8 +460,10 @@
       "inventoryFeatureCount": 79,
       "name": "USFS motor vehicle use map trails",
       "packagedFeatureCount": 79,
-      "packagedFeatureSha256": "b8220cc6d588ae92206a99fe7dbfaebc42b12713d5ea712d90de494560faa1df",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "packagedFeatureSha256": "27e63c187127909cd6617ed782d28379e8b500243d4da3e5539fefbf189c5d88",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "30ef58a0d62cfd6ffb833fdbe4714b17cfee3449694d07d1a8fa6f1076fb7e42",
+      "sha256": "5e7065ce7c3f3d5b6ce5b0f82710d67518b3f3e05272cf508c0db88c7bbfda0a",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 79,
       "terms": "https://data.fs.usda.gov/geodata/edw/datasets.php",
@@ -453,6 +475,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "SMA_ID",
@@ -473,7 +496,9 @@
       "name": "BLM surface management agency boundaries",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "f2c4f8754fe098c93908ec24ba681b98bc7e1de74e7c34df2644fbbd2b6a331e",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00015,
       "sourceFeatureCount": 0,
       "terms": "https://www.blm.gov/services/geospatial/GISData",
@@ -485,6 +510,7 @@
       "attribution": [
         "U.S. Department of the Interior, Bureau of Land Management"
       ],
+      "bytes": 43,
       "fields": [
         "OBJECTID",
         "FET_TYPE",
@@ -505,7 +531,9 @@
       "name": "BLM public recreation sites",
       "packagedFeatureCount": 0,
       "packagedFeatureSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
-      "queriedAt": "2026-09-24T02:36:55.342Z",
+      "queriedAt": "2026-10-24T15:26:07.193Z",
+      "refreshSignature": "b5668604f5ca0c9a8aa3d27038e9d4fc85fa42290cef31bd1d28cd3fc3f3ecea",
+      "sha256": "6d18edfe75b3149104038dcbca4d0096bbcb923f0f9fa4b49f4815344e75bb90",
       "simplificationDegrees": 0.00003,
       "sourceFeatureCount": 0,
       "terms": "https://gis.blm.gov/arcgis/rest/services/recreation/BLM_Natl_Recreation_Offline/FeatureServer/2",
@@ -553,17 +581,19 @@
       "datasetPurpose": "managed-land-boundaries",
       "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
       "coverageLimitations": "Six named property tracts; not a complete NCFS inventory, visitor entrance map or access authorization. Shoebuckle name normalized to Dan River ESF using the NCFS acquisition announcement. Verify current visitor access with NCFS.",
+      "refreshSignature": "5d108f36074dc7bb96c77e4f28ef821f9be543d6311c42459c33598477d8958d",
+      "sourceRevision": 1792689152465,
       "rightsStatus": "Supported",
       "upstreamRightsStatus": "Supported",
       "rightsResolution": "dataset-specific-license-overrides-general-website-policy",
       "distributionConditions": "NC OneMap permits free and unrestricted use. Credit NC DOA/SPO, CGIA and NC OneMap; retain source disclaimers. No warranty or manager endorsement. Informational property geometry; access and camping permission unverified. Source data remain outside the project code license.",
       "publicDistribution": true,
-      "retrievedAt": "2026-09-29T02:15:51.932Z",
-      "sourceUpdated": "2026-09-24T10:29:21.654Z",
+      "retrievedAt": "2026-10-24T13:49:52.918Z",
+      "sourceUpdated": "2026-10-22T17:12:32.465Z",
       "featureCount": 6,
       "bytes": 6585,
-      "sha256": "5b6aabe59fe78d36182d73c26d43b4e7bc600061bcd35bc9d97e89792f99c210",
-      "metadataSha256": "1fab82e5e4fb2e0dbf2d78c777daab42f5054d856d704688eb53c68466876691",
+      "sha256": "dc091fe6c3a57927284ee6378122246ce0c6b7576abbd6ec17f2c84adc132b3b",
+      "metadataSha256": "e5b5c258acb94bd2b14545f888c334fc7df2427b1f797fd30f449bf433f99aa9",
       "termsSha256": "76adcb93414bd60c14bf77cabcd6ff095d66130162cce1c5db636d74ab1ca020",
       "licenseText": "<div><span style='color:rgb(0, 0, 0); font-family:&quot;Avenir Next W01&quot;, &quot;Avenir Next W00&quot;, &quot;Avenir Next&quot;, Avenir, &quot;Helvetica Neue&quot;, sans-serif; font-size:16px;'><i>DISCLAIMER:</i> </span><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'>The NC Department of Administration, State Property Office is charged with maintaining an inventory of state-owned lands, buildings, and space in buildings for use by state agencies to efficiently and effectively manage their allocated properties. Although effort has been made to ensure the accuracy of information, errors and conditions originating from sources used to develop the data may be reflected in the information supplied. The user must be aware of possible conditions and bear responsibility with respect to errors, collection methodologies, currency, and other conditions related to all data, web services or applications. While every effort has been made by data providers to ensure this information is accurate and reliable, there is no assumption of liability for any damages caused by inaccuracies in the data, web services or applications. There is no warranty, express or implied, nor does the fact of access or distribution constitute any such warranty. Written release agreements to authorize use of the geospatial data, web services, and applications provided by the State Property Office are not required and will not be issued. The use of trade names or commercial products does not constitute their endorsement by the Department of Administration or North Carolina State Government. Any sale of this data must not violate applicable state laws or regulations.</span></font><br /></div><div><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'><br /></span></font></div><div><font color='#000000' face='Avenir Next W01, Avenir Next W00, Avenir Next, Avenir, Helvetica Neue, sans-serif'><span style='font-size:16px;'>CGIA Terms: </span></font><a href='https://www.nconemap.gov/pages/terms' target='_blank' rel='nofollow ugc noopener noreferrer'>https://www.nconemap.gov/pages/terms</a></div>",
       "termsText": "{\"source\":\"PAGEEDITOR\",\"folderId\":null,\"values\":{\"sites\":[{\"id\":\"33650305fdf24a1bb46465e4bc598e93\",\"title\":\"NC OneMap\"},{\"id\":\"a0424edfcf8845c3beb9e56ee6db7508\",\"title\":\"NC OneMap - Copied\"}],\"layout\":{\"sections\":[{\"containment\":\"fixed\",\"isFooter\":false,\"style\":{\"background\":{\"isFile\":false,\"isUrl\":true,\"state\":\"\",\"display\":{},\"transparency\":0,\"position\":{\"x\":\"center\",\"y\":\"center\"},\"color\":\"#f3f3f3\"},\"color\":\"#4d4d4d\",\"rowLayout\":\"box\"},\"rows\":[{\"cards\":[{\"component\":{\"name\":\"markdown-card\",\"settings\":{\"markdown\":\"<h4>Disclaimer</h4>\\n<p>The NC Center for Geographic Information and Analysis (CGIA) is charged with the development and maintenance of NC OneMap and, in cooperation with partner organizations, is committed to offering access to current State geospatial information at no charge. By sharing their content, all partner organizations understand this free and unrestricted use policy. Although every effort has been made to ensure the accuracy of information, errors and conditions originating from sources used to develop the data may be reflected in the information supplied. The user must be aware of possible conditions and bear responsibility with respect to errors, collection methodologies, currency, and other conditions related to all data, web services or applications.<br><br>\\n\\nWhile every effort has been made by data providers to ensure this information is accurate and reliable, there is no assumption of liability for any damages caused by inaccuracies in the data, web services or applications. There is no warranty, express or implied, nor does the fact of access or distribution constitute any such warranty.<br><br>\\n\\nWritten release agreements to authorize use of the geospatial data, web services, and applications found on the NC OneMap website are not required and will not be issued. The use of trade names or commercial products does not constitute their endorsement by CGIA or North Carolina State Government. Any sale of this data must not violate applicable state laws or regulations.</p><p><br></p>\\n\\n<h4>Website Citation</h4><p>When citing NC OneMap in printed or online publications please use the following citation:</p>\\n\\n<pre role=\\\"textbox\\\" tabindex=\\\"0\\\" aria-label=\\\"Code block (read only)\\\"><em>NC OneMap (2019)</em>. North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic<br>Information and Analysis. Available at www.nconemap.gov.</pre><p>\\n</p>\",\"schemaVersion\":2.1}},\"width\":12,\"showEditor\":false}]}],\"visibility\":{\"access\":\"default\",\"groups\":[]}}]},\"updatedAt\":\"2026-07-22T11:46:21.656Z\",\"updatedBy\":\"nconemap\"}}",
@@ -572,9 +602,9 @@
       "pages": [
         {
           "count": 6,
-          "sha256": "1e6875c15ae74fab7cc1f4538e10475dac5364c28a14723decc955980e0f1648",
-          "firstId": 445,
-          "lastId": 726
+          "sha256": "b106406109107777c2b6b44dd990645a724b09a6c8d1a133ebae80e6cdb48fbb",
+          "firstId": 449,
+          "lastId": 727
         }
       ],
       "modifications": "Selected source fields; WGS84, five decimal places, source simplification 0.00003 degrees; POI taxonomy normalized. Not manager endorsed.",
@@ -584,7 +614,7 @@
         "count": 0,
         "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
       },
-      "packagedFeatureSha256": "64e9d108fa78db9defd0b3c0adc0ef610cc53bb401a1941cab8b03e8f174f911"
+      "packagedFeatureSha256": "4888644d3ff5c31a62ee3adaed0161e32d878947013639c0caea67c5ab148d72"
     }
   ],
   "state": {
@@ -615,8 +645,8 @@
   "output": {
     "file": "outdoors.geojson",
     "featureCount": 9541,
-    "bytes": 19469426,
-    "sha256": "4e9c8052c2f71f5edc369902c735d8b7de2a3cad12569db7bf8e839fb760cee4"
+    "bytes": 19470812,
+    "sha256": "c430b3bdbb3a6e496fa2528089fe2ec1358d81a238ac2b82574489b91a0711f1"
   },
   "agency": {
     "status": "included",
@@ -629,7 +659,7 @@
         "count": 6,
         "license": "NC OneMap free and unrestricted use policy; source disclaimers retained",
         "attribution": "North Carolina Department of Administration, State Property Office and NC Center for Geographic Information and Analysis. NC OneMap (2019), North Carolina Department of Information Technology, Government Data Analytics Center, Center for Geographic Information and Analysis. Available at www.nconemap.gov.",
-        "sourceUpdated": "2026-09-24T10:29:21.654Z"
+        "sourceUpdated": "2026-10-22T17:12:32.465Z"
       }
     ],
     "held": []
@@ -695,8 +725,8 @@
         "featureCount": 6308,
         "normalizedFeatureCount": 6308,
         "positions": 179091,
-        "bytes": 7285440,
-        "sha256": "9090d5cb1e450f1a02df61eccdf23935b8ccbf89e3b07fa53ea67cd203cd1a02",
+        "bytes": 7286826,
+        "sha256": "d8b70fa42a2f2f27370c924c15db8dfaa0959dee9c4d283f7c769a04597808f6",
         "parserValidation": "passed"
       },
       {

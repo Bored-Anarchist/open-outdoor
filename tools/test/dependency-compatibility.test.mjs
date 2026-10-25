@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-// Resolve through the real Expo consumers, so these tests exercise overrides
+// Resolve through the real Expo consumers, so these tests exercise the dependencies
 // used by the mobile build rather than unrelated top-level installations.
 const mobileRequire = createRequire(new URL('../../apps/mobile/package.json', import.meta.url));
 const expoRequire = createRequire(mobileRequire.resolve('expo/package.json'));
@@ -38,7 +38,7 @@ test('Metro reads on-disk image assets and preserves density scaling', async () 
   }
 });
 
-test('xcode generates valid project identifiers with the patched CommonJS UUID API', () => {
+test('xcode generates valid project identifiers through the Expo config plugin dependency', () => {
   const project = xcode.project('synthetic.pbxproj');
   project.hash = { project: { objects: {} } };
   assert.match(project.generateUuid(), /^[0-9A-F]{24}$/);

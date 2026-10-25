@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   isolated-compatibility:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     env:
       OPEN_OUTDOOR_EPHEMERAL: 1
@@ -30,9 +30,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24.19.0
+          node-version: 26.12.1
       - name: Prepare pinned public core and external private packages
         shell: bash
         run: |
@@ -55,7 +55,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          npm install --global pnpm@11.20.0
+          npm install --global pnpm@12.15.0
           cd "$PUBLIC_CHECKOUT"
           env -u OUTDOOR_PRIVATE_ROOT pnpm install --frozen-lockfile
           env -u OUTDOOR_PRIVATE_ROOT pnpm quality

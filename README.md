@@ -8,7 +8,7 @@ Full state packages are generated locally or restored from external artifact sto
 
 ## Phase 0 developer bootstrap
 
-The workspace pins Node.js 24.19.0, pnpm 11.20.0, Python 3.13.14, and uv 0.12.1. After installing those exact public tools on Windows, run:
+The workspace pins Node.js 26.12.1, pnpm 12.15.0, Python 3.15.1, and uv 0.13.5. After installing those exact public tools on Windows, run:
 
 ```powershell
 pnpm install --frozen-lockfile

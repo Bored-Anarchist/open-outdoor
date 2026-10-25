@@ -17,6 +17,8 @@ pnpm build:web
 
 Python dependencies and their transitive versions are locked in `pyproject.toml` and `uv.lock`. GIS and loader groups share one set of geometry pins; bootstrap installs only explicitly selected optional groups. Run converters as modules using the commands in [tooling](../../tools/README.md). Generated caches and disposable runs belong under ignored `.scratch/`.
 
+Python 3.15 currently builds the loader's pyclipper 1.4.0 dependency from source on Windows; install the Visual Studio C++ build tools before selecting the loader group. The [dependency baseline](../reference/DEPENDENCY_BASELINE.md) records the current versions, Expo compatibility holds and remaining upstream advisories. Native builds require the exact Xcode and CocoaPods versions in release configuration.
+
 The sections below preserve the environment specification and acceptance boundary. Historical phase evidence remains separate from these current contributor commands.
 
 ## 1. Objective

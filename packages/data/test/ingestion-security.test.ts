@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   IngestionSecurityError,
   RawArtifactStore,
@@ -321,6 +321,30 @@ describe('WP-202 ingestion security and raw boundary', () => {
     );
     expect(result.emitted).toEqual(['good']);
     expect(result.quarantine).toMatchObject([{ externalId: 'bad', reason: 'payload-limit' }]);
+  });
+
+  it('quarantines a parser that blocks the event loop beyond its deadline', async () => {
+    const base = isolatedConnector({
+      ...isolatedManifest,
+      limits: { ...isolatedManifest.limits, maxPayloadBytes: 64, maxParserMilliseconds: 5 },
+    });
+    const connector: Connector<string, string, string> = {
+      ...base,
+      parse: async () => {
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 25);
+        return 'late';
+      },
+      normalize: vi.fn(base.normalize),
+      checkpoint: vi.fn(base.checkpoint),
+      emit: vi.fn(base.emit),
+    };
+    const result = await runConnector(connector, 'blocked-parser-run', '2026-09-01T00:00:00.000Z');
+    expect(result.emitted).toEqual([]);
+    expect(result.quarantine).not.toHaveLength(0);
+    expect(result.quarantine.every((item) => item.reason === 'parser-timeout')).toBe(true);
+    expect(connector.normalize).not.toHaveBeenCalled();
+    expect(connector.checkpoint).not.toHaveBeenCalled();
+    expect(connector.emit).not.toHaveBeenCalled();
   });
 
   it('enforces task timeouts and transport allowlists through quarantine', async () => {
