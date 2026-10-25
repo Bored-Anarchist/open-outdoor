@@ -4,38 +4,53 @@ import { readFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { atomicSourceWrite } from '../packages/package-source-cache.mjs';
-import { stageApprovedFeed } from './state-agency-feeds.mjs';
+import { assertPrivateAcquisitionApproved, stageApprovedFeed } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from '../lib/native-curl-fetch.mjs';
 
-export async function stagePrivateNewYorkOprhp({
-  fetchImpl = nativeCurlFetch,
+export async function loadOprhpRefreshInputs({
   stagingRoot = resolve('PrivateData/agency-feeds'),
   sources,
 } = {}) {
   const config = sources
     ? { sources }
     : JSON.parse(await readFile('config/private-new-york-oprhp-sources.json', 'utf8'));
-  const results = [];
+  let approvals;
+  try {
+    approvals = JSON.parse(await readFile(join(stagingRoot, 'approvals.json'), 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    approvals = {};
+  }
+  if (!approvals || typeof approvals !== 'object' || Array.isArray(approvals))
+    throw new Error('OPRHP approval ledger must be an object');
+  // Validate the entire selection before contacting any source or changing any receipt.
+  const blockers = [];
   for (const source of config.sources) {
-    const now = new Date();
-    const approval = {
-      sourceId: source.id,
-      sourceUrl: source.url,
-      collect: true,
-      privateStorage: true,
-      publicDistribution: false,
-      publisherGrant: false,
-      provisionalPrivateValidation: true,
-      ...(source.mode === 'reference-only' ? { referenceOnlyPrivateValidation: true } : {}),
-      evidenceUrl: source.termsUrl,
-      reviewedAt: now.toISOString(),
-      expiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
-    };
+    try {
+      assertPrivateAcquisitionApproved(source, approvals[source.id]);
+    } catch (error) {
+      blockers.push(error.message);
+    }
+  }
+  if (blockers.length) throw new Error(`OPRHP refresh blocked: ${blockers.join('; ')}`);
+  return { sources: config.sources, approvals };
+}
+
+export async function stagePrivateNewYorkOprhp({
+  fetchImpl = nativeCurlFetch,
+  stagingRoot = resolve('PrivateData/agency-feeds'),
+  sources,
+} = {}) {
+  const inputs = await loadOprhpRefreshInputs({ stagingRoot, sources });
+  const results = [];
+  for (const source of inputs.sources) {
+    const approval = inputs.approvals[source.id];
     const result = await stageApprovedFeed(source, approval, fetchImpl, {
       stagingRoot,
       refresh: true,
       force: true,
       prepareReceipt: async (receipt, directory) => {
+        assertPrivateAcquisitionApproved(source, approval);
         const evidence = [];
         for (const [kind, url] of [
           ['terms', source.termsUrl],
@@ -52,6 +67,11 @@ export async function stagePrivateNewYorkOprhp({
           evidence.push({ file, url, bytes: bytes.length, sha256 });
         }
         Object.assign(receipt, {
+          approval: {
+            reviewedAt: approval.reviewedAt,
+            expiresAt: approval.expiresAt,
+            sha256: createHash('sha256').update(JSON.stringify(approval)).digest('hex'),
+          },
           evidence,
           mode: source.mode,
           attribution: source.attribution,
@@ -60,6 +80,7 @@ export async function stagePrivateNewYorkOprhp({
           snapshotWarning:
             'Dated private reference only; verify current conditions with NY State Parks.',
         });
+        assertPrivateAcquisitionApproved(source, approval);
       },
     });
     const receipt = result.receipt;

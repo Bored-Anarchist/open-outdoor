@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile, copyFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadOprhpRefreshInputs } from '../acquisition/stage-private-new-york-oprhp.mjs';
 
 // NY has different source receipts and builders from the other 49 states.
 // Keep acquisition, packaging and unresolved sources visible in one command.
@@ -128,7 +129,17 @@ try {
     ]);
     await run(process.execPath, ['tools/reporting/report-public-state-packages.mjs']);
   }
-  if (await step('oprhp', ['tools/acquisition/stage-private-new-york-oprhp.mjs']))
+  let oprhpApproved = false;
+  try {
+    await loadOprhpRefreshInputs();
+    oprhpApproved = true;
+  } catch (error) {
+    results.push({ source: 'oprhp', status: 'unresolved', reason: error.message });
+  }
+  if (
+    oprhpApproved &&
+    (await step('oprhp', ['tools/acquisition/stage-private-new-york-oprhp.mjs']))
+  )
     await run(process.execPath, ['tools/packages/package-private-new-york-agencies.mjs']);
   await run(process.execPath, ['tools/packages/deduplicate-private-state-packages.mjs', 'NY']);
   await run(process.execPath, [
