@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { mkdir, readFile, copyFile, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { loadDecRefreshInputs } from '../acquisition/acquire-outdoor-map.mjs';
 import { loadOprhpRefreshInputs } from '../acquisition/stage-private-new-york-oprhp.mjs';
 
 // NY has different source receipts and builders from the other 49 states.
@@ -32,22 +33,6 @@ async function step(source, args) {
   }
 }
 try {
-  let grant;
-  try {
-    grant = JSON.parse(
-      await readFile(join(repository, 'PrivateData/agency-feeds/ny-publisher-grant.json')),
-    );
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-  }
-  results.push({
-    source: 'dec',
-    status: 'unresolved',
-    reason:
-      grant?.publisherGrant === true
-        ? 'Run the grant-checked DEC adapter and reviewed identity/profile rebuild before accepting refreshed DEC data.'
-        : 'Publisher grant evidence required by the DEC adapter is missing; existing records and profiles retained.',
-  });
   results.push({
     source: 'ioverlander',
     status: 'unresolved',
@@ -136,10 +121,19 @@ try {
   } catch (error) {
     results.push({ source: 'oprhp', status: 'unresolved', reason: error.message });
   }
-  if (
-    oprhpApproved &&
-    (await step('oprhp', ['tools/acquisition/stage-private-new-york-oprhp.mjs']))
-  )
+  const oprhpReady =
+    oprhpApproved && (await step('oprhp', ['tools/acquisition/stage-private-new-york-oprhp.mjs']));
+  let decApproved = false;
+  try {
+    await loadDecRefreshInputs();
+    decApproved = true;
+  } catch (error) {
+    results.push({ source: 'dec', status: 'unresolved', reason: error.message });
+  }
+  const decReady =
+    decApproved && (await step('dec', ['tools/acquisition/acquire-outdoor-map.mjs']));
+  if (decReady) await step('private-NY-rebuild', ['tools/packages/rebuild-private-new-york.mjs']);
+  else if (oprhpReady)
     await run(process.execPath, ['tools/packages/package-private-new-york-agencies.mjs']);
   await run(process.execPath, ['tools/packages/deduplicate-private-state-packages.mjs', 'NY']);
   await run(process.execPath, [

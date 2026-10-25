@@ -67,13 +67,8 @@ export async function packageSourceReferences(repository = root) {
       add('https://developer.nps.gov/api/v1/mapdata/parkboundaries/{parkCode}', 'NY', 'public');
       const oprhp = await json(join(repository, 'config/private-new-york-oprhp-sources.json'));
       for (const source of oprhp.sources) add(source.url, 'NY', 'private');
-      for (const url of [
-        'https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2',
-        'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/0',
-        'https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/2',
-        'https://data.ny.gov/resource/yvkb-z58x.json',
-      ])
-        add(url, 'NY', 'private');
+      const dec = await json(join(repository, 'config/private-new-york-dec-sources.json'));
+      for (const source of dec.sources) add(source.url, 'NY', 'private');
     }
   }
   return [...sources.values()].sort((a, b) => a.key.localeCompare(b.key));

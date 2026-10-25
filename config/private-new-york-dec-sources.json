@@ -1,0 +1,103 @@
+{
+  "scope": "Owner-authorized private validation and private packages only; no publisher grant or public redistribution permission.",
+  "sources": [
+    {
+      "id": "nys-dec-lands",
+      "kind": "land",
+      "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/reference/MapServer/2",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "fields": [
+        "OBJECTID",
+        "UNIT",
+        "FACILITY",
+        "CATEGORY",
+        "CLASS",
+        "PUBLICUSE",
+        "UPDATED",
+        "DESCRIPTIO",
+        "URL"
+      ],
+      "state": "NY",
+      "publicDistribution": false,
+      "termsUrl": "https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS",
+      "attribution": "New York State Department of Environmental Conservation"
+    },
+    {
+      "id": "nys-dec-roads",
+      "kind": "road",
+      "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/0",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Permission required",
+      "permissionRequiredPrivateValidation": true,
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "UNIT",
+        "FACILITY",
+        "PUBLICUSE",
+        "UPDATED",
+        "DESCRIP",
+        "NOTES",
+        "FOOT",
+        "BIKE",
+        "HORSE",
+        "XC",
+        "ATV",
+        "MOTORV",
+        "SNOWMB",
+        "ACCESSIBLE",
+        "MILES"
+      ],
+      "state": "NY",
+      "publicDistribution": false,
+      "termsUrl": "https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS",
+      "attribution": "New York State Department of Environmental Conservation"
+    },
+    {
+      "id": "nys-dec-trails",
+      "kind": "trail",
+      "url": "https://gisservices.dec.ny.gov/arcgis/rest/services/dil/dil_trails/MapServer/2",
+      "sourceType": "arcgis-layer",
+      "rightsStatus": "Permission required",
+      "permissionRequiredPrivateValidation": true,
+      "fields": [
+        "OBJECTID",
+        "NAME",
+        "UNIT",
+        "FACILITY",
+        "PUBLICUSE",
+        "UPDATED",
+        "DESCRIP",
+        "NOTES",
+        "FOOT",
+        "BIKE",
+        "HORSE",
+        "XC",
+        "ATV",
+        "MOTORV",
+        "SNOWMB",
+        "ACCESSIBLE",
+        "MILES"
+      ],
+      "state": "NY",
+      "publicDistribution": false,
+      "termsUrl": "https://gisservices.dec.ny.gov/gis/dil/content.html?cat=CGS",
+      "attribution": "New York State Department of Environmental Conservation"
+    },
+    {
+      "id": "nys-dec-poi",
+      "kind": "poi",
+      "url": "https://data.ny.gov/resource/yvkb-z58x.json",
+      "sourceType": "download-file",
+      "rightsStatus": "Unconfirmed",
+      "provisionalPrivateValidation": true,
+      "fields": [":id", "facility", "name", "asset", "latitude", "longitude"],
+      "state": "NY",
+      "publicDistribution": false,
+      "termsUrl": "https://data.ny.gov/about",
+      "attribution": "New York State Department of Environmental Conservation / OPEN-NY"
+    }
+  ]
+}

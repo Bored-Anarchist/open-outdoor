@@ -6,6 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { atomicSourceWrite } from '../packages/package-source-cache.mjs';
 import { assertPrivateAcquisitionApproved, stageApprovedFeed } from './state-agency-feeds.mjs';
 import { nativeCurlFetch } from '../lib/native-curl-fetch.mjs';
+import { loadPrivateSourceApprovals } from './private-source-approvals.mjs';
 
 export async function loadOprhpRefreshInputs({
   stagingRoot = resolve('PrivateData/agency-feeds'),
@@ -14,25 +15,10 @@ export async function loadOprhpRefreshInputs({
   const config = sources
     ? { sources }
     : JSON.parse(await readFile('config/private-new-york-oprhp-sources.json', 'utf8'));
-  let approvals;
-  try {
-    approvals = JSON.parse(await readFile(join(stagingRoot, 'approvals.json'), 'utf8'));
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-    approvals = {};
-  }
-  if (!approvals || typeof approvals !== 'object' || Array.isArray(approvals))
-    throw new Error('OPRHP approval ledger must be an object');
-  // Validate the entire selection before contacting any source or changing any receipt.
-  const blockers = [];
-  for (const source of config.sources) {
-    try {
-      assertPrivateAcquisitionApproved(source, approvals[source.id]);
-    } catch (error) {
-      blockers.push(error.message);
-    }
-  }
-  if (blockers.length) throw new Error(`OPRHP refresh blocked: ${blockers.join('; ')}`);
+  const approvals = await loadPrivateSourceApprovals(config.sources, {
+    stagingRoot,
+    label: 'OPRHP',
+  });
   return { sources: config.sources, approvals };
 }
 

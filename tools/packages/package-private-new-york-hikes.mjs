@@ -56,7 +56,10 @@ export async function packagePrivateNewYorkHikes({
 } = {}) {
   const [manifestBytes, receiptBytes, sourceBytes, sourceManifestBytes] = await Promise.all([
     readFile(join(catalogDirectory, 'manifest.json')),
-    readFile(join(profileDirectory, 'rights-hold.receipt.json')),
+    readFile(join(profileDirectory, 'private-profile-source.receipt.json')).catch((error) => {
+      if (error.code !== 'ENOENT') throw error;
+      return readFile(join(profileDirectory, 'rights-hold.receipt.json'));
+    }),
     readFile(join(profileDirectory, 'new-york-hikes.json')),
     readFile(join(profileDirectory, 'new-york-hikes.manifest.json')),
   ]);
@@ -68,6 +71,9 @@ export async function packagePrivateNewYorkHikes({
     manifest.bundleId !== 'private-ioverlander-new-york' ||
     manifest.classification !== 'PRIVATE_USER' ||
     receipt.publicDistribution !== false ||
+    (receipt.classification !== undefined &&
+      (receipt.classification !== 'PRIVATE_USER' ||
+        receipt.sourceSha256 !== source.sourceSha256)) ||
     sourceManifest.sha256 !== hash(sourceBytes) ||
     sourceManifest.bytes !== sourceBytes.length ||
     source.sourceSha256 !== sourceManifest.sourceSha256 ||

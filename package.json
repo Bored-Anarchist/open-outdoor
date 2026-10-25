@@ -71,6 +71,7 @@
     "map:packages:backup": "node tools/packages/backup-package-artifacts.mjs",
     "map:laptop": "node tools/laptop/laptop-package-server.mjs",
     "test:laptop": "node --test tools/test/laptop-package-server.test.mjs tools/test/laptop-hotspot.test.mjs tools/test/laptop-network.test.mjs tools/test/laptop-pairing.test.mjs tools/test/laptop-update-signing.test.mjs tools/test/laptop-transport-policy.test.mjs && vitest run packages/map/test/laptop-connection.test.ts packages/map/test/laptop-pairing.test.ts packages/map/test/laptop-packages-hook.test.ts",
+    "map:private:ny:refresh": "node tools/acquisition/stage-private-new-york-oprhp.mjs && node tools/acquisition/acquire-outdoor-map.mjs && node tools/packages/rebuild-private-new-york.mjs",
     "map:ny:refresh": "node tools/packages/refresh-new-york-packages.mjs",
     "map:sources:check": "node tools/packages/check-package-source-updates.mjs",
     "docs:generate": "node tools/reporting/report-public-state-packages.mjs",
